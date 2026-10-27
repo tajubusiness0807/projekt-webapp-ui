@@ -49,6 +49,10 @@ Tastatur: W/↑ Gas, S/↓/Leertaste Bremse, A/D bzw. ←/→ Lenkung.
 
 Raspberry Pi: siehe **[docs/installation.md](docs/installation.md)**.
 
+**Browser-Demo ohne Backend:** `cd frontend && npm run build:demo` erzeugt `frontend/dist-demo/allwheel-demo.html` –
+die echte Oberfläche mit einem im Browser simulierten Fahrzeug (PIN `1234`, Admin `admin1234`). Gedacht zum
+Ausprobieren der Bedienung; die maßgebliche Sicherheitslogik läuft nur im Python-Backend.
+
 ## Tests
 
 ```bash

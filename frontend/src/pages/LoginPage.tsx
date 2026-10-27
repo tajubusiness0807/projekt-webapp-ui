@@ -65,6 +65,11 @@ export function LoginPage({ message }: { message?: string | null }) {
           <KeyRound className="h-4 w-4" />
           {admin ? 'Als Fahrer anmelden' : 'Als Administrator anmelden'}
         </button>
+        {import.meta.env.MODE === 'demo' && (
+          <p className="mt-5 rounded-xl border border-warn/40 bg-warn-soft/60 px-3 py-2 text-center text-sm text-warn">
+            Browser-Demo ohne Fahrzeug · PIN <strong>1234</strong> · Admin-Passwort <strong>admin1234</strong>
+          </p>
+        )}
         <p className="mt-6 text-center text-xs leading-relaxed text-ink-4">
           PIN und Passwort werden in der Dienstkonfiguration festgelegt. Wurden keine gesetzt, stehen die erzeugten Zugangsdaten in
           <code className="mx-1">credentials.json</code>im Datenverzeichnis des Raspberry Pi.

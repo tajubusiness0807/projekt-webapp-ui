@@ -1,4 +1,5 @@
 // Minimaler Hash-Router (keine zusätzliche Abhängigkeit; funktioniert ohne Server-Rewrites).
+// Adressen: #fahren, #dashboard, … (die ältere Form #/fahren wird ebenfalls erkannt).
 
 import { useSyncExternalStore } from 'react';
 
@@ -29,5 +30,5 @@ export function useRoute(): RouteName {
 }
 
 export function navigate(route: RouteName): void {
-  if (current() !== route) window.location.hash = `/${route}`;
+  if (current() !== route) window.location.hash = route;
 }

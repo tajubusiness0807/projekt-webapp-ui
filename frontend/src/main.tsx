@@ -8,10 +8,19 @@ import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <ErrorBoundary>
-      <App />
-    </ErrorBoundary>
-  </StrictMode>,
-);
+async function boot(): Promise<void> {
+  // Browser-Demo (npm run build:demo): Backend wird im Browser simuliert. Im normalen Build entfällt dieser Zweig.
+  if (import.meta.env.MODE === 'demo') {
+    const { installMockBackend } = await import('./demo/mockBackend');
+    installMockBackend();
+  }
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
+    </StrictMode>,
+  );
+}
+
+void boot();

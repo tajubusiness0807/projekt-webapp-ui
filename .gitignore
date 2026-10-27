@@ -18,3 +18,4 @@ backend/.env
 *.sqlite3-*
 deployment/certs/
 *.pem
+frontend/dist-demo/

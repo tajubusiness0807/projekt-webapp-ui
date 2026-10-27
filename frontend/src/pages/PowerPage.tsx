@@ -6,6 +6,7 @@ import { Button, Card, Notice } from '../components/common/ui';
 import { PowerSplitControl } from '../components/controls/PowerSplit';
 import { SettingSlider } from '../components/controls/SettingSlider';
 import { useIsOwner } from '../hooks/common';
+import { navigate } from '../hooks/useRoute';
 import { formatNumber } from '../lib/format';
 import { DRIVE_MODE_LABEL } from '../lib/labels';
 import { command } from '../services/wsClient';
@@ -134,7 +135,7 @@ export function PowerPage() {
           <p className="mt-3 text-xs text-ink-3">Aktive Begrenzungen: {out.limited_by.join(', ')}</p>
         )}
         <div className="mt-4">
-          <Button tone="ghost" onClick={() => (window.location.hash = '/fahrmodi')}>
+          <Button tone="ghost" onClick={() => navigate('fahrmodi')}>
             Achs- und Seitenbegrenzung im Profil „Custom“ einstellen →
           </Button>
         </div>

@@ -1,0 +1,403 @@
+{
+ "settings": {
+  "schema_version": 1,
+  "general": {
+   "default_profile": "eco",
+   "default_drive_mode": "awd"
+  },
+  "profiles": {
+   "eco": {
+    "max_throttle_percent": 50.0,
+    "accel_ramp_percent_per_s": 35.0,
+    "brake_strength_percent": 60.0,
+    "steering_sensitivity_percent": 60.0,
+    "deadzone_percent": 5.0,
+    "max_speed_kmh": 8.0,
+    "front_power_limit_percent": 100.0,
+    "rear_power_limit_percent": 100.0,
+    "left_limit_percent": 100.0,
+    "right_limit_percent": 100.0
+   },
+   "normal": {
+    "max_throttle_percent": 75.0,
+    "accel_ramp_percent_per_s": 70.0,
+    "brake_strength_percent": 80.0,
+    "steering_sensitivity_percent": 70.0,
+    "deadzone_percent": 4.0,
+    "max_speed_kmh": 12.0,
+    "front_power_limit_percent": 100.0,
+    "rear_power_limit_percent": 100.0,
+    "left_limit_percent": 100.0,
+    "right_limit_percent": 100.0
+   },
+   "sport": {
+    "max_throttle_percent": 100.0,
+    "accel_ramp_percent_per_s": 130.0,
+    "brake_strength_percent": 100.0,
+    "steering_sensitivity_percent": 80.0,
+    "deadzone_percent": 3.0,
+    "max_speed_kmh": 18.0,
+    "front_power_limit_percent": 100.0,
+    "rear_power_limit_percent": 100.0,
+    "left_limit_percent": 100.0,
+    "right_limit_percent": 100.0
+   },
+   "custom": {
+    "max_throttle_percent": 70.0,
+    "accel_ramp_percent_per_s": 60.0,
+    "brake_strength_percent": 80.0,
+    "steering_sensitivity_percent": 70.0,
+    "deadzone_percent": 5.0,
+    "max_speed_kmh": 10.0,
+    "front_power_limit_percent": 100.0,
+    "rear_power_limit_percent": 100.0,
+    "left_limit_percent": 100.0,
+    "right_limit_percent": 100.0
+   }
+  },
+  "power_split": {
+   "awd_front_percent": 50.0,
+   "custom_front_percent": 60.0
+  },
+  "tilt": {
+   "full_lock_angle_deg": 25.0,
+   "max_steer_percent": 80.0,
+   "deadzone_deg": 3.0,
+   "smoothing": 0.6,
+   "invert": false,
+   "pitch_function": "off",
+   "pitch_full_angle_deg": 20.0,
+   "pitch_deadzone_deg": 5.0
+  },
+  "ui": {
+   "speedometer_max_kmh": 30,
+   "rpm_gauge_max": 1000,
+   "keyboard_throttle_percent": 50.0,
+   "pedal_mode": "proportional",
+   "haptic_feedback": true,
+   "show_steering_slider": true
+  },
+  "battery": {
+   "cells_series": 10,
+   "cell_full_v": 4.15,
+   "cell_warning_v": 3.5,
+   "cell_critical_v": 3.35,
+   "cell_empty_v": 3.3,
+   "protection_enabled": true
+  },
+  "temperature": {
+   "controller_warning_c": 55.0,
+   "controller_critical_c": 70.0,
+   "motor_warning_c": 70.0,
+   "motor_critical_c": 90.0
+  },
+  "safety": {
+   "command_timeout_ms": 300,
+   "connection_timeout_ms": 1000,
+   "controller_timeout_ms": 500,
+   "telemetry_stale_ms": 1000,
+   "max_command_age_ms": 400,
+   "max_command_rate_hz": 40,
+   "absolute_max_speed_kmh": 20.0,
+   "absolute_max_throttle_percent": 100.0,
+   "absolute_max_accel_ramp_percent_per_s": 150.0,
+   "reverse_max_speed_kmh": 4.0,
+   "reverse_max_throttle_percent": 35.0,
+   "standstill_speed_kmh": 0.8,
+   "loop_stall_ms": 500,
+   "max_sessions": 4
+  },
+  "hardware": {
+   "mode": "simulation",
+   "controller_model": "",
+   "firmware": "unknown",
+   "firmware_version": "",
+   "firmware_variant_usart": false,
+   "firmware_control_mode": "unknown",
+   "protocol_verified": false,
+   "signal_levels_verified": false,
+   "wiring_verified": false,
+   "independent_axle_control": false,
+   "wheel_diameter_m": 0.165,
+   "wheel_diameter_verified": false,
+   "temperature_calibrated": false,
+   "wheels_lifted_test_passed": false,
+   "brake_method": "none",
+   "brake_verified": false,
+   "controllers": [
+    {
+     "id": "A",
+     "label": "Controller A",
+     "axle": "front",
+     "port": "",
+     "baudrate": 115200,
+     "feedback_with_odometry": false,
+     "speed_coefficient": 1.0,
+     "steer_coefficient": 1.0,
+     "max_command": 300,
+     "invert_left_command": false,
+     "invert_right_command": false,
+     "invert_left_feedback": false,
+     "invert_right_feedback": false,
+     "swap_sides": false
+    },
+    {
+     "id": "B",
+     "label": "Controller B",
+     "axle": "rear",
+     "port": "",
+     "baudrate": 115200,
+     "feedback_with_odometry": false,
+     "speed_coefficient": 1.0,
+     "steer_coefficient": 1.0,
+     "max_command": 300,
+     "invert_left_command": false,
+     "invert_right_command": false,
+     "invert_left_feedback": false,
+     "invert_right_feedback": false,
+     "swap_sides": false
+    }
+   ]
+  },
+  "telemetry": {
+   "broadcast_hz": 10,
+   "control_loop_hz": 25
+  }
+ },
+ "fault_catalog": [
+  {
+   "code": "E001",
+   "severity": "critical",
+   "blocking": true,
+   "title": "Kein Controller verbunden",
+   "description": "Von keinem der beiden Motorcontroller kommen gültige Rückmeldungen.",
+   "remedy": "Stromversorgung, Hauptschalter, serielle Verbindung und Firmware beider Controller prüfen."
+  },
+  {
+   "code": "E002",
+   "severity": "critical",
+   "blocking": true,
+   "title": "Nur ein Controller verbunden",
+   "description": "Einer der beiden Motorcontroller antwortet nicht. Das Fahrzeug darf nicht mit nur einer Achse betrieben werden.",
+   "remedy": "Verbindung und Versorgung des ausgefallenen Controllers prüfen, danach Fehler quittieren."
+  },
+  {
+   "code": "E003",
+   "severity": "critical",
+   "blocking": true,
+   "title": "Kommunikationsfehler",
+   "description": "Die Rückmeldungen eines Controllers sind ausgeblieben oder fehlerhaft (Zeitüberschreitung, Prüfsummenfehler).",
+   "remedy": "Kabel, Masseverbindung, Baudrate und Signalpegel prüfen. Störquellen (Motorleitungen) räumlich trennen."
+  },
+  {
+   "code": "E004",
+   "severity": "critical",
+   "blocking": true,
+   "title": "Ungültige Messdaten",
+   "description": "Ein Controller liefert Werte außerhalb des plausiblen Bereichs.",
+   "remedy": "Firmware-Konfiguration (Feedback-Format, Odometrie) und Kalibrierung prüfen."
+  },
+  {
+   "code": "E005",
+   "severity": "critical",
+   "blocking": true,
+   "title": "Übertemperatur",
+   "description": "Controller- oder Motortemperatur hat den kritischen Grenzwert überschritten.",
+   "remedy": "Fahrzeug abkühlen lassen, Kühlung und Last prüfen."
+  },
+  {
+   "code": "E006",
+   "severity": "critical",
+   "blocking": true,
+   "title": "Akkuspannung kritisch",
+   "description": "Die Akkuspannung liegt unter dem kritischen Grenzwert. Weiterfahren schädigt den Akku oder löst das BMS aus.",
+   "remedy": "Fahrzeug abstellen und Akku laden."
+  },
+  {
+   "code": "E007",
+   "severity": "critical",
+   "blocking": true,
+   "title": "Verbindungsverlust",
+   "description": "Die Verbindung zum steuernden Gerät ist während der Fahrt abgebrochen. Die Fahranforderung wurde auf null gesetzt.",
+   "remedy": "Verbindung wiederherstellen, Fehler quittieren und Motoren bewusst neu freigeben."
+  },
+  {
+   "code": "E008",
+   "severity": "critical",
+   "blocking": true,
+   "title": "Watchdog ausgelöst",
+   "description": "Eine interne Steuerungsaufgabe hat ihr Zeitlimit überschritten.",
+   "remedy": "Systemlast und Protokoll prüfen. Bei Wiederholung Dienst neu starten."
+  },
+  {
+   "code": "E009",
+   "severity": "critical",
+   "blocking": true,
+   "title": "Hardware nicht initialisiert",
+   "description": "Der Hardwaremodus ist angefordert, aber Konfiguration oder Freigabe-Checkliste sind unvollständig.",
+   "remedy": "Checkliste in der Systemansicht abarbeiten oder in den Simulationsmodus wechseln."
+  },
+  {
+   "code": "E010",
+   "severity": "critical",
+   "blocking": true,
+   "title": "Not-Aus aktiv",
+   "description": "Der Software-Not-Aus wurde ausgelöst. Er ersetzt keinen unabhängigen Hardware-Not-Aus.",
+   "remedy": "Ursache klären, Not-Aus zurücksetzen und Motoren bewusst neu freigeben."
+  },
+  {
+   "code": "E011",
+   "severity": "critical",
+   "blocking": true,
+   "title": "Konfiguration ungültig",
+   "description": "Die gespeicherte Konfiguration konnte nicht validiert werden. Es wurden sichere Standardwerte geladen.",
+   "remedy": "Einstellungen prüfen und neu speichern."
+  },
+  {
+   "code": "W005",
+   "severity": "warning",
+   "blocking": false,
+   "title": "Temperatur erhöht",
+   "description": "Eine Temperatur liegt über der Warnschwelle. Die Leistung wird reduziert.",
+   "remedy": "Last verringern und abkühlen lassen."
+  },
+  {
+   "code": "W006",
+   "severity": "warning",
+   "blocking": false,
+   "title": "Akkuspannung niedrig",
+   "description": "Die Akkuspannung liegt unter der Warnschwelle. Bei aktivem Batterie-Schutz wird die Leistung reduziert.",
+   "remedy": "Fahrt beenden und Akku laden."
+  },
+  {
+   "code": "W012",
+   "severity": "warning",
+   "blocking": false,
+   "title": "Steuerbefehl veraltet",
+   "description": "Es kamen kurzzeitig keine aktuellen Fahranforderungen an. Gas wurde auf null gesetzt (Neutralverriegelung).",
+   "remedy": "Gas loslassen. Danach nimmt das Fahrzeug wieder Befehle an. WLAN-Empfang prüfen."
+  },
+  {
+   "code": "W013",
+   "severity": "warning",
+   "blocking": false,
+   "title": "Ungültiger Steuerbefehl",
+   "description": "Ein Steuerbefehl wurde abgelehnt (Format, Reihenfolge, Alter, Rate oder Widerspruch).",
+   "remedy": "Seite neu laden. Bei Wiederholung Diagnoseprotokoll prüfen."
+  },
+  {
+   "code": "W014",
+   "severity": "warning",
+   "blocking": false,
+   "title": "Geschwindigkeit nicht messbar",
+   "description": "Ohne gültige Geschwindigkeitsmessung kann die Geschwindigkeitsbegrenzung nicht überwacht werden. Gas ist gesperrt.",
+   "remedy": "Controller-Rückmeldungen und Raddurchmesser prüfen."
+  },
+  {
+   "code": "W015",
+   "severity": "warning",
+   "blocking": false,
+   "title": "Inbetriebnahme-Modus",
+   "description": "Der Test mit aufgebockten Rädern ist noch nicht bestätigt. Leistung und Geschwindigkeit sind stark begrenzt.",
+   "remedy": "Test gemäß docs/hardware.md durchführen und in den Hardware-Einstellungen bestätigen."
+  },
+  {
+   "code": "I016",
+   "severity": "info",
+   "blocking": false,
+   "title": "Steuerung übernommen",
+   "description": "Ein anderes Gerät hat die Steuerung übernommen. Die Motoren wurden gesperrt.",
+   "remedy": "Bei Bedarf Steuerung zurückholen."
+  }
+ ],
+ "simulation_faults": {
+  "front_offline": "Controller vorne ohne Rückmeldung",
+  "rear_offline": "Controller hinten ohne Rückmeldung",
+  "front_invalid_data": "Controller vorne liefert ungültige Messwerte",
+  "rear_comm_errors": "Controller hinten mit Prüfsummenfehlern",
+  "overtemperature": "Übertemperatur Controller",
+  "battery_warning": "Akkuspannung niedrig",
+  "battery_critical": "Akkuspannung kritisch",
+  "wifi_weak": "Schwaches WLAN-Signal"
+ },
+ "readiness": [
+  {
+   "key": "env",
+   "ok": false,
+   "label": "Hardware per Umgebungsvariable freigegeben",
+   "detail": "AWC_HARDWARE_ENABLED=1 in der Dienstkonfiguration"
+  },
+  {
+   "key": "mode",
+   "ok": false,
+   "label": "Betriebsart „Hardware“ gewählt",
+   "detail": ""
+  },
+  {
+   "key": "model",
+   "ok": false,
+   "label": "Mainboard-Typ eingetragen",
+   "detail": ""
+  },
+  {
+   "key": "firmware",
+   "ok": false,
+   "label": "Firmware identifiziert (hoverboard-firmware-hack-FOC)",
+   "detail": "Andere Firmware benötigt einen eigenen Adapter"
+  },
+  {
+   "key": "firmware_version",
+   "ok": false,
+   "label": "Firmware-Version/Commit eingetragen",
+   "detail": ""
+  },
+  {
+   "key": "variant",
+   "ok": false,
+   "label": "Firmware mit USART-Steuerung und -Feedback gebaut",
+   "detail": ""
+  },
+  {
+   "key": "control_mode",
+   "ok": false,
+   "label": "Regelmodus der Firmware bekannt",
+   "detail": ""
+  },
+  {
+   "key": "protocol",
+   "ok": false,
+   "label": "Protokoll am Controller geprüft (Feedback empfangen)",
+   "detail": ""
+  },
+  {
+   "key": "levels",
+   "ok": false,
+   "label": "Signalpegel 3,3 V geprüft, 15-V-Leitung nicht angeschlossen",
+   "detail": ""
+  },
+  {
+   "key": "wiring",
+   "ok": false,
+   "label": "Verkabelung, Sicherungen und Hardware-Not-Aus geprüft",
+   "detail": ""
+  },
+  {
+   "key": "ports",
+   "ok": false,
+   "label": "Serielle Schnittstellen beider Controller gesetzt",
+   "detail": ""
+  },
+  {
+   "key": "wheel",
+   "ok": false,
+   "label": "Raddurchmesser nachgemessen",
+   "detail": ""
+  },
+  {
+   "key": "pyserial",
+   "ok": true,
+   "label": "Python-Paket pyserial installiert",
+   "detail": ""
+  }
+ ]
+}
