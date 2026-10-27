@@ -1,0 +1,10 @@
+{
+  "name": "AllWheel Control",
+  "short_name": "AllWheel",
+  "start_url": "/",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#03060c",
+  "theme_color": "#03060c",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

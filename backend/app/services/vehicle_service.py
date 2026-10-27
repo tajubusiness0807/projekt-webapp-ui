@@ -922,6 +922,7 @@ class VehicleService:
                 "total_drive_s": int(self._total_s),
                 "restart_required": self.restart_required,
                 "commissioning": bool(self.build and self.build.commissioning),
+                "sim_faults": self.build.sim_faults.active() if self.build and self.build.sim_faults else [],
             },
             "measurements": {
                 "speed_kmh": speed_display.to_dict(1),

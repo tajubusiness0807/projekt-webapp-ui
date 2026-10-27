@@ -1,0 +1,36 @@
+{
+  "name": "allwheel-control-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Weboberfläche der Fahrzeugsteuerung AllWheel Control",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "node e2e/smoke.cjs"
+  },
+  "dependencies": {
+    "@fontsource/inter": "5.2.8",
+    "@use-gesture/react": "10.3.1",
+    "lucide-react": "0.577.0",
+    "react": "19.2.9",
+    "react-dom": "19.2.9",
+    "zustand": "5.0.16"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.21",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.7",
+    "@vitejs/plugin-react": "5.2.0",
+    "autoprefixer": "10.4.21",
+    "postcss": "8.5.6",
+    "tailwindcss": "3.4.19",
+    "typescript": "5.9.3",
+    "vite": "7.3.7",
+    "vitest": "3.2.7"
+  }
+}

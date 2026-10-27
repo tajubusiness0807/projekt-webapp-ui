@@ -19,6 +19,9 @@ SCHEMA_VERSION = 1
 # Abschnitte, die der Fahrer (Steuerungsbesitzer) ändern darf. Alle anderen nur mit Admin-Rechten.
 DRIVER_SECTIONS = frozenset({"general", "profiles", "power_split", "tilt", "ui"})
 ADMIN_SECTIONS = frozenset({"battery", "temperature", "safety", "hardware", "telemetry"})
+# Einzelfelder in Admin-Abschnitten, die der Fahrer trotzdem schalten darf. Der Batterie-Schutz ist
+# nur die sanfte Leistungsreduzierung – die kritische Unterspannungsabschaltung bleibt immer aktiv.
+DRIVER_FIELDS = {"battery": frozenset({"protection_enabled"})}
 
 
 class StrictModel(BaseModel):
@@ -294,7 +297,9 @@ def apply_settings_patch(
         if section in DRIVER_SECTIONS:
             continue
         if section in ADMIN_SECTIONS:
-            if not allow_admin:
+            fields = patch[section]
+            driver_ok = isinstance(fields, dict) and fields and set(fields) <= DRIVER_FIELDS.get(section, frozenset())
+            if not allow_admin and not driver_ok:
                 raise SettingsPatchError(f"Für den Abschnitt „{section}“ sind Administratorrechte nötig")
             continue
         raise SettingsPatchError(f"Unbekannter Abschnitt „{section}“")

@@ -45,6 +45,15 @@ def test_driver_cannot_change_admin_sections() -> None:
         apply_settings_patch(default_settings(), {"hardware": {"mode": "hardware"}}, allow_admin=False)
 
 
+def test_driver_may_only_toggle_battery_protection() -> None:
+    s = apply_settings_patch(default_settings(), {"battery": {"protection_enabled": False}}, allow_admin=False)
+    assert s.battery.protection_enabled is False
+    with pytest.raises(SettingsPatchError, match="Administratorrechte"):
+        apply_settings_patch(
+            default_settings(), {"battery": {"protection_enabled": False, "cell_critical_v": 3.0}}, allow_admin=False
+        )
+
+
 def test_admin_can_change_safety_and_unknown_section_rejected() -> None:
     s = apply_settings_patch(default_settings(), {"safety": {"absolute_max_speed_kmh": 12}}, allow_admin=True)
     assert s.safety.absolute_max_speed_kmh == 12
