@@ -1,0 +1,409 @@
+<title>Lucky Reels</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Chivo+Mono:wght@400;600&family=Figtree:wght@400;600&display=swap">
+<style>
+/* Layout: one cabinet, centered column — marquee, reel window, controls, paytable. Single dark "arcade cabinet" look by choice. */
+:root {
+  --bg: #14110f;
+  --cabinet: #2a1d18;
+  --cabinet-edge: #4a2f24;
+  --chrome: #d9cbb8;
+  --glass: #f6efe3;
+  --ink: #1d1714;
+  --fg: #efe4d4;
+  --muted: #a8947e;
+  --accent: #e9a23b;
+  --win: #7fd18b;
+  --lose: #e0715b;
+  --font-display: "Bungee", "Impact", system-ui, sans-serif;
+  --font-body: "Figtree", system-ui, -apple-system, sans-serif;
+  --font-mono: "Chivo Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body {
+  background: radial-gradient(ellipse at top, #241a15 0%, var(--bg) 60%) fixed, var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 15px;
+  padding-block: 24px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.cabinet {
+  max-width: 460px;
+  margin: 0 auto;
+  background: var(--cabinet);
+  border: 3px solid var(--cabinet-edge);
+  border-radius: 28px 28px 14px 14px;
+  padding: 20px 18px 22px;
+  display: grid;
+  gap: 18px;
+  box-shadow: 0 30px 60px -20px #000, inset 0 2px 0 #ffffff14;
+}
+.marquee { text-align: center; display: grid; gap: 4px; }
+.marquee h1 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(30px, 9vw, 44px);
+  line-height: 1;
+  margin: 0;
+  color: var(--accent);
+  text-shadow: 0 0 18px #e9a23b55, 0 3px 0 #7a4a12;
+  letter-spacing: 0.02em;
+}
+.marquee p {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.bulbs { display: flex; justify-content: center; gap: 10px; }
+.bulbs span {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.35;
+  animation: blink 1.2s infinite;
+}
+.bulbs span:nth-child(even) { animation-delay: 0.6s; }
+@keyframes blink { 50% { opacity: 1; box-shadow: 0 0 8px var(--accent); } }
+
+.window {
+  background: var(--chrome);
+  border-radius: 14px;
+  padding: 8px;
+  box-shadow: inset 0 -3px 0 #0003;
+}
+.reels {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  position: relative;
+}
+.reels::after { /* payline */
+  content: "";
+  position: absolute;
+  left: -4px; right: -4px; top: 50%;
+  height: 2px;
+  background: var(--lose);
+  opacity: 0.7;
+  pointer-events: none;
+}
+.reel {
+  height: 132px;
+  overflow: hidden;
+  background: linear-gradient(#00000030, transparent 25%, transparent 75%, #00000030), var(--glass);
+  border-radius: 8px;
+  position: relative;
+}
+.strip { position: absolute; left: 0; right: 0; top: 0; will-change: transform; }
+.cell {
+  height: 66px;
+  display: grid;
+  place-items: center;
+}
+.cell svg { width: 46px; height: 46px; }
+.reel.win { box-shadow: inset 0 0 0 3px var(--win); }
+
+.readout {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.readout div {
+  background: #0d0a09;
+  border-radius: 8px;
+  padding: 8px 10px;
+  display: grid;
+  gap: 2px;
+}
+.readout label {
+  font-family: var(--font-body);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.readout output { font-size: 20px; font-weight: 600; color: var(--accent); }
+.message {
+  min-height: 22px;
+  text-align: center;
+  font-weight: 600;
+  margin: 0;
+}
+.message.win { color: var(--win); }
+.message.lose { color: var(--muted); }
+
+.controls { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: stretch; }
+button {
+  font: inherit;
+  cursor: pointer;
+  border: none;
+  border-radius: 10px;
+  color: var(--ink);
+}
+button:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
+button:disabled { cursor: not-allowed; opacity: 0.5; }
+.bet-btn {
+  width: 48px;
+  background: var(--chrome);
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 600;
+}
+.spin {
+  font-family: var(--font-display);
+  font-size: 24px;
+  padding: 14px;
+  background: linear-gradient(#f3b956, #c7801f);
+  box-shadow: 0 5px 0 #7a4a12;
+  transition: transform 0.08s, box-shadow 0.08s;
+}
+.spin:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 1px 0 #7a4a12; }
+.row { display: flex; gap: 10px; justify-content: space-between; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.link-btn { background: none; color: var(--muted); text-decoration: underline; padding: 4px 0; font-size: 13px; }
+.link-btn:hover { color: var(--fg); }
+
+details.paytable { background: #0d0a09; border-radius: 10px; padding: 10px 14px; }
+details.paytable summary {
+  cursor: pointer;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.paytable table { width: 100%; border-collapse: collapse; margin-top: 8px; font-variant-numeric: tabular-nums; }
+.paytable td { padding: 4px 0; border-bottom: 1px solid #ffffff10; }
+.paytable td:last-child { text-align: right; font-family: var(--font-mono); color: var(--accent); }
+.paytable .combo { display: flex; gap: 2px; align-items: center; }
+.paytable .combo svg { width: 22px; height: 22px; }
+.paytable .any { font-size: 12px; color: var(--muted); margin-left: 6px; }
+.paytable .note { margin: 10px 0 2px; font-size: 12px; color: var(--muted); line-height: 1.5; }
+.disclaimer { text-align: center; font-size: 12px; color: var(--muted); margin: 18px auto 0; max-width: 46ch; line-height: 1.5; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bulbs span { animation: none; opacity: 0.8; }
+}
+</style>
+
+<main class="cabinet">
+  <header class="marquee">
+    <div class="bulbs" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    <h1>Lucky Reels</h1>
+    <p>Three reels · one payline · play credits</p>
+  </header>
+
+  <div class="window">
+    <div class="reels" id="reels" aria-hidden="true">
+      <div class="reel"><div class="strip"></div></div>
+      <div class="reel"><div class="strip"></div></div>
+      <div class="reel"><div class="strip"></div></div>
+    </div>
+  </div>
+
+  <p class="message" id="message" role="status" aria-live="polite">Pick a bet and pull.</p>
+
+  <div class="readout">
+    <div><label for="credits">Credits</label><output id="credits">0</output></div>
+    <div><label for="bet">Bet</label><output id="bet">0</output></div>
+    <div><label for="lastWin">Last win</label><output id="lastWin">0</output></div>
+  </div>
+
+  <div class="controls">
+    <button class="bet-btn" id="betDown" aria-label="Lower bet">−</button>
+    <button class="spin" id="spin">Spin</button>
+    <button class="bet-btn" id="betUp" aria-label="Raise bet">+</button>
+  </div>
+
+  <div class="row">
+    <span id="stats">Spins: 0 · Biggest win: 0</span>
+    <button class="link-btn" id="refill">Reset to 500 credits</button>
+  </div>
+
+  <details class="paytable" id="paytable">
+    <summary>Paytable</summary>
+    <table id="payRows"></table>
+    <p class="note" id="rtp"></p>
+  </details>
+</main>
+<p class="disclaimer">Play credits only. Nothing here can be bought, cashed out or won for real. Space bar spins.</p>
+
+<script>
+(() => {
+  const ICONS = {
+    cherry: '<svg viewBox="0 0 48 48"><path d="M24 6c-2 8-8 14-12 20M24 6c2 8 6 14 12 18" stroke="#3f7a35" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M24 6c6-3 12-2 15 2-5 2-10 1-15-2z" fill="#5aa04a"/><circle cx="13" cy="32" r="9" fill="#c8323a"/><circle cx="35" cy="30" r="9" fill="#d93c44"/><circle cx="10" cy="29" r="2.5" fill="#fff8"/><circle cx="32" cy="27" r="2.5" fill="#fff8"/></svg>',
+    lemon: '<svg viewBox="0 0 48 48"><ellipse cx="24" cy="25" rx="17" ry="13" fill="#f2c935"/><path d="M6 25c0-2 1-3 2-3M42 25c0-2-1-3-2-3" stroke="#d9a91c" stroke-width="3" stroke-linecap="round"/><ellipse cx="18" cy="20" rx="5" ry="2.5" fill="#fff6"/></svg>',
+    plum: '<svg viewBox="0 0 48 48"><path d="M24 12c0-4 2-6 4-7" stroke="#5a3d23" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="24" cy="28" r="15" fill="#6b3f8f"/><path d="M24 14c-2 8-2 20 0 28" stroke="#4f2c6c" stroke-width="2" fill="none"/><ellipse cx="17" cy="22" rx="3" ry="5" fill="#fff4"/></svg>',
+    bell: '<svg viewBox="0 0 48 48"><path d="M24 6c-9 0-13 8-13 17 0 6-3 9-5 11h36c-2-2-5-5-5-11 0-9-4-17-13-17z" fill="#e9a23b"/><rect x="6" y="33" width="36" height="4" rx="2" fill="#b87618"/><circle cx="24" cy="41" r="4" fill="#b87618"/><path d="M17 16c1-3 3-5 6-5" stroke="#fff8" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>',
+    bar: '<svg viewBox="0 0 48 48"><rect x="3" y="14" width="42" height="20" rx="3" fill="#1d1714"/><text x="24" y="30" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="15" fill="#efe4d4">BAR</text></svg>',
+    seven: '<svg viewBox="0 0 48 48"><text x="24" y="40" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="40" fill="#c8323a" stroke="#7a1a20" stroke-width="1.5">7</text></svg>',
+  };
+  // Stops per symbol on each 24-stop reel; rarer symbols pay more.
+  const WEIGHTS = { cherry: 7, lemon: 6, plum: 5, bell: 3, bar: 2, seven: 1 };
+  const PAY3 = { seven: 200, bar: 60, bell: 25, plum: 12, lemon: 8, cherry: 6 };
+  const NAMES = { seven: 'Sevens', bar: 'Bars', bell: 'Bells', plum: 'Plums', lemon: 'Lemons', cherry: 'Cherries' };
+  const BETS = [1, 2, 5, 10, 25, 50, 100];
+  const START = 500;
+  const CELL = 66;
+
+  const STRIP = Object.entries(WEIGHTS).flatMap(([s, n]) => Array(n).fill(s));
+  // Spread symbols so identical ones don't cluster on the strip.
+  for (let i = STRIP.length - 1; i > 0; i--) {
+    const j = (i * 7 + 3) % (i + 1);
+    [STRIP[i], STRIP[j]] = [STRIP[j], STRIP[i]];
+  }
+
+  function payout(a, b, c) {
+    if (a === b && b === c) return PAY3[a];
+    const cherries = [a, b, c].filter(s => s === 'cherry').length;
+    if (cherries === 2) return 2;
+    if (a === 'cherry') return 1;
+    return 0;
+  }
+
+  function computeRtp() {
+    const syms = Object.keys(WEIGHTS);
+    const n = STRIP.length;
+    let ev = 0;
+    for (const a of syms) for (const b of syms) for (const c of syms)
+      ev += WEIGHTS[a] * WEIGHTS[b] * WEIGHTS[c] / n ** 3 * payout(a, b, c);
+    return ev;
+  }
+
+  function randInt(max) {
+    const buf = new Uint32Array(1);
+    crypto.getRandomValues(buf);
+    return buf[0] % max;
+  }
+
+  const store = {
+    get() { try { return JSON.parse(localStorage.getItem('lucky-reels') || 'null'); } catch { return null; } },
+    set(v) { try { localStorage.setItem('lucky-reels', JSON.stringify(v)); } catch {} },
+  };
+
+  const saved = store.get() || window.claude?.hot?.data;
+  const state = Object.assign({ credits: START, betIdx: 2, lastWin: 0, spins: 0, best: 0 }, saved || {});
+  const pos = [randInt(STRIP.length), randInt(STRIP.length), randInt(STRIP.length)];
+  let spinning = false;
+
+  const $ = id => document.getElementById(id);
+  const reels = [...document.querySelectorAll('.reel')];
+  const strips = reels.map(r => r.querySelector('.strip'));
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Each strip holds the reel several times over so it can scroll a long way.
+  const LOOPS = 6;
+  strips.forEach(el => {
+    el.innerHTML = Array(LOOPS).fill(STRIP.map(s => `<div class="cell">${ICONS[s]}</div>`).join('')).join('');
+  });
+
+  function place(i, index, loop = 1) {
+    // Center `index` on the payline (window shows 2 cells; payline sits between them).
+    const y = -((loop * STRIP.length + index) * CELL - CELL / 2);
+    strips[i].style.transform = `translateY(${y}px)`;
+  }
+  pos.forEach((p, i) => place(i, p));
+
+  function render() {
+    $('credits').textContent = state.credits.toLocaleString();
+    $('bet').textContent = BETS[state.betIdx];
+    $('lastWin').textContent = state.lastWin.toLocaleString();
+    $('stats').textContent = `Spins: ${state.spins} · Biggest win: ${state.best.toLocaleString()}`;
+    $('betDown').disabled = spinning || state.betIdx === 0;
+    $('betUp').disabled = spinning || state.betIdx === BETS.length - 1;
+    $('spin').disabled = spinning || state.credits < BETS[state.betIdx];
+    store.set(state);
+  }
+
+  function say(text, kind = '') {
+    const m = $('message');
+    m.textContent = text;
+    m.className = 'message ' + kind;
+  }
+
+  function animateReel(i, target, duration) {
+    return new Promise(resolve => {
+      const el = strips[i];
+      // Start from loop 1 at the current stop, land on the target in the last loop.
+      const startY = -((STRIP.length + pos[i]) * CELL - CELL / 2);
+      const endY = -(((LOOPS - 1) * STRIP.length + target) * CELL - CELL / 2);
+      if (reduceMotion) { place(i, target); return resolve(); }
+      const t0 = performance.now();
+      const ease = t => 1 - Math.pow(1 - t, 3) + Math.sin(t * Math.PI) * 0.02;
+      function frame(now) {
+        const t = Math.min(1, (now - t0) / duration);
+        el.style.transform = `translateY(${startY + (endY - startY) * ease(t)}px)`;
+        if (t < 1) requestAnimationFrame(frame);
+        else { place(i, target); resolve(); }
+      }
+      requestAnimationFrame(frame);
+    });
+  }
+
+  async function spin() {
+    const bet = BETS[state.betIdx];
+    if (spinning || state.credits < bet) return;
+    spinning = true;
+    state.credits -= bet;
+    state.spins++;
+    reels.forEach(r => r.classList.remove('win'));
+    say('Spinning…');
+    render();
+
+    const targets = [randInt(STRIP.length), randInt(STRIP.length), randInt(STRIP.length)];
+    await Promise.all(targets.map((t, i) => animateReel(i, t, 1100 + i * 450)));
+    targets.forEach((t, i) => (pos[i] = t));
+
+    const syms = targets.map(t => STRIP[t]);
+    const mult = payout(...syms);
+    const win = mult * bet;
+    state.credits += win;
+    state.lastWin = win;
+    state.best = Math.max(state.best, win);
+
+    if (mult >= 3 && syms[0] === syms[1] && syms[1] === syms[2]) {
+      reels.forEach(r => r.classList.add('win'));
+      say(`Three ${NAMES[syms[0]]}! You win ${win.toLocaleString()} credits.`, 'win');
+    } else if (win > 0) {
+      syms.forEach((s, i) => s === 'cherry' && reels[i].classList.add('win'));
+      say(mult === 1 ? `Cherry on reel one returns your ${bet}.` : `Two cherries pay ${win}.`, 'win');
+    } else if (state.credits < BETS[0]) {
+      say('Out of credits. Reset to play again.', 'lose');
+    } else {
+      say('No win. Try again.', 'lose');
+    }
+    spinning = false;
+    render();
+  }
+
+  $('spin').addEventListener('click', spin);
+  $('betDown').addEventListener('click', () => { state.betIdx = Math.max(0, state.betIdx - 1); render(); });
+  $('betUp').addEventListener('click', () => { state.betIdx = Math.min(BETS.length - 1, state.betIdx + 1); render(); });
+  $('refill').addEventListener('click', () => {
+    if (spinning) return;
+    Object.assign(state, { credits: START, lastWin: 0, spins: 0, best: 0 });
+    reels.forEach(r => r.classList.remove('win'));
+    say('Credits reset to 500.');
+    render();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.code === 'Space' && !['BUTTON', 'SUMMARY'].includes(e.target.tagName)) { e.preventDefault(); spin(); }
+  });
+
+  // Paytable, generated from the same tables the game uses.
+  const rows = Object.keys(PAY3).map(s =>
+    `<tr><td><span class="combo">${ICONS[s].repeat(3)}</span></td><td>${PAY3[s]}×</td></tr>`);
+  rows.push(`<tr><td><span class="combo">${ICONS.cherry.repeat(2)}<span class="any">any two</span></span></td><td>2×</td></tr>`);
+  rows.push(`<tr><td><span class="combo">${ICONS.cherry}<span class="any">on reel one</span></span></td><td>1×</td></tr>`);
+  $('payRows').innerHTML = rows.join('');
+  $('rtp').textContent = `Wins are multiples of your bet. Each reel has ${STRIP.length} stops; this table returns ${(computeRtp() * 100).toFixed(1)}% of bets over the long run, so the house still keeps a little.`;
+
+  window.claude?.hot?.snapshot?.(() => state);
+  render();
+})();
+</script>
