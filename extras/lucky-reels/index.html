@@ -18,6 +18,8 @@
   --accent-hi: #fff2c4;
   --win: #7fd18b;
   --lose: #e0715b;
+  --bonus: #a77bff;
+  --track: #ffffff14;
   --font-display: "Bungee", "Impact", system-ui, sans-serif;
   --font-body: "Figtree", system-ui, -apple-system, sans-serif;
   --font-mono: "Chivo Mono", ui-monospace, "SF Mono", Menlo, monospace;
@@ -35,29 +37,30 @@ body {
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
-.layout {
-  max-width: 460px;
-  margin: 0 auto;
-  display: grid;
-  gap: 20px;
-}
+.layout { max-width: 460px; margin: 0 auto; display: grid; gap: 20px; }
 @media (min-width: 900px) {
   .layout { max-width: 960px; grid-template-columns: 460px minmax(0, 1fr); align-items: start; }
 }
 .cabinet {
+  position: relative;
   background: var(--cabinet);
   border: 3px solid var(--cabinet-edge);
   border-radius: 28px 28px 14px 14px;
   padding: 20px 18px 22px;
   display: grid;
-  gap: 16px;
+  gap: 14px;
   box-shadow: 0 30px 60px -20px #000, inset 0 2px 0 #ffffff14;
   min-width: 0;
+  transition: border-color 0.4s, box-shadow 0.4s;
 }
 .cabinet.gold {
   background: linear-gradient(160deg, #6b4a12, #3a2708 60%, #5a3c0c);
   border-color: var(--accent);
   box-shadow: 0 30px 60px -20px #000, 0 0 40px -10px #e9a23b88, inset 0 2px 0 #fff2c444;
+}
+.cabinet.bonus {
+  border-color: var(--bonus);
+  box-shadow: 0 30px 60px -20px #000, 0 0 50px -6px #a77bffaa, inset 0 0 30px #a77bff33;
 }
 .marquee { text-align: center; display: grid; gap: 4px; }
 .marquee h1 {
@@ -70,13 +73,7 @@ body {
   text-shadow: 0 0 18px #e9a23b55, 0 3px 0 #7a4a12;
   letter-spacing: 0.02em;
 }
-.marquee p {
-  margin: 0;
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
+.marquee p { margin: 0; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
 .bulbs { display: flex; justify-content: center; gap: 10px; }
 .bulbs span {
   width: 8px; height: 8px; border-radius: 50%;
@@ -85,22 +82,20 @@ body {
   animation: blink 1.2s infinite;
 }
 .bulbs span:nth-child(even) { animation-delay: 0.6s; }
-@keyframes blink { 50% { opacity: 1; box-shadow: 0 0 8px var(--accent); } }
+@keyframes blink { 50% { opacity: 1; box-shadow: 0 0 8px currentColor; } }
 .cabinet.armed .bulbs span { background: var(--lose); }
+.cabinet.bonus .bulbs span { background: var(--bonus); animation-duration: 0.5s; }
 .cabinet.jackpot .bulbs span { animation-duration: 0.2s; }
 
 .window {
+  position: relative;
   background: var(--chrome);
   border-radius: 14px;
   padding: 8px;
   box-shadow: inset 0 -3px 0 #0003;
 }
-.reels {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-  position: relative;
-}
+.cabinet.bonus .window { background: linear-gradient(#c9b2ff, #8f6ae6); }
+.reels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; position: relative; }
 .reels::after { /* payline */
   content: "";
   position: absolute;
@@ -121,11 +116,51 @@ body {
 .cell { height: 66px; display: grid; place-items: center; }
 .cell svg { width: 46px; height: 46px; }
 .reel.win { box-shadow: inset 0 0 0 3px var(--win); }
+.reel.star { box-shadow: inset 0 0 0 3px var(--bonus); }
 .cabinet.tease .reel:last-child { animation: tease 0.35s infinite alternate; }
 @keyframes tease {
   from { box-shadow: inset 0 0 0 3px var(--lose); }
   to { box-shadow: inset 0 0 0 3px var(--accent), 0 0 26px var(--accent); }
 }
+.float {
+  position: absolute; left: 50%; top: 38%; z-index: 2;
+  translate: -50% 0;
+  font-family: var(--font-display);
+  font-size: 30px;
+  color: var(--win);
+  text-shadow: 0 2px 0 #1d1714, 0 0 16px #7fd18b;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: floatUp 1.3s ease-out forwards;
+}
+.float.star { color: var(--bonus); text-shadow: 0 2px 0 #1d1714, 0 0 16px var(--bonus); top: 62%; font-size: 22px; }
+@keyframes floatUp {
+  0% { transform: translateY(10px) scale(0.6); opacity: 0; }
+  20% { transform: translateY(0) scale(1.15); opacity: 1; }
+  100% { transform: translateY(-70px) scale(1); opacity: 0; }
+}
+
+.tier {
+  position: absolute; left: 0; right: 0; top: 70px; z-index: 5;
+  display: grid; justify-items: center; gap: 4px;
+  padding-block: 18px;
+  background: radial-gradient(ellipse at center, #0a0706ee 30%, transparent 72%);
+  cursor: pointer;
+  animation: tierIn 0.45s cubic-bezier(.2, 1.6, .4, 1);
+}
+.tier-title {
+  font-family: var(--font-display);
+  font-size: clamp(38px, 12vw, 56px);
+  line-height: 1;
+  color: var(--win);
+  text-shadow: 0 4px 0 #1d1714, 0 0 24px currentColor;
+}
+.tier-sub { font-family: var(--font-mono); font-weight: 600; font-size: 22px; color: var(--fg); font-variant-numeric: tabular-nums; }
+.tier.big .tier-title { color: var(--accent); }
+.tier.mega .tier-title { color: var(--accent-hi); animation: hue 0.8s linear infinite; }
+.tier.bonus .tier-title { color: var(--bonus); }
+@keyframes tierIn { from { transform: scale(0.3); opacity: 0; } }
+@keyframes hue { to { filter: hue-rotate(360deg); } }
 
 .readout {
   display: grid;
@@ -134,50 +169,37 @@ body {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
-.readout div {
-  background: var(--panel);
-  border-radius: 8px;
-  padding: 8px 10px;
-  display: grid;
-  gap: 2px;
-  min-width: 0;
-}
-.label {
-  font-family: var(--font-body);
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
+.readout div { background: var(--panel); border-radius: 8px; padding: 8px 10px; display: grid; gap: 2px; min-width: 0; }
+.label { font-family: var(--font-body); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
 .readout output { font-size: 20px; font-weight: 600; color: var(--accent); overflow-wrap: anywhere; }
 .message { min-height: 22px; text-align: center; font-weight: 600; margin: 0; }
 .message.win { color: var(--win); }
 .message.lose { color: var(--muted); }
 .message.hot { color: var(--accent); }
+.message.bonus { color: var(--bonus); }
 
-button {
-  font: inherit;
-  cursor: pointer;
-  border: none;
-  border-radius: 10px;
-  color: var(--ink);
-}
+.meters { display: grid; gap: 8px; background: var(--panel); border-radius: 10px; padding: 10px 12px; }
+.meter { display: grid; grid-template-columns: 86px minmax(0, 1fr) 78px; gap: 10px; align-items: center; }
+.meter-val { font-family: var(--font-mono); font-size: 12px; color: var(--fg); text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.meter .label b { color: var(--accent); font-family: var(--font-mono); font-size: 12px; letter-spacing: 0; }
+.bar { height: 8px; border-radius: 4px; background: var(--track); overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #b87618, var(--accent-hi)); border-radius: 4px; transition: width 0.5s ease-out; }
+.pips { display: flex; gap: 3px; }
+.pip { flex: 1; height: 8px; border-radius: 4px; background: var(--track); transition: background 0.3s, box-shadow 0.3s; }
+#starPips .pip.on { background: var(--bonus); box-shadow: 0 0 6px var(--bonus); }
+#streakPips .pip.on { background: var(--lose); }
+#streakPips .pip.on:nth-child(n+4) { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+#streakPips .pip.on:nth-child(n+7) { background: var(--accent-hi); box-shadow: 0 0 8px var(--accent-hi); }
+
+button { font: inherit; cursor: pointer; border: none; border-radius: 10px; color: var(--ink); }
 button:focus-visible, input:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
 button:disabled { cursor: not-allowed; opacity: 0.5; }
 
 .bet { display: grid; gap: 6px; }
 .bet-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 8px; }
-.chip-btn {
-  min-width: 48px;
-  padding: 0 10px;
-  background: var(--chrome);
-  font-family: var(--font-mono);
-  font-size: 16px;
-  font-weight: 600;
-}
+.chip-btn { min-width: 48px; padding: 0 10px; background: var(--chrome); font-family: var(--font-mono); font-size: 16px; font-weight: 600; }
 #betInput {
-  min-width: 0;
-  width: 100%;
+  min-width: 0; width: 100%;
   background: var(--panel);
   color: var(--accent);
   border: 2px solid var(--cabinet-edge);
@@ -188,7 +210,9 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   text-align: center;
+  -moz-appearance: textfield; appearance: textfield;
 }
+#betInput::-webkit-inner-spin-button, #betInput::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .spin-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; }
 .spin-row:has(#auto[hidden]) { grid-template-columns: 1fr; }
 .spin {
@@ -201,37 +225,27 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 }
 .spin small { display: block; font-family: var(--font-mono); font-size: 12px; font-weight: 600; }
 .spin:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 1px 0 #7a4a12; }
-.auto {
-  padding: 0 16px;
-  background: var(--chrome);
-  font-weight: 600;
-  box-shadow: 0 5px 0 #8c7d6a;
-}
+.spin.free { background: linear-gradient(#c9b2ff, #7b4fd6); box-shadow: 0 5px 0 #4b2c94; }
+.auto { padding: 0 16px; background: var(--chrome); font-weight: 600; box-shadow: 0 5px 0 #8c7d6a; }
 .auto.running { background: var(--lose); }
 .boosts { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
 .boosts:empty { display: none; }
 .boost-chip {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 12px; font-weight: 600;
   padding: 4px 10px;
   border-radius: 999px;
   background: #e9a23b22;
   color: var(--accent);
   border: 1px solid #e9a23b66;
 }
+.boost-chip.bonus { background: #a77bff22; color: var(--bonus); border-color: #a77bff66; }
 .row { display: flex; gap: 10px; justify-content: space-between; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
 .row .links { display: flex; gap: 14px; }
 .link-btn { background: none; color: var(--muted); text-decoration: underline; padding: 4px 0; font-size: 13px; }
 .link-btn:hover { color: var(--fg); }
 
-details.paytable { background: var(--panel); border-radius: 10px; padding: 10px 14px; }
-details.paytable summary {
-  cursor: pointer;
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
+details.paytable, details.ach { background: var(--panel); border-radius: 10px; padding: 10px 14px; }
+details summary { cursor: pointer; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
 .paytable table { width: 100%; border-collapse: collapse; margin-top: 8px; font-variant-numeric: tabular-nums; }
 .paytable td { padding: 4px 0; border-bottom: 1px solid #ffffff10; }
 .paytable td:last-child { text-align: right; font-family: var(--font-mono); color: var(--accent); }
@@ -249,13 +263,7 @@ details.paytable summary {
   gap: 4px;
   min-width: 0;
 }
-.shop h2 {
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: 22px;
-  margin: 0;
-  color: var(--accent);
-}
+.shop h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; color: var(--accent); }
 .shop .rate { margin: 0 0 8px; font-size: 13px; color: var(--muted); }
 .shop .rate strong { color: var(--fg); font-family: var(--font-mono); }
 .goodie {
@@ -269,24 +277,77 @@ details.paytable summary {
 .goodie svg { width: 40px; height: 40px; }
 .goodie h3 { margin: 0; font-size: 15px; }
 .goodie p { margin: 2px 0 0; font-size: 13px; color: var(--muted); line-height: 1.4; }
-.goodie .status {
-  display: block;
-  margin-top: 4px;
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--accent);
-}
-.buy {
-  padding: 8px 12px;
-  background: var(--chrome);
-  font-family: var(--font-mono);
-  font-size: 13px;
-  font-weight: 600;
-  white-space: nowrap;
-}
+.goodie .status { display: block; margin-top: 4px; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+.buy { padding: 8px 12px; background: var(--chrome); font-family: var(--font-mono); font-size: 13px; font-weight: 600; white-space: nowrap; }
 .buy.armed { background: var(--win); }
+details.ach { margin-top: 10px; }
+.ach ul { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 2px; }
+.ach li { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 10px; align-items: baseline; padding: 6px 0; border-bottom: 1px solid #ffffff10; font-size: 13px; color: var(--muted); }
+.ach li b { color: var(--fg); font-weight: 600; }
+.ach li .rw { font-family: var(--font-mono); font-size: 12px; }
+.ach li.done { color: var(--fg); }
+.ach li.done .mark { color: var(--win); }
+.ach li:not(.done) b { color: var(--muted); }
 .disclaimer { text-align: center; font-size: 12px; color: var(--muted); margin: 18px auto 0; max-width: 52ch; line-height: 1.5; }
+
+/* Toasts */
+.toasts {
+  position: fixed; z-index: 30;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  right: max(12px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 8px;
+  width: min(300px, calc(100vw - 24px));
+  pointer-events: none;
+}
+@media (max-width: 600px) {
+  .toasts { top: auto; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); right: auto; left: 50%; translate: -50% 0; }
+}
+.toast {
+  background: var(--cabinet);
+  border: 2px solid var(--accent);
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: grid; gap: 2px;
+  box-shadow: 0 12px 30px -8px #000, 0 0 20px -6px var(--accent);
+  animation: toastIn 0.5s cubic-bezier(.2, 1.5, .4, 1);
+  transition: opacity 0.4s, transform 0.4s;
+}
+.toast strong { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+.toast span { font-weight: 600; }
+.toast.out { opacity: 0; transform: translateX(40px); }
+@keyframes toastIn { from { transform: translateX(120%); } }
+
+/* Prize wheel */
+.modal {
+  position: fixed; inset: 0; z-index: 25;
+  display: grid; place-items: center;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background: #0a0706d9;
+  animation: fadeIn 0.3s;
+}
+.modal-card {
+  width: 100%; max-width: 360px;
+  background: var(--cabinet);
+  border: 3px solid var(--accent);
+  border-radius: 22px;
+  padding: 22px 18px;
+  display: grid; gap: 12px; justify-items: center; text-align: center;
+  box-shadow: 0 0 60px -10px #e9a23b88;
+  animation: tierIn 0.5s cubic-bezier(.2, 1.5, .4, 1);
+}
+.modal-card .eyebrow { font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--muted); }
+.modal-card h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 36px; color: var(--accent); line-height: 1; }
+.wheel-wrap { position: relative; width: min(280px, 72vw); aspect-ratio: 1; max-width: 100%; }
+.wheel-wrap canvas { width: 100%; height: 100%; display: block; }
+.pointer {
+  position: absolute; top: -8px; left: 50%; translate: -50% 0;
+  border-left: 13px solid transparent; border-right: 13px solid transparent;
+  border-top: 24px solid var(--fg);
+  filter: drop-shadow(0 3px 0 #0008);
+}
+.wheel-result { margin: 0; min-height: 22px; font-weight: 600; }
+.modal-card .spin { width: 100%; }
 
 /* Jackpot show */
 .cabinet.jackpot { animation: shake 0.45s 3; }
@@ -296,9 +357,8 @@ details.paytable summary {
   60% { transform: translate(-5px, 2px); }
   80% { transform: translate(5px, -2px); }
 }
-#fx { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-#betInput::-webkit-inner-spin-button, #betInput::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-#betInput { -moz-appearance: textfield; appearance: textfield; }
+#fx, #fxTop { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+#fxTop { z-index: 18; }
 .jp {
   position: fixed; inset: 0; z-index: 19;
   display: grid; place-items: center;
@@ -325,16 +385,8 @@ details.paytable summary {
 .jp-flash { position: absolute; inset: 0; background: var(--accent-hi); animation: flash 0.9s ease-out forwards; pointer-events: none; }
 @keyframes flash { from { opacity: 1; } to { opacity: 0; } }
 .jp-content { position: relative; z-index: 1; display: grid; gap: 10px; justify-items: center; text-align: center; }
-.jp-eyebrow {
-  font-size: 13px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--accent-hi);
-  animation: fadeIn 0.6s 0.2s both;
-}
-.jp-title {
-  margin: 0;
-  font-family: var(--font-display); font-weight: 400;
-  font-size: clamp(46px, 15vw, 132px); line-height: 1;
-  white-space: nowrap;
-}
+.jp-eyebrow { font-size: 13px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--accent-hi); animation: fadeIn 0.6s 0.2s both; }
+.jp-title { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: clamp(46px, 15vw, 132px); line-height: 1; white-space: nowrap; }
 .jp-title span {
   display: inline-block;
   color: transparent;
@@ -365,8 +417,9 @@ details.paytable summary {
 @keyframes fadeIn { from { opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .bulbs span, .cabinet.jackpot, .cabinet.tease .reel:last-child, .jp, .jp-rays, .jp-flash, .jp-title span, .jp-amount.pop { animation: none; }
-  .jp-flash { opacity: 0; }
+  .bulbs span, .cabinet.jackpot, .cabinet.tease .reel:last-child, .jp, .jp-rays, .jp-flash, .jp-title span, .jp-amount.pop,
+  .float, .tier, .tier-title, .toast, .modal, .modal-card { animation: none; }
+  .jp-flash, .float { opacity: 0; }
 }
 </style>
 
@@ -378,19 +431,26 @@ details.paytable summary {
       <p>Three reels · one payline · play credits</p>
     </header>
 
-    <div class="window">
+    <div class="window" id="window">
       <div class="reels" aria-hidden="true">
         <div class="reel"><div class="strip"></div></div>
         <div class="reel"><div class="strip"></div></div>
         <div class="reel"><div class="strip"></div></div>
       </div>
     </div>
+    <div class="tier" id="tier" role="status" hidden><div class="tier-title" id="tierTitle"></div><div class="tier-sub" id="tierSub"></div></div>
 
     <p class="message" id="message" role="status" aria-live="polite">Pick a bet and pull.</p>
 
     <div class="readout">
       <div><span class="label">Credits</span><output id="credits">0</output></div>
       <div><span class="label">Last win</span><output id="lastWin">0</output></div>
+    </div>
+
+    <div class="meters">
+      <div class="meter"><span class="label">Level <b id="lvl">1</b></span><div class="bar"><i id="xpFill"></i></div><span class="meter-val" id="xpVal">0 / 0 XP</span></div>
+      <div class="meter"><span class="label">Bonus stars</span><div class="pips" id="starPips"></div><span class="meter-val" id="starVal">0 / 12</span></div>
+      <div class="meter"><span class="label">Win streak</span><div class="pips" id="streakPips"></div><span class="meter-val" id="streakVal">×1.00</span></div>
     </div>
 
     <div class="bet">
@@ -418,7 +478,7 @@ details.paytable summary {
     </div>
 
     <details class="paytable">
-      <summary>Paytable</summary>
+      <summary>Paytable &amp; rules</summary>
       <table id="payRows"></table>
       <p class="note" id="rtp"></p>
     </details>
@@ -426,9 +486,23 @@ details.paytable summary {
 
   <aside class="shop" aria-labelledby="shopTitle">
     <h2 id="shopTitle">Goodie Shop</h2>
-    <p class="rate">Your payout rate with these goodies: <strong id="shopRate">0%</strong></p>
+    <p class="rate">Base payout rate with your goodies: <strong id="shopRate">0%</strong></p>
     <div id="goodies"></div>
+    <details class="ach" open>
+      <summary>Achievements <span id="achCount"></span></summary>
+      <ul id="achList"></ul>
+    </details>
   </aside>
+</div>
+
+<div class="modal" id="wheelModal" role="dialog" aria-modal="true" aria-labelledby="wheelTitle" hidden>
+  <div class="modal-card">
+    <div class="eyebrow">Level up</div>
+    <h2 id="wheelTitle">Level 2!</h2>
+    <div class="wheel-wrap"><canvas id="wheel" width="600" height="600"></canvas><div class="pointer"></div></div>
+    <p class="wheel-result" id="wheelResult">Spin for your level reward.</p>
+    <button class="spin" id="wheelBtn">Spin the wheel</button>
+  </div>
 </div>
 
 <div class="jp" id="jp" role="alert" hidden>
@@ -443,6 +517,8 @@ details.paytable summary {
     <div class="jp-hint">Tap to continue</div>
   </div>
 </div>
+<canvas id="fxTop" aria-hidden="true"></canvas>
+<div class="toasts" id="toasts" aria-live="polite"></div>
 <p class="disclaimer">Play credits only. Nothing here can be bought with real money, cashed out or won for real. Space bar spins.</p>
 
 <script>
@@ -454,6 +530,7 @@ details.paytable summary {
     bell: '<svg viewBox="0 0 48 48"><path d="M24 6c-9 0-13 8-13 17 0 6-3 9-5 11h36c-2-2-5-5-5-11 0-9-4-17-13-17z" fill="#e9a23b"/><rect x="6" y="33" width="36" height="4" rx="2" fill="#b87618"/><circle cx="24" cy="41" r="4" fill="#b87618"/><path d="M17 16c1-3 3-5 6-5" stroke="#fff8" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>',
     bar: '<svg viewBox="0 0 48 48"><rect x="3" y="14" width="42" height="20" rx="3" fill="#1d1714"/><text x="24" y="30" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="15" fill="#efe4d4">BAR</text></svg>',
     seven: '<svg viewBox="0 0 48 48"><text x="24" y="40" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="40" fill="#c8323a" stroke="#7a1a20" stroke-width="1.5">7</text></svg>',
+    star: '<svg viewBox="0 0 48 48"><path d="M24 4l6 13 14 1.5-10.5 9.5 3 14L24 35l-12.5 7 3-14L4 18.5 18 17z" fill="#a77bff" stroke="#4b2c94" stroke-width="2.5" stroke-linejoin="round"/><path d="M19 19l4-2" stroke="#fff8" stroke-width="2.5" stroke-linecap="round"/></svg>',
   };
   const SHOP_ICONS = {
     horseshoe: '<svg viewBox="0 0 48 48"><path d="M12 8v16a12 12 0 0 0 24 0V8" stroke="#c9b9a2" stroke-width="8" fill="none" stroke-linecap="round"/><g fill="#4a2f24"><circle cx="12" cy="13" r="1.6"/><circle cx="12" cy="21" r="1.6"/><circle cx="36" cy="13" r="1.6"/><circle cx="36" cy="21" r="1.6"/></g></svg>',
@@ -464,14 +541,22 @@ details.paytable summary {
     magnet: '<svg viewBox="0 0 48 48"><path d="M12 10v14a12 12 0 0 0 24 0V10" stroke="#c8323a" stroke-width="9" fill="none"/><rect x="7.5" y="5" width="9" height="8" fill="#d9cbb8"/><rect x="31.5" y="5" width="9" height="8" fill="#d9cbb8"/></svg>',
     gold: '<svg viewBox="0 0 48 48"><rect x="9" y="4" width="30" height="40" rx="6" fill="#e9a23b" stroke="#b87618" stroke-width="2"/><rect x="13" y="14" width="22" height="13" rx="2" fill="#f6efe3"/><text x="24" y="25" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="11" fill="#c8323a">777</text><circle cx="24" cy="36" r="3" fill="#fff2c4"/></svg>',
   };
-  const BASE_WEIGHTS = { cherry: 7, lemon: 6, plum: 5, bell: 3, bar: 2, seven: 1 };
+  const BASE_WEIGHTS = { cherry: 7, lemon: 6, plum: 5, bell: 3, bar: 2, seven: 1, star: 2 };
   const SYMS = Object.keys(BASE_WEIGHTS);
-  const PAY3 = { seven: 200, bar: 60, bell: 25, plum: 12, lemon: 8, cherry: 6 };
-  const NAMES = { seven: 'Sevens', bar: 'Bars', bell: 'Bells', plum: 'Plums', lemon: 'Lemons', cherry: 'Cherries' };
+  const PAY3 = { seven: 250, bar: 75, star: 50, bell: 30, plum: 15, lemon: 10, cherry: 8 };
+  const NAMES = { seven: 'Sevens', bar: 'Bars', star: 'Stars', bell: 'Bells', plum: 'Plums', lemon: 'Lemons', cherry: 'Cherries' };
   const START = 500;
   const CELL = 66;
   const LOOPS = 6;
   const MAX = Number.MAX_SAFE_INTEGER;
+  const STAR_GOAL = 12;
+  const FREE_SPINS = 8;
+  const FREE_MULT = 2;
+  const STREAK_STEP = 0.25;
+  const STREAK_MAX = 8;
+  // Wheel prizes are multiples of 100 × level; 'free' awards free spins instead.
+  const WHEEL = [2, 10, 3, 25, 5, 'free', 4, 50];
+  const xpNeed = level => Math.floor(120 * level ** 1.4);
 
   // Boosts are armed for the next spin and charged as a multiple of the bet when it starts.
   const GOODIES = [
@@ -484,9 +569,28 @@ details.paytable summary {
     { id: 'gold', kind: 'perm', name: 'Gold Cabinet', desc: 'Plates the machine in gold. Purely for show.', price: () => 25000 },
   ];
 
+  const ACH = [
+    { id: 'first', name: 'First Pull', desc: 'Spin once.', reward: 100, test: () => state.spins >= 1 },
+    { id: 'win', name: 'Winner', desc: 'Win anything.', reward: 100, test: c => c?.win > 0 },
+    { id: 'three', name: 'Triple', desc: 'Land three of a kind.', reward: 250, test: c => c?.three },
+    { id: 'streak3', name: 'On Fire', desc: 'Win 3 spins in a row.', reward: 300, test: () => state.streak >= 3 },
+    { id: 'streak6', name: 'Unstoppable', desc: 'Win 6 spins in a row.', reward: 1500, test: () => state.streak >= 6 },
+    { id: 'bonus', name: 'Starstruck', desc: `Collect ${STAR_GOAL} bonus stars.`, reward: 500, test: c => c?.triggered },
+    { id: 'big', name: 'Big Win', desc: 'Win 25× your bet or more.', reward: 500, test: c => c?.ratio >= 25 },
+    { id: 'mega', name: 'Mega Win', desc: 'Win 75× your bet or more.', reward: 2000, test: c => c?.ratio >= 75 },
+    { id: 'jackpot', name: 'Lucky Sevens', desc: 'Hit the jackpot.', reward: 2500, test: c => c?.jackpot },
+    { id: 'level5', name: 'Regular', desc: 'Reach level 5.', reward: 1000, test: () => state.level >= 5 },
+    { id: 'level10', name: 'High Roller', desc: 'Reach level 10.', reward: 5000, test: () => state.level >= 10 },
+    { id: 'allin', name: 'All In', desc: 'Bet 10,000 or more on one spin.', reward: 1000, test: c => c?.bet >= 10000 },
+    { id: 'marathon', name: 'Marathon', desc: 'Play 100 spins.', reward: 1000, test: () => state.spins >= 100 },
+    { id: 'million', name: 'Millionaire', desc: 'Hold 1,000,000 credits.', reward: 10000, test: () => state.credits >= 1e6 },
+    { id: 'collector', name: 'Collector', desc: 'Own every goodie, horseshoe maxed.', reward: 5000, test: () => state.owned.horseshoe >= 3 && state.owned.goldCherry && state.owned.piggy && state.owned.autospin && state.owned.gold },
+  ];
+
   const fmt = n => n >= 1e9
     ? new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 2 }).format(n)
     : Math.floor(n).toLocaleString('en');
+  const sleep = ms => new Promise(res => setTimeout(res, ms));
 
   const store = {
     get() { try { return JSON.parse(localStorage.getItem('lucky-reels') || 'null'); } catch { return null; } },
@@ -496,11 +600,14 @@ details.paytable summary {
     credits: START, bet: 5, lastWin: 0, spins: 0, best: 0, sound: true,
     owned: { horseshoe: 0, goldCherry: false, piggy: false, autospin: false, gold: false },
     boost: { double: false, magnet: false },
+    streak: 0, stars: 0, freeSpins: 0, freeBet: 0, freeTotal: 0,
+    xp: 0, level: 1, ach: {},
   });
   const saved = store.get() || window.claude?.hot?.data || {};
   const state = Object.assign(fresh(), saved);
   state.owned = Object.assign(fresh().owned, saved.owned);
   state.boost = Object.assign(fresh().boost, saved.boost);
+  state.ach = Object.assign({}, saved.ach);
   if (!saved.bet && saved.betIdx != null) state.bet = [1, 2, 5, 10, 25, 50, 100][saved.betIdx] || 5;
 
   const $ = id => document.getElementById(id);
@@ -511,8 +618,11 @@ details.paytable summary {
   const SECRET = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
   let typed = [];
   let rigged = false;
-  let spinning = false;
+  let busy = false;
+  let inBonus = false;
+  let freeDone = 0;
   let autoLeft = 0;
+  const pendingLevels = [];
   let STRIP = [];
   let pos = [0, 0, 0];
 
@@ -567,6 +677,7 @@ details.paytable summary {
 
   const spinCost = () => Math.min(MAX, state.bet * (1 + (state.boost.double ? 1 : 0) + (state.boost.magnet ? 40 : 0)));
   const costFactor = () => spinCost() / state.bet;
+  const streakMult = () => 1 + STREAK_STEP * Math.min(state.streak, STREAK_MAX);
 
   // ---------- Sound ----------
   const sound = {
@@ -595,7 +706,12 @@ details.paytable summary {
     },
     clunk() { this.tone(140, 0, 0.09, 'triangle', 0.2); },
     win() { [784, 1047].forEach((f, i) => this.tone(f, i * 0.09, 0.15, 'square', 0.05)); },
+    bigWin() { [523, 659, 784, 1047, 1319].forEach((f, i) => this.tone(f, i * 0.08, 0.22, 'square', 0.05)); },
+    star() { [1319, 1760, 2093].forEach((f, i) => this.tone(f, i * 0.05, 0.2, 'sine', 0.05)); },
     tease() { this.tone(330, 0, 0.12, 'square', 0.04); },
+    tick() { this.tone(1100, 0, 0.025, 'square', 0.03); },
+    chime() { [1047, 1568, 2093].forEach((f, i) => this.tone(f, i * 0.07, 0.3, 'triangle', 0.06)); },
+    levelUp() { [392, 523, 659, 784, 1047].forEach((f, i) => this.tone(f, i * 0.07, 0.25, 'square', 0.05)); },
     fanfare() {
       const notes = [523, 659, 784, 1047, 784, 1047, 1319, 1568];
       notes.forEach((f, i) => this.tone(f, i * 0.11, 0.18, 'square', 0.06));
@@ -606,223 +722,49 @@ details.paytable summary {
     finale() { [523, 659, 784, 1047, 1319].forEach(f => this.tone(f, 0, 1.8, 'triangle', 0.06)); },
   };
 
-  // ---------- Reels ----------
-  function animateReel(i, target, duration) {
-    return new Promise(resolve => {
-      const el = strips[i];
-      const startY = -((STRIP.length + pos[i]) * CELL - CELL / 2);
-      const endY = -(((LOOPS - 1) * STRIP.length + target) * CELL - CELL / 2);
-      const done = () => { place(i, target); sound.clunk(); resolve(); };
-      if (reduceMotion) return done();
-      const t0 = performance.now();
-      const ease = t => 1 - Math.pow(1 - t, 3) + Math.sin(t * Math.PI) * 0.02;
-      (function frame(now) {
-        const t = Math.min(1, (now - t0) / duration);
-        el.style.transform = `translateY(${startY + (endY - startY) * ease(t)}px)`;
-        if (t < 1) requestAnimationFrame(frame); else done();
-      })(t0);
-    });
-  }
-
-  function say(text, kind = '') {
-    $('message').textContent = text;
-    $('message').className = 'message ' + kind;
-  }
-
-  async function spin() {
-    const cost = spinCost();
-    if (spinning || state.credits < cost) return null;
-    spinning = true;
-    const bet = state.bet;
-    const { double, magnet } = state.boost;
-    state.credits -= cost;
-    state.spins++;
-    state.boost = { double: false, magnet: false };
-    reels.forEach(r => r.classList.remove('win'));
-    say('Spinning…');
-    render();
-
-    let targets;
-    if (rigged || magnet) {
-      const sym = rigged ? 'seven' : SYMS[randInt(SYMS.length)];
-      targets = [0, 1, 2].map(() => STRIP.indexOf(sym));
-    } else {
-      targets = [0, 1, 2].map(() => randInt(STRIP.length));
-    }
-    rigged = false;
-    cabinet.classList.remove('armed');
-
-    const tease = STRIP[targets[0]] === 'seven' && STRIP[targets[1]] === 'seven';
-    const durations = [1100, 1550, tease && !reduceMotion ? 4200 : 2000];
-    const stops = targets.map((t, i) => animateReel(i, t, durations[i]));
-    if (tease) stops[1].then(() => {
-      cabinet.classList.add('tease');
-      say('Two sevens… come on!', 'hot');
-      for (let k = 0; k < 14; k++) setTimeout(() => sound.tease(), k * 180);
-    });
-    await Promise.all(stops);
-    cabinet.classList.remove('tease');
-    pos = targets;
-
-    const syms = targets.map(t => STRIP[t]);
-    const mult = payout(...syms) * (double ? 2 : 1);
-    const win = Math.min(MAX, mult * bet);
-    const refund = !mult && state.owned.piggy ? Math.floor(bet * 0.1) : 0;
-    state.credits = Math.min(MAX, state.credits + win + refund);
-    state.lastWin = win;
-    state.best = Math.max(state.best, win);
-    const tag = double && mult ? ' Doubled!' : '';
-    const three = syms[0] === syms[1] && syms[1] === syms[2];
-    let result = win ? 'win' : 'lose';
-
-    if (three) {
-      reels.forEach(r => r.classList.add('win'));
-      say(`Three ${NAMES[syms[0]]}! You win ${fmt(win)} credits.${tag}`, 'win');
-      if (syms[0] === 'seven') {
-        result = 'jackpot';
-        render();
-        await celebrate(win, mult);
-      } else sound.win();
-    } else if (win) {
-      syms.forEach((s, i) => s === 'cherry' && reels[i].classList.add('win'));
-      say(`Cherries pay ${fmt(win)}.${tag}`, 'win');
-      sound.win();
-    } else if (state.credits < 1) {
-      say('Out of credits. Start over to play again.', 'lose');
-    } else {
-      say(refund ? `No win. Piggy Bank returns ${fmt(refund)}.` : 'No win. Try again.', 'lose');
-    }
-    spinning = false;
-    render();
-    return result;
-  }
-
-  async function autoSpin() {
-    if (autoLeft) { autoLeft = 0; render(); return; }
-    autoLeft = 10;
-    render();
-    while (autoLeft > 0 && state.credits >= spinCost()) {
-      autoLeft--;
-      const r = await spin();
-      if (r === 'jackpot' || r === null) break;
-      await new Promise(res => setTimeout(res, 300));
-    }
-    autoLeft = 0;
-    render();
-  }
-
-  // ---------- Jackpot show ----------
-  const title = document.querySelector('.jp-title');
-  title.innerHTML = [...'JACKPOT!'].map((ch, i) => `<span style="--i:${i}" aria-hidden="true">${ch}</span>`).join('');
-
-  function celebrate(win, mult) {
-    return new Promise(resolve => {
-      const jp = $('jp');
-      const amount = $('jpAmount');
-      const DUR = reduceMotion ? 3500 : 11500;
-      const t0 = performance.now();
-      let done = false;
-
-      $('jpMult').textContent = `${mult}× your bet`;
-      amount.textContent = '+0';
-      amount.classList.remove('pop');
-      jp.classList.remove('out');
-      jp.hidden = false;
-      jp.querySelectorAll('.jp-title span, .jp-flash, .jp-rays, .jp-eyebrow, .jp-mult, .jp-amount, .jp-hint').forEach(el => {
-        el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
-      });
-      cabinet.classList.remove('jackpot'); void cabinet.offsetWidth; cabinet.classList.add('jackpot');
-      sound.fanfare();
-      const stopFx = reduceMotion ? () => {} : jackpotFx(DUR - 1500);
-
-      // Count the payout up with a slowing ease, pinging as it climbs.
-      const COUNT_START = 1200, COUNT_LEN = reduceMotion ? 1 : 6000;
-      let lastPing = 0;
-      (function count(now) {
-        if (done) return;
-        const t = Math.max(0, Math.min(1, (now - t0 - COUNT_START) / COUNT_LEN));
-        const e = t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
-        amount.textContent = '+' + fmt(win * e) + ' credits';
-        if (t > 0 && t < 1 && now - lastPing > 85) { sound.ping(e); lastPing = now; }
-        if (t < 1) requestAnimationFrame(count);
-        else { amount.classList.add('pop'); sound.finale(); }
-      })(t0);
-
-      const finish = () => {
-        if (done) return;
-        done = true;
-        stopFx();
-        jp.classList.add('out');
-        setTimeout(() => {
-          jp.hidden = true;
-          cabinet.classList.remove('jackpot');
-          resolve();
-        }, 400);
-      };
-      jp.onclick = () => { if (performance.now() - t0 > 1500) finish(); };
-      setTimeout(finish, DUR);
-    });
-  }
-
-  function jackpotFx(duration) {
-    const cv = $('fx');
+  // ---------- Particles ----------
+  function makeFx(cv) {
     const ctx = cv.getContext('2d');
-    const dpr = devicePixelRatio || 1;
-    const W = innerWidth, H = innerHeight;
-    cv.width = W * dpr; cv.height = H * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     const G = 0.35;
-    const parts = [];
     const r = Math.random;
-    const SPARK_HUES = [42, 30, 8, 52, 0];
-    const CONFETTI = ['#e9a23b', '#fff2c4', '#c8323a', '#7fd18b', '#6b3f8f', '#f2c935'];
-    let stopped = false, lastBurst = 0, ringDone = false, finaleDone = false;
-    const t0 = performance.now();
-
-    const add = p => { if (parts.length < 1800) parts.push(p); };
-    const coin = (x, y, vx, vy) => add({ k: 'coin', x, y, vx, vy, r: 6 + r() * 8, s: r() * 6 });
-    const seven = (x, y, vx, vy) => add({ k: 'seven', x, y, vx, vy, rot: r() * 6, vr: (r() - 0.5) * 0.15, size: 28 + r() * 36 });
-    function burst(x, y, n, hue, speed = 6) {
-      for (let i = 0; i < n; i++) {
-        const a = r() * Math.PI * 2, sp = 1 + r() * speed;
-        add({ k: 'spark', x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, decay: 0.01 + r() * 0.012, color: `hsl(${hue + r() * 25}, 95%, ${60 + r() * 25}%)` });
-      }
-      sound.boom();
+    let parts = [], emitters = [], running = false, W = innerWidth, H = innerHeight;
+    function start() {
+      if (running) return;
+      running = true;
+      const dpr = devicePixelRatio || 1;
+      W = innerWidth; H = innerHeight;
+      cv.width = W * dpr; cv.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      requestAnimationFrame(tick);
     }
-
-    function frame(now) {
-      if (stopped) return;
-      const el = now - t0;
-      if (el < duration) {
-        // Coin fountains from the bottom corners and centre.
-        const vyBase = Math.sqrt(1.5 * G * H);
-        for (const fx of [0.12, 0.5, 0.88]) {
-          if (r() < 0.5) coin(W * fx, H + 10, (0.5 - fx) * 6 + (r() - 0.5) * 5, -vyBase * (0.65 + r() * 0.4));
+    const add = p => { if (reduceMotion) return; if (parts.length < 1800) parts.push(p); start(); };
+    const api = {
+      get W() { return W; }, get H() { return H; },
+      coin(x, y, vx, vy) { add({ k: 'coin', x, y, vx, vy, r: 6 + r() * 8, s: r() * 6 }); },
+      seven(x, y, vx, vy) { add({ k: 'seven', x, y, vx, vy, rot: r() * 6, vr: (r() - 0.5) * 0.15, size: 28 + r() * 36 }); },
+      confetti(colors) { add({ k: 'conf', x: r() * W, y: -10, vx: (r() - 0.5) * 2, vy: 1.5 + r() * 2.5, rot: r() * 6, vr: (r() - 0.5) * 0.3, color: colors[randInt(colors.length)] }); },
+      burst(x, y, n, hue, speed = 6, boom = true) {
+        for (let i = 0; i < n; i++) {
+          const a = r() * Math.PI * 2, sp = 1 + r() * speed;
+          add({ k: 'spark', x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, decay: 0.01 + r() * 0.012, color: `hsl(${hue + r() * 25}, 95%, ${60 + r() * 25}%)` });
         }
-        if (r() < 0.6) add({ k: 'conf', x: r() * W, y: -10, vx: (r() - 0.5) * 2, vy: 1.5 + r() * 2.5, rot: r() * 6, vr: (r() - 0.5) * 0.3, color: CONFETTI[randInt(CONFETTI.length)] });
-        if (r() < 0.05) seven(r() * W, -50, (r() - 0.5) * 1.5, 2 + r() * 2);
-        if (el - lastBurst > 600) {
-          lastBurst = el;
-          burst(W * (0.15 + r() * 0.7), H * (0.1 + r() * 0.4), 80, SPARK_HUES[randInt(SPARK_HUES.length)]);
+        if (boom && !reduceMotion) sound.boom();
+      },
+      coinBurst(x, y, n, speed = 9) {
+        for (let i = 0; i < n; i++) {
+          const a = -Math.PI / 2 + (r() - 0.5) * 2.4, sp = 3 + r() * speed;
+          api.coin(x, y, Math.cos(a) * sp, Math.sin(a) * sp);
         }
-        if (!ringDone && el > 4200) {
-          ringDone = true;
-          for (let i = 0; i < 18; i++) {
-            const a = (i / 18) * Math.PI * 2;
-            seven(W / 2, H * 0.45, Math.cos(a) * 9, Math.sin(a) * 9 - 3);
-          }
-          burst(W / 2, H * 0.45, 140, 42, 9);
-        }
-        if (!finaleDone && el > 7200) {
-          finaleDone = true;
-          burst(W / 2, H * 0.4, 260, 40, 12);
-          for (let i = 0; i < 90; i++) {
-            const a = r() * Math.PI * 2, sp = 4 + r() * 12;
-            coin(W / 2, H * 0.4, Math.cos(a) * sp, Math.sin(a) * sp - 4);
-          }
-        }
-      }
-
+      },
+      fountain(fx) {
+        const vy = Math.sqrt(1.5 * G * H);
+        api.coin(W * fx, H + 10, (0.5 - fx) * 6 + (r() - 0.5) * 5, -vy * (0.65 + r() * 0.4));
+      },
+      emit(fn) { if (reduceMotion) return; emitters.push({ fn, t0: performance.now() }); start(); },
+      clear() { parts = []; emitters = []; ctx.clearRect(0, 0, W, H); },
+    };
+    function tick(now) {
+      emitters = emitters.filter(e => e.fn(now - e.t0) !== false);
       ctx.clearRect(0, 0, W, H);
       for (let i = parts.length - 1; i >= 0; i--) {
         const p = parts[i];
@@ -853,18 +795,516 @@ details.paytable summary {
           ctx.fillStyle = '#e0414a'; ctx.fillText('7', 0, 0);
           ctx.restore();
         } else {
+          const h = 12 * Math.abs(Math.cos(p.rot * 2)) + 1;
           ctx.save();
           ctx.translate(p.x, p.y); ctx.rotate(p.rot);
           ctx.fillStyle = p.color;
-          ctx.fillRect(-4, -6 * Math.abs(Math.cos(p.rot * 2)), 8, 12 * Math.abs(Math.cos(p.rot * 2)) + 1);
+          ctx.fillRect(-4, -h / 2, 8, h);
           ctx.restore();
         }
       }
-      if (el < duration || (parts.length && el < duration + 4000)) requestAnimationFrame(frame);
-      else ctx.clearRect(0, 0, W, H);
+      if (parts.length || emitters.length) requestAnimationFrame(tick);
+      else { running = false; ctx.clearRect(0, 0, W, H); }
     }
-    requestAnimationFrame(frame);
-    return () => { stopped = true; ctx.clearRect(0, 0, W, H); };
+    return api;
+  }
+  const fxJp = makeFx($('fx'));
+  const fxTop = makeFx($('fxTop'));
+  const CONFETTI = ['#e9a23b', '#fff2c4', '#c8323a', '#7fd18b', '#a77bff', '#f2c935'];
+  const BONUS_CONFETTI = ['#a77bff', '#c9b2ff', '#fff2c4', '#7b4fd6'];
+
+  function windowCenter() {
+    const b = $('window').getBoundingClientRect();
+    return { x: b.left + b.width / 2, y: b.top + b.height / 2 };
+  }
+
+  // ---------- Feedback ----------
+  function floatText(text, kind = '') {
+    const el = document.createElement('div');
+    el.className = 'float ' + kind;
+    el.textContent = text;
+    $('window').append(el);
+    setTimeout(() => el.remove(), 1400);
+  }
+
+  function toast(title, body) {
+    const el = document.createElement('div');
+    el.className = 'toast';
+    el.innerHTML = '<strong></strong><span></span>';
+    el.firstChild.textContent = title;
+    el.lastChild.textContent = body;
+    const box = $('toasts');
+    while (box.children.length >= 3) box.firstChild.remove();
+    box.append(el);
+    setTimeout(() => el.classList.add('out'), 3400);
+    setTimeout(() => el.remove(), 3900);
+  }
+
+  function banner(title, kind, ms, countTo, sub = '') {
+    return new Promise(resolve => {
+      const el = $('tier');
+      el.className = 'tier ' + kind;
+      $('tierTitle').textContent = title;
+      $('tierSub').textContent = sub;
+      el.hidden = false;
+      el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
+      const t0 = performance.now();
+      let done = false, lastPing = 0;
+      if (countTo != null) (function count(now) {
+        if (done) return;
+        const t = reduceMotion ? 1 : Math.min(1, (now - t0) / (ms * 0.6));
+        const e = 1 - Math.pow(1 - t, 3);
+        $('tierSub').textContent = '+' + fmt(countTo * e) + ' credits';
+        if (t < 1 && now - lastPing > 90) { sound.ping(e); lastPing = now; }
+        if (t < 1) requestAnimationFrame(count);
+      })(t0);
+      const finish = () => { if (done) return; done = true; el.hidden = true; resolve(); };
+      el.onclick = finish;
+      setTimeout(finish, reduceMotion ? Math.min(ms, 1500) : ms);
+    });
+  }
+
+  async function celebrateTier(win, ratio) {
+    const { x, y } = windowCenter();
+    if (ratio >= 75) {
+      sound.bigWin();
+      let last = 0;
+      fxTop.emit(el => {
+        if (el > 3200) return false;
+        for (const f of [0.15, 0.5, 0.85]) if (Math.random() < 0.35) fxTop.fountain(f);
+        if (Math.random() < 0.5) fxTop.confetti(CONFETTI);
+        if (el - last > 450) { last = el; fxTop.burst(fxTop.W * (0.2 + Math.random() * 0.6), fxTop.H * (0.15 + Math.random() * 0.35), 70, randInt(360)); }
+      });
+      await banner('MEGA WIN', 'mega', 3800, win);
+    } else if (ratio >= 25) {
+      sound.bigWin();
+      let last = 0;
+      fxTop.emit(el => {
+        if (el > 2200) return false;
+        if (Math.random() < 0.4) fxTop.fountain(0.5);
+        if (el - last > 700) { last = el; fxTop.burst(x + (Math.random() - 0.5) * 200, y - 60, 60, 40); }
+      });
+      await banner('BIG WIN', 'big', 2800, win);
+    } else if (ratio >= 10) {
+      sound.bigWin();
+      fxTop.coinBurst(x, y, 40, 11);
+      fxTop.burst(x, y, 50, 120, 6, false);
+      await banner('NICE WIN', 'nice', 1700, win);
+    } else {
+      sound.win();
+      fxTop.coinBurst(x, y, Math.min(24, 6 + Math.round(ratio * 4)), 7);
+    }
+  }
+
+  // ---------- Reels ----------
+  function animateReel(i, target, duration) {
+    return new Promise(resolve => {
+      const el = strips[i];
+      const startY = -((STRIP.length + pos[i]) * CELL - CELL / 2);
+      const endY = -(((LOOPS - 1) * STRIP.length + target) * CELL - CELL / 2);
+      const done = () => { place(i, target); sound.clunk(); resolve(); };
+      if (reduceMotion) return done();
+      const t0 = performance.now();
+      const ease = t => 1 - Math.pow(1 - t, 3) + Math.sin(t * Math.PI) * 0.02;
+      (function frame(now) {
+        const t = Math.min(1, (now - t0) / duration);
+        el.style.transform = `translateY(${startY + (endY - startY) * ease(t)}px)`;
+        if (t < 1) requestAnimationFrame(frame); else done();
+      })(t0);
+    });
+  }
+
+  function say(text, kind = '') {
+    $('message').textContent = text;
+    $('message').className = 'message ' + kind;
+  }
+
+  function gainXp(n) {
+    state.xp += n;
+    while (state.xp >= xpNeed(state.level)) {
+      state.xp -= xpNeed(state.level);
+      state.level++;
+      pendingLevels.push(state.level);
+    }
+  }
+
+  async function spin(free = false) {
+    const bet = free ? state.freeBet : state.bet;
+    const cost = free ? 0 : spinCost();
+    if (state.credits < cost) return null;
+    const { double, magnet } = free ? { double: false, magnet: false } : state.boost;
+    state.credits -= cost;
+    state.spins++;
+    if (!free) state.boost = { double: false, magnet: false };
+    reels.forEach(r => r.classList.remove('win', 'star'));
+    say(free ? `Free spin ${freeDone} · wins ×${FREE_MULT}` : 'Spinning…', free ? 'bonus' : '');
+    render();
+
+    let targets;
+    if (rigged || magnet) {
+      const sym = rigged ? 'seven' : SYMS[randInt(SYMS.length)];
+      targets = [0, 1, 2].map(() => STRIP.indexOf(sym));
+    } else {
+      targets = [0, 1, 2].map(() => randInt(STRIP.length));
+    }
+    rigged = false;
+    cabinet.classList.remove('armed');
+
+    const tease = STRIP[targets[0]] === 'seven' && STRIP[targets[1]] === 'seven';
+    const durations = free ? [700, 1000, tease ? 3200 : 1300] : [1100, 1550, tease ? 4200 : 2000];
+    const stops = targets.map((t, i) => animateReel(i, t, reduceMotion ? 0 : durations[i]));
+    stops.forEach((p, i) => p.then(() => {
+      if (STRIP[targets[i]] === 'star') { reels[i].classList.add('star'); sound.star(); }
+    }));
+    if (tease) stops[1].then(() => {
+      cabinet.classList.add('tease');
+      say('Two sevens… come on!', 'hot');
+      for (let k = 0; k < 14; k++) setTimeout(() => sound.tease(), k * 180);
+    });
+    await Promise.all(stops);
+    cabinet.classList.remove('tease');
+    pos = targets;
+
+    const syms = targets.map(t => STRIP[t]);
+    const three = syms[0] === syms[1] && syms[1] === syms[2];
+    const base = payout(...syms);
+    const sMult = base ? streakMult() : 1;
+    const mult = base * (double ? 2 : 1) * (free ? FREE_MULT : 1) * sMult;
+    const win = Math.min(MAX, Math.floor(mult * bet));
+    const ratio = win / bet;
+    const refund = !base && state.owned.piggy ? Math.floor(bet * 0.1) : 0;
+    state.credits = Math.min(MAX, state.credits + win + refund);
+    state.lastWin = win;
+    state.best = Math.max(state.best, win);
+    if (free) state.freeTotal += win;
+    state.streak = base ? state.streak + 1 : 0;
+
+    const starCount = syms.filter(s => s === 'star').length;
+    let triggered = false;
+    if (starCount) {
+      state.stars += starCount;
+      floatText(`+${starCount} ★`, 'star');
+      if (state.stars >= STAR_GOAL) {
+        state.stars -= STAR_GOAL;
+        if (!state.freeSpins && !inBonus) state.freeBet = bet;
+        state.freeSpins += FREE_SPINS;
+        triggered = true;
+      }
+    }
+    gainXp(10 + Math.floor(Math.log10(bet) * 8) + (base ? 8 : 0) + (three ? 30 : 0));
+
+    const extras = [];
+    if (base && sMult > 1) extras.push(`streak ×${sMult.toFixed(2)}`);
+    if (double && base) extras.push('doubled');
+    if (free && base) extras.push(`bonus ×${FREE_MULT}`);
+    const tail = extras.length ? ` (${extras.join(', ')})` : '';
+    const jackpot = three && syms[0] === 'seven';
+    let result = win ? 'win' : 'lose';
+
+    if (three) {
+      reels.forEach(r => r.classList.add('win'));
+      say(`Three ${NAMES[syms[0]]}! +${fmt(win)}${tail}`, 'win');
+    } else if (win) {
+      syms.forEach((s, i) => s === 'cherry' && reels[i].classList.add('win'));
+      say(`Cherries pay ${fmt(win)}${tail}`, 'win');
+    } else if (state.credits < 1 && !state.freeSpins) {
+      say('Out of credits. Start over to play again.', 'lose');
+    } else if (starCount) {
+      say(`No win, but +${starCount} bonus star${starCount > 1 ? 's' : ''}.`, 'bonus');
+    } else {
+      say(refund ? `No win. Piggy Bank returns ${fmt(refund)}.` : 'No win. Try again.', 'lose');
+    }
+    if (win) floatText('+' + fmt(win));
+    render();
+
+    if (jackpot) {
+      result = 'jackpot';
+      await celebrate(win, Math.round(mult * 100) / 100);
+    } else if (win) {
+      await celebrateTier(win, ratio);
+    }
+    if (triggered) {
+      sound.levelUp();
+      for (let k = 0; k < 40; k++) fxTop.confetti(BONUS_CONFETTI);
+      await banner('FREE SPINS', 'bonus', 2600, null, `${FREE_SPINS} spins · every win ×${FREE_MULT}`);
+    }
+    checkAch({ win, three, ratio, jackpot, triggered, bet });
+    render();
+    return result;
+  }
+
+  async function runBonus() {
+    inBonus = true;
+    freeDone = 0;
+    state.freeTotal = 0;
+    cabinet.classList.add('bonus');
+    render();
+    while (state.freeSpins > 0) {
+      state.freeSpins--;
+      freeDone++;
+      await spin(true);
+      while (pendingLevels.length) await prizeWheel(pendingLevels.shift());
+      await sleep(350);
+    }
+    sound.bigWin();
+    await banner('BONUS OVER', 'bonus', 3000, state.freeTotal);
+    inBonus = false;
+    cabinet.classList.remove('bonus');
+    say(`Free spins paid ${fmt(state.freeTotal)} in total.`, 'bonus');
+    render();
+  }
+
+  async function play() {
+    if (busy) return null;
+    busy = true;
+    render();
+    let result;
+    if (state.freeSpins > 0) {
+      await runBonus();
+      result = 'bonus';
+    } else {
+      result = await spin(false);
+      if (result) {
+        while (pendingLevels.length) await prizeWheel(pendingLevels.shift());
+        if (state.freeSpins > 0) await runBonus();
+      }
+    }
+    busy = false;
+    render();
+    return result;
+  }
+
+  async function autoSpin() {
+    if (autoLeft) { autoLeft = 0; render(); return; }
+    autoLeft = 10;
+    render();
+    while (autoLeft > 0 && (state.freeSpins > 0 || state.credits >= spinCost())) {
+      autoLeft--;
+      const r = await play();
+      if (r === 'jackpot' || r === null) break;
+      await sleep(300);
+    }
+    autoLeft = 0;
+    render();
+  }
+
+  // ---------- Prize wheel ----------
+  const WHEEL_COLORS = ['#c8323a', '#2a1d18', '#e9a23b', '#4a2f24'];
+  function drawWheel(prizes, rot) {
+    const cv = $('wheel');
+    const ctx = cv.getContext('2d');
+    const S = cv.width, c = S / 2, R = c - 10;
+    const seg = (Math.PI * 2) / prizes.length;
+    ctx.clearRect(0, 0, S, S);
+    prizes.forEach((p, i) => {
+      const a0 = -Math.PI / 2 + rot + i * seg;
+      ctx.beginPath();
+      ctx.moveTo(c, c);
+      ctx.arc(c, c, R, a0, a0 + seg);
+      ctx.closePath();
+      ctx.fillStyle = p.free ? '#7b4fd6' : WHEEL_COLORS[i % WHEEL_COLORS.length];
+      ctx.fill();
+      ctx.strokeStyle = '#d9cbb8';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+      ctx.save();
+      ctx.translate(c, c);
+      ctx.rotate(a0 + seg / 2);
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = !p.free && i % 4 === 2 ? '#1d1714' : '#efe4d4';
+      ctx.font = `${p.free ? 26 : 34}px Bungee, Impact, sans-serif`;
+      ctx.fillText(p.short, R - 22, 0);
+      ctx.restore();
+    });
+    ctx.beginPath();
+    ctx.arc(c, c, R, 0, Math.PI * 2);
+    ctx.lineWidth = 10;
+    ctx.strokeStyle = '#e9a23b';
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(c, c, 44, 0, Math.PI * 2);
+    ctx.fillStyle = '#e9a23b';
+    ctx.fill();
+    ctx.fillStyle = '#1d1714';
+    ctx.font = '40px Bungee, Impact, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('7', c, c + 2);
+  }
+
+  function prizeWheel(level) {
+    return new Promise(resolve => {
+      const modal = $('wheelModal'), btn = $('wheelBtn'), res = $('wheelResult');
+      const base = 100 * level;
+      const compact = n => new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(n);
+      const prizes = WHEEL.map(f => f === 'free'
+        ? { free: 5, short: '5 FREE' }
+        : { credits: f * base, short: compact(f * base) });
+      let rot = 0, phase = 'ready';
+      $('wheelTitle').textContent = `Level ${level}!`;
+      res.textContent = 'Spin for your level reward.';
+      btn.textContent = 'Spin the wheel';
+      btn.disabled = false;
+      drawWheel(prizes, rot);
+      modal.hidden = false;
+      btn.focus();
+      sound.levelUp();
+      for (let k = 0; k < 50; k++) fxTop.confetti(CONFETTI);
+
+      btn.onclick = () => {
+        if (phase === 'done') { modal.hidden = true; resolve(); return; }
+        if (phase !== 'ready') return;
+        phase = 'spinning';
+        btn.disabled = true;
+        const idx = randInt(prizes.length);
+        const seg = (Math.PI * 2) / prizes.length;
+        const end = Math.PI * 2 * 6 + (Math.PI * 2 - (idx + 0.5) * seg);
+        const D = reduceMotion ? 0 : 4800;
+        const t0 = performance.now();
+        let lastSeg = 0;
+        (function turn(now) {
+          const t = D ? Math.min(1, (now - t0) / D) : 1;
+          rot = end * (1 - Math.pow(1 - t, 4));
+          drawWheel(prizes, rot);
+          const s = Math.floor(rot / seg);
+          if (s !== lastSeg) { lastSeg = s; sound.tick(); }
+          if (t < 1) requestAnimationFrame(turn); else land(prizes[idx]);
+        })(t0);
+      };
+
+      function land(p) {
+        if (p.free) {
+          if (!state.freeSpins && !inBonus) state.freeBet = state.bet;
+          state.freeSpins += p.free;
+          res.textContent = '5 free spins at your current bet!';
+        } else {
+          state.credits = Math.min(MAX, state.credits + p.credits);
+          res.textContent = `You won ${fmt(p.credits)} credits!`;
+        }
+        sound.bigWin();
+        const b = $('wheel').getBoundingClientRect();
+        fxTop.coinBurst(b.left + b.width / 2, b.top + b.height / 2, 50, 12);
+        fxTop.burst(b.left + b.width / 2, b.top + b.height / 2, 80, 42);
+        phase = 'done';
+        btn.disabled = false;
+        btn.textContent = 'Collect';
+        btn.focus();
+        checkAch();
+        render();
+      }
+    });
+  }
+
+  // ---------- Jackpot show ----------
+  const title = document.querySelector('.jp-title');
+  title.innerHTML = [...'JACKPOT!'].map((ch, i) => `<span style="--i:${i}" aria-hidden="true">${ch}</span>`).join('');
+
+  function celebrate(win, mult) {
+    return new Promise(resolve => {
+      const jp = $('jp');
+      const amount = $('jpAmount');
+      const DUR = reduceMotion ? 3500 : 11500;
+      const t0 = performance.now();
+      let done = false;
+
+      $('jpMult').textContent = `${mult}× your bet`;
+      amount.textContent = '+0';
+      amount.classList.remove('pop');
+      jp.classList.remove('out');
+      jp.hidden = false;
+      jp.querySelectorAll('.jp-title span, .jp-flash, .jp-rays, .jp-eyebrow, .jp-mult, .jp-amount, .jp-hint').forEach(el => {
+        el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
+      });
+      cabinet.classList.remove('jackpot'); void cabinet.offsetWidth; cabinet.classList.add('jackpot');
+      sound.fanfare();
+
+      const r = Math.random;
+      const SPARK_HUES = [42, 30, 8, 52, 0];
+      let lastBurst = 0, ringDone = false, finaleDone = false;
+      fxJp.emit(el => {
+        if (done || el > DUR - 1500) return false;
+        const W = fxJp.W, H = fxJp.H;
+        for (const f of [0.12, 0.5, 0.88]) if (r() < 0.5) fxJp.fountain(f);
+        if (r() < 0.6) fxJp.confetti(CONFETTI);
+        if (r() < 0.05) fxJp.seven(r() * W, -50, (r() - 0.5) * 1.5, 2 + r() * 2);
+        if (el - lastBurst > 600) {
+          lastBurst = el;
+          fxJp.burst(W * (0.15 + r() * 0.7), H * (0.1 + r() * 0.4), 80, SPARK_HUES[randInt(SPARK_HUES.length)]);
+        }
+        if (!ringDone && el > 4200) {
+          ringDone = true;
+          for (let i = 0; i < 18; i++) {
+            const a = (i / 18) * Math.PI * 2;
+            fxJp.seven(W / 2, H * 0.45, Math.cos(a) * 9, Math.sin(a) * 9 - 3);
+          }
+          fxJp.burst(W / 2, H * 0.45, 140, 42, 9);
+        }
+        if (!finaleDone && el > 7200) {
+          finaleDone = true;
+          fxJp.burst(W / 2, H * 0.4, 260, 40, 12);
+          for (let i = 0; i < 90; i++) {
+            const a = r() * Math.PI * 2, sp = 4 + r() * 12;
+            fxJp.coin(W / 2, H * 0.4, Math.cos(a) * sp, Math.sin(a) * sp - 4);
+          }
+        }
+      });
+
+      // Count the payout up with a slowing ease, pinging as it climbs.
+      const COUNT_START = 1200, COUNT_LEN = reduceMotion ? 1 : 6000;
+      let lastPing = 0;
+      (function count(now) {
+        if (done) return;
+        const t = Math.max(0, Math.min(1, (now - t0 - COUNT_START) / COUNT_LEN));
+        const e = t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+        amount.textContent = '+' + fmt(win * e) + ' credits';
+        if (t > 0 && t < 1 && now - lastPing > 85) { sound.ping(e); lastPing = now; }
+        if (t < 1) requestAnimationFrame(count);
+        else { amount.classList.add('pop'); sound.finale(); }
+      })(t0);
+
+      const finish = () => {
+        if (done) return;
+        done = true;
+        fxJp.clear();
+        jp.classList.add('out');
+        setTimeout(() => {
+          jp.hidden = true;
+          cabinet.classList.remove('jackpot');
+          resolve();
+        }, 400);
+      };
+      jp.onclick = () => { if (performance.now() - t0 > 1500) finish(); };
+      setTimeout(finish, DUR);
+    });
+  }
+
+  // ---------- Achievements ----------
+  $('achList').innerHTML = ACH.map(a =>
+    `<li id="ach-${a.id}"><span class="mark">●</span><span><b>${a.name}</b> · ${a.desc}</span><span class="rw">+${fmt(a.reward)}</span></li>`).join('');
+
+  function renderAch() {
+    let n = 0;
+    for (const a of ACH) {
+      const done = !!state.ach[a.id];
+      n += done;
+      const li = $('ach-' + a.id);
+      li.classList.toggle('done', done);
+      li.firstChild.textContent = done ? '✓' : '○';
+    }
+    $('achCount').textContent = `${n} / ${ACH.length}`;
+  }
+
+  function checkAch(ctx) {
+    let delay = 0;
+    for (const a of ACH) {
+      if (state.ach[a.id] || !a.test(ctx)) continue;
+      state.ach[a.id] = true;
+      state.credits = Math.min(MAX, state.credits + a.reward);
+      setTimeout(() => { toast('Achievement unlocked', `${a.name} · +${fmt(a.reward)} credits`); sound.chime(); }, delay);
+      delay += 450;
+    }
+    renderAch();
   }
 
   // ---------- Shop ----------
@@ -881,7 +1321,7 @@ details.paytable summary {
   });
 
   function buy(g) {
-    if (spinning) return;
+    if (busy) return;
     if (g.kind === 'boost') {
       state.boost[g.id] = !state.boost[g.id];
       render();
@@ -898,9 +1338,12 @@ details.paytable summary {
     }
     state.credits -= price;
     if (g.id === 'horseshoe') buildReels();
-    say(`${g.name} bought.`, 'win');
-    sound.win();
+    toast('Goodie bought', g.name);
+    sound.chime();
+    const b = goodieEls[g.id].btn.getBoundingClientRect();
+    fxTop.burst(b.left + b.width / 2, b.top + b.height / 2, 40, 42, 5, false);
     renderPaytable();
+    checkAch();
     render();
   }
 
@@ -911,18 +1354,18 @@ details.paytable summary {
         const on = state.boost[g.id];
         btn.textContent = on ? 'Armed ✓' : 'Arm';
         btn.classList.toggle('armed', on);
-        btn.disabled = spinning;
+        btn.disabled = busy;
         status.textContent = on ? `Ready · +${fmt(state.bet * g.cost)} on next spin` : '';
       } else if (g.kind === 'level') {
         const lv = state.owned[g.id];
         const maxed = lv >= g.max;
         btn.textContent = maxed ? 'Maxed' : `Buy · ${fmt(g.price())}`;
-        btn.disabled = maxed || spinning || state.credits < g.price();
+        btn.disabled = maxed || busy || state.credits < g.price();
         status.textContent = `Level ${lv} of ${g.max}`;
       } else {
         const owned = state.owned[g.id];
         btn.textContent = owned ? 'Owned' : `Buy · ${fmt(g.price())}`;
-        btn.disabled = owned || spinning || state.credits < g.price();
+        btn.disabled = owned || busy || state.credits < g.price();
         status.textContent = owned ? 'Active' : '';
       }
     }
@@ -930,37 +1373,73 @@ details.paytable summary {
 
   function renderPaytable() {
     const row = (icons, note, m) => `<tr><td><span class="combo">${icons}${note ? `<span class="any">${note}</span>` : ''}</span></td><td>${m}×</td></tr>`;
-    const rows = SYMS.slice().reverse().map(s => row(ICONS[s].repeat(3), '', payout(s, s, s)));
+    const rows = Object.keys(PAY3).map(s => row(ICONS[s].repeat(3), '', payout(s, s, s)));
     rows.push(row(ICONS.cherry.repeat(2), 'any two', payout('cherry', 'cherry', 'lemon')));
     rows.push(row(ICONS.cherry, 'on reel one', payout('cherry', 'lemon', 'lemon')));
     $('payRows').innerHTML = rows.join('');
     const rtp = computeRtp() * 100;
     $('shopRate').textContent = rtp.toFixed(1) + '%';
-    $('rtp').textContent = `Wins are multiples of your bet. Each reel has ${STRIP.length} stops. With your goodies this machine returns ${rtp.toFixed(1)}% of bets over the long run` +
-      (rtp > 100 ? ', so the odds are now on your side.' : ', so the house still keeps a little.');
+    $('rtp').textContent =
+      `Wins are multiples of your bet. Every star on the payline fills the bonus meter; ${STAR_GOAL} stars start ${FREE_SPINS} free spins where every win pays ×${FREE_MULT}. ` +
+      `Each win in a row adds ×${STREAK_STEP} to the next win, up to ×${1 + STREAK_STEP * STREAK_MAX}; a losing spin resets it. Levels come from XP and each one spins the prize wheel. ` +
+      `Each reel has ${STRIP.length} stops. Before streaks, free spins and rewards, this table returns ${rtp.toFixed(1)}% of bets over the long run.`;
   }
 
   // ---------- Render ----------
+  const starPips = $('starPips'), streakPips = $('streakPips');
+  starPips.innerHTML = '<span class="pip"></span>'.repeat(STAR_GOAL);
+  streakPips.innerHTML = '<span class="pip"></span>'.repeat(STREAK_MAX);
+
+  let shownCredits = state.credits, tweening = false;
+  function tweenCredits() {
+    if (tweening) return;
+    tweening = true;
+    (function step() {
+      const target = state.credits, d = target - shownCredits;
+      if (reduceMotion || d < 0 || Math.abs(d) < 1) shownCredits = target;
+      else shownCredits += d * 0.12 + 1;
+      if (shownCredits > target) shownCredits = target;
+      $('credits').textContent = fmt(shownCredits);
+      if (shownCredits !== target) requestAnimationFrame(step); else tweening = false;
+    })();
+  }
+
   function render() {
-    const busy = spinning || autoLeft > 0;
     const cost = spinCost();
-    $('credits').textContent = fmt(state.credits);
+    const free = state.freeSpins > 0;
+    tweenCredits();
     $('lastWin').textContent = fmt(state.lastWin);
     $('stats').textContent = `Spins: ${state.spins.toLocaleString('en')} · Biggest win: ${fmt(state.best)}`;
     if (document.activeElement !== $('betInput')) $('betInput').value = state.bet;
     ['betHalf', 'betDouble', 'betMax', 'betInput', 'refill'].forEach(id => ($(id).disabled = busy));
+
     const spinBtn = $('spin');
-    spinBtn.disabled = busy || state.credits < cost;
-    spinBtn.innerHTML = cost !== state.bet ? `Spin<small>costs ${fmt(cost)}</small>` : 'Spin';
-    if (!busy && state.credits < cost && state.credits >= 1) say(`Not enough credits for this spin (${fmt(cost)}). Lower your bet.`, 'lose');
+    spinBtn.disabled = busy || (!free && state.credits < cost);
+    spinBtn.classList.toggle('free', free || inBonus);
+    spinBtn.innerHTML = free && !inBonus ? `Free spins<small>${state.freeSpins} waiting</small>`
+      : inBonus ? `Bonus<small>${state.freeSpins} left</small>`
+      : cost !== state.bet ? `Spin<small>costs ${fmt(cost)}</small>` : 'Spin';
+    if (!busy && !free && state.credits < cost && state.credits >= 1) say(`Not enough credits for this spin (${fmt(cost)}). Lower your bet.`, 'lose');
+
     const auto = $('auto');
     auto.hidden = !state.owned.autospin;
     auto.textContent = autoLeft ? `Stop (${autoLeft})` : 'Auto ×10';
     auto.classList.toggle('running', autoLeft > 0);
-    auto.disabled = !autoLeft && (spinning || state.credits < cost);
+    auto.disabled = !autoLeft && (busy || (!free && state.credits < cost));
     cabinet.classList.toggle('gold', state.owned.gold);
-    $('boosts').innerHTML = GOODIES.filter(g => g.kind === 'boost' && state.boost[g.id])
-      .map(g => `<span class="boost-chip">${g.name} armed</span>`).join('');
+
+    const need = xpNeed(state.level);
+    $('lvl').textContent = state.level;
+    $('xpFill').style.width = Math.min(100, (state.xp / need) * 100) + '%';
+    $('xpVal').textContent = `${fmt(state.xp)} / ${fmt(need)} XP`;
+    [...starPips.children].forEach((p, i) => p.classList.toggle('on', i < state.stars));
+    $('starVal').textContent = `${state.stars} / ${STAR_GOAL}`;
+    [...streakPips.children].forEach((p, i) => p.classList.toggle('on', i < state.streak));
+    $('streakVal').textContent = `×${streakMult().toFixed(2)}`;
+
+    const chips = GOODIES.filter(g => g.kind === 'boost' && state.boost[g.id]).map(g => `<span class="boost-chip">${g.name} armed</span>`);
+    if (inBonus) chips.unshift(`<span class="boost-chip bonus">Free spin ${freeDone} · bonus +${fmt(state.freeTotal)}</span>`);
+    $('boosts').innerHTML = chips.join('');
     $('sound').textContent = `Sound: ${state.sound ? 'on' : 'off'}`;
     renderShop();
     store.set(state);
@@ -968,7 +1447,7 @@ details.paytable summary {
 
   // ---------- Controls ----------
   const setBet = v => { state.bet = Math.max(1, Math.min(MAX, Math.floor(v) || 1)); render(); };
-  $('spin').addEventListener('click', spin);
+  $('spin').addEventListener('click', play);
   $('auto').addEventListener('click', autoSpin);
   $('betHalf').addEventListener('click', () => setBet(state.bet / 2));
   $('betDouble').addEventListener('click', () => setBet(state.bet * 2));
@@ -980,14 +1459,16 @@ details.paytable summary {
   $('betInput').addEventListener('change', () => { $('betInput').value = state.bet; });
   $('sound').addEventListener('click', () => { state.sound = !state.sound; render(); });
   $('refill').addEventListener('click', () => {
-    if (spinning) return;
+    if (busy) return;
     Object.assign(state, fresh(), { sound: state.sound });
     rigged = false;
+    pendingLevels.length = 0;
     cabinet.classList.remove('armed');
-    reels.forEach(r => r.classList.remove('win'));
+    reels.forEach(r => r.classList.remove('win', 'star'));
     buildReels();
     renderPaytable();
-    say('Fresh start: 500 credits, no goodies.');
+    renderAch();
+    say('Fresh start: 500 credits, level 1, no goodies.');
     render();
   });
   document.addEventListener('keydown', e => {
@@ -999,11 +1480,12 @@ details.paytable summary {
     }
   });
   document.addEventListener('keydown', e => {
-    if (e.code === 'Space' && !['BUTTON', 'SUMMARY', 'INPUT'].includes(e.target.tagName)) { e.preventDefault(); spin(); }
+    if (e.code === 'Space' && !['BUTTON', 'SUMMARY', 'INPUT'].includes(e.target.tagName) && $('wheelModal').hidden) { e.preventDefault(); play(); }
   });
 
   buildReels();
   renderPaytable();
+  renderAch();
   window.claude?.hot?.snapshot?.(() => state);
   render();
 })();
