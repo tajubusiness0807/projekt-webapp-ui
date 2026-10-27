@@ -448,7 +448,11 @@ class VehicleService:
 
     def _current_input(self, now: float) -> DriverInput:
         owner = self.sessions.owner()
-        if not self.safety.armed or owner is None or owner.input_received_at is None:
+        if not self.safety.armed:
+            # Gesperrt: eine alte Veraltet-Warnung ist gegenstandslos (Neutral gilt ohnehin).
+            self.safety.set_condition(FaultCode.COMMAND_STALE, "fahranforderung", False)
+            return DriverInput.neutral()
+        if owner is None or owner.input_received_at is None:
             return DriverInput.neutral()
         age = now - owner.input_received_at
         if age > self.settings.safety.command_timeout_ms / 1000:

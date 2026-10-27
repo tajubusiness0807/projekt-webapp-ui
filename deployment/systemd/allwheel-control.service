@@ -1,0 +1,59 @@
+# systemd-Dienst für AllWheel Control
+# Installation: deployment/scripts/install.sh  (kopiert nach /etc/systemd/system/)
+#
+# Startverhalten: Der Dienst startet beim Booten, die Motoren bleiben aber IMMER gesperrt,
+# bis ein angemeldeter Fahrer sie bewusst freigibt.
+# Watchdog: Das Backend meldet sich aus der Regelschleife (sd_notify). Hängt es länger als
+# WatchdogSec, beendet systemd den Prozess und startet ihn neu – wieder gesperrt.
+
+[Unit]
+Description=AllWheel Control – Fahrzeugsteuerung (Web-App)
+Documentation=file:///opt/allwheel-control/docs/installation.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+NotifyAccess=main
+User=allwheel
+Group=allwheel
+SupplementaryGroups=dialout
+WorkingDirectory=/opt/allwheel-control/backend
+EnvironmentFile=/etc/allwheel-control/allwheel.env
+Environment=AWC_DATA_DIR=/var/lib/allwheel-control
+Environment=AWC_FRONTEND_DIST=/opt/allwheel-control/frontend/dist
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/opt/allwheel-control/venv/bin/python -m app
+Restart=on-failure
+RestartSec=2
+WatchdogSec=5
+TimeoutStartSec=30
+TimeoutStopSec=10
+
+# Ressourcen (Raspberry Pi 3B: 1 GB RAM, 4 Kerne)
+MemoryMax=300M
+CPUWeight=200
+Nice=-5
+
+# Härtung
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+StateDirectory=allwheel-control
+StateDirectoryMode=0750
+ReadWritePaths=/var/lib/allwheel-control
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+RestrictSUIDSGID=yes
+RestrictRealtime=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+# Hinweis: Für die WLAN-Signalstärke im Access-Point-Modus nutzt das Backend "iw". Falls dort
+# „nicht verfügbar“ angezeigt wird, kann optional AmbientCapabilities=CAP_NET_ADMIN gesetzt werden.
+
+[Install]
+WantedBy=multi-user.target

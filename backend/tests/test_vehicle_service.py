@@ -88,6 +88,17 @@ async def test_dead_man_command_timeout_sets_neutral_latch(harness: Harness) -> 
     assert FaultCode.COMMAND_STALE.value not in harness.fault_codes()
 
 
+async def test_stale_warning_cleared_after_disarm(harness: Harness) -> None:
+    s = await armed(harness)
+    harness.run(0.5, session=s, throttle=1.0)
+    harness.tick(0.04, steps=10)
+    assert FaultCode.COMMAND_STALE.value in harness.fault_codes()
+    harness.send_sync(s, "drive", throttle=1.0)
+    await harness.send(s, "disarm")
+    harness.tick()
+    assert FaultCode.COMMAND_STALE.value not in harness.fault_codes()
+
+
 async def test_connection_loss_disarms_and_requires_acknowledge(harness: Harness) -> None:
     s = await armed(harness)
     harness.run(1.0, session=s, throttle=1.0)

@@ -58,6 +58,12 @@ function screenAngle(): number {
   return typeof legacy === 'number' ? legacy : 0;
 }
 
+/** Setzt alle aus der Neigung stammenden Anforderungen zurück (auch Neigungs-Gas bei gehaltenem Pedal). */
+function releaseTiltInputs(): void {
+  releaseInput('steer');
+  if (useVehicle.getState().settings?.tilt.pitch_function === 'throttle') releaseInput('throttle');
+}
+
 function onMotion(event: DeviceMotionEvent): void {
   const state = useTilt.getState();
   if (!state.active) return;
@@ -71,7 +77,7 @@ function onMotion(event: DeviceMotionEvent): void {
   filter.smoothing = settings.smoothing;
   if (!angles.valid) {
     filter.reset();
-    releaseInput('steer');
+    releaseTiltInputs();
     if (state.valid) useTilt.setState({ valid: false, steer: 0 });
     return;
   }
@@ -133,7 +139,7 @@ export async function startTilt(): Promise<void> {
   window.clearInterval(watchdog);
   watchdog = window.setInterval(() => {
     if (performance.now() - lastEventAt > SENSOR_TIMEOUT_MS) {
-      releaseInput('steer');
+      releaseTiltInputs();
       if (useTilt.getState().valid) useTilt.setState({ valid: false, steer: 0 });
     }
   }, 100);

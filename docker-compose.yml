@@ -1,0 +1,25 @@
+# Optional: Start per Docker (Entwicklung oder Pi mit Docker).
+#   docker compose up --build
+# Für Hardware: serielle Geräte unter "devices" freigeben und AWC_HARDWARE_ENABLED=1 setzen –
+# erst nach Abschluss der Checkliste in docs/hardware.md.
+services:
+  allwheel:
+    build: .
+    image: allwheel-control:1.0.0
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      AWC_DATA_DIR: /data
+    volumes:
+      - allwheel-data:/data
+    # devices:
+    #   - /dev/ttyUSB0:/dev/ttyUSB0
+    #   - /dev/ttyUSB1:/dev/ttyUSB1
+    # group_add:
+    #   - dialout
+volumes:
+  allwheel-data:

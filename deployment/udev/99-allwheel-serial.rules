@@ -1,0 +1,8 @@
+# Feste Gerätenamen für zwei USB-UART-Adapter (3,3-V-Pegel!).
+# Seriennummern ermitteln:  udevadm info -a -n /dev/ttyUSB0 | grep -m1 '{serial}'
+# Datei nach /etc/udev/rules.d/ kopieren, dann: sudo udevadm control --reload && sudo udevadm trigger
+# Anschließend in den Einstellungen als Schnittstelle /dev/allwheel-front bzw. /dev/allwheel-rear eintragen.
+#
+# Beispiel – SERIENNUMMERN ERSETZEN:
+#SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="SERIENNUMMER_VORNE", SYMLINK+="allwheel-front", GROUP="dialout", MODE="0660"
+#SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="SERIENNUMMER_HINTEN", SYMLINK+="allwheel-rear", GROUP="dialout", MODE="0660"

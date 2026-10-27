@@ -1,0 +1,4 @@
+# Nur Bullseye: an /etc/dhcpcd.conf anhängen – feste Adresse für den Access Point.
+interface wlan0
+    static ip_address=192.168.4.1/24
+    nohook wpa_supplicant
