@@ -1,0 +1,8 @@
+# Laufzeitabhängigkeiten (getestet mit Python 3.11 = Raspberry Pi OS Bookworm)
+# Für alle Pakete gibt es Wheels für armv7l (32 Bit) und aarch64 (64 Bit).
+fastapi==0.162.0
+starlette==1.10.0
+pydantic==2.14.1
+uvicorn==0.54.0
+websockets==17.3
+pyserial==3.5

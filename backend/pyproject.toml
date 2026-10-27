@@ -1,0 +1,18 @@
+[project]
+name = "allwheel-control-backend"
+version = "1.0.0"
+description = "Backend der Fahrzeugsteuerung AllWheel Control (Raspberry Pi 3B, Hoverboard-Controller)"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+markers = [
+    "hardware: Test benötigt sicher aufgebaute Hardware (wird ohne AWC_HARDWARE_TESTS=1 übersprungen)",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning:websockets.*",
+    "ignore::DeprecationWarning:uvicorn.*",
+    "ignore:Using `httpx` with `starlette.testclient` is deprecated",
+]
