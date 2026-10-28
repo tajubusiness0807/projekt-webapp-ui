@@ -2140,7 +2140,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Hold up to two reels for the next spin': 'Halte bis zu zwei Walzen für den nächsten Spin', 'Out of nudges.': 'Keine Stupser mehr.',
     'Spin when you are ready.': 'Dreh, wenn du bereit bist.',
     'The machine hums. Feeling lucky?': 'Die Maschine summt. Glück gehabt?', 'The machine hums…': 'Die Maschine summt…',
-    'Switch to the slots: your next spin hits the jackpot.': 'Wechsle zu den Slots: Dein nächster Spin knackt den Jackpot.',
     'Fresh start: 500 credits, level 1, no goodies.': 'Neustart: 500 Credits, Level 1, keine Goodies.',
     'FREE SPINS': 'FREISPIELE', 'BONUS OVER': 'BONUS VORBEI', 'BIG WIN': 'GROSSER GEWINN', 'MEGA WIN': 'MEGA-GEWINN', 'NICE WIN': 'SCHÖNER GEWINN',
     'JACKPOT!': 'JACKPOT!', 'Jackpot!': 'Jackpot!', 'Three sevens': 'Drei Siebenen', 'Tap to continue': 'Tippen zum Weiter', 'LIGHTNING': 'BLITZ',
@@ -2229,6 +2228,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Private chats are not set up yet. Ask the person who runs the game to run the private-chat setup.': 'Private Chats sind noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, sie einzurichten.',
     'The message did not go through. Try again.': 'Die Nachricht ging nicht durch. Versuch es nochmal.', 'Chat is switched off for players': 'Der Chat ist für Spieler abgeschaltet',
     'Someone': 'Jemand', 'Actions': 'Aktionen',
+    'Your next spin lands three sevens.': 'Dein nächster Spin landet drei Siebenen.', 'Your next hand is a blackjack.': 'Deine nächste Hand ist ein Blackjack.',
+    'The next ball lands on zero.': 'Die nächste Kugel landet auf der Null.', 'Your next ball drops into an outer slot.': 'Deine nächste Kugel fällt in ein äußeres Fach.',
+    'Works in slots, blackjack, roulette and Plinko: your next round there is rigged.': 'Wirkt bei Slots, Blackjack, Roulette und Plinko: Deine nächste Runde dort ist manipuliert.',
     'Amount': 'Betrag', 'Credits to send': 'Credits zum Verschicken', 'Send': 'Senden', 'Credits sent': 'Credits verschickt',
     'Enter how many credits to send.': 'Gib ein, wie viele Credits du schicken willst.', 'Not enough credits for that.': 'Dafür reichen deine Credits nicht.',
     'That player cannot get credits right now.': 'Dieser Spieler kann gerade keine Credits bekommen.',
@@ -2674,10 +2676,12 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const reels = [...document.querySelectorAll('.reel')];
   const strips = reels.map(r => r.querySelector('.strip'));
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  // Secret jackpot code (↑ ↑ ↓ ↓ ← → ← → B A), for admins only: the next paid spin lands three sevens.
+  // Secret code (↑ ↑ ↓ ↓ ← → ← → B A), for admins only. The next round in any game but poker is rigged:
+  // three sevens on the slots, a blackjack, zero in roulette, an outermost Plinko slot.
   const SECRET = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
   let typed = [];
   let rigged = false;
+  const takeRigged = () => { if (!rigged) return false; rigged = false; cabinet.classList.remove('armed'); return true; };
   let busy = false;
   let inBonus = false;
   let freeDone = 0;
@@ -3208,7 +3212,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     holds.forEach((h, i) => reels[i].classList.toggle('held', h));
 
     const targets = cheat ? [0, 1, 2].map(() => STRIP.indexOf('seven')) : [0, 1, 2].map(i => holds[i] ? pos[i] : randInt(STRIP.length));
-    if (cheat) { rigged = false; cabinet.classList.remove('armed'); }
+    if (cheat) takeRigged();
 
     const sevenish = s => s === 'seven' || s === 'wild';
     const [s0, s1] = [STRIP[targets[0]], STRIP[targets[1]]];
@@ -3647,8 +3651,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     renderBJTable();
     render();
     const r = bjRound();
-    for (const to of ['p', 'd', 'p', 'd']) {
-      (to === 'p' ? r.hands[0].cards : r.dealer).push(bjDraw());
+    // Rigged: an ace and a ten-card for the player, and a dealer without blackjack.
+    const cheat = takeRigged();
+    const pull = test => { const i = state.bj.shoe.findLastIndex(c => test(bjRank(c))); return i < 0 ? bjDraw() : state.bj.shoe.splice(i, 1)[0]; };
+    const order = cheat ? [() => pull(k => k === 0), bjDraw, () => pull(k => k >= 9), () => pull(k => k >= 1 && k <= 7)] : [bjDraw, bjDraw, bjDraw, bjDraw];
+    for (const [n, to] of ['p', 'd', 'p', 'd'].entries()) {
+      let card = order[n]();
+      if (cheat && to === 'd' && n === 1 && (bjRank(card) === 0 || bjRank(card) >= 9)) { state.bj.shoe.unshift(card); card = pull(k => k >= 1 && k <= 7); }
+      (to === 'p' ? r.hands[0].cards : r.dealer).push(card);
       sound.card();
       renderBJTable();
       await bjWait(340);
@@ -4092,7 +4102,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     document.querySelectorAll('.rl-cell.hit, .rl-cell.won').forEach(x => x.classList.remove('hit', 'won'));
     rlSay('No more bets!', 'hot');
     render();
-    const result = randInt(37);
+    const result = takeRigged() ? 0 : randInt(37);
     await rlAnimate(result);
 
     let back = 0, straight = false;
@@ -4331,7 +4341,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (plBalls.length >= PL_MAX_BALLS) return false;
     const R = plBoard.R;
     // The result is drawn here, fair and up front: R coin flips.
-    const path = Array.from({ length: R }, () => (randInt(2) ? 1 : -1));
+    const edge = takeRigged() ? (randInt(2) ? 1 : -1) : 0;
+    const path = Array.from({ length: R }, () => edge || (randInt(2) ? 1 : -1));
     const rights = [0];
     for (const d of path) rights.push(rights[rights.length - 1] + (d > 0 ? 1 : 0));
     const slot = rights[R];
@@ -5714,8 +5725,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       rigged = true;
       typed = [];
       cabinet.classList.add('armed');
+      const where = { slots: 'Your next spin lands three sevens.', bj: 'Your next hand is a blackjack.', rl: 'The next ball lands on zero.', pl: 'Your next ball drops into an outer slot.' }[state.mode];
       if (state.mode === 'slots') say('The machine hums. Feeling lucky?', 'hot');
-      else toast('The machine hums…', 'Switch to the slots: your next spin hits the jackpot.');
+      toast('The machine hums…', where || 'Works in slots, blackjack, roulette and Plinko: your next round there is rigged.');
     }
   });
   document.addEventListener('keydown', e => {
