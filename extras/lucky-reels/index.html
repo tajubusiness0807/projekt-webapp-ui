@@ -1172,6 +1172,8 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
 .tag.banned { background: #e0715b33; color: var(--lose); }
 .admin-table .credit-edit { display: flex; gap: 6px; min-width: 190px; }
 .admin-table .credit-edit input { width: 110px; padding: 6px 8px; font-size: 13px; }
+.admin-table .level-edit { min-width: 0; }
+.admin-table .level-edit input { width: 54px; }
 .admin-table .acts { display: flex; gap: 6px; flex-wrap: wrap; }
 .settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
 .setting { display: grid; gap: 4px; }
@@ -1603,7 +1605,8 @@ body:not(.signed-in) .lang-toggle.float { display: flex; }
   .admin-table tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 10px; align-items: center; padding: 10px 0; border-top: 1px solid #ffffff12; }
   .admin-table td { padding: 0; border: 0; }
   .admin-table .pname { white-space: normal; }
-  .admin-table .lvl::before { content: "Lvl "; color: var(--muted); }
+  .admin-table .lvl::before { content: "Lvl"; color: var(--muted); align-self: center; margin-right: 6px; }
+  .admin-table .lvl { display: flex; }
   .admin-table td:nth-child(2), .admin-table td:nth-child(4) { grid-column: 1 / -1; }
   .admin-table .lvl { grid-row: 1; grid-column: 2; }
   .admin-table .credit-edit { min-width: 0; }
@@ -2296,7 +2299,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'The chat is not set up yet. Ask the person who runs the game to run the chat setup.': 'Der Chat ist noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, die Chat-Einrichtung auszuführen.',
     'Private chats are not set up yet. Ask the person who runs the game to run the private-chat setup.': 'Private Chats sind noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, sie einzurichten.',
     'The message did not go through. Try again.': 'Die Nachricht ging nicht durch. Versuch es nochmal.', 'Chat is switched off for players': 'Der Chat ist für Spieler abgeschaltet',
-    'Someone': 'Jemand', 'Actions': 'Aktionen',
+    'Someone': 'Jemand', 'Actions': 'Aktionen', 'Level changed': 'Level geändert',
     '★ Max level reached – go Prestige': '★ Max-Level erreicht – Prestige starten', 'Max level!': 'Max-Level!', 'You can go Prestige now: open your profile.': 'Du kannst jetzt Prestige machen: Öffne dein Profil.',
     'Prestige': 'Prestige', 'Go Prestige?': 'Prestige starten?', 'Not yet': 'Noch nicht', 'Prestige!': 'Prestige!', 'Back to the game': 'Zurück zum Spiel',
     'Back to level 1, with a shiny new badge. Everyone can see it next to your name.': 'Zurück auf Level 1, mit einem glänzenden neuen Abzeichen. Alle sehen es neben deinem Namen.',
@@ -2392,6 +2395,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
+    ['Level for {a}', 'Level für {a}'], ['Enter a level from 1 to {a}.', 'Gib ein Level von 1 bis {a} ein.'], ['{a} is now level {b}.', '{a} ist jetzt Level {b}.'], ['An admin set you to level {a}.', 'Ein Admin hat dich auf Level {a} gesetzt.'],
     ['Go Prestige {a}?', 'Prestige {a} starten?'], ['Prestige {a}!', 'Prestige {a}!'],
     ['You go back to level 1 and earn the Prestige {a} badge next to your name, for everyone to see. Your credits, goodies and achievements stay.', 'Du gehst zurück auf Level 1 und bekommst das Prestige-{a}-Abzeichen neben deinem Namen, für alle sichtbar. Deine Credits, Goodies und Erfolge bleiben.'],
     ['You go back to {a} credits at level 1. Credits, goodies, achievements and missions are gone for good.', 'Du fängst wieder mit {a} Credits auf Level 1 an. Credits, Goodies, Erfolge und Missionen sind dann für immer weg.'],
@@ -5984,6 +5988,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         },
         setBanned: (id, value) => store.save(id, { banned: value }),
         setMedals: (id, medals) => store.save(id, { medals }),
+        async setLevel(id, level) {
+          const doc = await store.load(id);
+          await store.save(id, { level, adminRev: (Number(doc?.adminRev) || 0) + 1 });
+        },
         setAdmin: (id, make) => store.save(id, { admin: make }),
         deletePlayer: id => store.remove(id),
         deleteMessage: id => store.deleteMessage(id),
@@ -6235,7 +6243,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       throw error;
     }
     async function row(uid) {
-      const { data, error } = await sb.from('players').select(`id,name,credits,game${hasProfile ? ',avatar' : ''}${adminCols}`).eq('id', uid).maybeSingle();
+      const { data, error } = await sb.from('players').select(`id,name,credits,level,game${hasProfile ? ',avatar' : ''}${adminCols}`).eq('id', uid).maybeSingle();
       if (error) throw error;
       return data ? { key: uid, doc: { ...data, admin: !!data.is_admin, banned: !!data.is_banned, adminRev: Number(data.admin_rev) || 0 } } : null;
     }
@@ -6344,6 +6352,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         reset: id => adminRpc('admin_update_player', { target: id, new_credits: null, reset: true, set_banned: null }),
         setBanned: (id, value) => adminRpc('admin_update_player', { target: id, new_credits: null, reset: false, set_banned: value }),
         setMedals: (id, medals) => adminRpc('admin_set_medals', { target: id, new_medals: medals }),
+        setLevel: (id, level) => adminRpc('admin_set_level', { target: id, new_level: level }),
         setAdmin: (id, make, pw) => adminRpc('admin_set_admin', { target: id, make, new_pw: pw ?? null }),
         deletePlayer: id => adminRpc('admin_delete_player', { target: id }),
         changePassword: pw => adminRpc('admin_change_password', { new_pw: pw }),
@@ -6648,7 +6657,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (!doc.game) saved = { credits: Number(doc.credits) || 0, avatar: Number.isInteger(doc.avatar) ? doc.avatar : null };
     // An admin changed the credits while this player was away.
     const rev = Number(doc.adminRev) || 0;
-    if (rev > (Number(saved.adminRev) || 0)) saved.credits = Number(doc.credits) || 0;
+    if (rev > (Number(saved.adminRev) || 0)) {
+      saved.credits = Number(doc.credits) || 0;
+      const lv = adminLevel(doc);
+      if (lv) { saved.level = lv; saved.xp = lv >= MAX_LEVEL ? xpNeed(MAX_LEVEL) : 0; }
+    }
     saved.adminRev = rev;
     account = { id: key, name: doc.name || key, isAdmin: !!doc.admin };
     adminUnlocked = false;
@@ -7154,6 +7167,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
   // Pick up credits or a reset an admin made to this account.
   let quietCreditsUntil = 0;
+  // An admin set this player's level: the level column no longer matches the saved game.
+  function adminLevel(doc) {
+    if (!doc?.game || doc.level == null) return null;
+    let saved = null;
+    try { saved = JSON.parse(doc.game); } catch { return null; }
+    const lv = Math.max(1, Math.min(MAX_LEVEL, Math.floor(Number(doc.level)) || 1));
+    return saved && saved.level !== lv ? lv : null;
+  }
   async function refreshOwn() {
     if (refreshing || !account) return;
     if (busy) { setTimeout(refreshOwn, 1000); return; }
@@ -7169,8 +7190,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         } else {
           state.credits = Number(doc.credits) || 0;
           state.adminRev = rev;
+          const lv = adminLevel(doc);
+          if (lv && lv !== state.level) { state.level = lv; state.xp = lv >= MAX_LEVEL ? xpNeed(MAX_LEVEL) : 0; toast('Level changed', `An admin set you to level ${lv}.`); }
           const gifts = await checkGifts();
-          if (!gifts && Date.now() > quietCreditsUntil) toast('Credits updated', `Your balance is now ${fmt(state.credits)}.`);
+          if (!gifts && !lv && Date.now() > quietCreditsUntil) toast('Credits updated', `Your balance is now ${fmt(state.credits)}.`);
         }
         lastSaved = '';
         render();
@@ -7282,9 +7305,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       for (const p of rows) {
         const tr = table.querySelector(`tr[data-pid="${CSS.escape(p.id)}"]`);
         if (!tr) continue;
-        const input = tr.querySelector('input');
+        const input = tr.querySelector('.credit-in');
         if (document.activeElement !== input && !input.dataset.dirty) input.value = p.credits;
-        tr.querySelector('.lvl').textContent = p.level;
+        const lv = tr.querySelector('.level-in');
+        if (document.activeElement !== lv && !lv.dataset.dirty) lv.value = p.level;
       }
       return;
     }
@@ -7292,8 +7316,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     table.innerHTML = '<thead><tr><th>Player</th><th>Credits</th><th>Level</th><th>Actions</th></tr></thead><tbody>' + rows.map(p => `
       <tr data-pid="${esc(p.id)}">
         <td class="pname">${esc(p.name)}${medalsHtml(p.id, 10)}${p.admin ? '<span class="tag admin">admin</span>' : ''}${p.banned ? '<span class="tag banned">blocked</span>' : ''}${p.id === account?.id ? ' <span class="tag">you</span>' : ''}</td>
-        <td><div class="credit-edit"><input type="number" inputmode="numeric" value="${p.credits}" aria-label="Credits for ${esc(p.name)}"><button class="abtn" data-act="credits">Set</button></div></td>
-        <td class="lvl">${p.level}</td>
+        <td><div class="credit-edit"><input class="credit-in" type="number" inputmode="numeric" value="${p.credits}" aria-label="Credits for ${esc(p.name)}"><button class="abtn" data-act="credits">Set</button></div></td>
+        <td class="lvl"><div class="credit-edit level-edit"><input class="level-in" type="number" inputmode="numeric" min="1" max="${MAX_LEVEL}" value="${p.level}" aria-label="Level for ${esc(p.name)}"><button class="abtn" data-act="level">Set</button></div></td>
         <td><div class="acts">
           <button class="abtn" data-act="medals">Medals</button>
           <button class="abtn warn" data-act="reset">Reset</button>
@@ -7313,11 +7337,19 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (!p) return;
     const act = btn.dataset.act;
     if (act === 'credits') {
-      const v = Math.floor(Number(tr.querySelector('input').value));
+      const v = Math.floor(Number(tr.querySelector('.credit-in').value));
       if (!Number.isFinite(v) || v < 0) { adminSay('Enter 0 or more credits.', false); return; }
-      const input = tr.querySelector('input');
+      const input = tr.querySelector('.credit-in');
       adminDo(`${p.name} now has ${fmt(v)} credits.`, async () => {
         await backend.admin.setCredits(p.id, v);
+        delete input.dataset.dirty;
+      });
+    } else if (act === 'level') {
+      const input = tr.querySelector('.level-in');
+      const v = Math.floor(Number(input.value));
+      if (!(v >= 1 && v <= MAX_LEVEL)) { adminSay(`Enter a level from 1 to ${MAX_LEVEL}.`, false); return; }
+      adminDo(`${p.name} is now level ${v}.`, async () => {
+        await backend.admin.setLevel(p.id, v);
         delete input.dataset.dirty;
       });
     } else if (act === 'medals') {
@@ -7362,7 +7394,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   });
   $('adminPlayers').addEventListener('input', e => { if (e.target.tagName === 'INPUT') e.target.dataset.dirty = '1'; });
   $('adminPlayers').addEventListener('keydown', e => {
-    if (e.key === 'Enter' && e.target.tagName === 'INPUT') e.target.closest('tr').querySelector('[data-act="credits"]').click();
+    if (e.key === 'Enter' && e.target.tagName === 'INPUT') e.target.closest('td').querySelector('[data-act]')?.click();
   });
   $('hardReset').addEventListener('click', () => {
     if ($('hardResetConfirm').value.trim().toUpperCase() !== 'RESET') { adminSay('Type RESET in the box first.', false); $('hardResetConfirm').focus(); return; }

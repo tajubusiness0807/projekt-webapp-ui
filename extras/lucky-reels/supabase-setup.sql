@@ -1440,3 +1440,24 @@ begin
 end;
 $$;
 
+
+-- ---------------------------------------------------------------------------
+-- Setting a player's level: run this part once (after "Admin security").
+-- Gives the admin menu a level field per player (1 to 20).
+
+create or replace function public.admin_set_level(tok uuid, target uuid, new_level integer)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.admin_check(tok);
+  if new_level is null or new_level < 1 or new_level > 20 then raise exception 'level must be 1 to 20'; end if;
+  update public.players set level = new_level, admin_rev = admin_rev + 1, updated_at = now() where id = target;
+  if not found then raise exception 'no such player'; end if;
+end;
+$$;
+
+revoke execute on function public.admin_set_level(uuid, uuid, integer) from public, anon;
+grant execute on function public.admin_set_level(uuid, uuid, integer) to authenticated;
