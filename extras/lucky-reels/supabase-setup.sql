@@ -1463,3 +1463,37 @@ $$;
 
 revoke execute on function public.admin_set_level(uuid, uuid, integer) from public, anon;
 grant execute on function public.admin_set_level(uuid, uuid, integer) to authenticated;
+
+
+-- ---------------------------------------------------------------------------
+-- Shop: name styles and trophies: run this part once (after "Prestige").
+-- Allows the new name styles (gold, fire, ice, galaxy) and adds the trophies
+-- players show next to their name. A reset or hard reset clears both.
+
+alter table public.players drop constraint if exists players_flair_check;
+alter table public.players add constraint players_flair_check
+  check (flair is null or flair in ('neon', 'gold', 'fire', 'ice', 'galaxy'));
+
+alter table public.players add column if not exists trophies text[] not null default '{}'
+  check (cardinality(trophies) <= 10);
+grant update (trophies) on public.players to authenticated;
+
+create or replace function public.players_clear_cosmetics()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+begin
+  if new.game is null and old.game is not null then
+    new.flair := null;
+    new.trophies := '{}';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists players_clear_cosmetics on public.players;
+create trigger players_clear_cosmetics before update on public.players
+  for each row execute function public.players_clear_cosmetics();
+
+update public.players set trophies = '{}' where game is null and trophies <> '{}';

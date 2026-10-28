@@ -83,6 +83,18 @@ body {
   transition: border-color 0.4s, box-shadow 0.4s;
 }
 /* Neon name, shown to everyone */
+.name-gold { font-weight: 700; color: transparent; background: linear-gradient(90deg, #a8741a, #fff2c4, #f3c94b, #a8741a) 0 0 / 200% 100%; -webkit-background-clip: text; background-clip: text; filter: drop-shadow(0 0 4px #f3c94b88); animation: neonShift 2.5s linear infinite; }
+.name-fire { font-weight: 700; color: transparent; background: linear-gradient(0deg, #e0414a, #ff8a3c 45%, #ffe14f) 0 0 / 100% 200%; -webkit-background-clip: text; background-clip: text; filter: drop-shadow(0 0 5px #ff6a2c99); animation: fireFlick 0.9s ease-in-out infinite alternate; }
+@keyframes fireFlick { to { background-position: 0 100%; filter: drop-shadow(0 -1px 7px #ffb34fcc); } }
+.name-ice { font-weight: 700; color: transparent; background: linear-gradient(90deg, #4fe3ff, #ffffff, #9fd8ff, #4fe3ff) 0 0 / 200% 100%; -webkit-background-clip: text; background-clip: text; filter: drop-shadow(0 0 4px #4fe3ff99); animation: neonShift 3.5s linear infinite; }
+.name-galaxy { font-weight: 700; color: transparent; background: radial-gradient(circle at 20% 40%, #fff 0 1px, transparent 1.5px) 0 0 / 9px 9px, linear-gradient(90deg, #6c3bd9, #d9c2ff, #4f9dff, #a77bff, #6c3bd9) 0 0 / 300% 100%; -webkit-background-clip: text; background-clip: text; filter: drop-shadow(0 0 5px #a77bffaa); animation: galaxyDrift 5s linear infinite; }
+@keyframes galaxyDrift { to { background-position: 9px 9px, 300% 0; } }
+@media (prefers-reduced-motion: reduce) { .name-gold, .name-fire, .name-ice, .name-galaxy { animation: none; } }
+.name-trophy { display: inline-block; width: 1.4em; height: 1.4em; margin-left: 3px; vertical-align: -0.35em; filter: drop-shadow(0 0 3px #f3c94b66); }
+.name-trophy svg { width: 100%; height: 100%; display: block; }
+.trophy-shelf { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; width: 100%; padding: 10px 8px 14px; border-radius: 10px; background: linear-gradient(transparent calc(100% - 10px), #7a5236 0), var(--panel); }
+.trophy-shelf span { width: 48px; height: 48px; filter: drop-shadow(0 4px 3px #0008); }
+.trophy-shelf svg { width: 100%; height: 100%; }
 .neon-name {
   font-weight: 700;
   color: transparent;
@@ -181,6 +193,14 @@ body.cos-royalFelt .felt, body.cos-royalFelt .pk-felt, body.cos-royalFelt .rl-bo
 }
 body.cos-goldBacks .card.back { background: repeating-linear-gradient(45deg, #e9a23b 0 6px, #1d1714 6px 12px); border-color: #f3c94b; }
 @media (prefers-reduced-motion: reduce) { body.cos-disco .bulbs span { animation: none; } }
+.cabinet.ruby { background: linear-gradient(160deg, #6a141c, #2c080c 60%, #561018); border-color: #e0414a; box-shadow: 0 30px 60px -20px #000, 0 0 40px -8px #e0414a88, inset 0 2px 0 #ffb3b833; }
+.cabinet.ruby .marquee h1 { color: #ffd0d3; text-shadow: 0 0 18px #e0414a99, 0 3px 0 #7a1a20; }
+.cabinet.emerald { background: linear-gradient(160deg, #0f4a33, #062418 60%, #0c3d2a); border-color: #3fd1a4; box-shadow: 0 30px 60px -20px #000, 0 0 40px -8px #3fd1a488, inset 0 2px 0 #c8ffe433; }
+.cabinet.emerald .marquee h1 { color: #c8ffe4; text-shadow: 0 0 18px #3fd1a499, 0 3px 0 #16624a; }
+.cabinet.bubblegum { background: linear-gradient(160deg, #7a2f62, #3a1530 60%, #6a2856); border-color: #ff8fb8; box-shadow: 0 30px 60px -20px #000, 0 0 40px -8px #ff8fb888, inset 0 2px 0 #ffe0ef44; }
+.cabinet.bubblegum .marquee h1 { color: #ffe0ef; text-shadow: 0 0 18px #ff8fb8aa, 0 3px 0 #8a2c4f; }
+.cabinet.carbon { background: repeating-linear-gradient(45deg, #17181b 0 5px, #202226 5px 10px); border-color: #9aa3b5; box-shadow: 0 30px 60px -20px #000, 0 0 30px -10px #d6dae466, inset 0 2px 0 #ffffff22; }
+.cabinet.carbon .marquee h1 { color: #e4e7ee; text-shadow: 0 0 12px #ffffff44, 0 3px 0 #3a3f4a; }
 .cabinet.bonus {
   border-color: var(--bonus);
   box-shadow: 0 30px 60px -20px #000, 0 0 50px -6px #a77bffaa, inset 0 0 30px #a77bff33;
@@ -1688,6 +1708,62 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
   .float, .tier, .tier-title, .toast, .modal, .modal-card, .reel.wild, .card.flip, .chat-panel, .jp-badge { animation: none; }
   .jp-flash, .float { opacity: 0; }
 }
+/* Shop page */
+.shop-page {
+  position: fixed; inset: 0; z-index: 38; overflow-y: auto;
+  padding: 18px max(14px, env(safe-area-inset-left, 0px)) 40px max(14px, env(safe-area-inset-right, 0px));
+  background: repeating-linear-gradient(90deg, #3a271c 0 58px, #33221a 58px 60px), #3a271c;
+  box-shadow: inset 0 0 120px #000c;
+}
+html[data-theme="night"] .shop-page { background: repeating-linear-gradient(90deg, #171a22 0 58px, #13161d 58px 60px), #171a22; }
+.shop-wrap { max-width: 900px; margin: 0 auto; display: grid; gap: 16px; }
+.shop-head { position: relative; display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 12px; align-items: center; }
+.shop-head .back-btn { position: static; }
+.shop-sign { justify-self: center; text-align: center; padding: 8px 26px 10px; border-radius: 12px; background: linear-gradient(#2a1d18, #150f0c); border: 3px solid var(--accent); box-shadow: 0 0 30px #e9a23b44, inset 0 0 18px #000a; }
+.shop-sign h1 { margin: 0; font: 400 clamp(22px, 5vw, 34px)/1 var(--font-display); color: var(--accent); text-shadow: 0 0 14px #e9a23b88; }
+.shop-sign span { font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--muted); }
+.shop-credits { font: 600 12px var(--font-mono); color: var(--muted); text-align: right; }
+.shop-credits b { display: block; font-size: 18px; color: var(--accent); }
+.shop-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 5px; border-radius: 14px; background: #0008; max-width: 420px; width: 100%; justify-self: center; }
+.shop-tabs button { padding: 10px; border-radius: 10px; background: transparent; color: var(--muted); font: 400 15px var(--font-display); letter-spacing: 0.04em; }
+.shop-tabs button[aria-selected="true"] { background: var(--accent); color: var(--ink); box-shadow: 0 4px 0 #8a5a12; }
+.shop-rate { margin: 0; text-align: center; font-size: 13px; color: var(--muted); }
+.shop-rate strong { color: var(--fg); font-family: var(--font-mono); }
+#goodies { display: grid; gap: 22px; }
+.shelf[hidden], .shop-rate[hidden] { display: none; }
+.shelf-title { margin: 0 0 4px; display: inline-block; padding: 4px 14px; border-radius: 8px 8px 0 0; background: #0009; font: 400 15px var(--font-display); color: var(--accent-hi); letter-spacing: 0.06em; }
+.shelf-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); column-gap: 0; row-gap: 26px; padding: 14px 10px 6px; border-radius: 0 12px 12px 12px; background: #0005; box-shadow: inset 0 10px 24px #0008; }
+.ware { position: relative; display: grid; grid-template-rows: auto auto 1fr auto auto; justify-items: center; gap: 4px; padding: 0 8px; text-align: center; }
+.ware-stand { width: 100%; height: 96px; display: grid; place-items: end center; padding-bottom: 6px; border-bottom: 12px solid #7a5236; box-shadow: 0 10px 0 #4a3020, 0 18px 14px -6px #000a; margin: 0 -8px 8px; }
+html[data-theme="night"] .ware-stand { border-bottom-color: #4a5266; box-shadow: 0 10px 0 #2a3040, 0 18px 14px -6px #000a; }
+.ware-icon { width: 70px; height: 70px; transition: transform 0.25s; filter: drop-shadow(0 6px 4px #000a); }
+.ware-icon svg { width: 100%; height: 100%; display: block; }
+.ware:hover .ware-icon { transform: translateY(-6px) rotate(-3deg) scale(1.06); }
+.ware.on .ware-icon { filter: drop-shadow(0 0 12px #f3c94b) drop-shadow(0 6px 4px #000a); }
+.ware h4 { margin: 0; font-size: 14px; }
+.ware p { margin: 0; font-size: 11.5px; line-height: 1.35; color: var(--muted); }
+.ware .status { min-height: 14px; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+.price-tag { position: relative; margin-top: 2px; padding: 7px 14px 7px 22px; border-radius: 6px 16px 16px 6px; background: #f6efe3; color: var(--ink); font: 700 13px var(--font-mono); box-shadow: 0 3px 0 #0006; transform: rotate(-2deg); transition: transform 0.15s; }
+.price-tag::before { content: ""; position: absolute; left: 8px; top: 50%; width: 7px; height: 7px; margin-top: -3.5px; border-radius: 50%; background: #3a271c; box-shadow: inset 0 1px 1px #000; }
+.price-tag:hover:not(:disabled) { transform: rotate(0) scale(1.05); }
+.ware.owned .price-tag { background: #7fd18b; }
+.ware.owned .price-tag.on { background: var(--accent); }
+.shop-teaser { width: 100%; display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 14px; border-radius: 12px; background: var(--panel); border: 2px solid #e9a23b44; color: var(--fg); text-align: left; }
+.shop-teaser:hover { border-color: var(--accent); }
+.shop-open { margin-left: auto; color: var(--accent); font-weight: 700; }
+.shop-teaser .shop-title, .shop-teaser .shop-owned, .shop-open { white-space: nowrap; }
+.shop-teaser .shop-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.gp-shop .gp-shop-items { transition: transform 0.3s; }
+.game-pick:hover .gp-shop .gp-shop-items { transform: translateY(-3px); }
+@media (max-width: 600px) {
+  .shop-head { grid-template-columns: 40px minmax(0, 1fr); }
+  .shop-credits { grid-column: 1 / -1; text-align: center; }
+  .shop-credits b { display: inline; margin-left: 6px; }
+  .shelf-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .shop-teaser .shop-title { font-size: 17px; }
+  .ware-icon { width: 58px; height: 58px; }
+  .ware-stand { height: 80px; }
+}
 /* Phones */
 .account-bar .lang-toggle { position: static; z-index: auto; box-shadow: none; }
 .lang-toggle.floating { display: none; }
@@ -1848,11 +1924,38 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         <span class="gp-desc">Texas Hold'em against bots, or online with up to 8 players.</span>
         <span class="gp-go">Play</span>
       </button>
+      <button class="game-pick shop-pick" type="button" data-shop>
+        <svg class="gp-shop" viewBox="0 0 140 130" aria-hidden="true">
+          <path d="M14 46h112v70H14z" fill="#4a2f24"/><path d="M8 30h124l-8 18H16z" fill="#e0414a"/><path d="M22 30l-6 18M44 30l-4 18M66 30l-2 18M88 30l2 18M110 30l4 18" stroke="#f6efe3" stroke-width="7"/>
+          <rect x="26" y="62" width="88" height="6" rx="2" fill="#7a5236"/><rect x="26" y="92" width="88" height="6" rx="2" fill="#7a5236"/>
+          <g class="gp-shop-items"><circle cx="40" cy="54" r="7" fill="#f3c94b"/><rect x="56" y="48" width="14" height="14" rx="3" fill="#4fe3ff"/><path d="M84 62l7-14 7 14z" fill="#ff8fb8"/><circle cx="104" cy="55" r="6" fill="#7fd18b"/>
+          <path d="M36 92v-10h12v10z" fill="#c98a4b"/><path d="M60 92l6-12 6 12z" fill="#a77bff"/><rect x="82" y="80" width="12" height="12" rx="2" fill="#e9a23b"/></g>
+        </svg>
+        <span class="gp-title">Goodie Shop</span>
+        <span class="gp-desc">Power-ups, machine colours, name styles and trophies.</span>
+        <span class="gp-go">Shop</span>
+      </button>
     </div>
   </div>
 </div>
 
 <p class="help-line"><a href="https://i.ytimg.com/vi/nTBifNknZ2I/sddefault.jpg" target="_blank" rel="noopener noreferrer">Help with gambling behaviour disorders</a></p>
+<div class="shop-page" id="shopPage" role="dialog" aria-modal="true" aria-labelledby="shopPageTitle" hidden>
+  <div class="shop-wrap">
+    <header class="shop-head">
+      <button class="back-btn" id="shopBack" type="button" aria-label="Back" title="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div class="shop-sign"><h1 id="shopPageTitle">Goodie Shop</h1><span>Lucky Reels · since today</span></div>
+      <span class="shop-credits">Credits <b id="shopCredits">0</b></span>
+    </header>
+    <div class="shop-tabs" role="tablist" aria-label="Shelves">
+      <button type="button" role="tab" data-shelf-tab="useful" aria-selected="true">Useful</button>
+      <button type="button" role="tab" data-shelf-tab="cosmetic" aria-selected="false">Cosmetics</button>
+    </div>
+    <p class="rate shop-rate" data-for="useful">Slot payout rate with your goodies: <strong id="shopRate">0%</strong></p>
+    <div id="goodies"></div>
+  </div>
+</div>
+
 <div class="account-bar" id="accountBar" hidden>
   <span><span class="who-label">Signed in as </span><span id="myAv"></span><b id="whoami"></b></span>
   <span class="links"><button class="theme-toggle" type="button" aria-label="Night mode" title="Night mode"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="currentColor"/></svg></button><button class="lang-toggle" type="button" aria-label="Sprache wechseln"><span data-l="de">DE</span><span data-l="en">EN</span></button><button class="link-btn" id="profileBtn" type="button">Profile</button><button class="link-btn" id="pwToggle" type="button">Change password</button><button class="link-btn" id="logout" type="button">Sign out</button></span>
@@ -2089,11 +2192,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
   <aside class="shop" aria-labelledby="shopTitle">
     <section class="board-wrap" aria-labelledby="boardTitle"><h2 class="board-title" id="boardTitle">Highscores</h2><table class="board" id="boardGame"></table></section>
-    <details class="shop-box" id="shopBox">
-      <summary><span class="shop-title" id="shopTitle">Goodie Shop</span><span class="shop-owned" id="shopOwned"></span></summary>
-      <p class="rate">Slot payout rate with your goodies: <strong id="shopRate">0%</strong></p>
-      <div id="goodies"></div>
-    </details>
+    <button type="button" class="shop-teaser" data-shop><span class="shop-title" id="shopTitle">Goodie Shop</span><span class="shop-owned" id="shopOwned"></span><span class="shop-open">Open ›</span></button>
     <section class="missions" aria-labelledby="missionsTitle">
       <h3 id="missionsTitle">Missions</h3>
       <div id="missionList"></div>
@@ -2455,6 +2554,25 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Private chats are not set up yet. Ask the person who runs the game to run the private-chat setup.': 'Private Chats sind noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, sie einzurichten.',
     'The message did not go through. Try again.': 'Die Nachricht ging nicht durch. Versuch es nochmal.', 'Chat is switched off for players': 'Der Chat ist für Spieler abgeschaltet',
     'Someone': 'Jemand', 'Actions': 'Aktionen',
+    'Open ›': 'Öffnen ›', 'Back': 'Zurück', 'Shelves': 'Regale', 'Useful': 'Nützlich', 'Lucky Reels · since today': 'Lucky Reels · seit heute', 'Shop': 'Shop',
+    'Power-ups, machine colours, name styles and trophies.': 'Power-ups, Automatenfarben, Namensstile und Trophäen.',
+    'Machine colours': 'Automatenfarben', 'Name styles': 'Namensstile', 'Trophies': 'Trophäen', 'Effects': 'Effekte',
+    'Plates the machine in gold.': 'Vergoldet die Maschine.', 'A deep-blue machine with glowing cyan trim.': 'Eine tiefblaue Maschine mit leuchtendem Cyan-Rand.',
+    'Ruby Cabinet': 'Rubingehäuse', 'Deep red lacquer with a warm glow.': 'Tiefroter Lack mit warmem Schein.',
+    'Emerald Cabinet': 'Smaragdgehäuse', 'Polished green, like a lucky clover.': 'Poliertes Grün wie ein Glücksklee.',
+    'Bubblegum Cabinet': 'Kaugummigehäuse', 'Sweet pink with a candy shine.': 'Süßes Pink mit Bonbonglanz.',
+    'Carbon Cabinet': 'Carbongehäuse', 'Black carbon weave and steel trim.': 'Schwarzes Carbongewebe mit Stahlrand.',
+    'Your name glows in rainbow neon for everyone.': 'Dein Name leuchtet für alle in Regenbogen-Neon.',
+    'Golden Name': 'Goldener Name', 'Your name shimmers in gold for everyone.': 'Dein Name schimmert für alle in Gold.',
+    'Fire Name': 'Feuername', 'Your name burns in flickering flames.': 'Dein Name brennt in flackernden Flammen.',
+    'Ice Name': 'Eisname', 'Your name sparkles like frost.': 'Dein Name glitzert wie Frost.',
+    'Galaxy Name': 'Galaxiename', 'Your name drifts through a starry galaxy.': 'Dein Name schwebt durch eine Sternengalaxie.',
+    'Bronze Cup': 'Bronzepokal', 'A trophy next to your name and on your profile shelf.': 'Eine Trophäe neben deinem Namen und im Profilregal.',
+    'Silver Cup': 'Silberpokal', 'Shiny silver, for everyone to see.': 'Glänzendes Silber, für alle sichtbar.',
+    'Golden Cup': 'Goldpokal', 'The real deal: solid gold.': 'Das Original: massives Gold.',
+    'Diamond Trophy': 'Diamanttrophäe', 'A sparkling diamond on a gold base.': 'Ein funkelnder Diamant auf goldenem Sockel.',
+    'Royal Crown': 'Königskrone', 'The rarest trophy in the house.': 'Die seltenste Trophäe im Haus.',
+    'Big moments launch fireworks: big slot wins, blackjacks, roulette numbers and poker pots.': 'Große Momente zünden ein Feuerwerk: große Slot-Gewinne, Blackjacks, Roulette-Zahlen und Poker-Pots.',
     'Chicken': 'Chicken', 'Bet per round': 'Einsatz pro Runde', 'Chicken rules': 'Chicken-Regeln', 'Difficulty': 'Schwierigkeit', 'Easy': 'Leicht', 'Hard': 'Schwer',
     'Start': 'Start', 'Hop ›': 'Hüpf ›', 'Next lane ›': 'Weiter ›', 'Cash out': 'Auszahlen',
     'Hop across the road. Every lane pays more, every car could end it.': 'Hüpf über die Straße. Jede Spur zahlt mehr, jedes Auto kann alles beenden.',
@@ -2559,7 +2677,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   };
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
-    ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
+    ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'], ['Trophies ({a})', 'Trophäen ({a})'],
     ['Lane {a} made it! ×{b} · cash out {c} or keep going.', 'Spur {a} geschafft! ×{b} · {c} auszahlen oder weiter.'], ['Splat! Hit in lane {a}. The {b} is gone.', 'Platsch! In Spur {a} erwischt. Die {b} sind weg.'],
     ['Made it across! ×{a} · +{b}', 'Geschafft, ganz rüber! ×{a} · +{b}'], ['Cashed out at lane {a}: ×{b} · +{c}', 'In Spur {a} ausgezahlt: ×{b} · +{c}'],
     ['Back in lane {a}. Cash out or keep going.', 'Zurück in Spur {a}. Auszahlen oder weiter.'], ['Cash out{a}', 'Auszahlen{a}'],
@@ -2785,7 +2903,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   ];
   const MEDAL_IDS = MEDALS.map(m => m.id);
   const medalSvg = m => `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M8 1h6l4 10h-6z" fill="#c8323a"/><path d="M24 1h-6l-4 10h6z" fill="#3d7bd9"/><circle cx="16" cy="20.5" r="10" fill="${m.color}" stroke="#0007" stroke-width="1.5"/><circle cx="16" cy="20.5" r="7.2" fill="none" stroke="#fff8" stroke-width="1"/><text x="16" y="25" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="700" fill="#1d1714">${m.glyph}</text></svg>`;
+  const cabIcon = (body, edge, glow) => `<svg viewBox="0 0 48 48"><rect x="9" y="4" width="30" height="40" rx="6" fill="${body}" stroke="${edge}" stroke-width="2.5"/><rect x="13" y="13" width="22" height="13" rx="2" fill="#f6efe3"/><path d="M17 19.5h4M22 19.5h4M27 19.5h4" stroke="#c8323a" stroke-width="3" stroke-linecap="round"/><circle cx="17" cy="8.5" r="1.6" fill="${glow}"/><circle cx="24" cy="8.5" r="1.6" fill="${glow}"/><circle cx="31" cy="8.5" r="1.6" fill="${glow}"/><rect x="15" y="32" width="18" height="5" rx="2.5" fill="${glow}"/><path d="M39 22h3v-8" stroke="#c9b9a2" stroke-width="2" fill="none"/><circle cx="42" cy="13" r="2.6" fill="#c8323a"/></svg>`;
+  const nameIcon = (a, b, c) => `<svg viewBox="0 0 48 48"><rect x="4" y="12" width="40" height="24" rx="6" fill="#1d1714" stroke="${b}" stroke-width="2"/><text x="24" y="30" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="14" fill="${a}" stroke="${c}" stroke-width=".6">Aa</text><circle cx="9" cy="17" r="1.3" fill="${b}"/><circle cx="39" cy="31" r="1.3" fill="${b}"/></svg>`;
+  const cupIcon = (body, dark, gem) => `<svg viewBox="0 0 48 48"><path d="M14 8h20v8a10 10 0 0 1-20 0z" fill="${body}" stroke="${dark}" stroke-width="2" stroke-linejoin="round"/><path d="M14 11H8a6 6 0 0 0 7 8M34 11h6a6 6 0 0 1-7 8" fill="none" stroke="${dark}" stroke-width="2.5"/><path d="M22 26h4v6h-4z" fill="${dark}"/><rect x="15" y="32" width="18" height="5" rx="1.5" fill="${body}" stroke="${dark}" stroke-width="2"/><rect x="12" y="37" width="24" height="5" rx="1.5" fill="${dark}"/><path d="M18 11q1 5 4 7" stroke="#fff8" stroke-width="2" fill="none" stroke-linecap="round"/>${gem ? `<path d="M24 12l3 3-3 4-3-4z" fill="${gem}" stroke="#fff" stroke-width=".8"/>` : ''}</svg>`;
   Object.assign(SHOP_ICONS, {
+    ruby: cabIcon('#7a1820', '#e0414a', '#ffb3b8'), emerald: cabIcon('#0f4a33', '#3fd1a4', '#c8ffe4'), bubblegum: cabIcon('#8a3a6c', '#ff8fb8', '#ffe0ef'), carbon: cabIcon('#1b1b1e', '#9aa3b5', '#d6dae4'),
+    goldName: nameIcon('#f3c94b', '#e9a23b', '#8a5a12'), fireName: nameIcon('#ff8a3c', '#e0414a', '#7a1a20'), iceName: nameIcon('#bff3ff', '#4fe3ff', '#1d7a99'), galaxyName: nameIcon('#d9c2ff', '#a77bff', '#3a1f6e'),
+    bronzeCup: cupIcon('#c98a4b', '#7a4a22'), silverCup: cupIcon('#d6dae4', '#7a8396'), goldCup: cupIcon('#f3c94b', '#a8741a'), diamondTrophy: cupIcon('#f3c94b', '#a8741a', '#4fe3ff'), crownTrophy: '<svg viewBox="0 0 48 48"><path d="M8 34L5 12l10 8 9-13 9 13 10-8-3 22z" fill="#f3c94b" stroke="#a8741a" stroke-width="2" stroke-linejoin="round"/><rect x="8" y="34" width="32" height="7" rx="2" fill="#c98a24" stroke="#a8741a" stroke-width="2"/><circle cx="24" cy="26" r="3.5" fill="#e0414a"/><circle cx="14" cy="28" r="2.2" fill="#4fe3ff"/><circle cx="34" cy="28" r="2.2" fill="#7fd18b"/><circle cx="5" cy="12" r="2" fill="#fff2c4"/><circle cx="24" cy="7" r="2" fill="#fff2c4"/><circle cx="43" cy="12" r="2" fill="#fff2c4"/></svg>',
     midnight: '<svg viewBox="0 0 48 48"><rect x="9" y="4" width="30" height="40" rx="6" fill="#14203a" stroke="#4fe3ff" stroke-width="2"/><rect x="13" y="14" width="22" height="13" rx="2" fill="#0b1222" stroke="#4fe3ff88"/><path d="M27 17a4 4 0 1 0 3 6 5 5 0 0 1-3-6z" fill="#bff3ff"/><circle cx="24" cy="36" r="3" fill="#4fe3ff"/></svg>',
     disco: '<svg viewBox="0 0 48 48"><circle cx="24" cy="22" r="14" fill="#9aa3b5"/><path d="M10 22h28M24 8v28M13 14h22M13 30h22M17 9.5c-3 8-3 17 0 25M31 9.5c3 8 3 17 0 25" stroke="#5b6478" stroke-width="1.2" fill="none"/><circle cx="19" cy="16" r="3" fill="#fff"/><g stroke-linecap="round" stroke-width="3"><path d="M6 42l4-4" stroke="#ff4fd8"/><path d="M24 44v-5" stroke="#4fe3ff"/><path d="M42 42l-4-4" stroke="#7dff6a"/></g></svg>',
     royalFelt: '<svg viewBox="0 0 48 48"><ellipse cx="24" cy="26" rx="20" ry="14" fill="#5b2a86" stroke="#3a1858" stroke-width="3"/><ellipse cx="24" cy="26" rx="14" ry="9" fill="none" stroke="#e9a23b88" stroke-width="1.5"/><path d="M16 14l3-6 5 4 5-4 3 6z" fill="#e9a23b"/></svg>',
@@ -2860,18 +2984,34 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   };
 
   // Boosts are armed for the next spin and charged as a multiple of the bet when it starts.
+  const NAME_FLAIRS = ['neon', 'gold', 'fire', 'ice', 'galaxy'];
+  const TROPHY_IDS = ['bronzeCup', 'silverCup', 'goldCup', 'diamondTrophy', 'crownTrophy'];
   const GOODIES = [
     { id: 'horseshoe', kind: 'level', max: 3, name: 'Lucky Horseshoe', desc: 'Three sevens pay 8× more per level. Stack up to three.', price: () => 2000 * 3 ** state.owned.horseshoe },
     { id: 'goldCherry', kind: 'perm', name: 'Golden Cherries', desc: 'Three cherries pay 3.5× instead of 3×.', price: () => 1500 },
     { id: 'piggy', kind: 'perm', name: 'Piggy Bank', desc: 'Get 2% of your bet back on every losing spin.', price: () => 3000 },
     { id: 'autospin', kind: 'perm', name: 'Auto-Spin Lever', desc: 'Unlocks Auto ×10: ten spins in a row.', price: () => 1000 },
-    { id: 'gold', kind: 'cosmetic', name: 'Gold Cabinet', desc: 'Plates the machine in gold. Purely for show.', price: () => 25000, excl: 'midnight' },
-    { id: 'midnight', kind: 'cosmetic', name: 'Midnight Cabinet', desc: 'A deep-blue machine with glowing cyan trim. Purely for show.', price: () => 30000, excl: 'gold' },
-    { id: 'disco', kind: 'cosmetic', name: 'Disco Bulbs', desc: 'The bulbs on top of the machine flash in every colour of the rainbow.', price: () => 8000 },
-    { id: 'royalFelt', kind: 'cosmetic', name: 'Royal Felt', desc: 'Purple velvet on the blackjack, roulette and poker tables.', price: () => 15000 },
-    { id: 'goldBacks', kind: 'cosmetic', name: 'Golden Card Backs', desc: 'Every face-down card gets a gold-and-black back.', price: () => 12000 },
-    { id: 'fireworks', kind: 'cosmetic', name: 'Fireworks', desc: 'Big moments launch fireworks: slot wins of 10× or more, blackjacks, roulette numbers and poker pots.', price: () => 20000 },
-    { id: 'neon', kind: 'cosmetic', name: 'Neon Name', desc: 'Your name glows in rainbow neon for everyone: highscores, chat and the online list.', price: () => 40000 },
+    // Cosmetics sit on a shelf; within a group only one can be switched on at a time.
+    { id: 'gold', kind: 'cosmetic', shelf: 'cabinet', group: 'cabinet', name: 'Gold Cabinet', desc: 'Plates the machine in gold.', price: () => 25000 },
+    { id: 'midnight', kind: 'cosmetic', shelf: 'cabinet', group: 'cabinet', name: 'Midnight Cabinet', desc: 'A deep-blue machine with glowing cyan trim.', price: () => 30000 },
+    { id: 'ruby', kind: 'cosmetic', shelf: 'cabinet', group: 'cabinet', name: 'Ruby Cabinet', desc: 'Deep red lacquer with a warm glow.', price: () => 20000 },
+    { id: 'emerald', kind: 'cosmetic', shelf: 'cabinet', group: 'cabinet', name: 'Emerald Cabinet', desc: 'Polished green, like a lucky clover.', price: () => 20000 },
+    { id: 'bubblegum', kind: 'cosmetic', shelf: 'cabinet', group: 'cabinet', name: 'Bubblegum Cabinet', desc: 'Sweet pink with a candy shine.', price: () => 18000 },
+    { id: 'carbon', kind: 'cosmetic', shelf: 'cabinet', group: 'cabinet', name: 'Carbon Cabinet', desc: 'Black carbon weave and steel trim.', price: () => 35000 },
+    { id: 'neon', kind: 'cosmetic', shelf: 'name', group: 'name', flair: 'neon', name: 'Neon Name', desc: 'Your name glows in rainbow neon for everyone.', price: () => 40000 },
+    { id: 'goldName', kind: 'cosmetic', shelf: 'name', group: 'name', flair: 'gold', name: 'Golden Name', desc: 'Your name shimmers in gold for everyone.', price: () => 15000 },
+    { id: 'fireName', kind: 'cosmetic', shelf: 'name', group: 'name', flair: 'fire', name: 'Fire Name', desc: 'Your name burns in flickering flames.', price: () => 22000 },
+    { id: 'iceName', kind: 'cosmetic', shelf: 'name', group: 'name', flair: 'ice', name: 'Ice Name', desc: 'Your name sparkles like frost.', price: () => 22000 },
+    { id: 'galaxyName', kind: 'cosmetic', shelf: 'name', group: 'name', flair: 'galaxy', name: 'Galaxy Name', desc: 'Your name drifts through a starry galaxy.', price: () => 50000 },
+    { id: 'bronzeCup', kind: 'cosmetic', shelf: 'trophy', group: 'trophy', name: 'Bronze Cup', desc: 'A trophy next to your name and on your profile shelf.', price: () => 5000 },
+    { id: 'silverCup', kind: 'cosmetic', shelf: 'trophy', group: 'trophy', name: 'Silver Cup', desc: 'Shiny silver, for everyone to see.', price: () => 25000 },
+    { id: 'goldCup', kind: 'cosmetic', shelf: 'trophy', group: 'trophy', name: 'Golden Cup', desc: 'The real deal: solid gold.', price: () => 100000 },
+    { id: 'diamondTrophy', kind: 'cosmetic', shelf: 'trophy', group: 'trophy', name: 'Diamond Trophy', desc: 'A sparkling diamond on a gold base.', price: () => 500000 },
+    { id: 'crownTrophy', kind: 'cosmetic', shelf: 'trophy', group: 'trophy', name: 'Royal Crown', desc: 'The rarest trophy in the house.', price: () => 2000000 },
+    { id: 'disco', kind: 'cosmetic', shelf: 'effect', name: 'Disco Bulbs', desc: 'The bulbs on top of the machine flash in every colour of the rainbow.', price: () => 8000 },
+    { id: 'royalFelt', kind: 'cosmetic', shelf: 'effect', name: 'Royal Felt', desc: 'Purple velvet on the blackjack, roulette and poker tables.', price: () => 15000 },
+    { id: 'goldBacks', kind: 'cosmetic', shelf: 'effect', name: 'Golden Card Backs', desc: 'Every face-down card gets a gold-and-black back.', price: () => 12000 },
+    { id: 'fireworks', kind: 'cosmetic', shelf: 'effect', name: 'Fireworks', desc: 'Big moments launch fireworks: big slot wins, blackjacks, roulette numbers and poker pots.', price: () => 20000 },
     { id: 'lightning', kind: 'perm', name: 'Lightning Strike', desc: 'On 1% of your slot wins lightning strikes and multiplies the win ×2, ×3, ×5 or even ×10.', price: () => 250000 },
   ];
 
@@ -4129,7 +4269,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     $('lobby').hidden = false;
     document.querySelector(`.game-pick[data-mode="${state.mode}"]`)?.focus();
   }
-  document.querySelectorAll('.game-pick').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.game-pick[data-mode]').forEach(b => b.addEventListener('click', () => {
     state.mode = b.dataset.mode;
     applyGameMode();
     $('lobby').hidden = true;
@@ -5965,30 +6105,66 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
   // ---------- Shop ----------
   const goodieEls = {};
+  // The shop page: shelves of goodies, each on a stand with a price tag.
   const goodieHtml = g => `
-    <div class="goodie${g.kind === 'cosmetic' ? ' cosmetic' : ''}">
-      ${SHOP_ICONS[g.id]}
-      <div><h3>${g.name}</h3><p>${g.desc}</p><span class="status" id="st-${g.id}"></span></div>
-      <button class="buy" id="buy-${g.id}"></button>
+    <div class="ware" data-id="${g.id}">
+      <div class="ware-stand"><span class="ware-icon">${SHOP_ICONS[g.id]}</span></div>
+      <h4>${g.name}</h4><p>${g.desc}</p><span class="status" id="st-${g.id}"></span>
+      <button class="buy price-tag" id="buy-${g.id}"></button>
     </div>`;
-  $('goodies').innerHTML = `<h3 class="shop-group">Power-ups</h3>${GOODIES.filter(g => g.kind !== 'cosmetic').map(goodieHtml).join('')}` +
-    `<h3 class="shop-group">Cosmetics</h3>${GOODIES.filter(g => g.kind === 'cosmetic').map(goodieHtml).join('')}`;
+  const SHELVES = [
+    ['useful', 'power', 'Power-ups', g => g.kind !== 'cosmetic'],
+    ['cosmetic', 'cabinet', 'Machine colours', g => g.shelf === 'cabinet'],
+    ['cosmetic', 'name', 'Name styles', g => g.shelf === 'name'],
+    ['cosmetic', 'trophy', 'Trophies', g => g.shelf === 'trophy'],
+    ['cosmetic', 'effect', 'Effects', g => g.shelf === 'effect'],
+  ];
+  $('goodies').innerHTML = SHELVES.map(([tab, id, title, test]) =>
+    `<section class="shelf" data-for="${tab}" data-shelf="${id}"><h3 class="shelf-title">${title}</h3><div class="shelf-row">${GOODIES.filter(test).map(goodieHtml).join('')}</div></section>`).join('');
+  let shopTab = 'useful', shopFromLobby = false;
+  function showShopTab(tab) {
+    shopTab = tab;
+    document.querySelectorAll('[data-shelf-tab]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.shelfTab === tab)));
+    document.querySelectorAll('#shopPage [data-for]').forEach(el => { el.hidden = el.dataset.for !== tab; });
+  }
+  function openShop() {
+    if (!account) return;
+    shopFromLobby = !$('lobby').hidden;
+    $('lobby').hidden = true;
+    showShopTab(shopTab);
+    renderShop();
+    $('shopPage').hidden = false;
+    $('shopPage').scrollTop = 0;
+    $('shopBack').focus();
+    sound.chime();
+  }
+  function closeShop() {
+    $('shopPage').hidden = true;
+    if (shopFromLobby) showLobby();
+    render();
+  }
+  document.addEventListener('click', e => { if (e.target.closest('[data-shop]')) openShop(); });
+  $('shopBack').addEventListener('click', closeShop);
+  $('shopPage').addEventListener('keydown', e => { if (e.key === 'Escape') closeShop(); });
+  document.querySelectorAll('[data-shelf-tab]').forEach(b => b.addEventListener('click', () => { showShopTab(b.dataset.shelfTab); sound.chip(); }));
   GOODIES.forEach(g => {
     goodieEls[g.id] = { btn: $('buy-' + g.id), status: $('st-' + g.id) };
     goodieEls[g.id].btn.addEventListener('click', () => buy(g));
   });
 
   const cosOn = id => !!state.owned[id] && !state.cosOff?.[id];
-  // Remember whether the shop is open (per browser).
-  try { $('shopBox').open = localStorage.getItem('lucky-reels-shop-open') === '1'; } catch {}
-  $('shopBox').addEventListener('toggle', () => { try { localStorage.setItem('lucky-reels-shop-open', $('shopBox').open ? '1' : '0'); } catch {} });
+  // Switching a cosmetic on switches off the others of its group.
+  function cosSolo(g) { if (g.group) for (const o of GOODIES) if (o.group === g.group && o.id !== g.id) state.cosOff[o.id] = true; }
+  const activeIn = group => GOODIES.find(g => g.group === group && cosOn(g.id));
+  const myFlair = () => activeIn('name')?.flair || null;
+  const myTrophies = () => { const top = activeIn('trophy'); const all = GOODIES.filter(g => g.shelf === 'trophy' && state.owned[g.id]).map(g => g.id); return top ? [top.id, ...all.filter(x => x !== top.id)] : all.length ? ['', ...all] : []; };
   function buy(g) {
     if (busy) return;
     // An owned cosmetic: the button switches it on and off.
     if (g.kind === 'cosmetic' && state.owned[g.id]) {
       const on = !cosOn(g.id);
       state.cosOff[g.id] = !on;
-      if (on && g.excl) state.cosOff[g.excl] = true;
+      if (on) cosSolo(g);
       sound.chip();
       render();
       return;
@@ -6003,8 +6179,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       state.owned[g.id] = true;
     }
     state.credits -= price;
-    if (g.kind === 'cosmetic') state.cosOff[g.id] = false;
-    if (g.excl) state.cosOff[g.excl] = true;
+    if (g.kind === 'cosmetic') { state.cosOff[g.id] = false; cosSolo(g); }
     if (g.id === 'horseshoe') buildReels();
     toast('Goodie bought', g.name);
     sound.chime();
@@ -6016,12 +6191,15 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   }
 
   function renderShop() {
+    $('shopCredits').textContent = fmt(state.credits);
     for (const g of GOODIES) {
+      goodieEls[g.id].btn.closest('.ware').classList.toggle('owned', g.kind !== 'level' && !!state.owned[g.id]);
+      goodieEls[g.id].btn.closest('.ware').classList.toggle('on', g.kind === 'cosmetic' && cosOn(g.id));
       const { btn, status } = goodieEls[g.id];
       if (g.kind === 'level') {
         const lv = state.owned[g.id];
         const maxed = lv >= g.max;
-        btn.textContent = maxed ? 'Maxed' : `Buy · ${fmt(g.price())}`;
+        btn.textContent = maxed ? 'Maxed' : fmt(g.price());
         btn.disabled = maxed || busy || state.credits < g.price();
         status.textContent = `Level ${lv} of ${g.max}`;
       } else if (g.kind === 'cosmetic' && state.owned[g.id]) {
@@ -6032,7 +6210,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         status.textContent = on ? 'On' : 'Off';
       } else {
         const owned = state.owned[g.id];
-        btn.textContent = owned ? 'Owned' : `Buy · ${fmt(g.price())}`;
+        btn.textContent = owned ? 'Owned' : fmt(g.price());
         btn.disabled = owned || busy || state.credits < g.price();
         status.textContent = owned ? 'Active' : '';
       }
@@ -6101,8 +6279,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     auto.textContent = autoLeft ? `Stop (${autoLeft})` : 'Auto ×10';
     auto.classList.toggle('running', autoLeft > 0);
     auto.disabled = !autoLeft && (busy || (!free && state.credits < cost));
-    cabinet.classList.toggle('gold', cosOn('gold'));
-    cabinet.classList.toggle('midnight', cosOn('midnight'));
+    for (const id of ['gold', 'midnight', 'ruby', 'emerald', 'bubblegum', 'carbon']) cabinet.classList.toggle(id, cosOn(id));
+    if (!$('shopPage').hidden) renderShop();
     for (const id of ['disco', 'royalFelt', 'goldBacks']) document.body.classList.toggle('cos-' + id, cosOn(id));
     const owned = GOODIES.filter(g => g.kind === 'level' ? state.owned[g.id] > 0 : state.owned[g.id]).length;
     $('shopOwned').textContent = `${owned} / ${GOODIES.length}`;
@@ -6294,7 +6472,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     jackpots: Number(p.jackpots) || 0, flair: p.flair || null,
     avatar: Number.isInteger(p.avatar) && p.avatar >= 0 && p.avatar < 8 ? p.avatar : null,
     medals: Array.isArray(p.medals) ? p.medals.filter(m => MEDAL_IDS.includes(m)) : [],
-    prestige: Math.max(0, Math.min(99, Number(p.prestige) || 0)), admin: !!(p.admin ?? p.is_admin), banned: !!(p.banned ?? p.is_banned), adminRev: Number(p.adminRev ?? p.admin_rev) || 0,
+    prestige: Math.max(0, Math.min(99, Number(p.prestige) || 0)),
+    trophies: Array.isArray(p.trophies) ? p.trophies.filter(t => t === '' || TROPHY_IDS.includes(t)) : [], admin: !!(p.admin ?? p.is_admin), banned: !!(p.banned ?? p.is_banned), adminRev: Number(p.adminRev ?? p.admin_rev) || 0,
   }));
   const adminChanged = () => Object.assign(new Error('changed by an admin'), { code: 'admin_changed' });
   const SESSION_KEY = 'lucky-reels-session';
@@ -6367,12 +6546,12 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           for (const p of players) {
             const doc = await store.load(p.id);
             if (!doc) continue;
-            await store.save(p.id, { credits: 500, best: 0, level: 1, spins: 0, jackpots: 0, game: null, flair: null, prestige: 0, adminRev: (Number(doc.adminRev) || 0) + 1 });
+            await store.save(p.id, { credits: 500, best: 0, level: 1, spins: 0, jackpots: 0, game: null, flair: null, trophies: [], prestige: 0, adminRev: (Number(doc.adminRev) || 0) + 1 });
           }
         },
         async reset(id) {
           const doc = await store.load(id);
-          await store.save(id, { credits: settings.startCredits, best: 0, level: 1, spins: 0, jackpots: 0, game: null, flair: null, prestige: 0, adminRev: (Number(doc?.adminRev) || 0) + 1 });
+          await store.save(id, { credits: settings.startCredits, best: 0, level: 1, spins: 0, jackpots: 0, game: null, flair: null, trophies: [], prestige: 0, adminRev: (Number(doc?.adminRev) || 0) + 1 });
         },
         setBanned: (id, value) => store.save(id, { banned: value }),
         setMedals: (id, medals) => store.save(id, { medals }),
@@ -6613,6 +6792,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     let hasFlair = !(await sb.from('players').select('flair').limit(1)).error;
     let hasProfile = !(await sb.from('players').select('avatar,medals').limit(1)).error;
     let hasPrestige = !(await sb.from('players').select('prestige').limit(1)).error;
+    let hasTrophies = !(await sb.from('players').select('trophies').limit(1)).error;
     const adminCols = adminSchema ? ',is_admin,is_banned,admin_rev' : '';
     // New accounts are only offered when Supabase confirms them on the spot: the made-up addresses can't receive mail.
     let canSignUp = false;
@@ -6681,7 +6861,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         if (!hasFlair) delete patch.flair;
         if (!hasProfile) delete patch.avatar;
         if (!hasPrestige) delete patch.prestige;
+        if (!hasTrophies) delete patch.trophies;
         let { data, error } = await send();
+        // Before the shop SQL runs there is no trophies column; save without it.
+        if (error && hasTrophies && /trophies/.test(error.message || '')) {
+          hasTrophies = false;
+          delete patch.trophies;
+          ({ data, error } = await send());
+        }
         // Before the prestige SQL runs there is no prestige column; save without it.
         if (error && hasPrestige && /prestige/.test(error.message || '')) {
           hasPrestige = false;
@@ -6849,7 +7036,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       },
       watch(cb) {
         const pull = async () => {
-          let { data, error } = await sb.from('players').select(`id,name,credits,best,level${hasJackpots ? ',jackpots' : ''}${hasFlair ? ',flair' : ''}${hasProfile ? ',avatar,medals' : ''}${hasPrestige ? ',prestige' : ''}${adminCols}`);
+          let { data, error } = await sb.from('players').select(`id,name,credits,best,level${hasJackpots ? ',jackpots' : ''}${hasFlair ? ',flair' : ''}${hasProfile ? ',avatar,medals' : ''}${hasPrestige ? ',prestige' : ''}${hasTrophies ? ',trophies' : ''}${adminCols}`);
           if (error && hasJackpots) {
             hasJackpots = false;
             ({ data } = await sb.from('players').select(`id,name,credits,best,level${adminCols}`));
@@ -6942,7 +7129,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
             `<td><span class="rank">${i + 1}</span>${online.has(p.id) ? '<i class="dot" title="Online"></i>' : ''}` +
             avatarHtml(p.id, p.name, '', account ? 'button' : 'span') +
             `${me || !account ? nameHtml(p.id, p.name) : `<span data-dm="${esc(p.id)}" title="Send ${esc(p.name)} a private message">${nameHtml(p.id, p.name)}</span>`}` +
-            medalsHtml(p.id) +
+            trophyHtml(p.id) + medalsHtml(p.id) +
             `${me ? '<span class="you">you</span>' : ''}${hot ? '<span class="jp-badge">JACKPOT</span>' : ''}</td>` +
             `<td>${fmt(p.credits)}</td><td>${fmt(p.best)}</td><td>${p.level}</td></tr>`;
         }).join('') + '</tbody>'
@@ -6973,7 +7160,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (!account || !backend || account.deleted) return;
     if (saving) { saveAgain = true; return; }
     const key = account.id;
-    const body = { credits: state.credits, best: state.best, level: state.level, spins: state.spins, jackpots: state.jackpots, flair: state.owned.neon && !state.cosOff?.neon ? 'neon' : null, avatar: state.avatar ?? null, prestige: state.prestige || 0, adminRev: state.adminRev, game: JSON.stringify(state) };
+    const body = { credits: state.credits, best: state.best, level: state.level, spins: state.spins, jackpots: state.jackpots, flair: myFlair(), trophies: myTrophies(), avatar: state.avatar ?? null, prestige: state.prestige || 0, adminRev: state.adminRev, game: JSON.stringify(state) };
     const json = JSON.stringify(body);
     if (json === lastSaved) return;
     saving = true;
@@ -7115,10 +7302,17 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const partnerOf = m => m.from === account?.id ? m.to : m.from;
   // A player's name as HTML, glowing if they own the Neon Name (your own shows right away).
   const nameHtml = (id, name) => {
-    const neon = id === account?.id ? state.owned.neon && !state.cosOff?.neon : players.find(p => p.id === id)?.flair === 'neon';
-    return (neon ? `<span class="neon-name">${esc(name)}</span>` : esc(name)) + prestigeBadge(prestigeOf(id));
+    const flair = id === account?.id ? myFlair() : players.find(p => p.id === id)?.flair;
+    const cls = flair === 'neon' ? 'neon-name' : NAME_FLAIRS.includes(flair) ? 'name-' + flair : '';
+    return (cls ? `<span class="${cls}">${esc(name)}</span>` : esc(name)) + prestigeBadge(prestigeOf(id));
   };
   const byName = (a, b) => a.name.localeCompare(b.name);
+  const trophiesOf = id => id === account?.id ? myTrophies() : players.find(p => p.id === id)?.trophies || [];
+  // The trophy a player shows next to their name (the first entry; '' means none on display).
+  function trophyHtml(id) {
+    const t = trophiesOf(id)[0];
+    return t && SHOP_ICONS[t] ? `<span class="name-trophy" title="${esc(GOODIES.find(g => g.id === t)?.name || '')}">${SHOP_ICONS[t]}</span>` : '';
+  }
   // Prestige badges: a jewel with the prestige number, a new colour for each of the first five.
   const PRESTIGE_TIERS = [
     ['#fff2c4', '#e9a23b', '#8a5a12'], ['#ffd6e4', '#f07aa0', '#8a2c4f'], ['#c8ffe4', '#3fd1a4', '#16624a'],
@@ -7172,6 +7366,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     $('profileBody').innerHTML = `${avatarHtml(p.id, p.name, 'lg')}<h2 id="profileName">${nameHtml(p.id, p.name)}</h2>` +
       (prestigeOf(p.id) ? `<span class="prestige-line">Prestige ${roman(prestigeOf(p.id))}</span>` : '') + prestigeRow +
       `<div class="profile-stats"><div><b>${fmt(credits)}</b><span>Credits</span></div><div><b>${fmt(best)}</b><span>Best win</span></div><div><b>${level}</b><span>Level</span></div></div>` +
+      (() => { const tro = trophiesOf(p.id).filter(Boolean); return tro.length ? `<span class="profile-label">Trophies (${tro.length})</span><div class="trophy-shelf">${tro.map(t => `<span title="${esc(GOODIES.find(g => g.id === t)?.name || '')}">${SHOP_ICONS[t]}</span>`).join('')}</div>` : ''; })() +
       `<span class="profile-label">Medals (${medals.length})</span>` +
       (medals.length ? `<div class="medal-list">${medals.map(m => `<div class="medal-row">${medalSvg(m)}<span><b>${esc(m.name)}</b><small>${esc(m.desc)}</small></span></div>`).join('')}</div>`
         : `<p class="note">${mine ? 'No medals yet. Admins award them for special moments.' : 'No medals yet.'}</p>`) + picker +
