@@ -404,13 +404,24 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 
 details.paytable, details.bj-rules { background: var(--panel); border-radius: 10px; padding: 10px 14px; }
 
-/* Game switch */
-.game-modes { display: flex; justify-content: center; gap: 6px; margin-top: 8px; }
+/* Back to the lobby */
+.back-btn {
+  position: absolute; z-index: 5; left: 14px; top: 14px;
+  display: grid; place-items: center;
+  width: 38px; height: 38px; padding: 0;
+  border-radius: 999px;
+  background: var(--panel); color: var(--fg);
+  border: 2px solid var(--cabinet-edge);
+  font-weight: 600; font-size: 13px;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.back-btn svg { width: 18px; height: 18px; }
+.back-btn:hover { border-color: var(--accent); color: var(--accent); transform: translateX(-2px); }
+@media (max-width: 600px) { .back-btn { left: 10px; top: 10px; } }
 .gm { padding: 6px 16px; border-radius: 999px; background: var(--panel); color: var(--muted); font-weight: 600; font-size: 13px; }
 .gm[aria-selected="true"] { background: var(--accent); color: var(--ink); }
 .cabinet:not([data-mode="bj"]) .bj, .cabinet:not([data-mode="rl"]) .rl, .cabinet:not([data-mode="pk"]) .pk { display: none; }
 .cabinet:not([data-mode="slots"]) :is(#window, #reelCtl, #tier, #message, .meters, .bet, .spin-row, #boosts, details.paytable) { display: none !important; }
-.game-modes { flex-wrap: wrap; }
 body.wide .layout { max-width: 980px; grid-template-columns: minmax(0, 1fr); }
 body.wide .account-bar { max-width: 980px; }
 
@@ -1592,16 +1603,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
 <div class="layout">
   <main class="cabinet" id="cabinet" data-mode="slots">
+    <button class="back-btn" id="backBtn" type="button" aria-label="Back to the game selection" title="Back to the game selection"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <header class="marquee">
       <div class="bulbs" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
       <h1>Lucky Reels</h1>
       <p id="marqueeSub">Three reels · one payline · play credits</p>
-      <div class="game-modes" role="tablist" aria-label="Game">
-        <button class="gm" role="tab" data-mode="slots" aria-selected="true">Slots</button>
-        <button class="gm" role="tab" data-mode="bj" aria-selected="false">Blackjack</button>
-        <button class="gm" role="tab" data-mode="rl" aria-selected="false">Roulette</button>
-        <button class="gm" role="tab" data-mode="pk" aria-selected="false">Poker</button>
-      </div>
     </header>
 
     <div class="window" id="window">
@@ -2054,7 +2060,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'The chat is not set up yet. Ask the person who runs the game to run the chat setup.': 'Der Chat ist noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, die Chat-Einrichtung auszuführen.',
     'Private chats are not set up yet. Ask the person who runs the game to run the private-chat setup.': 'Private Chats sind noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, sie einzurichten.',
     'The message did not go through. Try again.': 'Die Nachricht ging nicht durch. Versuch es nochmal.', 'Chat is switched off for players': 'Der Chat ist für Spieler abgeschaltet',
-    'Someone': 'Jemand', 'Actions': 'Aktionen',
+    'Someone': 'Jemand', 'Actions': 'Aktionen', 'Back to the game selection': 'Zurück zur Spielauswahl',
+    'One moment': 'Einen Moment', 'Let the current round finish first.': 'Lass die laufende Runde erst zu Ende gehen.',
     'Power-ups': 'Power-ups', 'Cosmetics': 'Kosmetik', 'Turn on': 'Einschalten', 'Turn off': 'Ausschalten', 'On': 'An', 'Off': 'Aus', 'Active': 'Aktiv',
     'Midnight Cabinet': 'Mitternachtsgehäuse', 'A deep-blue machine with glowing cyan trim. Purely for show.': 'Eine tiefblaue Maschine mit leuchtendem Cyan-Rand. Rein zur Show.',
     'Disco Bulbs': 'Disco-Lämpchen', 'The bulbs on top of the machine flash in every colour of the rainbow.': 'Die Lämpchen oben auf der Maschine blinken in allen Regenbogenfarben.',
@@ -3631,7 +3638,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     cabinet.dataset.mode = state.mode;
     cabinet.classList.toggle('mode-bj', bj);
     document.body.classList.toggle('wide', state.mode === 'pk');
-    document.querySelectorAll('.gm:not(.pkv)').forEach(b => b.setAttribute('aria-selected', String(b.dataset.mode === state.mode)));
     $('marqueeSub').textContent = MODE_SUBS[state.mode];
     if (state.mode === 'rl') rlEnter();
     if (state.mode === 'pk' && typeof pkEnter === 'function') pkEnter();
@@ -3640,7 +3646,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       if (!bjActive()) bjSay(state.bj.bet ? 'Deal when you are ready.' : 'Tap the chips to bet, then deal.');
     }
   }
-  // Lobby: pick a game after signing in; the switch in the cabinet header still works later.
+  // Lobby: pick a game after signing in; the back button in the cabinet returns here.
   function showLobby() {
     $('lobbyName').textContent = account?.name || '';
     $('lobbyCredits').textContent = fmt(state.credits);
@@ -3660,12 +3666,12 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     ({ bj: $('bjDeal'), rl: $('rlSpin'), slots: $('spin'), pk: $('pkSit') }[state.mode])?.focus({ preventScroll: true });
   }));
 
-  document.querySelectorAll('.gm:not(.pkv)').forEach(b => b.addEventListener('click', () => {
-    if (gameBusy() || state.mode === b.dataset.mode) return;
-    state.mode = b.dataset.mode;
-    applyGameMode();
+  $('backBtn').addEventListener('click', () => {
+    if (gameBusy()) { toast('One moment', 'Let the current round finish first.'); return; }
+    sound.chip();
     render();
-  }));
+    showLobby();
+  });
 
   // ---------- Roulette ----------
   // European wheel in pocket order, clockwise from zero.
