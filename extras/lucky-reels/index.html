@@ -1241,6 +1241,11 @@ html[data-lang="de"] .reel.held::after { content: "GEHALTEN"; }
 .broke-bar b { color: var(--accent); }
 .broke-bar .chip-btn { padding: 8px 14px; background: var(--accent); color: var(--ink); }
 .lobby-mine { background: var(--accent); color: var(--ink); padding: 10px 16px; animation: popIn 0.4s cubic-bezier(.2, 1.6, .4, 1); }
+.reload-now { background: var(--accent); color: var(--ink); }
+#reloadModal { z-index: 60; }
+.reload-info { font-weight: 400; color: var(--muted); line-height: 1.45; }
+.reload-row { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 10px; background: #e9a23b14; border: 1px dashed #e9a23b66; font-size: 13px; color: var(--muted); }
+.reload-row b { color: var(--fg); }
 .start-over-yes { background: var(--lose); color: var(--fg); }
 #startOverInfo { font-weight: 400; color: var(--muted); line-height: 1.45; }
 .mine-card { max-width: 440px; position: relative; background: linear-gradient(#2a1d18, #150f0c); }
@@ -1944,6 +1949,18 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   </div>
 </div>
 
+<div class="modal" id="reloadModal" role="alertdialog" aria-modal="true" aria-labelledby="reloadTitle" hidden>
+  <div class="modal-card">
+    <div class="eyebrow">Update</div>
+    <h2 id="reloadTitle">New update!</h2>
+    <p class="wheel-result reload-info">Lucky Reels just got an update. Reload the page to get the newest version.</p>
+    <div class="gamble-btns">
+      <button type="button" class="chip-btn" id="reloadLater">Later</button>
+      <button type="button" class="chip-btn reload-now" id="reloadNow">Reload now</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal" id="startOverModal" role="alertdialog" aria-modal="true" aria-labelledby="startOverTitle" aria-describedby="startOverInfo" hidden>
   <div class="modal-card">
     <div class="eyebrow">Start over</div>
@@ -2044,6 +2061,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           <label class="setting"><span class="label">Free spin win multiplier</span><input name="freeMult" type="number" min="1" max="20" step="1"></label>
           <label class="setting"><span class="label">Nudge chance after a loss (%)</span><input name="nudgeChance" type="number" min="0" max="100" step="1"></label>
           <label class="setting"><span class="label">Hold chance after a loss (%)</span><input name="holdChance" type="number" min="0" max="100" step="1"></label>
+          <div class="admin-row setting wide reload-row">
+            <span><b>New version online?</b> Ask everyone who has the game open to reload the page.</span>
+            <button class="abtn" type="button" id="askReload">Ask everyone to reload</button>
+          </div>
           <div class="admin-row setting wide">
             <button class="abtn ok" type="submit">Save settings</button>
             <button class="abtn" type="button" id="settingsDefaults">Back to defaults</button>
@@ -2240,7 +2261,12 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'The chat is not set up yet. Ask the person who runs the game to run the chat setup.': 'Der Chat ist noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, die Chat-Einrichtung auszuführen.',
     'Private chats are not set up yet. Ask the person who runs the game to run the private-chat setup.': 'Private Chats sind noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, sie einzurichten.',
     'The message did not go through. Try again.': 'Die Nachricht ging nicht durch. Versuch es nochmal.', 'Chat is switched off for players': 'Der Chat ist für Spieler abgeschaltet',
-    'Someone': 'Jemand', 'Actions': 'Aktionen', 'Really start over?': 'Wirklich neu anfangen?', 'Yes, start over': 'Ja, neu anfangen',
+    'Someone': 'Jemand', 'Actions': 'Aktionen',
+    'Update': 'Update', 'New update!': 'Neues Update!', 'Lucky Reels just got an update. Reload the page to get the newest version.': 'Lucky Reels hat gerade ein Update bekommen. Lade die Seite neu, um die neueste Version zu bekommen.',
+    'Later': 'Später', 'Reload now': 'Jetzt neu laden', 'New version online?': 'Neue Version online?',
+    'Ask everyone who has the game open to reload the page.': 'Bitte alle, die das Spiel offen haben, die Seite neu zu laden.',
+    'Ask everyone to reload': 'Alle zum Neuladen auffordern', 'Send to everyone?': 'An alle senden?',
+    'Everyone with the game open now sees “New update – please reload”.': 'Alle, die das Spiel offen haben, sehen jetzt „Neues Update – bitte neu laden“.', 'Really start over?': 'Wirklich neu anfangen?', 'Yes, start over': 'Ja, neu anfangen',
     'Amount': 'Betrag', 'Credits to send': 'Credits zum Verschicken', 'Send': 'Senden', 'Credits sent': 'Credits verschickt',
     'Enter how many credits to send.': 'Gib ein, wie viele Credits du schicken willst.', 'Not enough credits for that.': 'Dafür reichen deine Credits nicht.',
     'That player cannot get credits right now.': 'Dieser Spieler kann gerade keine Credits bekommen.',
@@ -2577,12 +2603,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     startCredits: 500, winMultiplier: 1, jackpotPay: 150, maxBet: 0,
     starGoal: 15, freeSpins: 6, freeMult: 2, nudgeChance: 12, holdChance: 15,
     econ: 2,
+    // Set by the admin's "ask everyone to reload" button; pages that see it go up show a reload prompt.
+    reloadAt: 0,
   };
   // Payout settings saved before the economy rework (econ 2) fall back to the new defaults.
   const ECON_KEYS = ['jackpotPay', 'starGoal', 'freeSpins', 'freeMult', 'nudgeChance', 'holdChance'];
   const SETTING_LIMITS = {
     startCredits: [0, 1e12], winMultiplier: [0.1, 100], jackpotPay: [1, 100000], maxBet: [0, Number.MAX_SAFE_INTEGER],
-    starGoal: [3, 50], freeSpins: [1, 50], freeMult: [1, 20], nudgeChance: [0, 100], holdChance: [0, 100], econ: [0, 100],
+    starGoal: [3, 50], freeSpins: [1, 50], freeMult: [1, 20], nudgeChance: [0, 100], holdChance: [0, 100], econ: [0, 100], reloadAt: [0, Number.MAX_SAFE_INTEGER],
   };
   function cleanSettings(raw) {
     const out = { ...DEFAULT_SETTINGS };
@@ -5712,6 +5740,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   });
   $('betInput').addEventListener('change', () => { $('betInput').value = state.bet; });
   $('sound').addEventListener('click', () => { state.sound = !state.sound; render(); });
+  $('reloadNow').addEventListener('click', async () => { try { await flush(); } catch {} location.reload(); });
+  $('reloadLater').addEventListener('click', () => { $('reloadModal').hidden = true; });
   // Starting over wipes the whole game, so it asks first.
   $('refill').addEventListener('click', () => {
     if (gameBusy()) return;
@@ -6942,8 +6972,12 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   let adminUnlocked = false;
   let refreshing = false;
 
+  // The first settings a page sees set the baseline; a later, newer reload request shows the prompt.
+  let reloadSeen = null;
   function applySettings(raw) {
     settings = cleanSettings(raw);
+    if (reloadSeen === null) reloadSeen = settings.reloadAt;
+    else if (settings.reloadAt > reloadSeen) { reloadSeen = settings.reloadAt; $('reloadModal').hidden = false; $('reloadNow').focus(); }
     STAR_GOAL = settings.starGoal;
     FREE_SPINS = settings.freeSpins;
     FREE_MULT = settings.freeMult;
@@ -7257,6 +7291,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       await backend.admin.saveSettings(patch);
       applySettings(patch);
       fillSettingsForm();
+    });
+  });
+  $('askReload').addEventListener('click', e => {
+    if (!confirmed(e.currentTarget, 'Send to everyone?')) return;
+    const at = Date.now();
+    adminDo('Everyone with the game open now sees “New update – please reload”.', async () => {
+      reloadSeen = at;
+      await backend.admin.saveSettings({ reloadAt: at });
     });
   });
   $('settingsDefaults').addEventListener('click', e => {
