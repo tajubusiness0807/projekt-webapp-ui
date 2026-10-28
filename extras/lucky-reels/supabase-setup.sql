@@ -317,3 +317,59 @@ grant execute on function public.admin_save_settings(jsonb) to authenticated;
 
 -- Make yourself an admin (use your own username):
 update public.players set is_admin = true where name = 'DEIN_NAME';
+
+-- ---------------------------------------------------------------------------
+-- Private chats: run this part once (after the admin part above).
+-- Who is online needs no table: it uses Supabase Realtime presence.
+
+create table if not exists public.direct_messages (
+  id bigint generated always as identity primary key,
+  sender uuid not null default auth.uid() references public.players (id) on delete cascade,
+  recipient uuid not null references public.players (id) on delete cascade,
+  body text not null check (char_length(trim(body)) between 1 and 300),
+  created_at timestamptz not null default now(),
+  check (sender <> recipient)
+);
+create index if not exists direct_messages_sender on public.direct_messages (sender, created_at desc);
+create index if not exists direct_messages_recipient on public.direct_messages (recipient, created_at desc);
+
+alter table public.direct_messages enable row level security;
+
+-- Only the two people in a private chat can read it; admins can't either.
+drop policy if exists "Only the two people read a private chat" on public.direct_messages;
+create policy "Only the two people read a private chat" on public.direct_messages
+  for select to authenticated
+  using (auth.uid() = sender or auth.uid() = recipient);
+
+drop policy if exists "Players send private messages as themselves" on public.direct_messages;
+create policy "Players send private messages as themselves" on public.direct_messages
+  for insert to authenticated
+  with check (
+    sender = auth.uid()
+    and exists (select 1 from public.players p where p.id = auth.uid() and not p.is_banned)
+    and (
+      coalesce((select (data ->> 'chatEnabled')::boolean from public.settings where id = 1), true)
+      or exists (select 1 from public.players p where p.id = auth.uid() and p.is_admin)
+    )
+  );
+
+create or replace function public.stamp_direct_message()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.created_at := now();
+  return new;
+end;
+$$;
+
+drop trigger if exists stamp_direct_message on public.direct_messages;
+create trigger stamp_direct_message
+  before insert on public.direct_messages
+  for each row execute function public.stamp_direct_message();
+
+do $$
+begin
+  alter publication supabase_realtime add table public.direct_messages;
+exception when duplicate_object then null;
+end $$;

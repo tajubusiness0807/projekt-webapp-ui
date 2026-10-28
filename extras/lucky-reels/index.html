@@ -534,7 +534,7 @@ details.ach { margin-top: 10px; }
   bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   width: min(360px, calc(100vw - 32px));
   height: min(520px, calc(100vh - 120px));
-  display: grid; grid-template-rows: auto minmax(0, 1fr) auto;
+  display: grid; grid-template-rows: auto auto auto minmax(0, 1fr) auto;
   background: var(--cabinet);
   border: 3px solid var(--accent);
   border-radius: 18px;
@@ -546,6 +546,18 @@ details.ach { margin-top: 10px; }
 .chat-head { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border-bottom: 1px solid #ffffff14; }
 .chat-head h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 18px; color: var(--accent); }
 .chat-head span { font-size: 12px; color: var(--muted); }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--win); box-shadow: 0 0 6px var(--win); margin-right: 6px; vertical-align: 1px; flex: none; }
+.chat-online { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 10px 14px 0; }
+.chat-online .label { flex-basis: 100%; }
+.online-chip { display: inline-flex; align-items: center; padding: 5px 10px; border-radius: 999px; background: var(--panel); color: var(--fg); font-size: 12px; font-weight: 600; border: 1px solid #7fd18b55; }
+.online-chip:hover { border-color: var(--win); }
+.online-none { font-size: 12px; color: var(--muted); }
+.chat-tabs { display: flex; gap: 6px; padding: 10px 14px; overflow-x: auto; border-bottom: 1px solid #ffffff14; scrollbar-width: thin; }
+.chat-tab { display: inline-flex; align-items: center; flex: none; padding: 6px 12px; border-radius: 999px; background: var(--panel); color: var(--muted); font-size: 12px; font-weight: 600; }
+.chat-tab[aria-pressed="true"] { background: var(--accent); color: var(--ink); }
+.tab-badge { margin-left: 6px; min-width: 18px; padding: 0 5px; border-radius: 9px; background: #c8323a; color: #fff; font: 600 11px/18px var(--font-mono); text-align: center; }
+#boardGame [data-dm] { cursor: pointer; text-decoration: underline dotted #ffffff40; text-underline-offset: 3px; }
+#boardGame [data-dm]:hover { color: var(--accent); }
 .chat-close { background: var(--panel); color: var(--fg); width: 32px; height: 32px; font-size: 18px; line-height: 1; }
 .chat-log { overflow-y: auto; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; overscroll-behavior: contain; }
 .chat-empty { margin: auto; text-align: center; color: var(--muted); font-size: 13px; line-height: 1.5; }
@@ -930,6 +942,8 @@ details.ach { margin-top: 10px; }
 <button class="chat-fab" id="chatFab" type="button" hidden>Chat <span class="badge" id="chatBadge" hidden>0</span></button>
 <section class="chat-panel" id="chatPanel" aria-labelledby="chatTitle" hidden>
   <div class="chat-head"><div><h2 id="chatTitle">Chat</h2><span id="chatSub">Everyone playing Lucky Reels</span></div><button class="chat-close" id="chatClose" type="button" aria-label="Close chat">×</button></div>
+  <div class="chat-online" id="chatOnline"></div>
+  <div class="chat-tabs" id="chatTabs" role="tablist" aria-label="Conversations"></div>
   <div class="chat-log" id="chatLog" aria-live="polite"></div>
   <form class="chat-form" id="chatForm">
     <input id="chatInput" maxlength="300" autocomplete="off" placeholder="Say something…" aria-label="Message">
@@ -2339,6 +2353,10 @@ details.ach { margin-top: 10px; }
       watch: cb => store.watch(cb),
       chatWatch: cb => store.chatWatch(cb),
       chatSend: text => store.chatSend(text),
+      presence: cb => store.presence(cb),
+      setOnline: me => store.setOnline(me),
+      dmWatch: cb => store.dmWatch(cb),
+      dmSend: (to, text) => store.dmSend(to, text),
     };
   }
 
@@ -2389,6 +2407,48 @@ details.ach { margin-top: 10px; }
       },
       async save(id, body) { all[id] = { ...all[id], ...body }; write(); emit(); },
       watch(cb) { listeners.add(cb); emit(); },
+      // Online: each tab stamps its player every 10 s; a stamp younger than 25 s counts as online.
+      presence(cb) {
+        const read = () => { try { return JSON.parse(localStorage.getItem(ONLINE_KEY) || '{}'); } catch { return {}; } };
+        const emitOnline = () => { const now = Date.now(); cb(Object.entries(read()).filter(([, at]) => now - at < 25000).map(([id]) => id)); };
+        emitOnline();
+        setInterval(emitOnline, 5000);
+        addEventListener('storage', e => { if (e.key === ONLINE_KEY) emitOnline(); });
+        onlineEmit = emitOnline;
+      },
+      setOnline(me) {
+        clearInterval(onlineBeat);
+        const stamp = (id, at) => {
+          let map = {};
+          try { map = JSON.parse(localStorage.getItem(ONLINE_KEY) || '{}'); } catch {}
+          if (at) map[id] = at; else delete map[id];
+          try { localStorage.setItem(ONLINE_KEY, JSON.stringify(map)); } catch {}
+          onlineEmit?.();
+        };
+        if (onlineMe && (!me || me.id !== onlineMe)) stamp(onlineMe, 0);
+        onlineMe = me?.id || null;
+        if (!me) return;
+        stamp(me.id, Date.now());
+        onlineBeat = setInterval(() => stamp(me.id, Date.now()), 10000);
+      },
+      dmWatch(cb) {
+        const DM = 'lucky-reels-dms';
+        const me = account.id;
+        const emitDm = () => { let list = []; try { list = JSON.parse(localStorage.getItem(DM) || '[]'); } catch {} cb(list.filter(m => m.from === me || m.to === me)); };
+        const onStorage = e => { if (e.key === DM) emitDm(); };
+        dmListeners.add(emitDm);
+        addEventListener('storage', onStorage);
+        emitDm();
+        return () => { dmListeners.delete(emitDm); removeEventListener('storage', onStorage); };
+      },
+      async dmSend(to, text) {
+        const DM = 'lucky-reels-dms';
+        let list = [];
+        try { list = JSON.parse(localStorage.getItem(DM) || '[]'); } catch {}
+        list = [...list, { id: newSalt(), from: account.id, to, body: text, at: Date.now() }].slice(-500);
+        try { localStorage.setItem(DM, JSON.stringify(list)); } catch {}
+        dmListeners.forEach(fn => fn());
+      },
       chatWatch(cb) {
         const CHAT = 'lucky-reels-chat';
         const readChat = () => { try { return JSON.parse(localStorage.getItem(CHAT) || '[]'); } catch { return []; } };
@@ -2407,9 +2467,12 @@ details.ach { margin-top: 10px; }
     };
   }
   const chatListeners = new Set();
+  const dmListeners = new Set();
+  const ONLINE_KEY = 'lucky-reels-online';
+  let onlineBeat = null, onlineMe = null, onlineEmit = null;
   const settingsListeners = new Set();
 
-  function artifactStore(db) {
+  function artifactStore(db, room) {
     return {
       kind: 'db',
       async load(id) { const snap = await db.doc(`players/${id}`).get(); return snap.exists ? snap.data() : null; },
@@ -2441,6 +2504,21 @@ details.ach { margin-top: 10px; }
           snap => cb(toPlayers(snap.docs.filter(d => d.data()?.hash).map(d => ({ id: d.id, ...d.data() })))),
           () => { $('loginNote').textContent = 'Highscores stopped updating. Reload the page to reconnect.'; });
       },
+      presence(cb) {
+        if (!room) { cb([]); return; }
+        room.onPeers(change => cb(change.peers.map(peer => peer.presence?.id).filter(Boolean)));
+      },
+      setOnline(me) { room?.presence({ id: me?.id ?? null, name: me?.name ?? null }).catch(() => {}); },
+      // Private messages here are kept in the artifact's shared store: everyone with access to the link could read them.
+      dmWatch(cb) {
+        const me = account.id;
+        return db.collection('dms').orderBy('at', 'desc').limit(400).onSnapshot(
+          snap => cb(snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(m => m.from === me || m.to === me).reverse()),
+          () => cb(null));
+      },
+      async dmSend(to, text) {
+        await db.collection('dms').add({ from: account.id, to, body: text, at: Date.now() });
+      },
       chatWatch(cb) {
         db.collection('chat').orderBy('at', 'desc').limit(80).onSnapshot(
           snap => cb(snap.docs.map(d => ({ id: d.id, ...d.data() })).reverse()),
@@ -2470,6 +2548,7 @@ details.ach { margin-top: 10px; }
     });
     const email = name => `${idFor(name)}@${EMAIL_DOMAIN}`;
     let hasJackpots = true;
+    let onlineCh = null, onlineReady = false, onlineMe = null, dmPull = null;
     // Admin columns exist once the admin part of supabase-setup.sql has run.
     const adminSchema = !(await sb.from('players').select('admin_rev').limit(1)).error;
     const adminCols = adminSchema ? ',is_admin,is_banned,admin_rev' : '';
@@ -2575,6 +2654,48 @@ details.ach { margin-top: 10px; }
         if (error) throw error;
         return 'ok';
       },
+      presence(cb) {
+        onlineCh = sb.channel('online-players', { config: { presence: { key: newSalt() } } });
+        onlineCh.on('presence', { event: 'sync' }, () => {
+          cb([...new Set(Object.values(onlineCh.presenceState()).flat().map(m => m.id).filter(Boolean))]);
+        });
+        onlineCh.subscribe(status => {
+          if (status !== 'SUBSCRIBED') return;
+          onlineReady = true;
+          if (onlineMe) onlineCh.track(onlineMe);
+        });
+      },
+      setOnline(me) {
+        onlineMe = me;
+        if (!onlineReady) return;
+        if (me) onlineCh.track(me); else onlineCh.untrack();
+      },
+      dmWatch(cb) {
+        const me = account.id;
+        let list = [];
+        const map = m => ({ id: m.id, from: m.sender, to: m.recipient, body: m.body, at: Date.parse(m.created_at) });
+        const pull = async () => {
+          const { data, error } = await sb.from('direct_messages').select('id,sender,recipient,body,created_at')
+            .or(`sender.eq.${me},recipient.eq.${me}`).order('created_at', { ascending: false }).limit(400);
+          if (error) { cb(null); return; }
+          list = data.reverse().map(map);
+          cb(list);
+        };
+        dmPull = pull;
+        pull();
+        const ch = sb.channel('dm-' + me).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'direct_messages' }, ({ new: m }) => {
+          if ((m.sender !== me && m.recipient !== me) || list.some(x => x.id === m.id)) return;
+          list = [...list, map(m)].slice(-400);
+          cb(list);
+        }).subscribe();
+        const timer = setInterval(pull, 20000);
+        return () => { sb.removeChannel(ch); clearInterval(timer); dmPull = null; };
+      },
+      async dmSend(to, text) {
+        const { error } = await sb.from('direct_messages').insert({ recipient: to, body: text });
+        if (error) throw error;
+        dmPull?.();
+      },
       async chatWatch(cb) {
         let list = [];
         const pull = async () => {
@@ -2617,7 +2738,11 @@ details.ach { margin-top: 10px; }
     if (window.claude?.use) {
       let db = null;
       try { db = await window.claude.use('db'); } catch { db = null; }
-      if (db) return hashedAccounts(artifactStore(db));
+      if (db) {
+        let room = null;
+        try { room = await window.claude.use('room'); } catch { room = null; }
+        return hashedAccounts(artifactStore(db, room));
+      }
     } else if (SUPABASE.url && SUPABASE.anonKey) {
       return supabaseAccounts();
     }
@@ -2648,6 +2773,7 @@ details.ach { margin-top: 10px; }
       else if (mine.adminRev > (state.adminRev || 0)) refreshOwn();
     }
     renderAdminPlayers();
+    renderChat();
     renderBoards();
   }
   function jackpotOnBoard(p) {
@@ -2679,7 +2805,9 @@ details.ach { margin-top: 10px; }
           const age = flash ? performance.now() - flash : Infinity;
           const hot = age < 6000;
           return `<tr data-id="${esc(p.id)}" class="${me ? 'me' : ''}${hot ? ' jackpot-row' : ''}"${hot ? ` style="animation-delay:-${Math.round(age)}ms"` : ''}>` +
-            `<td><span class="rank">${i + 1}</span>${esc(p.name)}${me ? '<span class="you">you</span>' : ''}${hot ? '<span class="jp-badge">JACKPOT</span>' : ''}</td>` +
+            `<td><span class="rank">${i + 1}</span>${online.has(p.id) ? '<i class="dot" title="Online"></i>' : ''}` +
+            `${me || !account ? esc(p.name) : `<span data-dm="${esc(p.id)}" title="Send ${esc(p.name)} a private message">${esc(p.name)}</span>`}` +
+            `${me ? '<span class="you">you</span>' : ''}${hot ? '<span class="jp-badge">JACKPOT</span>' : ''}</td>` +
             `<td>${fmt(p.credits)}</td><td>${fmt(p.best)}</td><td>${p.level}</td></tr>`;
         }).join('') + '</tbody>'
       : '<tbody><tr><td class="empty" colspan="4">No players yet.</td></tr></tbody>';
@@ -2765,7 +2893,7 @@ details.ach { margin-top: 10px; }
     $('whoami').textContent = account.name;
     $('adminBtn').hidden = !account.isAdmin;
     $('accountBar').hidden = false;
-    chatUnread = 0;
+    startDms();
     renderChat();
     $('login').hidden = true;
     $('loginPass').value = '';
@@ -2784,6 +2912,7 @@ details.ach { margin-top: 10px; }
     try { await backend.signOut(); } catch {}
     $('accountBar').hidden = true;
     setChat(false);
+    stopDms();
     $('pwForm').hidden = true;
     $('login').hidden = false;
     loadState({});
@@ -2792,67 +2921,169 @@ details.ach { margin-top: 10px; }
   }
 
   // ---------- Chat ----------
+  // The public room plus private chats; "all" is the public room's key, a player id names a private chat.
   let chatMessages = null;
   let chatSystemLines = [];
+  let dms = [];
+  let dmStop = null;
   let chatOpen = false;
-  let chatUnread = 0;
-  let chatSeen = null;
+  let chatWith = null;
+  let online = new Set();
+  let lastRead = {};
+  const seenMsgs = new Set();
+  const primed = { all: false, dm: false };
   const NAME_HUES = [42, 8, 140, 265, 190, 320, 20, 95];
   const hueFor = name => NAME_HUES[[...String(name)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7) % NAME_HUES.length];
   const clock = at => new Date(at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const nameOf = id => players.find(p => p.id === id)?.name || 'Someone';
+  const partnerOf = m => m.from === account?.id ? m.to : m.from;
+  const byName = (a, b) => a.name.localeCompare(b.name);
+
+  const readKey = () => `lucky-reels-read-${account?.id}`;
+  function loadRead() {
+    try { lastRead = JSON.parse(localStorage.getItem(readKey()) || '{}'); } catch { lastRead = {}; }
+    // On a first visit, older public messages don't count as unread.
+    if (!lastRead.all) markRead('all');
+  }
+  function markRead(conv) {
+    lastRead[conv] = Date.now();
+    try { localStorage.setItem(readKey(), JSON.stringify(lastRead)); } catch {}
+  }
+  function unreadIn(conv) {
+    if (!account) return 0;
+    const since = lastRead[conv] || 0;
+    if (conv === 'all') return (chatMessages || []).filter(m => m.uid !== account.id && m.at > since).length;
+    return (dms || []).filter(m => m.from === conv && m.to === account.id && m.at > since).length;
+  }
+  // Private chats, newest activity first; an empty chat you just opened stays listed.
+  function conversations() {
+    const latest = new Map();
+    for (const m of dms || []) {
+      const who = partnerOf(m);
+      latest.set(who, Math.max(latest.get(who) || 0, m.at));
+    }
+    if (chatWith && !latest.has(chatWith)) latest.set(chatWith, Infinity);
+    return [...latest.entries()].sort((a, b) => b[1] - a[1]).map(([id]) => id);
+  }
+  function noteIncoming(list, kind, mine) {
+    const fresh = list.filter(m => !seenMsgs.has(kind + m.id));
+    list.forEach(m => seenMsgs.add(kind + m.id));
+    if (!primed[kind]) { primed[kind] = true; return; }
+    if (account && fresh.some(m => !mine(m))) sound.tick();
+  }
 
   function startChat() {
     backend.chatWatch(list => {
-      if (list && chatSeen) {
-        const fresh = list.filter(m => !chatSeen.has(m.id) && m.uid !== account?.id);
-        if (fresh.length && !chatOpen && account) {
-          chatUnread += fresh.length;
-          sound.tick();
-        }
-      }
-      if (list) chatSeen = new Set(list.map(m => m.id));
+      if (list) noteIncoming(list, 'all', m => m.uid === account?.id);
       chatMessages = list;
       renderChat();
     });
+    backend.presence(ids => {
+      online = new Set(ids);
+      renderChat();
+      renderBoards();
+    });
+  }
+  function startDms() {
+    dmStop?.();
+    dms = [];
+    primed.dm = false;
+    chatWith = null;
+    loadRead();
+    dmStop = backend.dmWatch(list => {
+      if (list) noteIncoming(list, 'dm', m => m.from === account?.id);
+      dms = list;
+      renderChat();
+    });
+    backend.setOnline({ id: account.id, name: account.name });
+  }
+  function stopDms() {
+    dmStop?.();
+    dmStop = null;
+    dms = [];
+    chatWith = null;
+    backend.setOnline(null);
   }
   function chatSystem(text) {
     chatSystemLines = [...chatSystemLines, { id: 'sys' + Date.now() + Math.random(), sys: true, body: text, at: Date.now() }].slice(-10);
     renderChat();
   }
+
   function renderChat() {
     const chatAllowed = settings.chatEnabled || account?.isAdmin;
+    if (chatOpen && document.visibilityState === 'visible') markRead(chatWith || 'all');
+    const convs = conversations();
+    const unread = unreadIn('all') + convs.reduce((n, id) => n + unreadIn(id), 0);
     $('chatFab').hidden = !account || chatOpen || !chatAllowed;
+    $('chatBadge').hidden = !unread;
+    $('chatBadge').textContent = unread > 99 ? '99+' : unread;
     $('chatInput').disabled = $('chatSend').disabled = !chatAllowed;
-    $('chatSub').textContent = settings.chatEnabled ? 'Everyone playing Lucky Reels' : 'Chat is switched off for players';
     renderAdminMsgs();
-    $('chatBadge').hidden = !chatUnread;
-    $('chatBadge').textContent = chatUnread > 99 ? '99+' : chatUnread;
-    $('chatForm').hidden = chatMessages === null;
     if (!chatOpen) return;
+
+    const others = players.filter(p => online.has(p.id) && p.id !== account?.id).sort(byName);
+    $('chatOnline').innerHTML = `<span class="label">Online now · ${others.length + 1}</span>` + (others.length
+      ? others.map(p => `<button type="button" class="online-chip" data-dm="${esc(p.id)}" title="Send ${esc(p.name)} a private message"><i class="dot"></i>${esc(p.name)}</button>`).join('')
+      : '<span class="online-none">Nobody else is online right now.</span>');
+
+    const tabs = [{ id: '', label: 'Everyone', unread: unreadIn('all'), on: false, active: !chatWith },
+      ...convs.map(id => ({ id, label: nameOf(id), unread: unreadIn(id), on: online.has(id), active: id === chatWith }))];
+    $('chatTabs').innerHTML = tabs.map(t =>
+      `<button type="button" class="chat-tab" role="tab" data-conv="${esc(t.id)}" aria-pressed="${t.active}">${t.on ? '<i class="dot"></i>' : ''}${esc(t.label)}${t.unread ? `<span class="tab-badge">${t.unread}</span>` : ''}</button>`).join('');
+
+    $('chatSub').textContent = chatWith
+      ? `Private chat with ${nameOf(chatWith)}${online.has(chatWith) ? ' · online' : ''}`
+      : settings.chatEnabled ? 'Everyone playing Lucky Reels' : 'Chat is switched off for players';
+    $('chatInput').placeholder = chatWith ? `Message ${nameOf(chatWith)}…` : 'Say something to everyone…';
+
+    const source = chatWith ? dms : chatMessages;
+    $('chatForm').hidden = source === null;
     const log = $('chatLog');
     const atBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 40;
-    if (chatMessages === null) {
-      log.innerHTML = '<p class="chat-empty">The chat is not set up yet. Ask the person who runs the game to run the chat setup.</p>';
+    if (source === null) {
+      log.innerHTML = chatWith
+        ? '<p class="chat-empty">Private chats are not set up yet. Ask the person who runs the game to run the private-chat setup.</p>'
+        : '<p class="chat-empty">The chat is not set up yet. Ask the person who runs the game to run the chat setup.</p>';
       return;
     }
-    const all = [...chatMessages, ...chatSystemLines].sort((a, b) => a.at - b.at);
-    log.innerHTML = all.length ? all.map(m => {
+    const items = chatWith
+      ? dms.filter(m => partnerOf(m) === chatWith).map(m => ({ ...m, uid: m.from, name: nameOf(m.from) }))
+      : [...chatMessages, ...chatSystemLines].sort((a, b) => a.at - b.at);
+    log.innerHTML = items.length ? items.map(m => {
       if (m.sys) return `<div class="msg sys">${esc(m.body)}</div>`;
       const mine = m.uid === account?.id;
       return `<div class="msg${mine ? ' mine' : ''}"><span class="who" style="color:hsl(${hueFor(m.name)} 80% 68%)">${esc(m.name)}<time>${clock(m.at)}</time></span><span class="text">${esc(m.body)}</span></div>`;
-    }).join('') : '<p class="chat-empty">No messages yet. Say hi to the other players.</p>';
+    }).join('') : chatWith
+      ? `<p class="chat-empty">No messages with ${esc(nameOf(chatWith))} yet. Only the two of you can read this chat.</p>`
+      : '<p class="chat-empty">No messages yet. Say hi to the other players.</p>';
     if (atBottom || !renderChat.scrolled) { log.scrollTop = log.scrollHeight; renderChat.scrolled = true; }
   }
   function setChat(open) {
     chatOpen = open && !!account;
     $('chatPanel').hidden = !chatOpen;
-    if (chatOpen) { chatUnread = 0; renderChat.scrolled = false; }
+    if (chatOpen) renderChat.scrolled = false;
     renderChat();
     if (chatOpen) $('chatInput').focus();
+  }
+  function openConversation(id) {
+    chatWith = id && id !== account?.id ? id : null;
+    renderChat.scrolled = false;
+    setChat(true);
   }
   $('chatFab').addEventListener('click', () => setChat(true));
   $('chatClose').addEventListener('click', () => setChat(false));
   $('chatPanel').addEventListener('keydown', e => { if (e.key === 'Escape') setChat(false); });
+  $('chatPanel').addEventListener('click', e => {
+    const dm = e.target.closest('[data-dm]');
+    const tab = e.target.closest('[data-conv]');
+    if (dm) openConversation(dm.dataset.dm);
+    else if (tab) openConversation(tab.dataset.conv || null);
+  });
+  $('boardGame').addEventListener('click', e => {
+    const dm = e.target.closest('[data-dm]');
+    if (dm && account) openConversation(dm.dataset.dm);
+  });
+  document.addEventListener('visibilitychange', () => { if (chatOpen) renderChat(); });
   $('chatForm').addEventListener('submit', async e => {
     e.preventDefault();
     const input = $('chatInput');
@@ -2861,7 +3092,8 @@ details.ach { margin-top: 10px; }
     $('chatSend').disabled = true;
     $('chatErr').textContent = '';
     try {
-      await backend.chatSend(text);
+      if (chatWith) await backend.dmSend(chatWith, text);
+      else await backend.chatSend(text);
       input.value = '';
     } catch {
       $('chatErr').textContent = 'The message did not go through. Try again.';
@@ -3183,7 +3415,7 @@ details.ach { margin-top: 10px; }
       msg.textContent = 'Could not change the password. Try again.';
     }
   });
-  addEventListener('pagehide', () => { flush(); });
+  addEventListener('pagehide', () => { flush(); if (account) backend?.setOnline(null); });
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(); });
 
   buildReels();
