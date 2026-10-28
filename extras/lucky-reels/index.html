@@ -1236,6 +1236,56 @@ html[data-lang="de"] .reel.held::after { content: "GEHALTEN"; }
 .chat-pop .head b { color: var(--accent); }
 .chat-pop .tag { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; padding: 1px 6px; border-radius: 999px; background: var(--accent); color: var(--ink); }
 .chat-pop .text { font-size: 13px; line-height: 1.35; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+/* Gold mine */
+.broke-bar { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; margin: 0; padding: 10px 12px; border-radius: 12px; background: linear-gradient(90deg, #3a2a12, #2a1d18); border: 2px dashed #e9a23b88; font-size: 13px; }
+.broke-bar b { color: var(--accent); }
+.broke-bar .chip-btn { padding: 8px 14px; background: var(--accent); color: var(--ink); }
+.lobby-mine { background: var(--accent); color: var(--ink); padding: 10px 16px; animation: popIn 0.4s cubic-bezier(.2, 1.6, .4, 1); }
+.mine-card { max-width: 440px; position: relative; background: linear-gradient(#2a1d18, #150f0c); }
+.mine-close { position: absolute; top: 12px; right: 12px; }
+.mine-cave {
+  position: relative; width: 100%;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+  padding: 12px; border-radius: 16px;
+  background: radial-gradient(circle at 50% 10%, #4a3626, #1d1410 70%);
+  box-shadow: inset 0 10px 30px #000c;
+}
+.mine-cave.shake { animation: mineShake 0.45s; }
+@keyframes mineShake { 20% { transform: translate(-6px, 3px); } 40% { transform: translate(6px, -3px); } 60% { transform: translate(-4px, 2px); } 80% { transform: translate(3px, -1px); } }
+.rock { position: relative; aspect-ratio: 1; padding: 0; border-radius: 14px; background: transparent; cursor: pointer; }
+.rock svg { width: 100%; height: 100%; display: block; transition: transform 0.1s; filter: drop-shadow(0 5px 3px #000a); }
+.rock:active svg { transform: scale(0.92); }
+.rock.hit svg { animation: rockHit 0.18s; }
+@keyframes rockHit { 50% { transform: rotate(-7deg) scale(0.93); } }
+.rock .crack { opacity: 0; transition: opacity 0.1s; }
+.rock[data-hp="2"] .c1, .rock[data-hp="1"] .c1, .rock[data-hp="1"] .c2 { opacity: 1; }
+.rock.open { cursor: default; }
+.rock .loot { position: absolute; inset: 14%; display: grid; place-items: center; animation: popIn 0.4s cubic-bezier(.2, 1.6, .4, 1); }
+.rock .loot svg { filter: drop-shadow(0 0 10px #ffd35588); }
+.rock.dud .loot svg { filter: none; opacity: 0.7; }
+.rock .float { position: absolute; left: 50%; top: 30%; translate: -50% 0; font: 700 15px var(--font-mono); color: var(--accent-hi); text-shadow: 0 2px 0 #000; pointer-events: none; animation: mineFloat 0.9s ease-out forwards; }
+.rock .float.bad { color: #ff7a80; }
+@keyframes mineFloat { to { transform: translateY(-34px); opacity: 0; } }
+.mine-pick { position: fixed; z-index: 60; width: 44px; height: 44px; pointer-events: none; transform-origin: 80% 80%; animation: pickSwing 0.22s ease-out forwards; }
+@keyframes pickSwing { from { transform: rotate(-55deg); } 60% { transform: rotate(12deg); } to { transform: rotate(0); opacity: 0; } }
+.mine-boom { position: absolute; inset: 0; border-radius: 16px; pointer-events: none; background: radial-gradient(circle, #fff2c4, #f08a3c 30%, transparent 65%); animation: mineBoom 0.6s ease-out forwards; }
+@keyframes mineBoom { from { opacity: 1; transform: scale(0.4); } to { opacity: 0; transform: scale(1.4); } }
+.mine-meter { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 8px; align-items: center; width: 100%; }
+.mine-cart { width: 34px; height: 24px; background: no-repeat center / contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 24'%3E%3Cpath d='M2 4h30l-4 13H6z' fill='%237a5236' stroke='%23e9a23b' stroke-width='1.5'/%3E%3Cpath d='M8 4l3-4h4l2 4M18 4l3-3 4 1 1 2' fill='%23f3c94b'/%3E%3Ccircle cx='10' cy='20' r='3.4' fill='%231d1714' stroke='%23c9b9a2' stroke-width='1.5'/%3E%3Ccircle cx='24' cy='20' r='3.4' fill='%231d1714' stroke='%23c9b9a2' stroke-width='1.5'/%3E%3C/svg%3E"); }
+.mine-meter.full .mine-cart { animation: cartRoll 0.8s ease-in-out infinite alternate; }
+@keyframes cartRoll { to { transform: translateX(6px) rotate(3deg); } }
+.mine-bar { height: 12px; border-radius: 6px; background: #0008; overflow: hidden; }
+.mine-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #b87618, #f3c94b); border-radius: 6px; transition: width 0.35s; }
+#mineVal { font: 600 13px var(--font-mono); color: var(--accent); }
+.mine-say { margin: 0; min-height: 40px; font-weight: 600; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .mine-cave.shake, .rock.hit svg, .mine-pick, .mine-meter.full .mine-cart { animation: none; } }
+.chat-pop.gift-pop { border-color: var(--accent); background: linear-gradient(160deg, #3a2a12, var(--cabinet) 70%); align-items: center; }
+.gift-ico svg { width: 30px; height: 30px; display: block; }
+.send-box { display: grid; gap: 6px; width: 100%; padding: 12px; border-radius: 12px; background: var(--panel); border: 1px solid #e9a23b44; text-align: left; }
+.send-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 6px; }
+.send-row input { min-width: 0; background: #0006; color: var(--accent); border: 2px solid var(--cabinet-edge); border-radius: 10px; padding: 9px 10px; font: 600 16px var(--font-mono); }
+.send-row .spin { width: auto; padding: 8px 16px; font-size: 16px; }
+.send-msg { color: var(--muted); font-size: 12px; }
 .chat-pop.online-pop { border-color: #7fd18b88; align-items: center; }
 .chat-pop .head .dot { margin: 0; }
 .chat-pop .note { font-size: 12px; color: var(--win); }
@@ -1559,6 +1609,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     <h1 class="login-logo" id="lobbyTitle">Lucky Reels</h1>
     <p class="lobby-hi">Hi <b id="lobbyName"></b>, what do you want to play?</p>
     <p class="lobby-credits">Credits <b id="lobbyCredits">0</b></p>
+    <button type="button" class="chip-btn lobby-mine" id="lobbyMine" data-mine hidden>Out of credits? Go mining for 50</button>
     <div class="lobby-games">
       <button class="game-pick" type="button" data-mode="slots">
         <svg class="gp-slots" viewBox="0 0 140 130" aria-hidden="true">
@@ -1682,6 +1733,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       <h1>Lucky Reels</h1>
       <p id="marqueeSub">Three reels · one payline · play credits</p>
     </header>
+    <div class="broke-bar" id="brokeBar" hidden><span><b>Out of credits?</b> Dig 50 in the gold mine.</span><button type="button" class="chip-btn" data-mine>Go mining</button></div>
 
     <div class="window" id="window">
       <div class="reels" aria-hidden="true">
@@ -1887,6 +1939,18 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   <div class="modal-card profile-card">
     <button class="chat-close" id="profileClose" type="button" aria-label="Close profile">×</button>
     <div id="profileBody" class="profile-head"></div>
+  </div>
+</div>
+
+<div class="modal" id="mineModal" role="dialog" aria-modal="true" aria-labelledby="mineTitle" hidden>
+  <div class="modal-card mine-card">
+    <button class="chat-close mine-close" id="mineClose" type="button" aria-label="Leave the mine">×</button>
+    <div class="eyebrow">Gold mine</div>
+    <h2 id="mineTitle">Dig for 50 credits</h2>
+    <div class="mine-cave" id="mineCave"></div>
+    <div class="mine-meter"><span class="mine-cart" aria-hidden="true"></span><div class="mine-bar"><i id="mineBar"></i></div><b id="mineVal">0 / 50</b></div>
+    <p class="mine-say" id="mineSay" role="status">Tap the rocks to dig!</p>
+    <button class="spin" id="mineCash" type="button" hidden>Cash out 50 credits</button>
   </div>
 </div>
 
@@ -2165,6 +2229,22 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Private chats are not set up yet. Ask the person who runs the game to run the private-chat setup.': 'Private Chats sind noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, sie einzurichten.',
     'The message did not go through. Try again.': 'Die Nachricht ging nicht durch. Versuch es nochmal.', 'Chat is switched off for players': 'Der Chat ist für Spieler abgeschaltet',
     'Someone': 'Jemand', 'Actions': 'Aktionen',
+    'Amount': 'Betrag', 'Credits to send': 'Credits zum Verschicken', 'Send': 'Senden', 'Credits sent': 'Credits verschickt',
+    'Enter how many credits to send.': 'Gib ein, wie viele Credits du schicken willst.', 'Not enough credits for that.': 'Dafür reichen deine Credits nicht.',
+    'That player cannot get credits right now.': 'Dieser Spieler kann gerade keine Credits bekommen.',
+    'Sending credits needs the “Sending credits” part of supabase-setup.sql.': 'Zum Verschicken braucht die Datenbank den Teil „Sending credits“ aus supabase-setup.sql.',
+    'Gold mine': 'Goldmine', 'Dig for 50 credits': 'Grab dir 50 Credits', 'Leave the mine': 'Mine verlassen', 'Rock': 'Felsen',
+    'Tap the rocks to dig!': 'Tipp auf die Felsen zum Graben!', 'Cash out 50 credits': '50 Credits auszahlen',
+    'Out of credits?': 'Keine Credits mehr?', 'Dig 50 in the gold mine.': 'Grab dir 50 in der Goldmine.', 'Go mining': 'Ab in die Mine',
+    'Out of credits? Go mining for 50': 'Keine Credits? Ab in die Mine für 50', 'Out of credits. Dig 50 in the gold mine!': 'Keine Credits mehr. Grab dir 50 in der Goldmine!',
+    'The cart is full! Cash out your 50 credits.': 'Die Lore ist voll! Zahl dir deine 50 Credits aus.', 'Back from the mine': 'Zurück aus der Mine',
+    'Gold Digger': 'Goldgräber', 'Come back from the gold mine.': 'Komm aus der Goldmine zurück.',
+    'Shiny!': 'Glänzt!', 'Gold! The canary is proud of you.': 'Gold! Der Kanarienvogel ist stolz auf dich.', 'Ka-ching!': 'Ka-tsching!',
+    'A nugget the size of a walnut!': 'Ein Nugget so groß wie eine Walnuss!', 'Diggy diggy hole!': 'Diggy diggy hole!',
+    'A gem! Do not tell the other miners.': 'Ein Edelstein! Nicht den anderen Bergleuten erzählen.', 'Sparkly! Worth a lot.': 'Funkelt! Ist viel wert.', 'Ooh, a diamond!': 'Ooh, ein Diamant!',
+    'Just dirt. Very nice dirt, though.': 'Nur Erde. Aber sehr schöne Erde.', 'Nothing but pebbles.': 'Nur Kieselsteine.', 'Rocks all the way down.': 'Nur Steine, so weit das Auge reicht.',
+    'Is that… a potato?': 'Ist das … eine Kartoffel?', 'A potato. Lunch is sorted.': 'Eine Kartoffel. Mittagessen gesichert.',
+    'BOOM! There go my eyebrows.': 'BUMM! Da gehen meine Augenbrauen.', 'Who put TNT in there?!': 'Wer hat da TNT reingelegt?!', 'Kaboom! Some gold flew off.': 'Kawumm! Etwas Gold ist weggeflogen.',
     'Plinko': 'Plinko', 'Plinko board': 'Plinko-Brett', 'Last results': 'Letzte Ergebnisse', 'New': 'Neu', 'Plinko rules': 'Plinko-Regeln',
     'Drop balls through the pins and hope for the edges.': 'Lass Kugeln durch die Pins fallen und hoff auf die Ränder.',
     'Pick a bet and drop a ball.': 'Wähl einen Einsatz und lass eine Kugel fallen.', 'Drop ball': 'Kugel los!',
@@ -2234,7 +2314,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   };
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
-    ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'], ['{a} rows', '{a} Reihen'], ['Stop ({a})', 'Stopp ({a})'],
+    ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
+    ['Send {a} credits', 'Credits an {a} schicken'], ['You have {a} credits.', 'Du hast {a} Credits.'], ['Reach level {a} to send credits.', 'Erreiche Level {a}, um Credits zu verschicken.'],
+    ['{a} credits went to {b}.', '{a} Credits sind an {b} gegangen.'], ['sent you {a} credits!', 'hat dir {a} Credits geschickt!'], ['+{a} credits. Good luck!', '+{a} Credits. Viel Glück!'], ['{a} rows', '{a} Reihen'], ['Stop ({a})', 'Stopp ({a})'],
     ['Not enough credits for a {a} ball.', 'Nicht genug Credits für eine Kugel zu {a}.'], ['{a} · {b} back', '{a} · {b} zurück'], ['Collect {a} bonus stars.', 'Sammle {a} Bonussterne.'],
     ['Bet per spin · max {a}', 'Einsatz pro Spin · max. {a}'], ['The highest bet is {a}.', 'Der höchste Einsatz ist {a}.'],
     ['Three {a}! +{b}', 'Drei {a}! +{b}'], ['Cherries pay {a}', 'Kirschen zahlen {a}'],
@@ -2559,6 +2641,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     { id: 'shark', name: 'Card Shark', desc: 'Win a poker pot.', reward: 300, test: c => c?.pokerWin },
     { id: 'royalty', name: 'Royalty', desc: 'Win a poker pot with a straight flush.', reward: 2000, test: c => c?.pokerSF },
     { id: 'plinko', name: 'Sky Drop', desc: 'Land a Plinko ball on 25× or more.', reward: 800, test: c => c?.plinkoMult >= 25 },
+    { id: 'miner', name: 'Gold Digger', desc: 'Come back from the gold mine.', reward: 100, test: c => c?.mined },
     { id: 'bullseye', name: 'Bullseye', desc: 'Hit a single number in roulette.', reward: 500, test: c => c?.bullseye },
     { id: 'natural', name: 'Natural', desc: 'Get a blackjack.', reward: 300, test: c => c?.natural },
     { id: 'splitter', name: 'Splitter', desc: 'Win both hands after a split.', reward: 500, test: c => c?.splitBoth },
@@ -3207,7 +3290,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     } else if (win) {
       say(`Cherries pay ${fmt(win)}${tail}`, 'win');
     } else if (state.credits < 1 && !state.freeSpins) {
-      say('Out of credits. Start over to play again.', 'lose');
+      say('Out of credits. Dig 50 in the gold mine!', 'lose');
     } else if (starCount) {
       say(`No win, but +${starCount} bonus star${starCount > 1 ? 's' : ''}.`, 'bonus');
     } else {
@@ -3716,7 +3799,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   document.querySelectorAll('.bj-act').forEach(b => b.addEventListener('click', () => bjAct(b.dataset.bj)));
   document.addEventListener('keydown', e => {
     if (state.mode !== 'bj' || !account || !$('lobby').hidden || e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
-    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal, #profileModal')) return;
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal, #profileModal, #mineModal') || !$('mineModal').hidden) return;
     if (!$('gambleModal').hidden || !$('adminModal').hidden || !$('profileModal').hidden) return;
     const key = e.key.toLowerCase();
     const map = { h: 'hit', s: 'stand', d: 'double', p: 'split' };
@@ -3767,6 +3850,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   function showLobby() {
     $('lobbyName').textContent = account?.name || '';
     $('lobbyCredits').textContent = fmt(state.credits);
+    renderBroke();
     document.querySelectorAll('.game-pick').forEach(b => {
       b.querySelector('.gp-last')?.remove();
       if (b.dataset.mode === state.mode && state.spins + state.bj.hands + state.rl.spins + state.pk.hands + state.pl.drops > 0) b.insertAdjacentHTML('afterbegin', '<span class="gp-last">Last played</span>');
@@ -4062,7 +4146,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   $('rlSpin').addEventListener('click', rlSpin);
   document.addEventListener('keydown', e => {
     if (state.mode !== 'rl' || !account || !$('lobby').hidden || e.code !== 'Space') return;
-    if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'SUMMARY'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal, #profileModal')) return;
+    if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'SUMMARY'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal, #profileModal, #mineModal') || !$('mineModal').hidden) return;
     e.preventDefault();
     rlSpin();
   });
@@ -4351,7 +4435,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   $('plBet').addEventListener('input', () => { const v = Math.floor(Number($('plBet').value)); if (v >= 1) state.pl.bet = v; renderPLControls(); });
   document.addEventListener('keydown', e => {
     if (state.mode !== 'pl' || !account || !$('lobby').hidden || e.code !== 'Space') return;
-    if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'SUMMARY'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal, #profileModal')) return;
+    if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'SUMMARY'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal, #profileModal, #mineModal') || !$('mineModal').hidden) return;
     e.preventDefault();
     plDrop();
   });
@@ -4852,7 +4936,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   $('pkRaise').addEventListener('click', () => pkMove('raise'));
   document.addEventListener('keydown', e => {
     if (state.mode !== 'pk' || !account || !$('lobby').hidden || e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
-    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal, #profileModal')) return;
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal, #profileModal, #mineModal') || !$('mineModal').hidden) return;
     const map = { f: 'fold', c: 'call', r: 'raise' };
     const act = map[e.key.toLowerCase()];
     if (act && !$('pkFold').disabled) { e.preventDefault(); pkMove(act); }
@@ -5147,6 +5231,122 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       fxTop.burst(fxTop.W * (0.15 + Math.random() * 0.7), fxTop.H * (0.12 + Math.random() * 0.35), 60, randInt(360), 7);
       sound.tick();
     }, k * 260);
+  }
+
+  // ---------- Gold mine ----------
+  // When the credits run out: tap rocks, collect nuggets and gems, avoid the TNT, cash out a fixed 50.
+  const MINE_PAY = 50, MINE_LIMIT = 50;
+  const MINE_ROCK = hue => `<svg viewBox="0 0 64 64"><path d="M10 44l4-20 14-12 18 4 10 18-4 16-16 6-20-2z" fill="hsl(${hue} 14% 38%)" stroke="#1d1410" stroke-width="2.5" stroke-linejoin="round"/><path d="M14 26l12-10 16 3" fill="none" stroke="#fff3" stroke-width="3" stroke-linecap="round"/><path d="M22 48l10 4 12-4" fill="none" stroke="#0004" stroke-width="3" stroke-linecap="round"/><path class="crack c1" d="M30 14l-2 10 6 6-4 10" fill="none" stroke="#1d1410" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path class="crack c2" d="M34 30l10 2 4 8M28 24l-10 6-2 8" fill="none" stroke="#1d1410" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const MINE_LOOT = {
+    gold: '<svg viewBox="0 0 48 48"><path d="M8 32l6-12 10-4 12 4 6 10-4 8-14 3-12-3z" fill="#f3c94b" stroke="#b87618" stroke-width="2" stroke-linejoin="round"/><path d="M15 22l9-4 9 3" fill="none" stroke="#fff6" stroke-width="2.5" stroke-linecap="round"/></svg>',
+    gem: '<svg viewBox="0 0 48 48"><path d="M14 8h20l9 11-19 23L5 19z" fill="#4fe3ff" stroke="#1d7a99" stroke-width="2" stroke-linejoin="round"/><path d="M5 19h38M14 8l5 11 5-11 5 11 5-11M19 19l5 23 5-23" stroke="#1d7a99" stroke-width="1.5" fill="none"/></svg>',
+    dirt: '<svg viewBox="0 0 48 48"><ellipse cx="24" cy="34" rx="16" ry="6" fill="#6b4a32"/><circle cx="16" cy="30" r="4" fill="#7a5638"/><circle cx="30" cy="29" r="5" fill="#7a5638"/><circle cx="24" cy="33" r="3" fill="#5a3d28"/></svg>',
+    potato: '<svg viewBox="0 0 48 48"><ellipse cx="24" cy="26" rx="15" ry="11" fill="#c99a5b" stroke="#8a6232" stroke-width="2"/><circle cx="18" cy="24" r="1.5" fill="#8a6232"/><circle cx="28" cy="21" r="1.5" fill="#8a6232"/><circle cx="31" cy="30" r="1.5" fill="#8a6232"/></svg>',
+    tnt: '<svg viewBox="0 0 48 48"><rect x="12" y="14" width="24" height="28" rx="4" fill="#c8323a" stroke="#7a1a20" stroke-width="2"/><rect x="12" y="24" width="24" height="7" fill="#f6efe3"/><text x="24" y="30" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="7" fill="#1d1714">TNT</text><path d="M24 14q2-6 7-7" stroke="#1d1714" stroke-width="2" fill="none"/><circle cx="32" cy="6" r="3" fill="#f08a3c"/></svg>',
+  };
+  const MINE_LINES = {
+    gold: ['Shiny!', 'Gold! The canary is proud of you.', 'Ka-ching!', 'A nugget the size of a walnut!', 'Diggy diggy hole!'],
+    gem: ['A gem! Do not tell the other miners.', 'Sparkly! Worth a lot.', 'Ooh, a diamond!'],
+    dirt: ['Just dirt. Very nice dirt, though.', 'Nothing but pebbles.', 'Rocks all the way down.'],
+    potato: ['Is that… a potato?', 'A potato. Lunch is sorted.'],
+    tnt: ['BOOM! There go my eyebrows.', 'Who put TNT in there?!', 'Kaboom! Some gold flew off.'],
+  };
+  let mine = null;
+  const pickLine = kind => MINE_LINES[kind][randInt(MINE_LINES[kind].length)];
+  function mineLoot() {
+    const r = randInt(100);
+    if (r < 48) return { kind: 'gold', v: 4 + randInt(5) };
+    if (r < 62) return { kind: 'gem', v: 12 + randInt(7) };
+    if (r < 82) return { kind: 'dirt', v: 0 };
+    if (r < 90) return { kind: 'potato', v: 1 };
+    return { kind: 'tnt', v: -10 };
+  }
+  function mineFill() {
+    $('mineCave').innerHTML = Array.from({ length: 12 }, (_, i) =>
+      `<button type="button" class="rock" data-i="${i}" data-hp="${2 + randInt(3)}" aria-label="Rock">${MINE_ROCK(20 + randInt(30))}</button>`).join('');
+  }
+  function mineRender() {
+    const v = Math.min(MINE_PAY, mine.got);
+    $('mineBar').style.width = `${(v / MINE_PAY) * 100}%`;
+    $('mineVal').textContent = `${v} / ${MINE_PAY}`;
+    const full = mine.got >= MINE_PAY;
+    $('mineCash').hidden = !full;
+    document.querySelector('.mine-meter').classList.toggle('full', full);
+  }
+  function openMine() {
+    if (!account || state.credits >= MINE_LIMIT || gameBusy()) return;
+    mine = { got: 0 };
+    mineFill();
+    mineRender();
+    showMessage($('mineSay'), 'Tap the rocks to dig!', '');
+    $('lobby').hidden = true;
+    $('mineModal').hidden = false;
+    sound.chime();
+  }
+  function closeMine() {
+    $('mineModal').hidden = true;
+    mine = null;
+    render();
+  }
+  document.addEventListener('click', e => { if (e.target.closest('[data-mine]')) openMine(); });
+  $('mineClose').addEventListener('click', closeMine);
+  $('mineModal').addEventListener('keydown', e => { if (e.key === 'Escape') closeMine(); });
+  $('mineCave').addEventListener('click', e => {
+    const rock = e.target.closest('.rock');
+    if (!rock || !mine || rock.classList.contains('open') || mine.got >= MINE_PAY) return;
+    // the pickaxe swings at the tap
+    const pick = document.createElement('div');
+    pick.className = 'mine-pick';
+    pick.innerHTML = '<svg viewBox="0 0 48 48"><path d="M8 40L32 16" stroke="#8a6232" stroke-width="5" stroke-linecap="round"/><path d="M20 8q14-4 24 8-10-2-16 2z" fill="#c9b9a2" stroke="#5b6478" stroke-width="2" stroke-linejoin="round"/></svg>';
+    const rr = rock.getBoundingClientRect();
+    pick.style.left = `${rr.left + rr.width * 0.35}px`;
+    pick.style.top = `${rr.top - rr.height * 0.25}px`;
+    document.body.append(pick);
+    setTimeout(() => pick.remove(), 260);
+    rock.classList.remove('hit'); void rock.offsetWidth; rock.classList.add('hit');
+    fxTop.burst(rr.left + rr.width / 2, rr.top + rr.height / 2, 8, 30, 4, false);
+    const hp = Number(rock.dataset.hp) - 1;
+    rock.dataset.hp = hp;
+    sound.tone(240 + randInt(80), 0, 0.05, 'square', 0.04);
+    if (hp > 0) return;
+    // broken open
+    const loot = mineLoot();
+    rock.classList.add('open');
+    if (loot.v <= 0 && loot.kind !== 'tnt') rock.classList.add('dud');
+    rock.innerHTML = `<span class="loot">${MINE_LOOT[loot.kind]}</span>` + (loot.v ? `<span class="float${loot.v < 0 ? ' bad' : ''}">${loot.v > 0 ? '+' : ''}${loot.v}</span>` : '');
+    mine.got = Math.max(0, mine.got + loot.v);
+    if (loot.kind === 'tnt') {
+      const boom = document.createElement('div');
+      boom.className = 'mine-boom';
+      $('mineCave').append(boom);
+      setTimeout(() => boom.remove(), 650);
+      $('mineCave').classList.remove('shake'); void $('mineCave').offsetWidth; $('mineCave').classList.add('shake');
+      sound.boom();
+    } else if (loot.kind === 'gem') { sound.bigWin(); fxTop.coinBurst(rr.left + rr.width / 2, rr.top, 14, 7); }
+    else if (loot.kind === 'gold') sound.win();
+    else sound.tick();
+    showMessage($('mineSay'), mine.got >= MINE_PAY ? 'The cart is full! Cash out your 50 credits.' : pickLine(loot.kind), loot.kind === 'tnt' ? 'lose' : loot.v > 0 ? 'win' : '');
+    mineRender();
+    if (mine.got >= MINE_PAY) { sound.levelUp(); $('mineCash').focus(); }
+    // new rocks once the wall is dug out
+    if (mine.got < MINE_PAY && !$('mineCave').querySelector('.rock:not(.open)')) setTimeout(() => { if (mine) mineFill(); }, 700);
+  });
+  $('mineCash').addEventListener('click', () => {
+    if (!mine || mine.got < MINE_PAY) return;
+    state.credits = Math.min(MAX, state.credits + MINE_PAY);
+    state.mines = (state.mines || 0) + 1;
+    const b = $('mineCash').getBoundingClientRect();
+    fxTop.coinBurst(b.left + b.width / 2, b.top, 40, 10);
+    sound.bigWin();
+    toast('Back from the mine', `+${MINE_PAY} credits. Good luck!`);
+    checkAch({ mined: true });
+    closeMine();
+    render();
+  });
+  function renderBroke() {
+    const broke = !!account && state.credits < MINE_LIMIT;
+    $('brokeBar').hidden = !broke || gameBusy();
+    $('lobbyMine').hidden = !broke;
   }
 
   // ---------- Level rewards ----------
@@ -5460,6 +5660,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     renderBoards();
     renderBJControls();
     renderRLControls();
+    renderBroke();
     if (state.mode === 'pk') renderPKControls();
     if (state.mode === 'pl' && typeof renderPLControls === 'function') renderPLControls();
     persist();
@@ -5518,7 +5719,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     }
   });
   document.addEventListener('keydown', e => {
-    if (e.code === 'Space' && account && $('lobby').hidden && state.mode === 'slots' && !['BUTTON', 'SUMMARY', 'INPUT'].includes(e.target.tagName) && $('gambleModal').hidden && $('adminModal').hidden && $('profileModal').hidden) { e.preventDefault(); play(); }
+    if (e.code === 'Space' && account && $('lobby').hidden && state.mode === 'slots' && !['BUTTON', 'SUMMARY', 'INPUT'].includes(e.target.tagName) && $('gambleModal').hidden && $('adminModal').hidden && $('profileModal').hidden && $('mineModal').hidden) { e.preventDefault(); play(); }
   });
 
   // ---------- Accounts ----------
@@ -5652,6 +5853,19 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       setOnline: me => store.setOnline(me),
       dmWatch: cb => store.dmWatch(cb),
       dmSend: (to, text) => store.dmSend(to, text),
+      // Gifts: both accounts change and get a new admin revision, so open pages pick up the new balance.
+      async sendCredits(to, amount) {
+        const me = await store.load(account.id), them = await store.load(to);
+        if (!them) throw Object.assign(new Error('no such player'), { code: 'gift_player' });
+        if ((Number(me?.credits) || 0) < amount) throw Object.assign(new Error('not enough credits'), { code: 'gift_credits' });
+        await store.save(account.id, { credits: Number(me.credits) - amount, adminRev: (Number(me.adminRev) || 0) + 1 });
+        const gifts = [...(Array.isArray(them.gifts) ? them.gifts : []), { from: account.name, amount, at: Date.now() }].slice(-10);
+        await store.save(to, { credits: (Number(them.credits) || 0) + amount, adminRev: (Number(them.adminRev) || 0) + 1, gifts });
+      },
+      async giftsSince(since) {
+        const doc = await store.load(account.id);
+        return (Array.isArray(doc?.gifts) ? doc.gifts : []).filter(g => g.at > since);
+      },
     };
   }
 
@@ -6026,6 +6240,20 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         if (error) throw error;
         dmPull?.();
       },
+      // Gifts go through the database, which checks the sender's balance and moves the credits in one step.
+      async sendCredits(to, amount) {
+        const { error } = await sb.rpc('send_credits', { target: to, amount });
+        if (!error) return;
+        const m = error.message || '';
+        throw Object.assign(error, { code: error.code === 'PGRST202' || /could not find the function/i.test(m) ? 'gift_setup'
+          : /level/i.test(m) ? 'gift_level' : /credits/i.test(m) ? 'gift_credits' : /player|yourself|blocked/i.test(m) ? 'gift_player' : 'gift_error' });
+      },
+      async giftsSince(since) {
+        const { data, error } = await sb.from('transfers').select('sender_name,amount,created_at').eq('recipient', account.id)
+          .gt('created_at', new Date(since).toISOString()).order('created_at');
+        if (error) return [];
+        return data.map(g => ({ from: g.sender_name, amount: Number(g.amount), at: Date.parse(g.created_at) }));
+      },
       // Online poker: the database deals and checks every move; the page only sends moves and shows the state.
       poker: {
         // The online table exists once the "Online poker" part of supabase-setup.sql has run; checked when the table opens.
@@ -6211,6 +6439,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     Object.assign(state, fresh(), saved);
     state.owned = Object.assign(fresh().owned, saved.owned);
     state.cosOff = Object.assign({}, saved.cosOff);
+    if (!saved.giftSeen) state.giftSeen = Date.now();
     // The Lucky Cat goodie is gone; whoever bought it gets the 8,000 credits back once.
     if (saved.owned?.luckyCat) { state.credits = Math.min(MAX, (state.credits || 0) + 8000); delete state.owned.luckyCat; setTimeout(() => toast('Lucky Cat retired', 'The cat left the shop: you got your 8,000 credits back.'), 1500); }
     delete state.catSpins;
@@ -6267,6 +6496,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     $('whoami').textContent = account.name;
     renderMyAvatar();
     seenMedals = null;
+    setTimeout(checkGifts, 1200);
     syncAdminButton();
     $('accountBar').hidden = false;
     document.body.classList.add('signed-in');
@@ -6346,7 +6576,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     $('profileModal').hidden = false;
     $('profileClose').focus();
   }
+  const GIFT_LEVEL = 3;
   function renderProfile() {
+    const keep = { v: $('sendAmt')?.value, focus: document.activeElement === $('sendAmt') };
     if (!profileFor || $('profileModal').hidden && profileFor === null) return;
     const mine = profileFor === account?.id;
     const p = players.find(x => x.id === profileFor) || (mine ? { id: account.id, name: account.name, medals: [] } : null);
@@ -6361,9 +6593,65 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       `<div class="profile-stats"><div><b>${fmt(credits)}</b><span>Credits</span></div><div><b>${fmt(best)}</b><span>Best win</span></div><div><b>${level}</b><span>Level</span></div></div>` +
       `<span class="profile-label">Medals (${medals.length})</span>` +
       (medals.length ? `<div class="medal-list">${medals.map(m => `<div class="medal-row">${medalSvg(m)}<span><b>${esc(m.name)}</b><small>${esc(m.desc)}</small></span></div>`).join('')}</div>`
-        : `<p class="note">${mine ? 'No medals yet. Admins award them for special moments.' : 'No medals yet.'}</p>`) + picker;
+        : `<p class="note">${mine ? 'No medals yet. Admins award them for special moments.' : 'No medals yet.'}</p>`) + picker +
+      (!mine && backend?.sendCredits ? `<div class="send-box"><span class="profile-label">Send ${esc(p.name)} credits</span>
+        <div class="send-row"><input id="sendAmt" type="number" min="1" step="1" inputmode="numeric" placeholder="Amount" aria-label="Credits to send"><button type="button" class="chip-btn" data-send-max>Max</button><button type="button" class="spin" id="sendBtn">Send</button></div>
+        <small class="send-msg" id="sendMsg">You have ${fmt(state.credits)} credits.</small></div>` : '');
+    if (keep.v) { $('sendAmt').value = keep.v; if (keep.focus) $('sendAmt').focus(); }
   }
+  // Send credits to the player whose profile is open.
+  let sending = false;
+  async function sendGift() {
+    const to = profileFor, p = players.find(x => x.id === to);
+    const amount = Math.floor(Number($('sendAmt')?.value));
+    const msg = text => { if ($('sendMsg')) { $('sendMsg').textContent = text; $('sendMsg').className = 'send-msg'; } };
+    if (!p || sending) return;
+    if (!(amount >= 1)) { msg('Enter how many credits to send.'); return; }
+    if (amount > state.credits) { msg(`You only have ${fmt(state.credits)} credits.`); return; }
+    if (state.level < GIFT_LEVEL) { msg(`Reach level ${GIFT_LEVEL} to send credits.`); return; }
+    if (gameBusy()) { msg('Let the current round finish first.'); return; }
+    sending = true;
+    $('sendBtn').disabled = true;
+    try {
+      await flush();
+      quietCreditsUntil = Date.now() + 8000;
+      await backend.sendCredits(to, amount);
+      await refreshOwn();
+      toast('Credits sent', `${fmt(amount)} credits went to ${p.name}.`);
+      sound.chime();
+      const b = $('sendBtn')?.getBoundingClientRect();
+      if (b) fxTop.coinBurst(b.left + b.width / 2, b.top, 26, 9);
+      if ($('sendAmt')) $('sendAmt').value = '';
+      renderProfile();
+    } catch (e) {
+      msg({ gift_setup: 'Sending credits needs the “Sending credits” part of supabase-setup.sql.', gift_level: `Reach level ${GIFT_LEVEL} to send credits.`,
+        gift_credits: 'Not enough credits for that.', gift_player: 'That player cannot get credits right now.' }[e?.code] || 'That did not work. Check the connection and try again.');
+    }
+    sending = false;
+    if ($('sendBtn')) $('sendBtn').disabled = false;
+  }
+  // Gifts that arrived since we last looked: a pop-up each.
+  async function checkGifts() {
+    if (!account || !backend?.giftsSince) return 0;
+    const since = state.giftSeen || Date.now();
+    const gifts = await backend.giftsSince(since).catch(() => []);
+    if (!gifts.length) return 0;
+    state.giftSeen = Math.max(...gifts.map(g => g.at));
+    for (const g of gifts) {
+      const el = document.createElement('div');
+      el.className = 'chat-pop gift-pop';
+      el.innerHTML = `<span class="gift-ico" aria-hidden="true">${SHOP_ICONS.gold}</span><span class="body"><span class="head"><b>${esc(g.from)}</b></span><span class="note">sent you ${fmt(g.amount)} credits!</span></span>`;
+      showPop(el, 6500);
+    }
+    sound.bigWin();
+    for (let k = 0; k < 40; k++) fxTop.confetti(CONFETTI);
+    persist();
+    return gifts.length;
+  }
+  $('profileBody').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'sendAmt') sendGift(); });
   $('profileBody').addEventListener('click', e => {
+    if (e.target.closest('#sendBtn')) { sendGift(); return; }
+    if (e.target.closest('[data-send-max]')) { $('sendAmt').value = Math.max(0, Math.floor(state.credits)); return; }
     if (e.target.closest('[data-pw]')) {
       closeProfile();
       if ($('pwForm').hidden) $('pwToggle').click();
@@ -6699,7 +6987,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         } else {
           state.credits = Number(doc.credits) || 0;
           state.adminRev = rev;
-          if (Date.now() > quietCreditsUntil) toast('Credits updated', `Your balance is now ${fmt(state.credits)}.`);
+          const gifts = await checkGifts();
+          if (!gifts && Date.now() > quietCreditsUntil) toast('Credits updated', `Your balance is now ${fmt(state.credits)}.`);
         }
         lastSaved = '';
         render();

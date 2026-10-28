@@ -1317,3 +1317,56 @@ $$;
 -- Clean up after a hard reset that ran before this fix: nobody who has not
 -- played since keeps the Neon Name.
 update public.players set flair = null where flair is not null and game is null;
+
+-- ---------------------------------------------------------------------------
+-- Sending credits: run this part once (after "Admin security"). Players can
+-- send each other credits from a profile. The database checks the sender's
+-- balance and moves the credits in one step; accounts below level 3 can't
+-- send (so fresh accounts can't just pass their start credits on). Each gift
+-- is kept so the recipient sees who sent it.
+
+create table if not exists public.transfers (
+  id bigint generated always as identity primary key,
+  sender uuid references public.players (id) on delete set null,
+  recipient uuid not null references public.players (id) on delete cascade,
+  sender_name text not null,
+  amount bigint not null check (amount > 0),
+  created_at timestamptz not null default now()
+);
+alter table public.transfers enable row level security;
+revoke all on public.transfers from anon, authenticated;
+grant select on public.transfers to authenticated;
+drop policy if exists "See your own transfers" on public.transfers;
+create policy "See your own transfers" on public.transfers
+  for select to authenticated using (auth.uid() = sender or auth.uid() = recipient);
+
+create or replace function public.send_credits(target uuid, amount bigint)
+returns bigint
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  me public.players;
+  them public.players;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  if target = auth.uid() then raise exception 'cannot send to yourself'; end if;
+  if amount is null or amount < 1 then raise exception 'send at least 1'; end if;
+  -- Lock both rows in a fixed order so two gifts at once can't deadlock.
+  perform 1 from public.players where id in (auth.uid(), target) order by id for update;
+  select * into me from public.players where id = auth.uid();
+  select * into them from public.players where id = target;
+  if me is null or me.is_banned then raise exception 'not allowed'; end if;
+  if them is null or them.is_banned then raise exception 'no such player'; end if;
+  if me.level < 3 then raise exception 'reach level 3 first'; end if;
+  if me.credits < amount then raise exception 'not enough credits'; end if;
+  update public.players set credits = credits - amount, admin_rev = admin_rev + 1, updated_at = now() where id = me.id;
+  update public.players set credits = credits + amount, admin_rev = admin_rev + 1, updated_at = now() where id = them.id;
+  insert into public.transfers (sender, recipient, sender_name, amount) values (me.id, them.id, me.name, amount);
+  return me.credits - amount;
+end;
+$$;
+
+revoke execute on function public.send_credits(uuid, bigint) from public, anon;
+grant execute on function public.send_credits(uuid, bigint) to authenticated;
