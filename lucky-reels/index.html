@@ -181,6 +181,7 @@ body {
 }
 .bulbs span:nth-child(even) { animation-delay: 0.6s; }
 @keyframes blink { 50% { opacity: 1; box-shadow: 0 0 8px currentColor; } }
+.cabinet.armed .bulbs span { background: var(--lose); }
 .cabinet.bonus .bulbs span { background: var(--bonus); animation-duration: 0.5s; }
 .cabinet.jackpot .bulbs span { animation-duration: 0.2s; }
 
@@ -1986,6 +1987,10 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
   const reels = [...document.querySelectorAll('.reel')];
   const strips = reels.map(r => r.querySelector('.strip'));
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Secret jackpot code (↑ ↑ ↓ ↓ ← → ← → B A), for admins only: the next paid spin lands three sevens.
+  const SECRET = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+  let typed = [];
+  let rigged = false;
   let busy = false;
   let inBonus = false;
   let freeDone = 0;
@@ -2517,7 +2522,8 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
     const cost = free ? 0 : spinCost();
     if (state.credits < cost) return null;
     const raised = !free && held.some(Boolean) && state.bet > lastBet;
-    const holds = free || raised ? [false, false, false] : held.slice();
+    const cheat = rigged && !free;
+    const holds = free || raised || cheat ? [false, false, false] : held.slice();
     held = [false, false, false];
     state.nudges = 0;
     holdOffer = false;
@@ -2530,7 +2536,8 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
     render();
     holds.forEach((h, i) => reels[i].classList.toggle('held', h));
 
-    const targets = [0, 1, 2].map(i => holds[i] ? pos[i] : randInt(STRIP.length));
+    const targets = cheat ? [0, 1, 2].map(() => STRIP.indexOf('seven')) : [0, 1, 2].map(i => holds[i] ? pos[i] : randInt(STRIP.length));
+    if (cheat) { rigged = false; cabinet.classList.remove('armed'); }
 
     const sevenish = s => s === 'seven' || s === 'wild';
     const [s0, s1] = [STRIP[targets[0]], STRIP[targets[1]]];
@@ -4691,6 +4698,17 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
     render();
   });
   document.addEventListener('keydown', e => {
+    if (!account?.isAdmin || e.target.closest?.('#chatPanel, #adminModal, #profileModal') || ['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
+    typed = [...typed, e.key.length === 1 ? e.key.toLowerCase() : e.key].slice(-SECRET.length);
+    if (typed.join() === SECRET.join() && !rigged) {
+      rigged = true;
+      typed = [];
+      cabinet.classList.add('armed');
+      if (state.mode === 'slots') say('The machine hums. Feeling lucky?', 'hot');
+      else toast('The machine hums…', 'Switch to the slots: your next spin hits the jackpot.');
+    }
+  });
+  document.addEventListener('keydown', e => {
     if (e.code === 'Space' && account && $('lobby').hidden && state.mode === 'slots' && !['BUTTON', 'SUMMARY', 'INPUT'].includes(e.target.tagName) && $('wheelModal').hidden && $('gambleModal').hidden && $('adminModal').hidden && $('profileModal').hidden) { e.preventDefault(); play(); }
   });
 
@@ -5393,7 +5411,8 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
     held = [false, false, false];
     holdOffer = nudgeOpen = false;
     gambleOffer = 0;
-    cabinet.classList.remove('bonus', 'tease');
+    rigged = false;
+    cabinet.classList.remove('armed', 'bonus', 'tease');
     reels.forEach(r => r.classList.remove('win', 'star', 'wild', 'held'));
     buildReels();
     fillMissions();
