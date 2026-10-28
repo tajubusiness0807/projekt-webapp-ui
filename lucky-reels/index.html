@@ -2230,7 +2230,7 @@ details.ach { margin-top: 10px; }
   $('sound').addEventListener('click', () => { state.sound = !state.sound; render(); });
   $('refill').addEventListener('click', () => {
     if (busy) return;
-    Object.assign(state, fresh(), { sound: state.sound });
+    Object.assign(state, fresh(), { sound: state.sound, adminRev: state.adminRev, credits: settings.startCredits });
     rigged = false;
     pendingLevels.length = 0;
     held = [false, false, false];
@@ -3216,14 +3216,26 @@ details.ach { margin-top: 10px; }
   function renderAdminPlayers(force = false) {
     if (!adminUnlocked || $('adminModal').hidden) return;
     const table = $('adminPlayers');
-    // Don't rebuild while an admin is typing an amount.
-    if (!force && table.contains(document.activeElement) && document.activeElement.tagName === 'INPUT') return;
     const rows = [...players].sort((a, b) => a.name.localeCompare(b.name));
+    // Rebuilding swaps out the buttons and inputs, which would swallow a click or a half-typed amount,
+    // so only rebuild when players or their flags change and otherwise refresh the numbers in place.
+    const sig = rows.map(p => `${p.id}:${p.name}:${p.admin}:${p.banned}`).join('|') + '|' + account?.id;
+    if (!force && table.dataset.sig === sig) {
+      for (const p of rows) {
+        const tr = table.querySelector(`tr[data-pid="${CSS.escape(p.id)}"]`);
+        if (!tr) continue;
+        const input = tr.querySelector('input');
+        if (document.activeElement !== input && !input.dataset.dirty) input.value = p.credits;
+        tr.querySelector('.lvl').textContent = p.level;
+      }
+      return;
+    }
+    table.dataset.sig = sig;
     table.innerHTML = '<thead><tr><th>Player</th><th>Credits</th><th>Level</th><th>Actions</th></tr></thead><tbody>' + rows.map(p => `
       <tr data-pid="${esc(p.id)}">
         <td class="pname">${esc(p.name)}${p.admin ? '<span class="tag admin">admin</span>' : ''}${p.banned ? '<span class="tag banned">blocked</span>' : ''}${p.id === account?.id ? ' <span class="tag">you</span>' : ''}</td>
         <td><div class="credit-edit"><input type="number" inputmode="numeric" value="${p.credits}" aria-label="Credits for ${esc(p.name)}"><button class="abtn" data-act="credits">Set</button></div></td>
-        <td>${p.level}</td>
+        <td class="lvl">${p.level}</td>
         <td><div class="acts">
           <button class="abtn warn" data-act="reset">Reset</button>
           <button class="abtn${p.banned ? ' ok' : ' warn'}" data-act="ban"${p.id === account?.id ? ' disabled' : ''}>${p.banned ? 'Unblock' : 'Block'}</button>
@@ -3241,7 +3253,11 @@ details.ach { margin-top: 10px; }
     if (act === 'credits') {
       const v = Math.floor(Number(tr.querySelector('input').value));
       if (!Number.isFinite(v) || v < 0) { adminSay('Enter 0 or more credits.', false); return; }
-      adminDo(`${p.name} now has ${fmt(v)} credits.`, () => backend.admin.setCredits(p.id, v));
+      const input = tr.querySelector('input');
+      adminDo(`${p.name} now has ${fmt(v)} credits.`, async () => {
+        await backend.admin.setCredits(p.id, v);
+        delete input.dataset.dirty;
+      });
     } else if (act === 'reset') {
       if (confirmed(btn, 'Reset?')) adminDo(`${p.name} starts over with ${fmt(settings.startCredits)} credits.`, () => backend.admin.reset(p.id));
     } else if (act === 'ban') {
@@ -3250,7 +3266,10 @@ details.ach { margin-top: 10px; }
       if (p.admin ? confirmed(btn, 'Remove?') : true) adminDo(p.admin ? `${p.name} is no longer an admin.` : `${p.name} is now an admin.`, () => backend.admin.setFlag(p.id, 'admin', !p.admin));
     }
   });
-  $('adminPlayers').addEventListener('focusout', () => setTimeout(() => renderAdminPlayers(), 0));
+  $('adminPlayers').addEventListener('input', e => { if (e.target.tagName === 'INPUT') e.target.dataset.dirty = '1'; });
+  $('adminPlayers').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.tagName === 'INPUT') e.target.closest('tr').querySelector('[data-act="credits"]').click();
+  });
   $('giveAll').addEventListener('click', () => {
     const v = Math.floor(Number($('giveAllAmount').value));
     if (!Number.isFinite(v) || v === 0) { adminSay('Enter how many credits everyone gets (negative takes them away).', false); return; }
