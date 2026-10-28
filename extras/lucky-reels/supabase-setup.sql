@@ -606,3 +606,27 @@ insert into public.admin_keys (player_id, hash)
 select id, extensions.crypt('NEUES-ADMIN-PASSWORT', extensions.gen_salt('bf'))
 from public.players where name = 'DEIN_NAME' and is_admin
 on conflict (player_id) do update set hash = excluded.hash, updated_at = now();
+
+-- ---------------------------------------------------------------------------
+-- Deleting players: run this part once (after "Admin security").
+-- Deletes the login itself; the game row, chat messages, private messages and
+-- any admin password go with it.
+
+create or replace function public.admin_delete_player(tok uuid, target uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.admin_check(tok);
+  if target = auth.uid() then raise exception 'cannot delete yourself'; end if;
+  if exists (select 1 from public.players where id = target and is_admin) then
+    raise exception 'remove admin rights first';
+  end if;
+  delete from auth.users where id = target;
+end;
+$$;
+
+revoke execute on function public.admin_delete_player(uuid, uuid) from public, anon;
+grant execute on function public.admin_delete_player(uuid, uuid) to authenticated;

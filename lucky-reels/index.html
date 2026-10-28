@@ -919,7 +919,7 @@ details.ach { margin-top: 10px; }
           <button class="abtn ok" id="giveAll" type="button">Give to everyone</button>
         </div>
         <div class="admin-table-wrap"><table class="admin-table" id="adminPlayers"></table></div>
-        <p class="admin-note">Set credits replaces the balance. Reset puts the player back to the start: credits, level, goodies and achievements. Blocked players can't sign in, save or chat. Dangerous buttons ask once more before they act.</p>
+        <p class="admin-note">Set credits replaces the balance. Reset puts the player back to the start: credits, level, goodies and achievements. Blocked players can't sign in, save or chat. Delete removes the account for good, with its game, chat and private messages; admins have to lose their admin rights first. Dangerous buttons ask once more before they act.</p>
       </section>
 
       <section class="admin-section" data-pane="game" hidden>
@@ -2335,7 +2335,8 @@ details.ach { margin-top: 10px; }
       async save(key, body) {
         const { adminRev, ...rest } = body;
         const cur = await store.load(key);
-        if (cur && (Number(cur.adminRev) || 0) > (adminRev || 0)) throw adminChanged();
+        if (!cur) return;
+        if ((Number(cur.adminRev) || 0) > (adminRev || 0)) throw adminChanged();
         if (cur?.banned) return;
         return store.save(key, rest);
       },
@@ -2368,6 +2369,7 @@ details.ach { margin-top: 10px; }
         },
         setBanned: (id, value) => store.save(id, { banned: value }),
         setAdmin: (id, make) => store.save(id, { admin: make }),
+        deletePlayer: id => store.remove(id),
         deleteMessage: id => store.deleteMessage(id),
         clearChat: () => store.clearChat(),
         saveSettings: patch => store.saveSettings(patch),
@@ -2435,6 +2437,7 @@ details.ach { margin-top: 10px; }
         return doc;
       },
       async save(id, body) { all[id] = { ...all[id], ...body }; write(); emit(); },
+      async remove(id) { delete all[id]; write(); emit(); },
       watch(cb) { listeners.add(cb); emit(); },
       // Online: each tab stamps its player every 10 s; a stamp younger than 25 s counts as online.
       presence(cb) {
@@ -2528,6 +2531,7 @@ details.ach { margin-top: 10px; }
         return doc;
       },
       save(id, body) { return db.doc(`players/${id}`).update(body); },
+      remove: id => db.doc(`players/${id}`).delete(),
       watch(cb) {
         db.collection('players').onSnapshot(
           snap => cb(toPlayers(snap.docs.filter(d => d.data()?.hash).map(d => ({ id: d.id, ...d.data() })))),
@@ -2685,6 +2689,7 @@ details.ach { margin-top: 10px; }
         reset: id => adminRpc('admin_update_player', { target: id, new_credits: null, reset: true, set_banned: null }),
         setBanned: (id, value) => adminRpc('admin_update_player', { target: id, new_credits: null, reset: false, set_banned: value }),
         setAdmin: (id, make, pw) => adminRpc('admin_set_admin', { target: id, make, new_pw: pw ?? null }),
+        deletePlayer: id => adminRpc('admin_delete_player', { target: id }),
         changePassword: pw => adminRpc('admin_change_password', { new_pw: pw }),
         deleteMessage: id => adminRpc('admin_delete_message', { msg: id }),
         clearChat: () => adminRpc('admin_clear_chat', {}),
@@ -2814,6 +2819,10 @@ details.ach { margin-top: 10px; }
       }
       if (mine.banned) { toast('Signed out', 'An admin blocked this account.'); signOut(true); }
       else if (mine.adminRev > (state.adminRev || 0)) refreshOwn();
+    } else if (account && list.length) {
+      account.deleted = true;
+      toast('Signed out', 'An admin deleted this account.');
+      signOut(true);
     }
     renderAdminPlayers();
     renderChat();
@@ -2877,7 +2886,7 @@ details.ach { margin-top: 10px; }
   }
   async function flush() {
     clearTimeout(saveTimer);
-    if (!account || !backend) return;
+    if (!account || !backend || account.deleted) return;
     if (saving) { saveAgain = true; return; }
     const key = account.id;
     const body = { credits: state.credits, best: state.best, level: state.level, spins: state.spins, jackpots: state.jackpots, adminRev: state.adminRev, game: JSON.stringify(state) };
@@ -3225,6 +3234,8 @@ details.ach { margin-top: 10px; }
       if (e?.code === 'admin_locked') { lockAdmin('The admin menu locked itself. Enter the admin password again.'); return; }
       adminSay(/too short/i.test(e?.message || '') ? 'Admin passwords need at least 8 characters.'
         : /remove yourself/i.test(e?.message || '') ? 'You cannot remove your own admin rights.'
+        : /delete yourself/i.test(e?.message || '') ? 'You cannot delete your own account here.'
+        : /admin rights first/i.test(e?.message || '') ? 'Remove their admin rights first, then delete the account.'
         : 'That did not work. Check the connection and try again.', false);
     }
   }
@@ -3308,6 +3319,7 @@ details.ach { margin-top: 10px; }
           <button class="abtn warn" data-act="reset">Reset</button>
           <button class="abtn${p.banned ? ' ok' : ' warn'}" data-act="ban"${p.id === account?.id ? ' disabled' : ''}>${p.banned ? 'Unblock' : 'Block'}</button>
           <button class="abtn" data-act="admin"${p.id === account?.id ? ' disabled' : ''}>${p.admin ? 'Remove admin' : 'Make admin'}</button>
+          <button class="abtn warn" data-act="delete"${p.id === account?.id || p.admin ? ' disabled' : ''} title="${p.admin ? 'Remove admin rights first' : 'Delete this account for good'}">Delete</button>
         </div></td>
       </tr>`).join('') + '</tbody>';
   }
@@ -3346,8 +3358,17 @@ details.ach { margin-top: 10px; }
       const pw = tr.querySelector('.new-admin-pw').value;
       if (pw.length < 8) { adminSay('Admin passwords need at least 8 characters.', false); return; }
       adminDo(`${p.name} is now an admin. Tell them their admin password yourself.`, () => backend.admin.setAdmin(p.id, true, pw));
-    } else if (act === 'admin-cancel') {
+    } else if (act === 'admin-cancel' || act === 'delete-cancel') {
       renderAdminPlayers(true);
+    } else if (act === 'delete') {
+      // Deleting can't be undone, so ask for the player's name first.
+      const acts = btn.closest('.acts');
+      acts.innerHTML = `<input class="delete-name" autocomplete="off" placeholder="Type ${esc(p.name)} to delete" aria-label="Type ${esc(p.name)} to confirm">` +
+        '<button class="abtn warn" data-act="delete-ok">Delete for good</button><button class="abtn" data-act="delete-cancel">Cancel</button>';
+      acts.querySelector('input').focus();
+    } else if (act === 'delete-ok') {
+      if (tr.querySelector('.delete-name').value.trim() !== p.name) { adminSay(`Type ${p.name} exactly to confirm.`, false); return; }
+      adminDo(`${p.name} was deleted: account, game, chat and private messages.`, () => backend.admin.deletePlayer(p.id));
     }
   });
   $('adminPlayers').addEventListener('input', e => { if (e.target.tagName === 'INPUT') e.target.dataset.dirty = '1'; });
