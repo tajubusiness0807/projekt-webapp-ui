@@ -1982,8 +1982,12 @@ details.ach { margin-top: 10px; }
   });
 
   // ---------- Accounts ----------
-  // Accounts live in the artifact's shared store at players/<id>; opened as a plain file, the page
-  // falls back to this browser's storage with the two default accounts.
+  // Three places to keep accounts, picked at load:
+  //  - the public site: a Supabase project (fill SUPABASE below); its auth checks passwords server-side;
+  //  - the claude.ai artifact: the artifact's shared store at players/<id>;
+  //  - a plain file: this browser's storage with the two default accounts.
+  const SUPABASE = { url: '', anonKey: '' };
+  const EMAIL_DOMAIN = 'lucky-reels.app';
   const LOCAL_ACCOUNTS = {"lukas": {"name": "Lukas", "salt": "609251a2290fc994", "hash": "2d0b6e200d1e84675de054182f28e9388d72143fe58397f9d0465248f99b4c6a", "credits": 1000, "best": 0, "level": 1, "spins": 0}, "julius": {"name": "Julius", "salt": "ed552e28ed575e75", "hash": "6607c8490c975680b5e546b46c515b6a2a794d0f853833f1a3f85d50479b8e3f", "credits": 750, "best": 0, "level": 1, "spins": 0}};
   let backend = null;
   let account = null;
@@ -1992,14 +1996,47 @@ details.ach { margin-top: 10px; }
 
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
   const idFor = name => String(name).trim().toLowerCase();
+  const validId = id => /^[a-z0-9_-]{1,40}$/.test(id);
   async function hashPw(salt, pw) {
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${salt}:${pw}`));
     return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
   }
   const newSalt = () => [...crypto.getRandomValues(new Uint8Array(8))].map(b => b.toString(16).padStart(2, '0')).join('');
   const toPlayers = list => list.map(p => ({ id: p.id, name: p.name || p.id, credits: Number(p.credits) || 0, best: Number(p.best) || 0, level: Number(p.level) || 1 }));
+  const SESSION_KEY = 'lucky-reels-session';
+  const remember = id => { try { id ? sessionStorage.setItem(SESSION_KEY, id) : sessionStorage.removeItem(SESSION_KEY); } catch {} };
+  const remembered = () => { try { return sessionStorage.getItem(SESSION_KEY); } catch { return null; } };
 
-  function localBackend() {
+  // Shared by the artifact store and browser storage: documents keyed by username, checked with a salted hash.
+  function hashedAccounts(store) {
+    return {
+      kind: store.kind,
+      async signIn(name, pw) {
+        const id = idFor(name);
+        const doc = validId(id) ? await store.load(id) : null;
+        if (!doc || !doc.salt || (await hashPw(doc.salt, pw)) !== doc.hash) return null;
+        remember(id);
+        return { key: id, doc };
+      },
+      async resume() {
+        const id = remembered();
+        const doc = id ? await store.load(id).catch(() => null) : null;
+        return doc ? { key: id, doc } : null;
+      },
+      async signOut() { remember(null); },
+      save: (key, body) => store.save(key, body),
+      async changePassword(key, oldPw, newPw) {
+        const doc = await store.load(key);
+        if (!doc || (await hashPw(doc.salt, oldPw)) !== doc.hash) return 'wrong';
+        const salt = newSalt();
+        await store.save(key, { salt, hash: await hashPw(salt, newPw) });
+        return 'ok';
+      },
+      watch: cb => store.watch(cb),
+    };
+  }
+
+  function localStore() {
     const KEY = 'lucky-reels-players';
     const read = () => { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { return null; } };
     const write = () => { try { localStorage.setItem(KEY, JSON.stringify(all)); } catch {} };
@@ -2012,24 +2049,94 @@ details.ach { margin-top: 10px; }
       kind: 'local',
       async load(id) { return all[id] ? { ...all[id] } : null; },
       async save(id, body) { all[id] = { ...all[id], ...body }; write(); emit(); },
-      watch(cb) { listeners.add(cb); emit(); return () => listeners.delete(cb); },
+      watch(cb) { listeners.add(cb); emit(); },
     };
   }
 
-  async function connect() {
-    let db = null;
-    try { db = window.claude?.use ? await window.claude.use('db') : null; } catch { db = null; }
-    if (!db) return localBackend();
+  function artifactStore(db) {
     return {
       kind: 'db',
       async load(id) { const snap = await db.doc(`players/${id}`).get(); return snap.exists ? snap.data() : null; },
       save(id, body) { return db.doc(`players/${id}`).update(body); },
       watch(cb) {
-        return db.collection('players').onSnapshot(
+        db.collection('players').onSnapshot(
           snap => cb(toPlayers(snap.docs.map(d => ({ id: d.id, ...d.data() })))),
           () => { $('loginNote').textContent = 'Highscores stopped updating. Reload the page to reconnect.'; });
       },
     };
+  }
+
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const el = document.createElement('script');
+      el.src = src;
+      el.onload = resolve;
+      el.onerror = () => reject(new Error('script failed to load'));
+      document.head.append(el);
+    });
+  }
+
+  // Supabase: usernames map to <name>@lucky-reels.app logins; scores and game state live in public.players.
+  async function supabaseAccounts() {
+    await loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js');
+    const sb = window.supabase.createClient(SUPABASE.url, SUPABASE.anonKey, {
+      auth: { storage: window.sessionStorage, persistSession: true, autoRefreshToken: true },
+    });
+    const email = name => `${idFor(name)}@${EMAIL_DOMAIN}`;
+    async function row(uid) {
+      const { data, error } = await sb.from('players').select('id,name,credits,game').eq('id', uid).maybeSingle();
+      if (error) throw error;
+      return data ? { key: uid, doc: data } : null;
+    }
+    return {
+      kind: 'supabase',
+      async signIn(name, pw) {
+        if (!validId(idFor(name))) return null;
+        const { data, error } = await sb.auth.signInWithPassword({ email: email(name), password: pw });
+        if (error) { if (error.status === 400) return null; throw error; }
+        const found = await row(data.user.id);
+        if (!found) await sb.auth.signOut();
+        return found;
+      },
+      async resume() {
+        const { data } = await sb.auth.getSession();
+        return data.session ? row(data.session.user.id).catch(() => null) : null;
+      },
+      async signOut() { await sb.auth.signOut(); },
+      async save(key, body) {
+        const patch = { ...body, updated_at: new Date(body.updatedAt || Date.now()).toISOString() };
+        delete patch.updatedAt;
+        const { error } = await sb.from('players').update(patch).eq('id', key);
+        if (error) throw error;
+      },
+      async changePassword(key, oldPw, newPw) {
+        const { error: wrong } = await sb.auth.signInWithPassword({ email: email(account.name), password: oldPw });
+        if (wrong) return 'wrong';
+        const { error } = await sb.auth.updateUser({ password: newPw });
+        if (error) throw error;
+        return 'ok';
+      },
+      watch(cb) {
+        const pull = async () => {
+          const { data } = await sb.from('players').select('id,name,credits,best,level');
+          if (data) cb(toPlayers(data));
+        };
+        pull();
+        sb.channel('players-board').on('postgres_changes', { event: '*', schema: 'public', table: 'players' }, pull).subscribe();
+        setInterval(pull, 30000);
+      },
+    };
+  }
+
+  async function connect() {
+    if (window.claude?.use) {
+      let db = null;
+      try { db = await window.claude.use('db'); } catch { db = null; }
+      if (db) return hashedAccounts(artifactStore(db));
+    } else if (SUPABASE.url && SUPABASE.anonKey) {
+      return supabaseAccounts();
+    }
+    return hashedAccounts(localStore());
   }
 
   function renderBoards() {
@@ -2058,13 +2165,13 @@ details.ach { margin-top: 10px; }
     clearTimeout(saveTimer);
     if (!account || !backend) return;
     if (saving) { saveAgain = true; return; }
-    const id = account.id;
+    const key = account.id;
     const body = { credits: state.credits, best: state.best, level: state.level, spins: state.spins, game: JSON.stringify(state) };
     const json = JSON.stringify(body);
     if (json === lastSaved) return;
     saving = true;
     try {
-      await backend.save(id, { ...body, updatedAt: Date.now() });
+      await backend.save(key, { ...body, updatedAt: Date.now() });
       lastSaved = json;
     } catch (e) {
       toast('Not saved', e?.code === 'invalid_argument'
@@ -2099,14 +2206,13 @@ details.ach { margin-top: 10px; }
     say('Pick a bet and pull.');
   }
 
-  async function signIn(id, doc) {
+  function enterGame({ key, doc }) {
     let saved = {};
     try { saved = doc.game ? JSON.parse(doc.game) : {}; } catch { saved = {}; }
     if (!doc.game) saved = { credits: Number(doc.credits) || START };
-    account = { id, name: doc.name || id };
+    account = { id: key, name: doc.name || key };
     lastSaved = '';
     loadState(saved);
-    try { sessionStorage.setItem('lucky-reels-session', id); } catch {}
     $('whoami').textContent = account.name;
     $('accountBar').hidden = false;
     $('login').hidden = true;
@@ -2120,7 +2226,7 @@ details.ach { margin-top: 10px; }
     if (busy || !account) return;
     await flush();
     account = null;
-    try { sessionStorage.removeItem('lucky-reels-session'); } catch {}
+    try { await backend.signOut(); } catch {}
     $('accountBar').hidden = true;
     $('pwForm').hidden = true;
     $('login').hidden = false;
@@ -2132,18 +2238,18 @@ details.ach { margin-top: 10px; }
   $('loginForm').addEventListener('submit', async e => {
     e.preventDefault();
     if (!backend) return;
-    const id = idFor($('loginUser').value);
+    const name = $('loginUser').value.trim();
     const pw = $('loginPass').value;
     const err = $('loginError');
-    if (!id || !pw) { err.textContent = 'Enter your username and password.'; return; }
+    if (!name || !pw) { err.textContent = 'Enter your username and password.'; return; }
     $('loginBtn').disabled = true;
     err.textContent = '';
     try {
-      const doc = /^[a-z0-9_-]{1,40}$/.test(id) ? await backend.load(id) : null;
-      if (doc && doc.salt && (await hashPw(doc.salt, pw)) === doc.hash) await signIn(id, doc);
+      const found = await backend.signIn(name, pw);
+      if (found) enterGame(found);
       else err.textContent = 'Wrong username or password.';
     } catch {
-      err.textContent = 'Could not reach the account store. Try again in a moment.';
+      err.textContent = 'Could not reach the account server. Try again in a moment.';
     }
     $('loginBtn').disabled = false;
   });
@@ -2166,12 +2272,10 @@ details.ach { margin-top: 10px; }
     const msg = $('pwMsg');
     msg.className = 'pw-msg';
     const oldPw = $('pwOld').value, newPw = $('pwNew').value;
-    if (newPw.length < 4) { msg.textContent = 'The new password needs at least 4 characters.'; return; }
+    const min = backend.kind === 'supabase' ? 6 : 4;
+    if (newPw.length < min) { msg.textContent = `The new password needs at least ${min} characters.`; return; }
     try {
-      const doc = await backend.load(account.id);
-      if (!doc || (await hashPw(doc.salt, oldPw)) !== doc.hash) { msg.textContent = 'The current password is wrong.'; return; }
-      const salt = newSalt();
-      await backend.save(account.id, { salt, hash: await hashPw(salt, newPw) });
+      if ((await backend.changePassword(account.id, oldPw, newPw)) === 'wrong') { msg.textContent = 'The current password is wrong.'; return; }
       $('pwOld').value = $('pwNew').value = '';
       msg.className = 'pw-msg ok';
       msg.textContent = 'Password changed.';
@@ -2191,17 +2295,18 @@ details.ach { margin-top: 10px; }
   $('loginUser').focus();
 
   (async () => {
-    backend = await connect();
+    try {
+      backend = await connect();
+    } catch {
+      $('loginNote').textContent = 'The account server could not be reached, so this copy keeps accounts in this browser only.';
+      backend = hashedAccounts(localStore());
+    }
     backend.watch(list => { players = list; renderBoards(); });
     $('loginBtn').disabled = false;
     $('loginBtn').textContent = 'Sign in';
-    if (backend.kind === 'local') $('loginNote').textContent = 'Offline copy: accounts and scores are kept in this browser only.';
-    let remembered = null;
-    try { remembered = sessionStorage.getItem('lucky-reels-session'); } catch {}
-    if (remembered) {
-      const doc = await backend.load(remembered).catch(() => null);
-      if (doc) await signIn(remembered, doc);
-    }
+    if (backend.kind === 'local' && !$('loginNote').textContent) $('loginNote').textContent = 'Offline copy: accounts and scores are kept in this browser only.';
+    const resumed = await backend.resume().catch(() => null);
+    if (resumed) enterGame(resumed);
   })();
 })();
 </script>
