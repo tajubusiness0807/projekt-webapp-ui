@@ -142,6 +142,23 @@ body {
   border-color: var(--accent);
   box-shadow: 0 30px 60px -20px #000, 0 0 40px -10px #e9a23b88, inset 0 2px 0 #fff2c444;
 }
+.cabinet.midnight {
+  background: linear-gradient(160deg, #16264a, #0b1426 60%, #1a2c55);
+  border-color: #4fe3ff;
+  box-shadow: 0 30px 60px -20px #000, 0 0 40px -8px #4fe3ff88, inset 0 2px 0 #bff3ff33;
+}
+.cabinet.midnight .marquee h1 { color: #bff3ff; text-shadow: 0 0 18px #4fe3ff88, 0 3px 0 #1d4a7a; }
+body.cos-disco .bulbs span { animation: discoBulb 1.2s linear infinite; opacity: 1; }
+body.cos-disco .bulbs span:nth-child(3n+1) { animation-delay: -0.4s; }
+body.cos-disco .bulbs span:nth-child(3n+2) { animation-delay: -0.8s; }
+@keyframes discoBulb { 0% { background: #ff4fd8; box-shadow: 0 0 10px #ff4fd8; } 33% { background: #4fe3ff; box-shadow: 0 0 10px #4fe3ff; } 66% { background: #7dff6a; box-shadow: 0 0 10px #7dff6a; } 100% { background: #ff4fd8; box-shadow: 0 0 10px #ff4fd8; } }
+body.cos-royalFelt .felt, body.cos-royalFelt .pk-felt, body.cos-royalFelt .rl-board {
+  background:
+    radial-gradient(circle at 20% 30%, #ffffff0a 0 1px, transparent 2px) 0 0 / 7px 7px,
+    radial-gradient(ellipse at 50% 35%, #7b3fb0, #4d2275 62%, #2e1248);
+}
+body.cos-goldBacks .card.back { background: repeating-linear-gradient(45deg, #e9a23b 0 6px, #1d1714 6px 12px); border-color: #f3c94b; }
+@media (prefers-reduced-motion: reduce) { body.cos-disco .bulbs span { animation: none; } }
 .cabinet.bonus {
   border-color: var(--bonus);
   box-shadow: 0 30px 60px -20px #000, 0 0 50px -6px #a77bffaa, inset 0 0 30px #a77bff33;
@@ -738,6 +755,22 @@ details summary { cursor: pointer; font-size: 11px; letter-spacing: 0.16em; text
   min-width: 0;
 }
 .shop h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; color: var(--accent); }
+.shop-box { margin-top: 12px; border-radius: 12px; background: var(--panel); padding: 0 14px; border: 2px solid #e9a23b44; }
+.shop-box > summary {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 0;
+  list-style: none;
+  font-size: inherit; letter-spacing: 0; text-transform: none; color: var(--fg);
+}
+.shop-box > summary::-webkit-details-marker { display: none; }
+.shop-box > summary::after { content: "▾"; margin-left: auto; color: var(--accent); transition: transform 0.25s; }
+.shop-box[open] > summary::after { transform: rotate(180deg); }
+.shop-title { font-family: var(--font-display); font-size: 20px; color: var(--accent); }
+.shop-owned { font: 600 11px var(--font-mono); color: var(--muted); padding: 2px 8px; border-radius: 999px; background: #0006; }
+.shop-box[open] { padding-bottom: 8px; }
+.shop-box[open] #goodies { animation: fadeIn 0.3s; }
+.shop-group { margin: 10px 0 0; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.buy.on { background: var(--win); }
 .shop .rate { margin: 0 0 8px; font-size: 13px; color: var(--muted); }
 .shop .rate strong { color: var(--fg); font-family: var(--font-mono); }
 .goodie {
@@ -1279,14 +1312,6 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
 }
 .modal-card .eyebrow { font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--muted); }
 .modal-card h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 36px; color: var(--accent); line-height: 1; }
-.wheel-wrap { position: relative; width: min(280px, 72vw); aspect-ratio: 1; max-width: 100%; }
-.wheel-wrap canvas { width: 100%; height: 100%; display: block; }
-.pointer {
-  position: absolute; top: -8px; left: 50%; translate: -50% 0;
-  border-left: 13px solid transparent; border-right: 13px solid transparent;
-  border-top: 24px solid var(--fg);
-  filter: drop-shadow(0 3px 0 #0008);
-}
 .wheel-result { margin: 0; min-height: 22px; font-weight: 600; }
 .modal-card .spin { width: 100%; }
 .cards { display: flex; gap: 14px; justify-content: center; perspective: 600px; }
@@ -1384,6 +1409,38 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
   .float, .tier, .tier-title, .toast, .modal, .modal-card, .reel.wild, .card.flip, .chat-panel, .jp-badge { animation: none; }
   .jp-flash, .float { opacity: 0; }
 }
+/* Phones */
+.account-bar .lang-toggle { position: static; z-index: auto; box-shadow: none; }
+.lang-toggle.float { display: none; }
+body:not(.signed-in) .lang-toggle.float { display: flex; }
+@media (max-width: 600px) {
+  .account-bar { flex-wrap: nowrap; gap: 8px; font-size: 12px; margin-bottom: 10px; }
+  .account-bar .who-label { display: none; }
+  .account-bar > span:first-child { display: flex; align-items: center; min-width: 0; }
+  .account-bar > span:first-child b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .account-bar .links { gap: 10px; align-items: center; flex: none; }
+  .account-bar #pwToggle { display: none; }
+  .account-bar .lang-toggle span { padding: 4px 7px; font-size: 10px; }
+  body.signed-in { padding-bottom: 76px; }
+  .chat-fab { padding: 10px 14px; font-size: 14px; }
+  input, select, textarea { font-size: 16px !important; }
+  .marquee p { letter-spacing: 0.1em; }
+  .rl-wheel-wrap { width: min(250px, 64vw); }
+  .board th:nth-child(3), .board td:nth-child(3) { display: none; }
+  .admin-table thead { display: none; }
+  .admin-table, .admin-table tbody, .admin-table tr, .admin-table td { display: block; }
+  .admin-table tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 10px; align-items: center; padding: 10px 0; border-top: 1px solid #ffffff12; }
+  .admin-table td { padding: 0; border: 0; }
+  .admin-table .pname { white-space: normal; }
+  .admin-table .lvl::before { content: "Lvl "; color: var(--muted); }
+  .admin-table td:nth-child(2), .admin-table td:nth-child(4) { grid-column: 1 / -1; }
+  .admin-table .lvl { grid-row: 1; grid-column: 2; }
+  .admin-table .credit-edit { min-width: 0; }
+  .admin-table .credit-edit input { flex: 1; width: auto; }
+  .admin-table .acts .abtn { flex: 1 1 auto; }
+  .shop { padding: 14px; }
+}
+button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 </style>
 
 <div class="login" id="login">
@@ -1486,8 +1543,8 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
 </div>
 
 <div class="account-bar" id="accountBar" hidden>
-  <span>Signed in as <span id="myAv"></span><b id="whoami"></b></span>
-  <span class="links"><button class="link-btn" id="profileBtn" type="button">Profile</button><button class="link-btn" id="pwToggle" type="button">Change password</button><button class="link-btn" id="logout" type="button">Sign out</button></span>
+  <span><span class="who-label">Signed in as </span><span id="myAv"></span><b id="whoami"></b></span>
+  <span class="links"><button class="lang-toggle" type="button" aria-label="Sprache wechseln"><span data-l="de">DE</span><span data-l="en">EN</span></button><button class="link-btn" id="profileBtn" type="button">Profile</button><button class="link-btn" id="pwToggle" type="button">Change password</button><button class="link-btn" id="logout" type="button">Sign out</button></span>
   <form class="pw-form" id="pwForm" hidden>
     <input id="pwOld" type="password" autocomplete="current-password" placeholder="Current password" aria-label="Current password">
     <input id="pwNew" type="password" autocomplete="new-password" placeholder="New password (4+ characters)" aria-label="New password">
@@ -1681,14 +1738,16 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
 
   <aside class="shop" aria-labelledby="shopTitle">
     <section class="board-wrap" aria-labelledby="boardTitle"><h2 class="board-title" id="boardTitle">Highscores</h2><table class="board" id="boardGame"></table></section>
-    <h2 id="shopTitle">Goodie Shop</h2>
-    <p class="rate">Slot payout rate with your goodies: <strong id="shopRate">0%</strong></p>
-    <div id="goodies"></div>
+    <details class="shop-box" id="shopBox">
+      <summary><span class="shop-title" id="shopTitle">Goodie Shop</span><span class="shop-owned" id="shopOwned"></span></summary>
+      <p class="rate">Slot payout rate with your goodies: <strong id="shopRate">0%</strong></p>
+      <div id="goodies"></div>
+    </details>
     <section class="missions" aria-labelledby="missionsTitle">
       <h3 id="missionsTitle">Missions</h3>
       <div id="missionList"></div>
     </section>
-    <details class="ach" open>
+    <details class="ach">
       <summary>Achievements <span id="achCount"></span></summary>
       <ul id="achList"></ul>
     </details>
@@ -1699,16 +1758,6 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
   <div class="modal-card profile-card">
     <button class="chat-close" id="profileClose" type="button" aria-label="Close profile">×</button>
     <div id="profileBody" class="profile-head"></div>
-  </div>
-</div>
-
-<div class="modal" id="wheelModal" role="dialog" aria-modal="true" aria-labelledby="wheelTitle" hidden>
-  <div class="modal-card">
-    <div class="eyebrow">Level up</div>
-    <h2 id="wheelTitle">Level 2!</h2>
-    <div class="wheel-wrap"><canvas id="wheel" width="600" height="600"></canvas><div class="pointer"></div></div>
-    <p class="wheel-result" id="wheelResult">Spin for your level reward.</p>
-    <button class="spin" id="wheelBtn">Spin the wheel</button>
   </div>
 </div>
 
@@ -1813,7 +1862,7 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
   </div>
 </div>
 
-<button class="lang-toggle" type="button" aria-label="Sprache wechseln"><span data-l="de">DE</span><span data-l="en">EN</span></button>
+<button class="lang-toggle float" type="button" aria-label="Sprache wechseln"><span data-l="de">DE</span><span data-l="en">EN</span></button>
 <button class="chat-fab" id="chatFab" type="button" hidden>Chat <span class="badge" id="chatBadge" hidden>0</span></button>
 <section class="chat-panel" id="chatPanel" aria-labelledby="chatTitle" hidden>
   <div class="chat-head"><div><h2 id="chatTitle">Chat</h2><span id="chatSub">Everyone playing Lucky Reels</span></div><button class="chat-close" id="chatClose" type="button" aria-label="Close chat">×</button></div>
@@ -1986,7 +2035,13 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
     'The chat is not set up yet. Ask the person who runs the game to run the chat setup.': 'Der Chat ist noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, die Chat-Einrichtung auszuführen.',
     'Private chats are not set up yet. Ask the person who runs the game to run the private-chat setup.': 'Private Chats sind noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, sie einzurichten.',
     'The message did not go through. Try again.': 'Die Nachricht ging nicht durch. Versuch es nochmal.', 'Chat is switched off for players': 'Der Chat ist für Spieler abgeschaltet',
-    'Someone': 'Jemand', 'Actions': 'Aktionen', 'No messages.': 'Keine Nachrichten.',
+    'Someone': 'Jemand', 'Actions': 'Aktionen',
+    'Power-ups': 'Power-ups', 'Cosmetics': 'Kosmetik', 'Turn on': 'Einschalten', 'Turn off': 'Ausschalten', 'On': 'An', 'Off': 'Aus', 'Active': 'Aktiv',
+    'Midnight Cabinet': 'Mitternachtsgehäuse', 'A deep-blue machine with glowing cyan trim. Purely for show.': 'Eine tiefblaue Maschine mit leuchtendem Cyan-Rand. Rein zur Show.',
+    'Disco Bulbs': 'Disco-Lämpchen', 'The bulbs on top of the machine flash in every colour of the rainbow.': 'Die Lämpchen oben auf der Maschine blinken in allen Regenbogenfarben.',
+    'Royal Felt': 'Königlicher Filz', 'Purple velvet on the blackjack, roulette and poker tables.': 'Lila Samt auf den Blackjack-, Roulette- und Pokertischen.',
+    'Golden Card Backs': 'Goldene Kartenrücken', 'Every face-down card gets a gold-and-black back.': 'Jede verdeckte Karte bekommt einen gold-schwarzen Rücken.',
+    'Fireworks': 'Feuerwerk', 'Big moments launch fireworks: slot wins of 10× or more, blackjacks, roulette numbers and poker pots.': 'Große Momente zünden ein Feuerwerk: Slot-Gewinne ab 10×, Blackjacks, Roulette-Zahlen und Poker-Pots.', 'No messages.': 'Keine Nachrichten.',
     'BLACKJACK PAYS 3 TO 2 · DEALER STANDS ON SOFT 17': 'BLACKJACK ZAHLT 3 ZU 2 · DEALER HÄLT BEI 17', 'SPIN': 'DREH',
     // Words that end up inside longer messages
     'Sevens': 'Siebenen', 'Wilds': 'Wilds', 'Bars': 'Bars', 'Stars': 'Sterne', 'Bells': 'Glocken', 'Plums': 'Pflaumen', 'Lemons': 'Zitronen', 'Cherries': 'Kirschen',
@@ -2059,7 +2114,7 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
     ['Gamble collected: {a}.', 'Riskiert und eingesammelt: {a}.'], ['Collect {a}', '{a} einsammeln'], ['Correct! Stake is now {a}.', 'Richtig! Der Einsatz ist jetzt {a}.'],
     ['Five in a row! Take your {a}.', 'Fünf in Folge! Nimm deine {a}.'], ['Higher ▲ ×{a}', 'Höher ▲ ×{a}'], ['Lower ▼ ×{a}', 'Tiefer ▼ ×{a}'],
     ['Level {a}!', 'Level {a}!'], ['Level {a} of {b}', 'Stufe {a} von {b}'], ['Buy · {a}', 'Kaufen · {a}'], ['{a} / {b} XP', '{a} / {b} XP'],
-    ['You won {a} credits!', 'Du hast {a} Credits gewonnen!'], ['5 free spins at {a} each!', '5 Freispiele zu je {a}!'], ['{a} FREE', '{a} FREI'],
+    ['You won {a} credits!', 'Du hast {a} Credits gewonnen!'], ['+{a} credits', '+{a} Credits'], ['Level {a} · +{b}', 'Level {a} · +{b}'], ['5 free spins at {a} each!', '5 Freispiele zu je {a}!'], ['{a} FREE', '{a} FREI'],
     ['{a}× your bet', '{a}× dein Einsatz'], ['happy hour ×{a}', 'Happy Hour ×{a}'], ['streak ×{a}', 'Serie ×{a}'], ['bonus ×{a}', 'Bonus ×{a}'], ['lightning ×{a}', 'Blitz ×{a}'],
     ['({a})', '({a})'],
     ['Welcome, {a}. Pick a bet and pull.', 'Willkommen, {a}. Wähl einen Einsatz und zieh den Hebel.'],
@@ -2256,6 +2311,13 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
   ];
   const MEDAL_IDS = MEDALS.map(m => m.id);
   const medalSvg = m => `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M8 1h6l4 10h-6z" fill="#c8323a"/><path d="M24 1h-6l-4 10h6z" fill="#3d7bd9"/><circle cx="16" cy="20.5" r="10" fill="${m.color}" stroke="#0007" stroke-width="1.5"/><circle cx="16" cy="20.5" r="7.2" fill="none" stroke="#fff8" stroke-width="1"/><text x="16" y="25" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="700" fill="#1d1714">${m.glyph}</text></svg>`;
+  Object.assign(SHOP_ICONS, {
+    midnight: '<svg viewBox="0 0 48 48"><rect x="9" y="4" width="30" height="40" rx="6" fill="#14203a" stroke="#4fe3ff" stroke-width="2"/><rect x="13" y="14" width="22" height="13" rx="2" fill="#0b1222" stroke="#4fe3ff88"/><path d="M27 17a4 4 0 1 0 3 6 5 5 0 0 1-3-6z" fill="#bff3ff"/><circle cx="24" cy="36" r="3" fill="#4fe3ff"/></svg>',
+    disco: '<svg viewBox="0 0 48 48"><circle cx="24" cy="22" r="14" fill="#9aa3b5"/><path d="M10 22h28M24 8v28M13 14h22M13 30h22M17 9.5c-3 8-3 17 0 25M31 9.5c3 8 3 17 0 25" stroke="#5b6478" stroke-width="1.2" fill="none"/><circle cx="19" cy="16" r="3" fill="#fff"/><g stroke-linecap="round" stroke-width="3"><path d="M6 42l4-4" stroke="#ff4fd8"/><path d="M24 44v-5" stroke="#4fe3ff"/><path d="M42 42l-4-4" stroke="#7dff6a"/></g></svg>',
+    royalFelt: '<svg viewBox="0 0 48 48"><ellipse cx="24" cy="26" rx="20" ry="14" fill="#5b2a86" stroke="#3a1858" stroke-width="3"/><ellipse cx="24" cy="26" rx="14" ry="9" fill="none" stroke="#e9a23b88" stroke-width="1.5"/><path d="M16 14l3-6 5 4 5-4 3 6z" fill="#e9a23b"/></svg>',
+    goldBacks: '<svg viewBox="0 0 48 48"><rect x="7" y="10" width="20" height="30" rx="3" fill="#1d1714" stroke="#e9a23b" stroke-width="2" transform="rotate(-10 17 25)"/><rect x="21" y="8" width="20" height="30" rx="3" fill="#e9a23b" stroke="#b87618" stroke-width="2" transform="rotate(8 31 23)"/><path d="M31 15l3 6-3 6-3-6z" fill="#1d1714" transform="rotate(8 31 23)"/></svg>',
+    fireworks: '<svg viewBox="0 0 48 48"><g stroke-linecap="round" stroke-width="2.5"><path d="M24 24l-8-8M24 24l8-8M24 24l-11 0M24 24l11 0M24 24l-8 8M24 24l8 8M24 24v-12M24 24v12" stroke="#e9a23b"/></g><circle cx="24" cy="24" r="3" fill="#fff2c4"/><circle cx="10" cy="10" r="2" fill="#ff4fd8"/><circle cx="40" cy="12" r="2" fill="#4fe3ff"/><circle cx="38" cy="40" r="2" fill="#7dff6a"/></svg>',
+  });
   const BASE_WEIGHTS = { cherry: 7, lemon: 6, plum: 5, bell: 3, bar: 2, seven: 1, star: 2, wild: 1 };
   const SYMS = Object.keys(BASE_WEIGHTS);
   const PAY3 = { seven: 150, wild: 80, star: 40, bar: 20, bell: 10, plum: 6, lemon: 4, cherry: 3 };
@@ -2270,8 +2332,6 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
   let FREE_MULT = 2;
   const STREAK_STEP = 0.1;
   const STREAK_MAX = 5;
-  // Wheel prizes are multiples of 100 × level; 'free' awards free spins instead.
-  const WHEEL = [2, 10, 3, 25, 5, 'free', 4, 50];
   const xpNeed = level => Math.floor(120 * level ** 1.4);
   const GAMBLE_MAX = 5;
   const GAMBLE_EDGE = 0.95;
@@ -2329,8 +2389,13 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
     { id: 'piggy', kind: 'perm', name: 'Piggy Bank', desc: 'Get 2% of your bet back on every losing spin.', price: () => 3000 },
     { id: 'autospin', kind: 'perm', name: 'Auto-Spin Lever', desc: 'Unlocks Auto ×10: ten spins in a row.', price: () => 1000 },
     { id: 'luckyCat', kind: 'perm', name: 'Lucky Cat', desc: 'A waving cat sits on your reels, cheers your wins and gifts you a nudge every 60 spins.', price: () => 8000 },
-    { id: 'gold', kind: 'perm', name: 'Gold Cabinet', desc: 'Plates the machine in gold. Purely for show.', price: () => 25000 },
-    { id: 'neon', kind: 'perm', name: 'Neon Name', desc: 'Your name glows in rainbow neon for everyone: highscores, chat and the online list.', price: () => 40000 },
+    { id: 'gold', kind: 'cosmetic', name: 'Gold Cabinet', desc: 'Plates the machine in gold. Purely for show.', price: () => 25000, excl: 'midnight' },
+    { id: 'midnight', kind: 'cosmetic', name: 'Midnight Cabinet', desc: 'A deep-blue machine with glowing cyan trim. Purely for show.', price: () => 30000, excl: 'gold' },
+    { id: 'disco', kind: 'cosmetic', name: 'Disco Bulbs', desc: 'The bulbs on top of the machine flash in every colour of the rainbow.', price: () => 8000 },
+    { id: 'royalFelt', kind: 'cosmetic', name: 'Royal Felt', desc: 'Purple velvet on the blackjack, roulette and poker tables.', price: () => 15000 },
+    { id: 'goldBacks', kind: 'cosmetic', name: 'Golden Card Backs', desc: 'Every face-down card gets a gold-and-black back.', price: () => 12000 },
+    { id: 'fireworks', kind: 'cosmetic', name: 'Fireworks', desc: 'Big moments launch fireworks: slot wins of 10× or more, blackjacks, roulette numbers and poker pots.', price: () => 20000 },
+    { id: 'neon', kind: 'cosmetic', name: 'Neon Name', desc: 'Your name glows in rainbow neon for everyone: highscores, chat and the online list.', price: () => 40000 },
     { id: 'lightning', kind: 'perm', name: 'Lightning Strike', desc: 'On 1% of your slot wins lightning strikes and multiplies the win ×2, ×3, ×5 or even ×10.', price: () => 250000 },
   ];
 
@@ -2368,7 +2433,10 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
 
   const fresh = () => ({
     credits: START, bet: 5, lastWin: 0, spins: 0, best: 0, sound: true,
-    owned: { horseshoe: 0, goldCherry: false, piggy: false, autospin: false, gold: false, luckyCat: false, neon: false, lightning: false },
+    owned: { horseshoe: 0, goldCherry: false, piggy: false, autospin: false, gold: false, luckyCat: false, neon: false, lightning: false,
+      midnight: false, disco: false, royalFelt: false, goldBacks: false, fireworks: false },
+    // Cosmetics the player owns but switched off.
+    cosOff: {},
     catSpins: 0,
     streak: 0, stars: 0, starBank: 0, avatar: null, freeSpins: 0, freeBet: 0, freeTotal: 0, jackpots: 0,
     xp: 0, level: 1, ach: {}, adminRev: 0,
@@ -3043,6 +3111,7 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
       }
     }
     if (win) floatText('+' + fmt(win));
+    if (ratio >= 10) fireworks(ratio >= 75 ? 12 : 6);
     // Lucky Cat: cheers a win, and every 25 spins brings a nudge.
     let catGift = false;
     if (state.owned.luckyCat) {
@@ -3118,7 +3187,7 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
       else await celebrateTier(win, win / bet);
       gambleOffer = win;
       checkAch({ win, three: !!line, ratio: win / bet, jackpot: line === 'seven', bet, nudgeWin: true, wildLine: !!line && syms.includes('wild') });
-      while (pendingLevels.length) await prizeWheel(pendingLevels.shift());
+      while (pendingLevels.length) levelUp(pendingLevels.shift());
     } else {
       nudgeOpen = state.nudges > 0;
       say(state.nudges ? `Still nothing. ${state.nudges} nudge${state.nudges > 1 ? 's' : ''} left.` : 'Out of nudges.', 'lose');
@@ -3515,7 +3584,7 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
     r.phase = 'done';
     renderBJTable();
     const natural = r.hands.some(h => h.result === 'blackjack');
-    if (natural) bjSay(`Blackjack! +${fmt(net)}`, 'win');
+    if (natural) { bjSay(`Blackjack! +${fmt(net)}`, 'win'); fireworks(5); }
     else if (dealerBJ) bjSay('Dealer has blackjack.', 'lose');
     else if (net > 0) bjSay(`${d > 21 ? `Dealer busts with ${d}. ` : ''}You win +${fmt(net)}.`, 'win');
     else if (net === 0) bjSay(`Push. Your ${fmt(staked)} comes back.`, '');
@@ -3534,7 +3603,7 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
     gainXp(8 + wins * 6);
     checkAch({ natural, splitBoth: r.hands.length === 2 && wins === 2, win: Math.max(0, net), bet: staked });
     render();
-    while (pendingLevels.length) await prizeWheel(pendingLevels.shift());
+    while (pendingLevels.length) levelUp(pendingLevels.shift());
   }
 
   $('bjDeal').addEventListener('click', bjDeal);
@@ -3542,7 +3611,7 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
   document.addEventListener('keydown', e => {
     if (state.mode !== 'bj' || !account || !$('lobby').hidden || e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
     if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal, #profileModal')) return;
-    if (!$('wheelModal').hidden || !$('gambleModal').hidden || !$('adminModal').hidden || !$('profileModal').hidden) return;
+    if (!$('gambleModal').hidden || !$('adminModal').hidden || !$('profileModal').hidden) return;
     const key = e.key.toLowerCase();
     const map = { h: 'hit', s: 'stand', d: 'double', p: 'split' };
     if (map[key] && bjHand()) { e.preventDefault(); bjAct(map[key]); }
@@ -3872,6 +3941,7 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
     } else if (back > 0) rlSay(`${name}. Some bets won; you are down ${fmt(-net)}.`, '');
     else { rlSay(`${name}. No luck this time.`, 'lose'); sound.lose(); }
     gainXp(6 + won.length * 3);
+    if (straight) fireworks(6);
     checkAch({ bullseye: straight, win: Math.max(0, net), bet: total });
     render();
     await sleep(reduceMotion ? 0 : 1600);
@@ -3880,7 +3950,7 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
     renderRLBets();
     rlBusy = false;
     render();
-    while (pendingLevels.length) await prizeWheel(pendingLevels.shift());
+    while (pendingLevels.length) levelUp(pendingLevels.shift());
   }
   $('rlSpin').addEventListener('click', rlSpin);
   document.addEventListener('keydown', e => {
@@ -4274,6 +4344,7 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
             { duration: 520, delay: k * 45, easing: 'cubic-bezier(.3,.7,.4,1)', fill: 'backwards' }).onfinish = () => chip.remove();
         }
         if (w === me) {
+          fireworks(4);
           fxTop.coinBurst(r.left + r.width / 2, r.top, 30, 9);
           sound.bigWin();
         }
@@ -4411,10 +4482,9 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
     clearTimeout(pkTimer);
     const st = state.pk.solo;
     if (!st || state.mode !== 'pk' || pkView() !== 'solo' || !account) return;
-    if (!$('wheelModal').hidden) { pkTimer = setTimeout(pkSchedule, 800); return; }
     if (st.phase === 'showdown') {
       pkTimer = setTimeout(async () => {
-        while (pendingLevels.length) await prizeWheel(pendingLevels.shift());
+        while (pendingLevels.length) levelUp(pendingLevels.shift());
         const me = st.seats.findIndex(s => s && !s.bot);
         if (me < 0 || st.seats[me].stack <= 0) { state.pk.solo = null; pkSay('You are out of chips. Buy in again to keep playing.', 'lose'); renderPK(false); render(); return; }
         pkStartHand(st);
@@ -4626,7 +4696,7 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
       state.freeSpins--;
       freeDone++;
       await spin(true);
-      while (pendingLevels.length) await prizeWheel(pendingLevels.shift());
+      while (pendingLevels.length) levelUp(pendingLevels.shift());
       await sleep(350);
     }
     sound.bigWin();
@@ -4650,7 +4720,7 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
     } else {
       result = await spin(false);
       if (result) {
-        while (pendingLevels.length) await prizeWheel(pendingLevels.shift());
+        while (pendingLevels.length) levelUp(pendingLevels.shift());
         if (state.freeSpins > 0) await runBonus();
       }
     }
@@ -4673,112 +4743,27 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
     render();
   }
 
-  // ---------- Prize wheel ----------
-  const WHEEL_COLORS = ['#c8323a', '#2a1d18', '#e9a23b', '#4a2f24'];
-  function drawWheel(prizes, rot) {
-    const cv = $('wheel');
-    const ctx = cv.getContext('2d');
-    const S = cv.width, c = S / 2, R = c - 10;
-    const seg = (Math.PI * 2) / prizes.length;
-    ctx.clearRect(0, 0, S, S);
-    prizes.forEach((p, i) => {
-      const a0 = -Math.PI / 2 + rot + i * seg;
-      ctx.beginPath();
-      ctx.moveTo(c, c);
-      ctx.arc(c, c, R, a0, a0 + seg);
-      ctx.closePath();
-      ctx.fillStyle = p.free ? '#7b4fd6' : WHEEL_COLORS[i % WHEEL_COLORS.length];
-      ctx.fill();
-      ctx.strokeStyle = '#d9cbb8';
-      ctx.lineWidth = 4;
-      ctx.stroke();
-      ctx.save();
-      ctx.translate(c, c);
-      ctx.rotate(a0 + seg / 2);
-      ctx.textAlign = 'right';
-      ctx.textBaseline = 'middle';
-      ctx.fillStyle = !p.free && i % 4 === 2 ? '#1d1714' : '#efe4d4';
-      ctx.font = `${p.free ? 26 : 34}px Bungee, Impact, sans-serif`;
-      ctx.fillText(p.short, R - 22, 0);
-      ctx.restore();
-    });
-    ctx.beginPath();
-    ctx.arc(c, c, R, 0, Math.PI * 2);
-    ctx.lineWidth = 10;
-    ctx.strokeStyle = '#e9a23b';
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(c, c, 44, 0, Math.PI * 2);
-    ctx.fillStyle = '#e9a23b';
-    ctx.fill();
-    ctx.fillStyle = '#1d1714';
-    ctx.font = '40px Bungee, Impact, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('7', c, c + 2);
+  // Fireworks cosmetic: rockets burst across the screen.
+  function fireworks(n = 6) {
+    if (!cosOn('fireworks') || reduceMotion) return;
+    for (let k = 0; k < n; k++) setTimeout(() => {
+      fxTop.burst(fxTop.W * (0.15 + Math.random() * 0.7), fxTop.H * (0.12 + Math.random() * 0.35), 60, randInt(360), 7);
+      sound.tick();
+    }, k * 260);
   }
 
-  function prizeWheel(level) {
-    return new Promise(resolve => {
-      const modal = $('wheelModal'), btn = $('wheelBtn'), res = $('wheelResult');
-      const base = 100 * level;
-      const compact = n => new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(n);
-      const prizes = WHEEL.map(f => f === 'free'
-        ? { free: 5, short: i18n('5 FREE') }
-        : { credits: f * base, short: compact(f * base) });
-      let rot = 0, phase = 'ready';
-      $('wheelTitle').textContent = `Level ${level}!`;
-      res.textContent = 'Spin for your level reward.';
-      btn.textContent = 'Spin the wheel';
-      btn.disabled = false;
-      drawWheel(prizes, rot);
-      modal.hidden = false;
-      btn.focus();
-      sound.levelUp();
-      for (let k = 0; k < 50; k++) fxTop.confetti(CONFETTI);
-
-      btn.onclick = () => {
-        if (phase === 'done') { modal.hidden = true; resolve(); return; }
-        if (phase !== 'ready') return;
-        phase = 'spinning';
-        btn.disabled = true;
-        const idx = randInt(prizes.length);
-        const seg = (Math.PI * 2) / prizes.length;
-        const end = Math.PI * 2 * 6 + (Math.PI * 2 - (idx + 0.5) * seg);
-        const D = reduceMotion ? 0 : 4800;
-        const t0 = performance.now();
-        let lastSeg = 0;
-        (function turn(now) {
-          const t = D ? Math.min(1, (now - t0) / D) : 1;
-          rot = end * (1 - Math.pow(1 - t, 4));
-          drawWheel(prizes, rot);
-          const s = Math.floor(rot / seg);
-          if (s !== lastSeg) { lastSeg = s; sound.tick(); }
-          if (t < 1) requestAnimationFrame(turn); else land(prizes[idx]);
-        })(t0);
-      };
-
-      function land(p) {
-        if (p.free) {
-          if (!state.freeSpins && !inBonus) state.freeBet = Math.max(1, Math.min(state.bet, 10 * level));
-          state.freeSpins += p.free;
-          res.textContent = `5 free spins at ${fmt(state.freeBet)} each!`;
-        } else {
-          state.credits = Math.min(MAX, state.credits + p.credits);
-          res.textContent = `You won ${fmt(p.credits)} credits!`;
-        }
-        sound.bigWin();
-        const b = $('wheel').getBoundingClientRect();
-        fxTop.coinBurst(b.left + b.width / 2, b.top + b.height / 2, 50, 12);
-        fxTop.burst(b.left + b.width / 2, b.top + b.height / 2, 80, 42);
-        phase = 'done';
-        btn.disabled = false;
-        btn.textContent = 'Collect';
-        btn.focus();
-        checkAch();
-        render();
-      }
-    });
+  // ---------- Level rewards ----------
+  const LEVEL_REWARD = 250;
+  // Each new level pays LEVEL_REWARD × level credits.
+  function levelUp(level) {
+    const prize = LEVEL_REWARD * level;
+    state.credits = Math.min(MAX, state.credits + prize);
+    toast(`Level ${level}!`, `+${fmt(prize)} credits`);
+    floatText(`Level ${level} · +${fmt(prize)}`, 'star');
+    sound.levelUp();
+    for (let k = 0; k < 40; k++) fxTop.confetti(CONFETTI);
+    checkAch();
+    render();
   }
 
   // ---------- Jackpot show ----------
@@ -4894,19 +4879,34 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
 
   // ---------- Shop ----------
   const goodieEls = {};
-  $('goodies').innerHTML = GOODIES.map(g => `
-    <div class="goodie">
+  const goodieHtml = g => `
+    <div class="goodie${g.kind === 'cosmetic' ? ' cosmetic' : ''}">
       ${SHOP_ICONS[g.id]}
       <div><h3>${g.name}</h3><p>${g.desc}</p><span class="status" id="st-${g.id}"></span></div>
       <button class="buy" id="buy-${g.id}"></button>
-    </div>`).join('');
+    </div>`;
+  $('goodies').innerHTML = `<h3 class="shop-group">Power-ups</h3>${GOODIES.filter(g => g.kind !== 'cosmetic').map(goodieHtml).join('')}` +
+    `<h3 class="shop-group">Cosmetics</h3>${GOODIES.filter(g => g.kind === 'cosmetic').map(goodieHtml).join('')}`;
   GOODIES.forEach(g => {
     goodieEls[g.id] = { btn: $('buy-' + g.id), status: $('st-' + g.id) };
     goodieEls[g.id].btn.addEventListener('click', () => buy(g));
   });
 
+  const cosOn = id => !!state.owned[id] && !state.cosOff?.[id];
+  // Remember whether the shop is open (per browser).
+  try { $('shopBox').open = localStorage.getItem('lucky-reels-shop-open') === '1'; } catch {}
+  $('shopBox').addEventListener('toggle', () => { try { localStorage.setItem('lucky-reels-shop-open', $('shopBox').open ? '1' : '0'); } catch {} });
   function buy(g) {
     if (busy) return;
+    // An owned cosmetic: the button switches it on and off.
+    if (g.kind === 'cosmetic' && state.owned[g.id]) {
+      const on = !cosOn(g.id);
+      state.cosOff[g.id] = !on;
+      if (on && g.excl) state.cosOff[g.excl] = true;
+      sound.chip();
+      render();
+      return;
+    }
     const price = g.price();
     if (state.credits < price) return;
     if (g.kind === 'level') {
@@ -4917,6 +4917,8 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
       state.owned[g.id] = true;
     }
     state.credits -= price;
+    if (g.kind === 'cosmetic') state.cosOff[g.id] = false;
+    if (g.excl) state.cosOff[g.excl] = true;
     if (g.id === 'horseshoe') buildReels();
     toast('Goodie bought', g.name);
     sound.chime();
@@ -4936,6 +4938,12 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
         btn.textContent = maxed ? 'Maxed' : `Buy · ${fmt(g.price())}`;
         btn.disabled = maxed || busy || state.credits < g.price();
         status.textContent = `Level ${lv} of ${g.max}`;
+      } else if (g.kind === 'cosmetic' && state.owned[g.id]) {
+        const on = cosOn(g.id);
+        btn.textContent = on ? 'Turn off' : 'Turn on';
+        btn.disabled = busy;
+        btn.classList.toggle('on', on);
+        status.textContent = on ? 'On' : 'Off';
       } else {
         const owned = state.owned[g.id];
         btn.textContent = owned ? 'Owned' : `Buy · ${fmt(g.price())}`;
@@ -5007,7 +5015,11 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
     auto.textContent = autoLeft ? `Stop (${autoLeft})` : 'Auto ×10';
     auto.classList.toggle('running', autoLeft > 0);
     auto.disabled = !autoLeft && (busy || (!free && state.credits < cost));
-    cabinet.classList.toggle('gold', state.owned.gold);
+    cabinet.classList.toggle('gold', cosOn('gold'));
+    cabinet.classList.toggle('midnight', cosOn('midnight'));
+    for (const id of ['disco', 'royalFelt', 'goldBacks']) document.body.classList.toggle('cos-' + id, cosOn(id));
+    const owned = GOODIES.filter(g => g.kind === 'level' ? state.owned[g.id] > 0 : state.owned[g.id]).length;
+    $('shopOwned').textContent = `${owned} / ${GOODIES.length}`;
     // An <svg> has no working .hidden property, so set the attribute itself.
     $('luckyCat').toggleAttribute('hidden', !state.owned.luckyCat);
 
@@ -5106,7 +5118,7 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
     }
   });
   document.addEventListener('keydown', e => {
-    if (e.code === 'Space' && account && $('lobby').hidden && state.mode === 'slots' && !['BUTTON', 'SUMMARY', 'INPUT'].includes(e.target.tagName) && $('wheelModal').hidden && $('gambleModal').hidden && $('adminModal').hidden && $('profileModal').hidden) { e.preventDefault(); play(); }
+    if (e.code === 'Space' && account && $('lobby').hidden && state.mode === 'slots' && !['BUTTON', 'SUMMARY', 'INPUT'].includes(e.target.tagName) && $('gambleModal').hidden && $('adminModal').hidden && $('profileModal').hidden) { e.preventDefault(); play(); }
   });
 
   // ---------- Accounts ----------
@@ -5776,7 +5788,7 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
     if (!account || !backend || account.deleted) return;
     if (saving) { saveAgain = true; return; }
     const key = account.id;
-    const body = { credits: state.credits, best: state.best, level: state.level, spins: state.spins, jackpots: state.jackpots, flair: state.owned.neon ? 'neon' : null, avatar: state.avatar ?? null, adminRev: state.adminRev, game: JSON.stringify(state) };
+    const body = { credits: state.credits, best: state.best, level: state.level, spins: state.spins, jackpots: state.jackpots, flair: state.owned.neon && !state.cosOff?.neon ? 'neon' : null, avatar: state.avatar ?? null, adminRev: state.adminRev, game: JSON.stringify(state) };
     const json = JSON.stringify(body);
     if (json === lastSaved) return;
     saving = true;
@@ -5798,6 +5810,7 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
     for (const k of Object.keys(state)) delete state[k];
     Object.assign(state, fresh(), saved);
     state.owned = Object.assign(fresh().owned, saved.owned);
+    state.cosOff = Object.assign({}, saved.cosOff);
     delete state.boost;
     if (saved.starBank === undefined) state.starBank = (state.stars || 0) * Math.min(state.bet || 1, 1000);
     if (state.stars > STAR_GOAL) state.stars = STAR_GOAL - 1;
@@ -5847,6 +5860,7 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
     seenMedals = null;
     syncAdminButton();
     $('accountBar').hidden = false;
+    document.body.classList.add('signed-in');
     startDms();
     renderChat();
     $('login').hidden = true;
@@ -5866,6 +5880,7 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
     syncAdminButton();
     try { await backend.signOut(); } catch {}
     $('accountBar').hidden = true;
+    document.body.classList.remove('signed-in');
     setChat(false);
     stopDms();
     pkStopOnline();
@@ -5896,7 +5911,7 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
   const partnerOf = m => m.from === account?.id ? m.to : m.from;
   // A player's name as HTML, glowing if they own the Neon Name (your own shows right away).
   const nameHtml = (id, name) => {
-    const neon = id === account?.id ? state.owned.neon : players.find(p => p.id === id)?.flair === 'neon';
+    const neon = id === account?.id ? state.owned.neon && !state.cosOff?.neon : players.find(p => p.id === id)?.flair === 'neon';
     return neon ? `<span class="neon-name">${esc(name)}</span>` : esc(name);
   };
   const byName = (a, b) => a.name.localeCompare(b.name);
@@ -5931,7 +5946,8 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
     const medals = (p.medals || []).map(m => MEDALS.find(x => x.id === m)).filter(Boolean);
     const picker = mine ? `<span class="profile-label">Your picture</span><div class="avatar-grid" id="avatarGrid">${AVATARS.map((svg, i) =>
       `<button type="button" data-av="${i}" aria-pressed="${state.avatar === i}" aria-label="${AVATAR_NAMES[i]}" title="${AVATAR_NAMES[i]}">${svg}</button>`).join('')}</div>` +
-      `<button type="button" class="chip-btn" data-av="none"${state.avatar == null ? ' disabled' : ''}>Use my initial instead</button>` : '';
+      `<button type="button" class="chip-btn" data-av="none"${state.avatar == null ? ' disabled' : ''}>Use my initial instead</button>` +
+      '<button type="button" class="link-btn" data-pw>Change password</button>' : '';
     $('profileBody').innerHTML = `${avatarHtml(p.id, p.name, 'lg')}<h2 id="profileName">${nameHtml(p.id, p.name)}</h2>` +
       `<div class="profile-stats"><div><b>${fmt(credits)}</b><span>Credits</span></div><div><b>${fmt(best)}</b><span>Best win</span></div><div><b>${level}</b><span>Level</span></div></div>` +
       `<span class="profile-label">Medals (${medals.length})</span>` +
@@ -5939,6 +5955,12 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
         : `<p class="note">${mine ? 'No medals yet. Admins award them for special moments.' : 'No medals yet.'}</p>`) + picker;
   }
   $('profileBody').addEventListener('click', e => {
+    if (e.target.closest('[data-pw]')) {
+      closeProfile();
+      if ($('pwForm').hidden) $('pwToggle').click();
+      $('pwOld').focus();
+      return;
+    }
     const b = e.target.closest('[data-av]');
     if (!b) return;
     state.avatar = b.dataset.av === 'none' ? null : Number(b.dataset.av);
