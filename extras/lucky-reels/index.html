@@ -2020,6 +2020,9 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
     'Admin passwords need at least 8 characters.': 'Admin-Passwörter brauchen mindestens 8 Zeichen.', 'Admin password changed.': 'Admin-Passwort geändert.',
     'You cannot delete your own account here.': 'Dein eigenes Konto kannst du hier nicht löschen.', 'You cannot remove your own admin rights.': 'Deine eigenen Admin-Rechte kannst du nicht entfernen.',
     'Remove their admin rights first, then delete the account.': 'Entfern erst die Admin-Rechte, dann lösch das Konto.',
+    'The database does not have the hard reset yet: run the “Hard reset” part of supabase-setup.sql once.': 'Die Datenbank kennt den Hard Reset noch nicht: Führ einmal den Teil „Hard reset“ aus supabase-setup.sql aus.',
+    'The database does not have medals yet: run the “Profile pictures and medals” part of supabase-setup.sql once.': 'Die Datenbank kennt noch keine Medaillen: Führ einmal den Teil „Profile pictures and medals“ aus supabase-setup.sql aus.',
+    'The database is missing a part of supabase-setup.sql. Run the newest parts once.': 'Der Datenbank fehlt ein Teil aus supabase-setup.sql. Führ die neuesten Teile einmal aus.',
     'Announcement for everyone': 'Ankündigung für alle', 'e.g. Happy hour tonight: all wins ×2!': 'z. B. Happy Hour heute Abend: alle Gewinne ×2!',
     'Shown at the top of the game and the sign-in screen. Leave empty to hide it.': 'Wird oben im Spiel und auf der Anmeldeseite gezeigt. Leer lassen zum Ausblenden.',
     'Pause the game': 'Spiel pausieren', 'Nobody but admins can spin.': 'Nur Admins können spielen.', 'New accounts allowed': 'Neue Konten erlaubt',
@@ -6258,6 +6261,9 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
         : /remove yourself/i.test(e?.message || '') ? 'You cannot remove your own admin rights.'
         : /delete yourself/i.test(e?.message || '') ? 'You cannot delete your own account here.'
         : /admin rights first/i.test(e?.message || '') ? 'Remove their admin rights first, then delete the account.'
+        : /admin_hard_reset/.test(e?.message || '') ? 'The database does not have the hard reset yet: run the “Hard reset” part of supabase-setup.sql once.'
+        : /admin_set_medals/.test(e?.message || '') ? 'The database does not have medals yet: run the “Profile pictures and medals” part of supabase-setup.sql once.'
+        : e?.code === 'PGRST202' || /could not find the function/i.test(e?.message || '') ? 'The database is missing a part of supabase-setup.sql. Run the newest parts once.'
         : 'That did not work. Check the connection and try again.', false);
     }
   }
