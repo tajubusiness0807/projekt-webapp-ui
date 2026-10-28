@@ -407,6 +407,86 @@ details.ach { margin-top: 10px; }
 .board .empty { color: var(--muted); font-family: var(--font-body); text-align: left; }
 .shop .board-wrap { padding-bottom: 14px; margin-bottom: 6px; border-bottom: 1px solid #ffffff12; }
 
+/* Jackpot on the scoreboard */
+.board tr.jackpot-row td { animation: rowGlow 6s ease-out both; animation-delay: inherit; }
+.board tr.jackpot-row { position: relative; }
+@keyframes rowGlow {
+  0% { background: #fff2c4; color: var(--ink); }
+  8%, 20%, 32% { background: #e9a23b; color: var(--ink); }
+  14%, 26% { background: #fff2c4; color: var(--ink); }
+  45% { background: #e9a23b55; color: var(--accent-hi); }
+  100% { background: transparent; }
+}
+.jp-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #c8323a;
+  color: #fff;
+  font: 400 10px var(--font-display);
+  letter-spacing: 0.04em;
+  vertical-align: 1px;
+  animation: badgePop 0.5s cubic-bezier(.2, 1.8, .4, 1) both, badgePulse 0.6s 0.5s ease-in-out 8 alternate;
+  animation-delay: inherit;
+}
+@keyframes badgePop { from { transform: scale(0); } }
+@keyframes badgePulse { to { transform: scale(1.18); box-shadow: 0 0 10px #c8323a; } }
+
+/* Chat */
+.chat-fab {
+  position: fixed; z-index: 22;
+  right: max(16px, env(safe-area-inset-right, 0px));
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  background: linear-gradient(#f3b956, #c7801f);
+  box-shadow: 0 5px 0 #7a4a12, 0 12px 24px -8px #000;
+  font-family: var(--font-display);
+  font-size: 16px;
+}
+.chat-fab .badge {
+  min-width: 22px; height: 22px; padding: 0 6px;
+  border-radius: 11px;
+  background: #c8323a; color: #fff;
+  font: 600 12px/22px var(--font-mono);
+}
+.chat-panel {
+  position: fixed; z-index: 23;
+  right: max(16px, env(safe-area-inset-right, 0px));
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  width: min(360px, calc(100vw - 32px));
+  height: min(520px, calc(100vh - 120px));
+  display: grid; grid-template-rows: auto minmax(0, 1fr) auto;
+  background: var(--cabinet);
+  border: 3px solid var(--accent);
+  border-radius: 18px;
+  box-shadow: 0 20px 50px -10px #000;
+  animation: chatIn 0.3s cubic-bezier(.2, 1.4, .4, 1);
+  overflow: hidden;
+}
+@keyframes chatIn { from { transform: translateY(30px) scale(0.95); opacity: 0; } }
+.chat-head { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border-bottom: 1px solid #ffffff14; }
+.chat-head h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 18px; color: var(--accent); }
+.chat-head span { font-size: 12px; color: var(--muted); }
+.chat-close { background: var(--panel); color: var(--fg); width: 32px; height: 32px; font-size: 18px; line-height: 1; }
+.chat-log { overflow-y: auto; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; overscroll-behavior: contain; }
+.chat-empty { margin: auto; text-align: center; color: var(--muted); font-size: 13px; line-height: 1.5; }
+.msg { max-width: 85%; display: grid; gap: 2px; align-self: flex-start; }
+.msg .who { font-size: 11px; font-weight: 600; }
+.msg .who time { color: var(--muted); font-weight: 400; margin-left: 6px; font-family: var(--font-mono); }
+.msg .text { background: var(--panel); border-radius: 4px 14px 14px 14px; padding: 8px 11px; line-height: 1.4; overflow-wrap: anywhere; white-space: pre-wrap; }
+.msg.mine { align-self: flex-end; justify-items: end; }
+.msg.mine .text { background: #e9a23b2e; border-radius: 14px 4px 14px 14px; }
+.msg.sys { align-self: center; max-width: 100%; text-align: center; font-size: 12px; font-weight: 600; color: var(--accent); }
+.chat-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 10px; border-top: 1px solid #ffffff14; }
+.chat-form input { min-width: 0; background: var(--panel); color: var(--fg); border: 2px solid var(--cabinet-edge); border-radius: 10px; padding: 10px 12px; font: inherit; font-size: 16px; }
+.chat-form input:focus-visible { border-color: var(--accent); outline: none; }
+.chat-form button { padding: 0 16px; background: var(--accent); font-weight: 600; }
+.chat-err { grid-column: 1 / -1; margin: 0; font-size: 12px; color: var(--lose); }
+.chat-err:empty { display: none; }
+
 /* Toasts */
 .toasts {
   position: fixed; z-index: 30;
@@ -417,7 +497,7 @@ details.ach { margin-top: 10px; }
   pointer-events: none;
 }
 @media (max-width: 600px) {
-  .toasts { top: auto; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); right: auto; left: 50%; translate: -50% 0; }
+  .toasts { top: auto; bottom: calc(80px + env(safe-area-inset-bottom, 0px)); right: auto; left: 50%; translate: -50% 0; }
 }
 .toast {
   background: var(--cabinet);
@@ -557,7 +637,7 @@ details.ach { margin-top: 10px; }
 
 @media (prefers-reduced-motion: reduce) {
   .bulbs span, .cabinet.jackpot, .cabinet.tease .reel:last-child, .jp, .jp-rays, .jp-flash, .jp-title span, .jp-amount.pop,
-  .float, .tier, .tier-title, .toast, .modal, .modal-card, .reel.wild, .card.flip { animation: none; }
+  .float, .tier, .tier-title, .toast, .modal, .modal-card, .reel.wild, .card.flip, .chat-panel, .jp-badge { animation: none; }
   .jp-flash, .float { opacity: 0; }
 }
 </style>
@@ -710,6 +790,16 @@ details.ach { margin-top: 10px; }
   </div>
 </div>
 <canvas id="fxTop" aria-hidden="true"></canvas>
+<button class="chat-fab" id="chatFab" type="button" hidden>Chat <span class="badge" id="chatBadge" hidden>0</span></button>
+<section class="chat-panel" id="chatPanel" aria-labelledby="chatTitle" hidden>
+  <div class="chat-head"><div><h2 id="chatTitle">Chat</h2><span id="chatSub">Everyone playing Lucky Reels</span></div><button class="chat-close" id="chatClose" type="button" aria-label="Close chat">×</button></div>
+  <div class="chat-log" id="chatLog" aria-live="polite"></div>
+  <form class="chat-form" id="chatForm">
+    <input id="chatInput" maxlength="300" autocomplete="off" placeholder="Say something…" aria-label="Message">
+    <button type="submit" id="chatSend">Send</button>
+    <p class="chat-err" id="chatErr" role="alert"></p>
+  </form>
+</section>
 <div class="toasts" id="toasts" aria-live="polite"></div>
 <p class="disclaimer">Play credits only. Nothing here can be bought with real money, cashed out or won for real. Space bar spins.</p>
 
@@ -809,7 +899,7 @@ details.ach { margin-top: 10px; }
     credits: START, bet: 5, lastWin: 0, spins: 0, best: 0, sound: true,
     owned: { horseshoe: 0, goldCherry: false, piggy: false, autospin: false, gold: false },
     boost: { double: false, magnet: false },
-    streak: 0, stars: 0, freeSpins: 0, freeBet: 0, freeTotal: 0,
+    streak: 0, stars: 0, freeSpins: 0, freeBet: 0, freeTotal: 0, jackpots: 0,
     xp: 0, level: 1, ach: {},
     nudges: 0, missions: [], missionsDone: 0,
   });
@@ -1303,6 +1393,7 @@ details.ach { margin-top: 10px; }
 
     if (jackpot) {
       result = 'jackpot';
+      state.jackpots++;
       await celebrate(win, Math.round(mult * 100) / 100);
     } else if (win) {
       await celebrateTier(win, ratio);
@@ -1349,6 +1440,7 @@ details.ach { margin-top: 10px; }
       if (line) mission('three');
       gainXp(8 + (line ? 30 : 0));
       render();
+      if (line === 'seven') state.jackpots++;
       if (line === 'seven') await celebrate(win, Math.round(base * sMult * 100) / 100);
       else await celebrateTier(win, win / bet);
       gambleOffer = win;
@@ -1976,7 +2068,7 @@ details.ach { margin-top: 10px; }
     render();
   });
   document.addEventListener('keydown', e => {
-    if (!account) return;
+    if (!account || e.target.closest?.('#chatPanel')) return;
     typed = [...typed, e.key.length === 1 ? e.key.toLowerCase() : e.key].slice(-SECRET.length);
     if (typed.join() === SECRET.join() && !rigged) {
       rigged = true;
@@ -2012,7 +2104,7 @@ details.ach { margin-top: 10px; }
     return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
   }
   const newSalt = () => [...crypto.getRandomValues(new Uint8Array(8))].map(b => b.toString(16).padStart(2, '0')).join('');
-  const toPlayers = list => list.map(p => ({ id: p.id, name: p.name || p.id, credits: Number(p.credits) || 0, best: Number(p.best) || 0, level: Number(p.level) || 1 }));
+  const toPlayers = list => list.map(p => ({ id: p.id, name: p.name || p.id, credits: Number(p.credits) || 0, best: Number(p.best) || 0, level: Number(p.level) || 1, jackpots: Number(p.jackpots) || 0 }));
   const SESSION_KEY = 'lucky-reels-session';
   const remember = id => { try { id ? sessionStorage.setItem(SESSION_KEY, id) : sessionStorage.removeItem(SESSION_KEY); } catch {} };
   const remembered = () => { try { return sessionStorage.getItem(SESSION_KEY); } catch { return null; } };
@@ -2055,6 +2147,8 @@ details.ach { margin-top: 10px; }
         return 'ok';
       },
       watch: cb => store.watch(cb),
+      chatWatch: cb => store.chatWatch(cb),
+      chatSend: text => store.chatSend(text),
     };
   }
 
@@ -2080,8 +2174,24 @@ details.ach { margin-top: 10px; }
       },
       async save(id, body) { all[id] = { ...all[id], ...body }; write(); emit(); },
       watch(cb) { listeners.add(cb); emit(); },
+      chatWatch(cb) {
+        const CHAT = 'lucky-reels-chat';
+        const readChat = () => { try { return JSON.parse(localStorage.getItem(CHAT) || '[]'); } catch { return []; } };
+        chatListeners.add(cb);
+        cb(readChat());
+        addEventListener('storage', e => { if (e.key === CHAT) cb(readChat()); });
+      },
+      async chatSend(text) {
+        const CHAT = 'lucky-reels-chat';
+        let list = [];
+        try { list = JSON.parse(localStorage.getItem(CHAT) || '[]'); } catch {}
+        list = [...list, { id: newSalt(), uid: account.id, name: account.name, body: text, at: Date.now() }].slice(-100);
+        try { localStorage.setItem(CHAT, JSON.stringify(list)); } catch {}
+        chatListeners.forEach(cb => cb(list));
+      },
     };
   }
+  const chatListeners = new Set();
 
   function artifactStore(db) {
     return {
@@ -2104,6 +2214,14 @@ details.ach { margin-top: 10px; }
           snap => cb(toPlayers(snap.docs.filter(d => d.data()?.hash).map(d => ({ id: d.id, ...d.data() })))),
           () => { $('loginNote').textContent = 'Highscores stopped updating. Reload the page to reconnect.'; });
       },
+      chatWatch(cb) {
+        db.collection('chat').orderBy('at', 'desc').limit(80).onSnapshot(
+          snap => cb(snap.docs.map(d => ({ id: d.id, ...d.data() })).reverse()),
+          () => cb(null));
+      },
+      async chatSend(text) {
+        await db.collection('chat').add({ uid: account.id, name: account.name, body: text, at: Date.now() });
+      },
     };
   }
 
@@ -2124,6 +2242,7 @@ details.ach { margin-top: 10px; }
       auth: { storage: window.sessionStorage, persistSession: true, autoRefreshToken: true },
     });
     const email = name => `${idFor(name)}@${EMAIL_DOMAIN}`;
+    let hasJackpots = true;
     // New accounts are only offered when Supabase confirms them on the spot: the made-up addresses can't receive mail.
     let canSignUp = false;
     try {
@@ -2172,7 +2291,14 @@ details.ach { margin-top: 10px; }
       async save(key, body) {
         const patch = { ...body, updated_at: new Date(body.updatedAt || Date.now()).toISOString() };
         delete patch.updatedAt;
-        const { error } = await sb.from('players').update(patch).eq('id', key);
+        if (!hasJackpots) delete patch.jackpots;
+        let { error } = await sb.from('players').update(patch).eq('id', key);
+        // Before the chat setup SQL runs there is no jackpots column; save without it.
+        if (error && hasJackpots && /jackpots/.test(error.message || '')) {
+          hasJackpots = false;
+          delete patch.jackpots;
+          ({ error } = await sb.from('players').update(patch).eq('id', key));
+        }
         if (error) throw error;
       },
       async changePassword(key, oldPw, newPw) {
@@ -2182,9 +2308,34 @@ details.ach { margin-top: 10px; }
         if (error) throw error;
         return 'ok';
       },
+      async chatWatch(cb) {
+        let list = [];
+        const pull = async () => {
+          const { data, error } = await sb.from('messages').select('id,user_id,name,body,created_at').order('created_at', { ascending: false }).limit(80);
+          if (error) { cb(null); return false; }
+          list = data.reverse().map(m => ({ id: m.id, uid: m.user_id, name: m.name, body: m.body, at: Date.parse(m.created_at) }));
+          cb(list);
+          return true;
+        };
+        if (!(await pull())) return;
+        sb.channel('chat').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, ({ new: m }) => {
+          if (list.some(x => x.id === m.id)) return;
+          list = [...list, { id: m.id, uid: m.user_id, name: m.name, body: m.body, at: Date.parse(m.created_at) }].slice(-100);
+          cb(list);
+        }).subscribe();
+        setInterval(pull, 20000);
+      },
+      async chatSend(text) {
+        const { error } = await sb.from('messages').insert({ body: text });
+        if (error) throw error;
+      },
       watch(cb) {
         const pull = async () => {
-          const { data } = await sb.from('players').select('id,name,credits,best,level');
+          let { data, error } = await sb.from('players').select(`id,name,credits,best,level${hasJackpots ? ',jackpots' : ''}`);
+          if (error && hasJackpots) {
+            hasJackpots = false;
+            ({ data } = await sb.from('players').select('id,name,credits,best,level'));
+          }
           if (data) cb(toPlayers(data));
         };
         pull();
@@ -2205,6 +2356,37 @@ details.ach { margin-top: 10px; }
     return hashedAccounts(localStore());
   }
 
+  // Spot jackpots in the highscore feed: a player's jackpot count going up lights up their row for everyone.
+  const jackpotFlash = new Map();
+  const seenJackpots = new Map();
+  let boardPrimed = false;
+  function onPlayers(list) {
+    for (const p of list) {
+      const prev = seenJackpots.get(p.id);
+      if (boardPrimed && prev != null && p.jackpots > prev) jackpotOnBoard(p);
+      seenJackpots.set(p.id, p.jackpots);
+    }
+    boardPrimed = true;
+    players = list;
+    renderBoards();
+  }
+  function jackpotOnBoard(p) {
+    jackpotFlash.set(p.id, performance.now());
+    renderBoards();
+    setTimeout(renderBoards, 6100);
+    const row = [...document.querySelectorAll(`tr[data-id="${CSS.escape(p.id)}"]`)].find(r => r.offsetParent);
+    if (row) {
+      const b = row.getBoundingClientRect();
+      fxTop.coinBurst(b.left + b.width / 2, b.top + b.height / 2, 36, 9);
+      fxTop.burst(b.left + b.width / 2, b.top + b.height / 2, 60, 42, 6, false);
+    }
+    if (p.id !== account?.id) {
+      sound.bigWin();
+      toast('JACKPOT!', `${p.name} just hit three sevens!`);
+    }
+    chatSystem(`${p.name} hit the JACKPOT!`);
+  }
+
   function renderBoards() {
     const rows = players
       .map(p => p.id === account?.id ? { ...p, credits: state.credits, best: state.best, level: state.level } : p)
@@ -2213,7 +2395,11 @@ details.ach { margin-top: 10px; }
       ? '<thead><tr><th>Player</th><th>Credits</th><th>Best win</th><th>Level</th></tr></thead><tbody>' +
         rows.map((p, i) => {
           const me = p.id === account?.id;
-          return `<tr class="${me ? 'me' : ''}"><td><span class="rank">${i + 1}</span>${esc(p.name)}${me ? '<span class="you">you</span>' : ''}</td>` +
+          const flash = jackpotFlash.get(p.id);
+          const age = flash ? performance.now() - flash : Infinity;
+          const hot = age < 6000;
+          return `<tr data-id="${esc(p.id)}" class="${me ? 'me' : ''}${hot ? ' jackpot-row' : ''}"${hot ? ` style="animation-delay:-${Math.round(age)}ms"` : ''}>` +
+            `<td><span class="rank">${i + 1}</span>${esc(p.name)}${me ? '<span class="you">you</span>' : ''}${hot ? '<span class="jp-badge">JACKPOT</span>' : ''}</td>` +
             `<td>${fmt(p.credits)}</td><td>${fmt(p.best)}</td><td>${p.level}</td></tr>`;
         }).join('') + '</tbody>'
       : '<tbody><tr><td class="empty" colspan="4">No players yet.</td></tr></tbody>';
@@ -2243,7 +2429,7 @@ details.ach { margin-top: 10px; }
     if (!account || !backend) return;
     if (saving) { saveAgain = true; return; }
     const key = account.id;
-    const body = { credits: state.credits, best: state.best, level: state.level, spins: state.spins, game: JSON.stringify(state) };
+    const body = { credits: state.credits, best: state.best, level: state.level, spins: state.spins, jackpots: state.jackpots, game: JSON.stringify(state) };
     const json = JSON.stringify(body);
     if (json === lastSaved) return;
     saving = true;
@@ -2292,6 +2478,8 @@ details.ach { margin-top: 10px; }
     loadState(saved);
     $('whoami').textContent = account.name;
     $('accountBar').hidden = false;
+    chatUnread = 0;
+    renderChat();
     $('login').hidden = true;
     $('loginPass').value = '';
     $('loginError').textContent = '';
@@ -2305,12 +2493,88 @@ details.ach { margin-top: 10px; }
     account = null;
     try { await backend.signOut(); } catch {}
     $('accountBar').hidden = true;
+    setChat(false);
     $('pwForm').hidden = true;
     $('login').hidden = false;
     loadState({});
     renderBoards();
     $('loginUser').focus();
   }
+
+  // ---------- Chat ----------
+  let chatMessages = null;
+  let chatSystemLines = [];
+  let chatOpen = false;
+  let chatUnread = 0;
+  let chatSeen = null;
+  const NAME_HUES = [42, 8, 140, 265, 190, 320, 20, 95];
+  const hueFor = name => NAME_HUES[[...String(name)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7) % NAME_HUES.length];
+  const clock = at => new Date(at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  function startChat() {
+    backend.chatWatch(list => {
+      if (list && chatSeen) {
+        const fresh = list.filter(m => !chatSeen.has(m.id) && m.uid !== account?.id);
+        if (fresh.length && !chatOpen && account) {
+          chatUnread += fresh.length;
+          sound.tick();
+        }
+      }
+      if (list) chatSeen = new Set(list.map(m => m.id));
+      chatMessages = list;
+      renderChat();
+    });
+  }
+  function chatSystem(text) {
+    chatSystemLines = [...chatSystemLines, { id: 'sys' + Date.now() + Math.random(), sys: true, body: text, at: Date.now() }].slice(-10);
+    renderChat();
+  }
+  function renderChat() {
+    $('chatFab').hidden = !account || chatOpen;
+    $('chatBadge').hidden = !chatUnread;
+    $('chatBadge').textContent = chatUnread > 99 ? '99+' : chatUnread;
+    $('chatForm').hidden = chatMessages === null;
+    if (!chatOpen) return;
+    const log = $('chatLog');
+    const atBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 40;
+    if (chatMessages === null) {
+      log.innerHTML = '<p class="chat-empty">The chat is not set up yet. Ask the person who runs the game to run the chat setup.</p>';
+      return;
+    }
+    const all = [...chatMessages, ...chatSystemLines].sort((a, b) => a.at - b.at);
+    log.innerHTML = all.length ? all.map(m => {
+      if (m.sys) return `<div class="msg sys">${esc(m.body)}</div>`;
+      const mine = m.uid === account?.id;
+      return `<div class="msg${mine ? ' mine' : ''}"><span class="who" style="color:hsl(${hueFor(m.name)} 80% 68%)">${esc(m.name)}<time>${clock(m.at)}</time></span><span class="text">${esc(m.body)}</span></div>`;
+    }).join('') : '<p class="chat-empty">No messages yet. Say hi to the other players.</p>';
+    if (atBottom || !renderChat.scrolled) { log.scrollTop = log.scrollHeight; renderChat.scrolled = true; }
+  }
+  function setChat(open) {
+    chatOpen = open && !!account;
+    $('chatPanel').hidden = !chatOpen;
+    if (chatOpen) { chatUnread = 0; renderChat.scrolled = false; }
+    renderChat();
+    if (chatOpen) $('chatInput').focus();
+  }
+  $('chatFab').addEventListener('click', () => setChat(true));
+  $('chatClose').addEventListener('click', () => setChat(false));
+  $('chatPanel').addEventListener('keydown', e => { if (e.key === 'Escape') setChat(false); });
+  $('chatForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const input = $('chatInput');
+    const text = input.value.trim().slice(0, 300);
+    if (!text || !account) return;
+    $('chatSend').disabled = true;
+    $('chatErr').textContent = '';
+    try {
+      await backend.chatSend(text);
+      input.value = '';
+    } catch {
+      $('chatErr').textContent = 'The message did not go through. Try again.';
+    }
+    $('chatSend').disabled = false;
+    input.focus();
+  });
 
   let signUpMode = false;
   function setMode(up) {
@@ -2419,7 +2683,8 @@ details.ach { margin-top: 10px; }
       $('loginNote').textContent = 'The account server could not be reached, so this copy keeps accounts in this browser only.';
       backend = hashedAccounts(localStore());
     }
-    backend.watch(list => { players = list; renderBoards(); });
+    backend.watch(onPlayers);
+    startChat();
     $('loginBtn').disabled = false;
     $('modeSwitch').hidden = !backend.canSignUp;
     setMode(false);

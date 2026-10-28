@@ -85,3 +85,54 @@ insert into public.players (id, name, credits)
 select u.id, split_part(u.email, '@', 1), 500
 from auth.users u
 where not exists (select 1 from public.players p where p.id = u.id);
+
+-- ---------------------------------------------------------------------------
+-- Chat and jackpot alerts: run this part once.
+
+-- Counts jackpots per player so the highscores can light up when someone hits one.
+alter table public.players add column if not exists jackpots integer not null default 0;
+
+create table if not exists public.messages (
+  id bigint generated always as identity primary key,
+  user_id uuid not null default auth.uid() references public.players (id) on delete cascade,
+  name text not null default '',
+  body text not null check (char_length(trim(body)) between 1 and 300),
+  created_at timestamptz not null default now()
+);
+create index if not exists messages_created_at on public.messages (created_at desc);
+
+alter table public.messages enable row level security;
+
+drop policy if exists "Chat is readable" on public.messages;
+create policy "Chat is readable" on public.messages
+  for select using (true);
+
+drop policy if exists "Players post as themselves" on public.messages;
+create policy "Players post as themselves" on public.messages
+  for insert to authenticated
+  with check (user_id = auth.uid());
+
+-- The sender's name and time come from the server, so nobody can post as someone else.
+create or replace function public.stamp_message()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  select name into new.name from public.players where id = new.user_id;
+  new.created_at := now();
+  return new;
+end;
+$$;
+
+drop trigger if exists stamp_message on public.messages;
+create trigger stamp_message
+  before insert on public.messages
+  for each row execute function public.stamp_message();
+
+do $$
+begin
+  alter publication supabase_realtime add table public.messages;
+exception when duplicate_object then null;
+end $$;
