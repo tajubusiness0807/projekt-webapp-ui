@@ -374,7 +374,7 @@ details.ach { margin-top: 10px; }
   text-shadow: 0 0 18px #e9a23b55, 0 3px 0 #7a4a12;
 }
 .login-sub { margin: -6px 0 0; text-align: center; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
-.pick { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .pick-btn { padding: 10px; background: var(--panel); color: var(--fg); border: 2px solid var(--cabinet-edge); font-weight: 600; }
 .pick-btn.on { border-color: var(--accent); color: var(--accent); }
 .field { display: grid; gap: 6px; }
@@ -576,7 +576,7 @@ details.ach { margin-top: 10px; }
   <form class="login-card" id="loginForm" novalidate>
     <h1 class="login-logo">Lucky Reels</h1>
     <p class="login-sub">Sign in to play</p>
-    <div class="pick"><button type="button" class="pick-btn" data-user="Lukas">Lukas</button><button type="button" class="pick-btn" data-user="Julius">Julius</button></div>
+    <div class="pick"><button type="button" class="pick-btn" data-user="Lukas">Lukas</button><button type="button" class="pick-btn" data-user="Julius">Julius</button><button type="button" class="pick-btn" data-user="Finley">Finley</button></div>
     <label class="field"><span class="label">Username</span><input id="loginUser" name="username" autocomplete="username" autocapitalize="none" spellcheck="false"></label>
     <label class="field"><span class="label">Password</span><input id="loginPass" name="password" type="password" autocomplete="current-password"></label>
     <p class="login-error" id="loginError" role="alert"></p>

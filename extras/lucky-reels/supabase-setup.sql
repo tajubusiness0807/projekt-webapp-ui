@@ -43,5 +43,9 @@ insert into public.players (id, name, credits)
 select id, 'Julius', 750 from auth.users where email = 'julius@lucky-reels.app'
 on conflict (id) do nothing;
 
--- Check: this should list both players.
+insert into public.players (id, name, credits)
+select id, 'Finley', 500 from auth.users where email = 'finley@lucky-reels.app'
+on conflict (id) do nothing;
+
+-- Check: this should list every player.
 select name, credits from public.players order by name;
