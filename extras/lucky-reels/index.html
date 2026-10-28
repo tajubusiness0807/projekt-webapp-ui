@@ -167,7 +167,6 @@ body {
 }
 .bulbs span:nth-child(even) { animation-delay: 0.6s; }
 @keyframes blink { 50% { opacity: 1; box-shadow: 0 0 8px currentColor; } }
-.cabinet.armed .bulbs span { background: var(--lose); }
 .cabinet.bonus .bulbs span { background: var(--bonus); animation-duration: 0.5s; }
 .cabinet.jackpot .bulbs span { animation-duration: 0.2s; }
 
@@ -1464,9 +1463,6 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
   const reels = [...document.querySelectorAll('.reel')];
   const strips = reels.map(r => r.querySelector('.strip'));
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const SECRET = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
-  let typed = [];
-  let rigged = false;
   let busy = false;
   let inBonus = false;
   let freeDone = 0;
@@ -1995,7 +1991,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     const bet = free ? state.freeBet : state.bet;
     const cost = free ? 0 : spinCost();
     if (state.credits < cost) return null;
-    const holds = free || rigged ? [false, false, false] : held.slice();
+    const holds = free ? [false, false, false] : held.slice();
     held = [false, false, false];
     holdOffer = false;
     nudgeOpen = false;
@@ -2007,14 +2003,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     render();
     holds.forEach((h, i) => reels[i].classList.toggle('held', h));
 
-    let targets;
-    if (rigged) {
-      targets = [0, 1, 2].map(() => STRIP.indexOf('seven'));
-    } else {
-      targets = [0, 1, 2].map(i => holds[i] ? pos[i] : randInt(STRIP.length));
-    }
-    rigged = false;
-    cabinet.classList.remove('armed');
+    const targets = [0, 1, 2].map(i => holds[i] ? pos[i] : randInt(STRIP.length));
 
     const sevenish = s => s === 'seven' || s === 'wild';
     const [s0, s1] = [STRIP[targets[0]], STRIP[targets[1]]];
@@ -3166,28 +3155,17 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     Object.assign(state, fresh(), { sound: state.sound, adminRev: state.adminRev, credits: settings.startCredits, mode: state.mode });
     bjShown.clear();
     renderBJTable(false);
-    rigged = false;
     pendingLevels.length = 0;
     held = [false, false, false];
     holdOffer = nudgeOpen = false;
     gambleOffer = 0;
     fillMissions();
-    cabinet.classList.remove('armed');
     reels.forEach(r => r.classList.remove('win', 'star'));
     buildReels();
     renderPaytable();
     renderAch();
     say('Fresh start: 500 credits, level 1, no goodies.');
     render();
-  });
-  document.addEventListener('keydown', e => {
-    if (!account || e.target.closest?.('#chatPanel, #adminModal')) return;
-    typed = [...typed, e.key.length === 1 ? e.key.toLowerCase() : e.key].slice(-SECRET.length);
-    if (typed.join() === SECRET.join() && !rigged) {
-      rigged = true;
-      cabinet.classList.add('armed');
-      say('The machine hums. Feeling lucky?', 'hot');
-    }
   });
   document.addEventListener('keydown', e => {
     if (e.code === 'Space' && account && state.mode !== 'bj' && !['BUTTON', 'SUMMARY', 'INPUT'].includes(e.target.tagName) && $('wheelModal').hidden && $('gambleModal').hidden && $('adminModal').hidden) { e.preventDefault(); play(); }
@@ -3851,13 +3829,12 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     if (!Array.isArray(state.bj.shoe)) state.bj.shoe = [];
     if (state.bj.round && !Array.isArray(state.bj.round.hands)) state.bj.round = null;
     if (state.mode !== 'bj') state.mode = 'slots';
-    rigged = false;
     autoLeft = 0;
     pendingLevels.length = 0;
     held = [false, false, false];
     holdOffer = nudgeOpen = false;
     gambleOffer = 0;
-    cabinet.classList.remove('armed', 'bonus', 'tease');
+    cabinet.classList.remove('bonus', 'tease');
     reels.forEach(r => r.classList.remove('win', 'star', 'wild', 'held'));
     buildReels();
     fillMissions();
