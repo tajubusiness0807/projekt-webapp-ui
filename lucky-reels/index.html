@@ -402,7 +402,7 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 .link-btn { background: none; color: var(--muted); text-decoration: underline; padding: 4px 0; font-size: 13px; }
 .link-btn:hover { color: var(--fg); }
 
-details.paytable, details.ach, details.bj-rules { background: var(--panel); border-radius: 10px; padding: 10px 14px; }
+details.paytable, details.bj-rules { background: var(--panel); border-radius: 10px; padding: 10px 14px; }
 
 /* Game switch */
 .game-modes { display: flex; justify-content: center; gap: 6px; margin-top: 8px; }
@@ -793,7 +793,6 @@ details summary { cursor: pointer; font-size: 11px; letter-spacing: 0.16em; text
 .goodie p { margin: 2px 0 0; font-size: 13px; color: var(--muted); line-height: 1.4; }
 .goodie .status { display: block; margin-top: 4px; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
 .buy { padding: 8px 12px; background: var(--chrome); font-family: var(--font-mono); font-size: 13px; font-weight: 600; white-space: nowrap; }
-details.ach { margin-top: 10px; }
 .missions { display: grid; gap: 8px; margin-top: 10px; padding-top: 12px; border-top: 1px solid #ffffff12; }
 .missions h3 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 16px; color: var(--accent); }
 .mission { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; background: var(--panel); border-radius: 10px; padding: 10px 12px; }
@@ -803,13 +802,33 @@ details.ach { margin-top: 10px; }
 .mission .m-prog { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
 .mission .m-swap { background: none; color: var(--muted); text-decoration: underline; font-size: 12px; padding: 0; justify-self: end; }
 .mission .m-swap:hover { color: var(--fg); }
-.ach ul { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 2px; }
-.ach li { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 10px; align-items: baseline; padding: 6px 0; border-bottom: 1px solid #ffffff10; font-size: 13px; color: var(--muted); }
-.ach li b { color: var(--fg); font-weight: 600; }
-.ach li .rw { font-family: var(--font-mono); font-size: 12px; }
-.ach li.done { color: var(--fg); }
-.ach li.done .mark { color: var(--win); }
-.ach li:not(.done) b { color: var(--muted); }
+.ach-box > summary { flex-wrap: wrap; row-gap: 8px; }
+.ach-bar { order: 5; flex-basis: 100%; height: 6px; border-radius: 3px; background: #0006; overflow: hidden; }
+.ach-bar i { display: block; height: 100%; width: 0; border-radius: 3px; background: linear-gradient(90deg, var(--accent), var(--accent-hi)); transition: width 0.6s; }
+.ach-grid { list-style: none; margin: 0 0 6px; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.ach-grid li {
+  position: relative;
+  display: grid; align-content: start; gap: 3px;
+  padding: 10px 10px 10px 44px;
+  border-radius: 10px;
+  background: #0005;
+  border: 1.5px solid #ffffff10;
+  font-size: 12px; color: var(--muted);
+}
+.ach-grid li b { color: var(--muted); font-size: 13px; }
+.ach-grid li small { line-height: 1.35; }
+.ach-grid li .rw { font-family: var(--font-mono); font-size: 11px; }
+.ach-grid li .mark {
+  position: absolute; left: 10px; top: 10px;
+  width: 26px; height: 26px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: #ffffff10; color: #ffffff40;
+  font: 700 13px var(--font-body);
+}
+.ach-grid li.done { border-color: #e9a23b66; background: linear-gradient(160deg, #e9a23b1f, #0005 70%); color: var(--fg); }
+.ach-grid li.done b { color: var(--accent-hi); }
+.ach-grid li.done .rw { color: var(--win); }
+.ach-grid li.done .mark { background: var(--accent); color: var(--ink); box-shadow: 0 0 12px #e9a23b88; }
 .disclaimer { text-align: center; font-size: 12px; color: var(--muted); margin: 18px auto 0; max-width: 52ch; line-height: 1.5; }
 
 /* Game lobby between sign-in and the games */
@@ -1421,6 +1440,11 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
 .lang-toggle.float { display: none; }
 body:not(.signed-in) .lang-toggle.float { display: flex; }
 @media (max-width: 600px) {
+  .ach-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+  .ach-grid li { padding: 8px; gap: 2px; }
+  .ach-grid li .mark { position: static; width: 22px; height: 22px; font-size: 11px; margin-bottom: 2px; }
+  .ach-grid li b { font-size: 12px; }
+  .ach-grid li small { font-size: 11px; }
   .account-bar { flex-wrap: nowrap; gap: 8px; font-size: 12px; margin-bottom: 10px; }
   .account-bar .who-label { display: none; }
   .account-bar > span:first-child { display: flex; align-items: center; min-width: 0; }
@@ -1743,9 +1767,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       <h3 id="missionsTitle">Missions</h3>
       <div id="missionList"></div>
     </section>
-    <details class="ach">
-      <summary>Achievements <span id="achCount"></span></summary>
-      <ul id="achList"></ul>
+    <details class="shop-box ach-box" id="achBox">
+      <summary><span class="shop-title">Achievements</span><span class="shop-owned" id="achCount"></span><span class="ach-bar" aria-hidden="true"><i id="achBar"></i></span></summary>
+      <ul class="ach-grid" id="achList"></ul>
     </details>
   </aside>
 </div>
@@ -2091,7 +2115,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   };
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
-    ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
+    ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'], ['Collect {a} bonus stars.', 'Sammle {a} Bonussterne.'],
     ['Bet per spin · max {a}', 'Einsatz pro Spin · max. {a}'], ['The highest bet is {a}.', 'Der höchste Einsatz ist {a}.'],
     ['Three {a}! +{b}', 'Drei {a}! +{b}'], ['Cherries pay {a}', 'Kirschen zahlen {a}'],
     ['No win, but +{a} bonus stars.', 'Kein Gewinn, aber +{a} Bonussterne.'], ['No win, but +{a} bonus star.', 'Kein Gewinn, aber +{a} Bonusstern.'],
@@ -2122,7 +2146,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     ['Land {a} bonus stars', 'Lande {a} Bonussterne'], ['Land {a} lines of three', 'Lande {a} Dreierlinien'], ['Land {a} line of three', 'Lande {a} Dreierlinie'],
     ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Land {a} wilds', 'Lande {a} Wilds'], ['Win with a nudge {a} times', 'Gewinne {a}-mal mit einem Stupser'],
     ['Win {a} gamble rounds', 'Gewinne {a} Riskier-Runden'], ['Win {a} spins after holding reels', 'Gewinne {a} Spins nach dem Halten'],
-    ['Collect {a} bonus stars.', 'Sammle {a} Bonussterne.'], ['Win all {a} gamble rounds.', 'Gewinne alle {a} Riskier-Runden.'],
+['Win all {a} gamble rounds.', 'Gewinne alle {a} Riskier-Runden.'],
     ['Wins are multiples of your bet. Wilds stand in for any symbol except stars, and three wilds pay {a}×. After a losing spin you may get nudges (move one reel down a stop) or the chance to hold up to two reels for the next spin. After a win you can gamble it on higher or lower, up to {b} rounds; a correct guess pays by its odds. Every star on the payline fills the bonus meter; {c} stars start {d} free spins where every win pays ×{e}. Each win in a row adds ×{f} to the next win, up to ×{g}; a losing spin resets it. Levels come from XP and each one spins the prize wheel. Each reel has {h} stops. Before streaks, free spins, holds, nudges and rewards, this table returns {i}% of bets; with everything included about {j}%. Losing streaks happen: the house wins in the long run.',
       'Gewinne sind Vielfache deines Einsatzes. Wilds ersetzen jedes Symbol außer Sternen, drei Wilds zahlen {a}×. Nach einem verlorenen Spin bekommst du manchmal Stupser (eine Walze eine Position runter) oder darfst bis zu zwei Walzen für den nächsten Spin halten. Nach einem Gewinn kannst du ihn bei Höher/Tiefer riskieren, bis zu {b} Runden; ein richtiger Tipp zahlt nach seiner Wahrscheinlichkeit. Jeder Stern auf der Linie füllt die Bonusanzeige; {c} Sterne starten {d} Freispiele, in denen jeder Gewinn ×{e} zahlt. Jeder Gewinn in Folge legt ×{f} auf den nächsten Gewinn drauf, bis ×{g}; ein verlorener Spin setzt das zurück. Level kommen aus XP und jedes dreht das Glücksrad. Jede Walze hat {h} Positionen. Ohne Serien, Freispiele, Halten, Stupser und Belohnungen zahlt diese Tabelle {i} % der Einsätze zurück; mit allem etwa {j} %. Verlustserien kommen vor: Auf Dauer gewinnt das Haus.'],
     // Blackjack
@@ -4811,7 +4835,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
   // ---------- Achievements ----------
   $('achList').innerHTML = ACH.map(a =>
-    `<li id="ach-${a.id}"><span class="mark">●</span><span><b>${a.name}</b> · ${a.desc}</span><span class="rw">+${fmt(a.reward)}</span></li>`).join('');
+    `<li id="ach-${a.id}"><span class="mark" aria-hidden="true"></span><b>${a.name}</b><small>${a.desc}</small><span class="rw">+${fmt(a.reward)}</span></li>`).join('');
+  try { $('achBox').open = localStorage.getItem('lucky-reels-ach-open') === '1'; } catch {}
+  $('achBox').addEventListener('toggle', () => { try { localStorage.setItem('lucky-reels-ach-open', $('achBox').open ? '1' : '0'); } catch {} });
 
   function renderAch() {
     let n = 0;
@@ -4820,9 +4846,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       n += done;
       const li = $('ach-' + a.id);
       li.classList.toggle('done', done);
-      li.firstChild.textContent = done ? '✓' : '○';
+      li.firstChild.textContent = done ? '✓' : '?';
     }
     $('achCount').textContent = `${n} / ${ACH.length}`;
+    $('achBar').style.width = `${(n / ACH.length) * 100}%`;
   }
 
   function checkAch(ctx) {
