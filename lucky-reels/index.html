@@ -2153,7 +2153,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'No win. Nudge a reel now, or hold reels for the next spin.': 'Kein Gewinn. Stups jetzt eine Walze an oder halte Walzen für den nächsten Spin.',
     'Hold up to two reels for the next spin': 'Halte bis zu zwei Walzen für den nächsten Spin', 'Out of nudges.': 'Keine Stupser mehr.',
     'Spin when you are ready.': 'Dreh, wenn du bereit bist.',
-    'The machine hums. Feeling lucky?': 'Die Maschine summt. Glück gehabt?', 'The machine hums…': 'Die Maschine summt…',
     'Fresh start: 500 credits, level 1, no goodies.': 'Neustart: 500 Credits, Level 1, keine Goodies.',
     'FREE SPINS': 'FREISPIELE', 'BONUS OVER': 'BONUS VORBEI', 'BIG WIN': 'GROSSER GEWINN', 'MEGA WIN': 'MEGA-GEWINN', 'NICE WIN': 'SCHÖNER GEWINN',
     'JACKPOT!': 'JACKPOT!', 'Jackpot!': 'Jackpot!', 'Three sevens': 'Drei Siebenen', 'Tap to continue': 'Tippen zum Weiter', 'LIGHTNING': 'BLITZ',
@@ -2242,9 +2241,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Private chats are not set up yet. Ask the person who runs the game to run the private-chat setup.': 'Private Chats sind noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, sie einzurichten.',
     'The message did not go through. Try again.': 'Die Nachricht ging nicht durch. Versuch es nochmal.', 'Chat is switched off for players': 'Der Chat ist für Spieler abgeschaltet',
     'Someone': 'Jemand', 'Actions': 'Aktionen',
-    'Your next spin lands three sevens.': 'Dein nächster Spin landet drei Siebenen.', 'Your next hand is a blackjack.': 'Deine nächste Hand ist ein Blackjack.',
-    'The next ball lands on zero.': 'Die nächste Kugel landet auf der Null.', 'Your next ball drops into an outer slot.': 'Deine nächste Kugel fällt in ein äußeres Fach.',
-    'Works in slots, blackjack, roulette and Plinko: your next round there is rigged.': 'Wirkt bei Slots, Blackjack, Roulette und Plinko: Deine nächste Runde dort ist manipuliert.',
     'Amount': 'Betrag', 'Credits to send': 'Credits zum Verschicken', 'Send': 'Senden', 'Credits sent': 'Credits verschickt',
     'Enter how many credits to send.': 'Gib ein, wie viele Credits du schicken willst.', 'Not enough credits for that.': 'Dafür reichen deine Credits nicht.',
     'That player cannot get credits right now.': 'Dieser Spieler kann gerade keine Credits bekommen.',
@@ -5739,9 +5735,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       rigged = true;
       typed = [];
       cabinet.classList.add('armed');
-      const where = { slots: 'Your next spin lands three sevens.', bj: 'Your next hand is a blackjack.', rl: 'The next ball lands on zero.', pl: 'Your next ball drops into an outer slot.' }[state.mode];
-      if (state.mode === 'slots') say('The machine hums. Feeling lucky?', 'hot');
-      toast('The machine hums…', where || 'Works in slots, blackjack, roulette and Plinko: your next round there is rigged.');
     }
   });
   document.addEventListener('keydown', e => {
