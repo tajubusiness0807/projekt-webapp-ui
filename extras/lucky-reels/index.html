@@ -53,13 +53,6 @@ body {
   min-width: 0;
   transition: border-color 0.4s, box-shadow 0.4s;
 }
-/* Lucky Cat: sits on the reel window and waves; jumps on wins */
-.lucky-cat { position: absolute; z-index: 4; right: -10px; top: -50px; width: 62px; height: 62px; pointer-events: none; filter: drop-shadow(0 4px 4px #0008); }
-.lucky-cat .paw { transform-origin: 44px 30px; animation: wave 1.1s ease-in-out infinite; }
-@keyframes wave { 50% { transform: rotate(-28deg); } }
-.lucky-cat.cheer { animation: catJump 0.5s cubic-bezier(.3, 1.6, .5, 1) 2; }
-@keyframes catJump { 50% { transform: translateY(-16px) rotate(-6deg); } }
-.lucky-cat.gift .paw { animation-duration: 0.3s; }
 /* Neon name, shown to everyone */
 .neon-name {
   font-weight: 700;
@@ -134,7 +127,7 @@ body {
 }
 .tier.bolt .tier-title { color: #bff3ff; text-shadow: 0 4px 0 #1d1714, 0 0 24px #4fe3ff, 0 0 48px #4fe3ff; }
 @media (prefers-reduced-motion: reduce) {
-  .lucky-cat .paw, .lucky-cat.cheer, .neon-name, .bolt-svg path, .cabinet.zapped { animation: none; }
+  .neon-name, .bolt-svg path, .cabinet.zapped { animation: none; }
   .bolt-svg path { stroke-dashoffset: 0; }
 }
 .cabinet.gold {
@@ -1574,17 +1567,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     </header>
 
     <div class="window" id="window">
-      <svg class="lucky-cat" id="luckyCat" viewBox="0 0 64 64" aria-hidden="true" hidden>
-        <ellipse cx="32" cy="50" rx="20" ry="12" fill="#f6efe3"/>
-        <circle cx="32" cy="30" r="17" fill="#f6efe3" stroke="#d9cbb8" stroke-width="1.5"/>
-        <path d="M17 22l3-13 9 8zM47 22l-3-13-9 8z" fill="#f6efe3" stroke="#d9cbb8" stroke-width="1.5"/>
-        <path d="M20 13l2 6 4-2zM44 13l-2 6-4-2z" fill="#e79aa6"/>
-        <path d="M24 30q2-3 4 0M36 30q2-3 4 0" stroke="#1d1714" stroke-width="2" fill="none" stroke-linecap="round"/>
-        <path d="M30 35l2 2 2-2" stroke="#c8323a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-        <path d="M18 34h-7M18 37l-6 2M46 34h7M46 37l6 2" stroke="#a8947e" stroke-width="1"/>
-        <rect x="22" y="44" width="20" height="4" rx="2" fill="#c8323a"/><circle cx="32" cy="49" r="3" fill="#e9a23b"/>
-        <g class="paw"><ellipse cx="47" cy="22" rx="5" ry="8" fill="#f6efe3" stroke="#d9cbb8" stroke-width="1.5"/></g>
-      </svg>
       <div class="reels" aria-hidden="true">
         <div class="reel"><div class="strip"></div></div>
         <div class="reel"><div class="strip"></div></div>
@@ -1944,7 +1926,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'No win. Hold up to two reels for the next spin.': 'Kein Gewinn. Halte bis zu zwei Walzen für den nächsten Spin.',
     'No win. Nudge a reel now, or hold reels for the next spin.': 'Kein Gewinn. Stups jetzt eine Walze an oder halte Walzen für den nächsten Spin.',
     'Hold up to two reels for the next spin': 'Halte bis zu zwei Walzen für den nächsten Spin', 'Out of nudges.': 'Keine Stupser mehr.',
-    'Here, have a nudge for luck.': 'Hier, ein Stupser für dein Glück.', 'Spin when you are ready.': 'Dreh, wenn du bereit bist.',
+    'Spin when you are ready.': 'Dreh, wenn du bereit bist.',
     'The machine hums. Feeling lucky?': 'Die Maschine summt. Glück gehabt?', 'The machine hums…': 'Die Maschine summt…',
     'Switch to the slots: your next spin hits the jackpot.': 'Wechsle zu den Slots: Dein nächster Spin knackt den Jackpot.',
     'Fresh start: 500 credits, level 1, no goodies.': 'Neustart: 500 Credits, Level 1, keine Goodies.',
@@ -1959,12 +1941,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Highscores': 'Highscores', 'Player': 'Spieler', 'Best win': 'Bester Gewinn', 'No players yet.': 'Noch keine Spieler.', 'you': 'du', 'Online': 'Online',
     'Goodie Shop': 'Goodie-Shop', 'Slot payout rate with your goodies:': 'Slot-Auszahlungsquote mit deinen Goodies:', 'Owned': 'Gekauft', 'Maxed': 'Voll', 'Goodie bought': 'Goodie gekauft',
     'Lucky Horseshoe': 'Glückshufeisen', 'Golden Cherries': 'Goldene Kirschen', 'Piggy Bank': 'Sparschwein', 'Auto-Spin Lever': 'Auto-Spin-Hebel',
-    'Lucky Cat': 'Glückskatze', 'Gold Cabinet': 'Goldgehäuse', 'Neon Name': 'Neon-Name', 'Lightning Strike': 'Blitzschlag',
+    'Lucky Cat': 'Glückskatze', 'Lucky Cat retired': 'Glückskatze in Rente', 'The cat left the shop: you got your 8,000 credits back.': 'Die Katze hat den Shop verlassen: Du hast deine 8.000 Credits zurückbekommen.', 'Gold Cabinet': 'Goldgehäuse', 'Neon Name': 'Neon-Name', 'Lightning Strike': 'Blitzschlag',
     'Three sevens pay 8× more per level. Stack up to three.': 'Drei Siebenen zahlen 8× mehr pro Stufe. Bis zu dreimal stapelbar.',
     'Three cherries pay 3.5× instead of 3×.': 'Drei Kirschen zahlen 3,5× statt 3×.',
     'Get 2% of your bet back on every losing spin.': 'Bekomm 2 % deines Einsatzes bei jedem verlorenen Spin zurück.',
     'Unlocks Auto ×10: ten spins in a row.': 'Schaltet Auto ×10 frei: zehn Spins am Stück.',
-    'A waving cat sits on your reels, cheers your wins and gifts you a nudge every 60 spins.': 'Eine winkende Katze sitzt auf deinen Walzen, feiert deine Gewinne und schenkt dir alle 60 Spins einen Stupser.',
     'Plates the machine in gold. Purely for show.': 'Vergoldet die Maschine. Rein zur Show.',
     'Your name glows in rainbow neon for everyone: highscores, chat and the online list.': 'Dein Name leuchtet für alle in Regenbogen-Neon: Highscores, Chat und Online-Liste.',
     'On 1% of your slot wins lightning strikes and multiplies the win ×2, ×3, ×5 or even ×10.': 'Bei 1 % deiner Slot-Gewinne schlägt ein Blitz ein und multipliziert den Gewinn ×2, ×3, ×5 oder sogar ×10.',
@@ -2388,7 +2369,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     { id: 'goldCherry', kind: 'perm', name: 'Golden Cherries', desc: 'Three cherries pay 3.5× instead of 3×.', price: () => 1500 },
     { id: 'piggy', kind: 'perm', name: 'Piggy Bank', desc: 'Get 2% of your bet back on every losing spin.', price: () => 3000 },
     { id: 'autospin', kind: 'perm', name: 'Auto-Spin Lever', desc: 'Unlocks Auto ×10: ten spins in a row.', price: () => 1000 },
-    { id: 'luckyCat', kind: 'perm', name: 'Lucky Cat', desc: 'A waving cat sits on your reels, cheers your wins and gifts you a nudge every 60 spins.', price: () => 8000 },
     { id: 'gold', kind: 'cosmetic', name: 'Gold Cabinet', desc: 'Plates the machine in gold. Purely for show.', price: () => 25000, excl: 'midnight' },
     { id: 'midnight', kind: 'cosmetic', name: 'Midnight Cabinet', desc: 'A deep-blue machine with glowing cyan trim. Purely for show.', price: () => 30000, excl: 'gold' },
     { id: 'disco', kind: 'cosmetic', name: 'Disco Bulbs', desc: 'The bulbs on top of the machine flash in every colour of the rainbow.', price: () => 8000 },
@@ -2433,11 +2413,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
   const fresh = () => ({
     credits: START, bet: 5, lastWin: 0, spins: 0, best: 0, sound: true,
-    owned: { horseshoe: 0, goldCherry: false, piggy: false, autospin: false, gold: false, luckyCat: false, neon: false, lightning: false,
+    owned: { horseshoe: 0, goldCherry: false, piggy: false, autospin: false, gold: false, neon: false, lightning: false,
       midnight: false, disco: false, royalFelt: false, goldBacks: false, fireworks: false },
     // Cosmetics the player owns but switched off.
     cosOff: {},
-    catSpins: 0,
     streak: 0, stars: 0, starBank: 0, avatar: null, freeSpins: 0, freeBet: 0, freeTotal: 0, jackpots: 0,
     xp: 0, level: 1, ach: {}, adminRev: 0,
     nudges: 0, missions: [], missionsDone: 0,
@@ -2489,7 +2468,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     for (const [m, w] of LIGHTNING_ODDS) { if (roll < w) return m; roll -= w; }
     return 2;
   }
-  const CAT_EVERY = 60;
   const FEATURE_BOOST = 1.44;
   const weights = () => ({ ...BASE_WEIGHTS });
 
@@ -2591,21 +2569,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     },
     ping(p) { this.tone(1200 + p * 1600 + Math.random() * 80, 0, 0.07, 'sine', 0.05); },
     boom() { this.tone(70 + Math.random() * 50, 0, 0.4, 'sawtooth', 0.05); },
-    meow() {
-      const c = this.ensure();
-      if (!c) return;
-      const t = c.currentTime, o = c.createOscillator(), g = c.createGain();
-      o.type = 'triangle';
-      o.frequency.setValueAtTime(700, t);
-      o.frequency.exponentialRampToValueAtTime(1100, t + 0.12);
-      o.frequency.exponentialRampToValueAtTime(500, t + 0.45);
-      g.gain.setValueAtTime(0.0001, t);
-      g.gain.exponentialRampToValueAtTime(0.08, t + 0.04);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
-      o.connect(g).connect(c.destination);
-      o.start(t);
-      o.stop(t + 0.55);
-    },
     rumble() {
       const c = this.ensure();
       if (!c) return;
@@ -3112,23 +3075,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     }
     if (win) floatText('+' + fmt(win));
     if (ratio >= 10) fireworks(ratio >= 75 ? 12 : 6);
-    // Lucky Cat: cheers a win, and every 25 spins brings a nudge.
-    let catGift = false;
-    if (state.owned.luckyCat) {
-      state.catSpins = (state.catSpins || 0) + 1;
-      if (state.catSpins >= CAT_EVERY) { state.catSpins = 0; state.nudges++; catGift = true; }
-      const cat = $('luckyCat');
-      cat.classList.remove('cheer', 'gift');
-      void cat.getBoundingClientRect();
-      if (win || catGift) cat.classList.add('cheer');
-      if (catGift) {
-        cat.classList.add('gift');
-        sound.meow();
-        floatText('+1 nudge', 'nudge');
-        toast('Lucky Cat', 'Here, have a nudge for luck.');
-        if (!free && !autoLeft && !win) nudgeOpen = true;
-      }
-    }
     render();
 
     if (jackpot) {
@@ -4948,7 +4894,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         const owned = state.owned[g.id];
         btn.textContent = owned ? 'Owned' : `Buy · ${fmt(g.price())}`;
         btn.disabled = owned || busy || state.credits < g.price();
-        status.textContent = !owned ? '' : g.id === 'luckyCat' ? `Next nudge in ${CAT_EVERY - (state.catSpins || 0)} spins` : 'Active';
+        status.textContent = owned ? 'Active' : '';
       }
     }
   }
@@ -4961,7 +4907,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     $('payRows').innerHTML = rows.join('');
     const rtp = computeRtp() * 100;
     // Streaks, free spins, holds and nudges add about 44% on top of the line wins (simulated with best play).
-    const total = Math.min(99, rtp * FEATURE_BOOST + (state.owned.luckyCat ? 1.2 : 0));
+    const total = Math.min(99, rtp * FEATURE_BOOST);
     $('shopRate').textContent = '≈ ' + total.toFixed(1) + '%';
     $('rtp').textContent =
       `Wins are multiples of your bet. Wilds stand in for any symbol except stars, and three wilds pay ${PAY3.wild}×. ` +
@@ -5021,7 +4967,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const owned = GOODIES.filter(g => g.kind === 'level' ? state.owned[g.id] > 0 : state.owned[g.id]).length;
     $('shopOwned').textContent = `${owned} / ${GOODIES.length}`;
     // An <svg> has no working .hidden property, so set the attribute itself.
-    $('luckyCat').toggleAttribute('hidden', !state.owned.luckyCat);
 
     const need = xpNeed(state.level);
     $('lvl').textContent = state.level;
@@ -5811,6 +5756,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     Object.assign(state, fresh(), saved);
     state.owned = Object.assign(fresh().owned, saved.owned);
     state.cosOff = Object.assign({}, saved.cosOff);
+    // The Lucky Cat goodie is gone; whoever bought it gets the 8,000 credits back once.
+    if (saved.owned?.luckyCat) { state.credits = Math.min(MAX, (state.credits || 0) + 8000); delete state.owned.luckyCat; setTimeout(() => toast('Lucky Cat retired', 'The cat left the shop: you got your 8,000 credits back.'), 1500); }
+    delete state.catSpins;
     delete state.boost;
     if (saved.starBank === undefined) state.starBank = (state.stars || 0) * Math.min(state.bet || 1, 1000);
     if (state.stars > STAR_GOAL) state.stars = STAR_GOAL - 1;
