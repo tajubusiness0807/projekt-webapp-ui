@@ -78,6 +78,60 @@ body {
 @keyframes boltDraw { to { stroke-dashoffset: 0; } }
 @keyframes boltFade { to { opacity: 0; } }
 .cabinet.zapped { animation: shake 0.4s 2; box-shadow: 0 0 60px #4fe3ffaa, inset 0 0 40px #4fe3ff55; }
+/* Lightning storm scene */
+.storm { position: fixed; inset: 0; z-index: 17; overflow: hidden; cursor: pointer; transition: opacity 0.4s; }
+.storm.out { opacity: 0; }
+.storm-sky { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 40%, #0b1a2ccc, #03070ef2 70%); animation: fadeIn 0.6s ease-out; }
+.storm-clouds {
+  position: absolute; left: -15%; right: -15%; top: -12%; height: 46%;
+  background:
+    radial-gradient(ellipse at 15% 55%, #253246 0 22%, transparent 52%),
+    radial-gradient(ellipse at 40% 35%, #2b3a52 0 26%, transparent 56%),
+    radial-gradient(ellipse at 68% 50%, #222e40 0 24%, transparent 54%),
+    radial-gradient(ellipse at 92% 35%, #2a374c 0 22%, transparent 50%);
+  filter: blur(10px);
+  animation: cloudsIn 0.8s ease-out, drift 6s linear infinite;
+}
+.storm-clouds.lit { animation: cloudsIn 0.8s ease-out both, drift 6s linear infinite, cloudFlash 0.35s ease-out; }
+@keyframes cloudsIn { from { transform: translateY(-60%); opacity: 0; } }
+@keyframes drift { to { background-position: 80px 0, -60px 0, 50px 0, -40px 0; } }
+@keyframes cloudFlash { 0% { filter: blur(10px) brightness(3.2); } 100% { filter: blur(10px) brightness(1); } }
+.storm-rain {
+  position: absolute; inset: -30% -10%;
+  background: repeating-linear-gradient(104deg, transparent 0 18px, #bfe6ff26 18px 19px, transparent 19px 41px, #bfe6ff14 41px 42px);
+  animation: rain 0.3s linear infinite, fadeIn 0.8s ease-out;
+}
+@keyframes rain { to { background-position: -36px 140px; } }
+.storm-bolts { position: absolute; inset: 0; width: 100%; height: 100%; }
+.storm-bolts path { fill: none; stroke: #f4fdff; stroke-linejoin: round; stroke-linecap: round; filter: drop-shadow(0 0 6px #9ff0ff) drop-shadow(0 0 22px #4fe3ff); }
+.storm-bolts path.main { stroke-width: 5; }
+.storm-bolts path.branch { stroke-width: 2; opacity: 0.85; }
+.storm-bolts.fade { transition: opacity 0.5s; opacity: 0; }
+.storm-flash { position: absolute; inset: 0; background: #e8fbff; opacity: 0; pointer-events: none; }
+.storm-flash.go { animation: stormFlash 0.5s ease-out; }
+@keyframes stormFlash { 0% { opacity: 0.95; } 15% { opacity: 0.2; } 25% { opacity: 0.7; } 100% { opacity: 0; } }
+.storm-mult { position: absolute; left: 50%; top: 44%; translate: -50% -50%; display: grid; justify-items: center; gap: 2px; pointer-events: none; }
+.storm-mult span { font: 400 clamp(16px, 4vw, 24px) var(--font-display); letter-spacing: 0.35em; color: #bff3ff; text-shadow: 0 0 12px #4fe3ff; animation: fadeIn 0.4s 0.2s both; }
+.storm-mult b {
+  position: relative;
+  font: 400 clamp(96px, 30vw, 210px)/0.9 var(--font-display);
+  color: #effeff;
+  text-shadow: 0 0 18px #4fe3ff, 0 0 60px #4fe3ff, 5px 0 #ff4fd899, -5px 0 #4fe3ffaa;
+  animation: multSlam 0.5s cubic-bezier(.2, 1.6, .4, 1) both, glitch 0.16s steps(2) 0.5s 4, multPulse 0.9s 1.2s ease-in-out infinite alternate;
+}
+@keyframes multSlam { from { transform: scale(4) rotate(-8deg); opacity: 0; filter: blur(10px); } }
+@keyframes glitch { 50% { transform: translate(-7px, 3px) skewX(-10deg); text-shadow: -9px 0 #ff4fd8, 9px 0 #4fe3ff, 0 0 40px #4fe3ff; } }
+@keyframes multPulse { to { text-shadow: 0 0 30px #4fe3ff, 0 0 90px #4fe3ff, 5px 0 #ff4fd899, -5px 0 #4fe3ffaa; transform: scale(1.04); } }
+.storm-arcs { position: absolute; inset: -40px -60px; width: calc(100% + 120px); height: calc(100% + 80px); overflow: visible; }
+.storm-arcs path { fill: none; stroke: #dffaff; stroke-width: 2; filter: drop-shadow(0 0 6px #4fe3ff); }
+.window.charged { position: relative; z-index: 19; animation: charge 0.1s steps(2) infinite; box-shadow: 0 0 0 3px #bff3ff, 0 0 34px #4fe3ff, inset 0 0 24px #4fe3ff; }
+.window.charged .reel { animation: jitter 0.07s steps(2) infinite; }
+.window.charged.behind { z-index: auto; }
+@keyframes charge { 50% { box-shadow: 0 0 0 3px #4fe3ff, 0 0 54px #9ff0ff, inset 0 0 34px #9ff0ff; } }
+@keyframes jitter { 50% { transform: translate(1px, -1px); } }
+@media (prefers-reduced-motion: reduce) {
+  .storm-sky, .storm-clouds, .storm-rain, .storm-mult span, .storm-mult b, .window.charged, .window.charged .reel { animation: none; }
+}
 .tier.bolt .tier-title { color: #bff3ff; text-shadow: 0 4px 0 #1d1714, 0 0 24px #4fe3ff, 0 0 48px #4fe3ff; }
 @media (prefers-reduced-motion: reduce) {
   .lucky-cat .paw, .lucky-cat.cheer, .neon-name, .bolt-svg path, .cabinet.zapped { animation: none; }
@@ -1561,6 +1615,22 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
       o.start(t);
       o.stop(t + 0.55);
     },
+    rumble() {
+      const c = this.ensure();
+      if (!c) return;
+      const len = c.sampleRate * 1.4, buf = c.createBuffer(1, len, c.sampleRate), data = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * Math.sin(Math.PI * i / len);
+      const src = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+      src.buffer = buf;
+      f.type = 'lowpass';
+      f.frequency.value = 160;
+      g.gain.value = 0.6;
+      src.connect(f).connect(g).connect(c.destination);
+      src.start();
+    },
+    crack() { this.tone(3200, 0, 0.05, 'sawtooth', 0.05); this.tone(1200, 0.02, 0.08, 'square', 0.03); },
+    crackle() { this.tone(2400 + Math.random() * 2400, 0, 0.02, 'square', 0.025); },
+    zap() { [1600, 2400, 3200].forEach((f, i) => this.tone(f, i * 0.04, 0.12, 'sawtooth', 0.035)); this.bigWin(); },
     thunder() {
       const c = this.ensure();
       if (!c) return;
@@ -1720,26 +1790,116 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     });
   }
 
+  // Lightning: a short storm scene. The sky darkens, two flickers light the clouds, a branching bolt
+  // hits the reels and leaves them crackling, then the multiplier slams in. A click skips ahead.
+  function boltPath(x0, y0, x1, y1, disp) {
+    const pts = [[x0, y0]];
+    (function split(ax, ay, bx, by, d) {
+      if (d < 6) { pts.push([bx, by]); return; }
+      const mx = (ax + bx) / 2 + (Math.random() - 0.5) * d, my = (ay + by) / 2 + (Math.random() - 0.5) * d * 0.25;
+      split(ax, ay, mx, my, d / 2);
+      split(mx, my, bx, by, d / 2);
+    })(x0, y0, x1, y1, disp);
+    return pts;
+  }
+  const toD = pts => 'M' + pts.map(([px, py]) => `${Math.round(px)} ${Math.round(py)}`).join(' L');
+  function boltSvg(x0, x1, y1) {
+    const main = boltPath(x0, -20, x1, y1, 180);
+    let out = `<path class="main" d="${toD(main)}"/>`;
+    for (let k = 0; k < 4; k++) {
+      const [bx, by] = main[4 + randInt(Math.max(1, main.length - 10))];
+      const side = Math.random() < 0.5 ? -1 : 1;
+      out += `<path class="branch" d="${toD(boltPath(bx, by, bx + side * (60 + Math.random() * 140), by + 60 + Math.random() * 160, 70))}"/>`;
+    }
+    return out;
+  }
+
   async function lightningStrike(m) {
-    const flash = document.createElement('div');
-    flash.className = 'bolt-flash';
     const { x, y } = windowCenter();
     const W = innerWidth;
-    // Three jagged bolts from the top of the screen down to the reels.
-    const bolt = (x0) => {
-      let px = x0, py = -10, d = `M${px} ${py}`;
-      while (py < y) { px += (Math.random() - 0.5) * 120 + (x - px) * 0.25; py += 40 + Math.random() * 50; d += ` L${Math.round(px)} ${Math.round(Math.min(py, y))}`; }
-      return `<path d="${d}"/>`;
-    };
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('class', 'bolt-svg');
-    svg.innerHTML = bolt(x) + bolt(W * 0.2) + bolt(W * 0.8);
-    document.body.append(flash, svg);
-    cabinet.classList.add('zapped');
+    const win = $('window');
+    const storm = document.createElement('div');
+    storm.className = 'storm';
+    storm.setAttribute('aria-hidden', 'true');
+    storm.innerHTML = '<div class="storm-sky"></div><div class="storm-clouds"></div><div class="storm-rain"></div>' +
+      '<svg class="storm-bolts"></svg><div class="storm-flash"></div>' +
+      `<div class="storm-mult" hidden><span>LIGHTNING</span><b>×${m}</b><svg class="storm-arcs" viewBox="0 0 400 300" preserveAspectRatio="none"></svg></div>`;
+    document.body.append(storm);
+    let skip = false;
+    storm.addEventListener('click', () => { skip = true; });
+    const wait = ms => new Promise(res => {
+      const t0 = performance.now();
+      (function tick() { if (skip || performance.now() - t0 >= ms) res(); else requestAnimationFrame(tick); })();
+    });
+    const bolts = storm.querySelector('.storm-bolts'), flash = storm.querySelector('.storm-flash'), clouds = storm.querySelector('.storm-clouds');
+    const restart = (el, cls) => { el.classList.remove(cls); void el.getBoundingClientRect(); el.classList.add(cls); };
+    const strike = (from, toX, toY) => { bolts.classList.remove('fade'); bolts.innerHTML = boltSvg(from, toX, toY); restart(flash, 'go'); restart(clouds, 'lit'); };
+    const mult = storm.querySelector('.storm-mult');
+
+    if (reduceMotion) {
+      restart(flash, 'go');
+      mult.hidden = false;
+      sound.thunder();
+      await wait(1300);
+      storm.remove();
+      return;
+    }
+
+    sound.rumble();
+    await wait(650);
+    // Two flickers far off, then the real strike on the reels.
+    strike(W * 0.18, W * (0.05 + Math.random() * 0.2), innerHeight * 0.35);
+    sound.crack();
+    await wait(110); bolts.innerHTML = ''; await wait(260);
+    strike(W * 0.85, W * (0.75 + Math.random() * 0.2), innerHeight * 0.3);
+    sound.crack();
+    await wait(90); bolts.innerHTML = ''; await wait(300);
+
+    strike(x + (Math.random() - 0.5) * 160, x, y);
     sound.thunder();
-    fxTop.burst(x, y, 90, 190, 9, false);
-    setTimeout(() => { flash.remove(); svg.remove(); cabinet.classList.remove('zapped'); }, 1300);
-    await banner(`LIGHTNING ×${m}`, 'bolt', 1800);
+    win.classList.add('charged');
+    fxTop.burst(x, y, 140, 188, 11, false);
+    const box = win.getBoundingClientRect();
+    let lastSpark = 0, lastCrackle = 0;
+    fxTop.emit(el => {
+      if (el > 1500 || skip) return false;
+      if (el - lastSpark > 60) {
+        lastSpark = el;
+        const edge = randInt(4), t = Math.random();
+        const px = edge < 2 ? box.left + t * box.width : edge === 2 ? box.left : box.right;
+        const py = edge >= 2 ? box.top + t * box.height : edge === 0 ? box.top : box.bottom;
+        fxTop.burst(px, py, 8, 185, 4, false);
+      }
+      if (el - lastCrackle > 110) { lastCrackle = el; sound.crackle(); }
+    });
+    await wait(140);
+    strike(x + (Math.random() - 0.5) * 120, x, y);
+    await wait(320);
+    bolts.classList.add('fade');
+
+    // The multiplier lands on the reels, with little arcs of electricity jumping around it.
+    mult.style.left = `${x}px`;
+    mult.style.top = `${y}px`;
+    win.classList.add('behind');
+    mult.hidden = false;
+    sound.zap();
+    const arcs = mult.querySelector('.storm-arcs');
+    const t0 = performance.now();
+    while (!skip && performance.now() - t0 < 1500) {
+      let d = '';
+      for (let k = 0; k < 3; k++) {
+        const a = Math.random() * Math.PI * 2, b = a + 0.6 + Math.random() * 1.2;
+        const ax = 200 + Math.cos(a) * 190, ay = 150 + Math.sin(a) * 140, bx = 200 + Math.cos(b) * 190, by = 150 + Math.sin(b) * 140;
+        d += `<path d="${toD(boltPath(ax, ay, bx, by, 60))}"/>`;
+      }
+      arcs.innerHTML = d;
+      await wait(90);
+    }
+    arcs.innerHTML = '';
+    storm.classList.add('out');
+    win.classList.remove('charged', 'behind');
+    await new Promise(res => setTimeout(res, 400));
+    storm.remove();
   }
 
   async function celebrateTier(win, ratio) {
