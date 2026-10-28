@@ -630,3 +630,9 @@ $$;
 
 revoke execute on function public.admin_delete_player(uuid, uuid) from public, anon;
 grant execute on function public.admin_delete_player(uuid, uuid) to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Neon Name goodie: run this part once so other players can see it.
+
+alter table public.players add column if not exists flair text check (flair is null or flair in ('neon'));
+grant update (flair) on public.players to authenticated;

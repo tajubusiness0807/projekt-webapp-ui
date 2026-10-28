@@ -67,6 +67,36 @@ body {
   min-width: 0;
   transition: border-color 0.4s, box-shadow 0.4s;
 }
+/* Lucky Cat: sits on the reel window and waves; jumps on wins */
+.lucky-cat { position: absolute; z-index: 4; right: -10px; top: -50px; width: 62px; height: 62px; pointer-events: none; filter: drop-shadow(0 4px 4px #0008); }
+.lucky-cat .paw { transform-origin: 44px 30px; animation: wave 1.1s ease-in-out infinite; }
+@keyframes wave { 50% { transform: rotate(-28deg); } }
+.lucky-cat.cheer { animation: catJump 0.5s cubic-bezier(.3, 1.6, .5, 1) 2; }
+@keyframes catJump { 50% { transform: translateY(-16px) rotate(-6deg); } }
+.lucky-cat.gift .paw { animation-duration: 0.3s; }
+/* Neon name, shown to everyone */
+.neon-name {
+  font-weight: 700;
+  color: transparent;
+  background: linear-gradient(90deg, #ff4fd8, #4fe3ff, #7dff6a, #ffe14f, #ff4fd8) 0 0 / 200% 100%;
+  -webkit-background-clip: text; background-clip: text;
+  filter: drop-shadow(0 0 4px #ff4fd899) drop-shadow(0 0 8px #4fe3ff66);
+  animation: neonShift 3s linear infinite;
+}
+@keyframes neonShift { to { background-position: 200% 0; } }
+/* Lightning strike */
+.bolt-flash { position: fixed; inset: 0; z-index: 21; pointer-events: none; background: #cfefff; animation: boltFlash 0.9s ease-out forwards; }
+@keyframes boltFlash { 0%, 12%, 24% { opacity: 0.85; } 6%, 18% { opacity: 0.1; } 100% { opacity: 0; } }
+.bolt-svg { position: fixed; inset: 0; z-index: 22; width: 100%; height: 100%; pointer-events: none; }
+.bolt-svg path { fill: none; stroke: #fff; stroke-width: 4; stroke-linejoin: round; filter: drop-shadow(0 0 8px #4fe3ff) drop-shadow(0 0 18px #4fe3ff); stroke-dasharray: 2000; stroke-dashoffset: 2000; animation: boltDraw 0.25s ease-out forwards, boltFade 0.6s 0.5s ease-in forwards; }
+@keyframes boltDraw { to { stroke-dashoffset: 0; } }
+@keyframes boltFade { to { opacity: 0; } }
+.cabinet.zapped { animation: shake 0.4s 2; box-shadow: 0 0 60px #4fe3ffaa, inset 0 0 40px #4fe3ff55; }
+.tier.bolt .tier-title { color: #bff3ff; text-shadow: 0 4px 0 #1d1714, 0 0 24px #4fe3ff, 0 0 48px #4fe3ff; }
+@media (prefers-reduced-motion: reduce) {
+  .lucky-cat .paw, .lucky-cat.cheer, .neon-name, .bolt-svg path, .cabinet.zapped { animation: none; }
+  .bolt-svg path { stroke-dashoffset: 0; }
+}
 .cabinet.gold {
   background: linear-gradient(160deg, #6b4a12, #3a2708 60%, #5a3c0c);
   border-color: var(--accent);
@@ -1018,6 +1048,17 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     </header>
 
     <div class="window" id="window">
+      <svg class="lucky-cat" id="luckyCat" viewBox="0 0 64 64" aria-hidden="true" hidden>
+        <ellipse cx="32" cy="50" rx="20" ry="12" fill="#f6efe3"/>
+        <circle cx="32" cy="30" r="17" fill="#f6efe3" stroke="#d9cbb8" stroke-width="1.5"/>
+        <path d="M17 22l3-13 9 8zM47 22l-3-13-9 8z" fill="#f6efe3" stroke="#d9cbb8" stroke-width="1.5"/>
+        <path d="M20 13l2 6 4-2zM44 13l-2 6-4-2z" fill="#e79aa6"/>
+        <path d="M24 30q2-3 4 0M36 30q2-3 4 0" stroke="#1d1714" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M30 35l2 2 2-2" stroke="#c8323a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        <path d="M18 34h-7M18 37l-6 2M46 34h7M46 37l6 2" stroke="#a8947e" stroke-width="1"/>
+        <rect x="22" y="44" width="20" height="4" rx="2" fill="#c8323a"/><circle cx="32" cy="49" r="3" fill="#e9a23b"/>
+        <g class="paw"><ellipse cx="47" cy="22" rx="5" ry="8" fill="#f6efe3" stroke="#d9cbb8" stroke-width="1.5"/></g>
+      </svg>
       <div class="reels" aria-hidden="true">
         <div class="reel"><div class="strip"></div></div>
         <div class="reel"><div class="strip"></div></div>
@@ -1261,6 +1302,9 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     goldCherry: ICONS.cherry.replace('#c8323a', '#e9a23b').replace('#d93c44', '#f3b956'),
     piggy: '<svg viewBox="0 0 48 48"><path d="M14 18l2-8 6 6z" fill="#d9808e"/><ellipse cx="24" cy="28" rx="17" ry="12" fill="#e79aa6"/><rect x="18" y="16" width="10" height="3" rx="1.5" fill="#8c4a55"/><ellipse cx="39" cy="28" rx="4" ry="5" fill="#d9808e"/><circle cx="31" cy="24" r="1.6" fill="#1d1714"/><rect x="14" y="36" width="5" height="7" rx="2" fill="#d9808e"/><rect x="28" y="36" width="5" height="7" rx="2" fill="#d9808e"/></svg>',
     autospin: '<svg viewBox="0 0 48 48"><rect x="6" y="20" width="24" height="24" rx="4" fill="#4a2f24"/><rect x="10" y="26" width="16" height="8" rx="2" fill="#f6efe3"/><path d="M30 32L40 12" stroke="#d9cbb8" stroke-width="4" stroke-linecap="round"/><circle cx="40" cy="10" r="6" fill="#c8323a"/></svg>',
+    luckyCat: '<svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="13" fill="#f6efe3" stroke="#d9cbb8" stroke-width="1.5"/><path d="M12 18l2-10 7 6zM36 18l-2-10-7 6z" fill="#f6efe3" stroke="#d9cbb8" stroke-width="1.5"/><path d="M18 24q2-3 4 0M26 24q2-3 4 0" stroke="#1d1714" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M22 29l2 2 2-2" stroke="#c8323a" stroke-width="1.8" fill="none" stroke-linecap="round"/><rect x="16" y="36" width="16" height="4" rx="2" fill="#c8323a"/><circle cx="24" cy="41" r="3" fill="#e9a23b"/></svg>',
+    neon: '<svg viewBox="0 0 48 48"><defs><linearGradient id="neonGrad" x1="0" x2="1"><stop offset="0" stop-color="#ff4fd8"/><stop offset=".5" stop-color="#4fe3ff"/><stop offset="1" stop-color="#7dff6a"/></linearGradient></defs><rect x="4" y="12" width="40" height="24" rx="6" fill="#1d1714" stroke="url(#neonGrad)" stroke-width="2.5"/><text x="24" y="30" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="14" fill="url(#neonGrad)">Aa</text></svg>',
+    lightning: '<svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#1d2a3a"/><path d="M27 5L13 27h10l-4 16 16-24H25z" fill="#bff3ff" stroke="#4fe3ff" stroke-width="2" stroke-linejoin="round"/></svg>',
     gold: '<svg viewBox="0 0 48 48"><rect x="9" y="4" width="30" height="40" rx="6" fill="#e9a23b" stroke="#b87618" stroke-width="2"/><rect x="13" y="14" width="22" height="13" rx="2" fill="#f6efe3"/><text x="24" y="25" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="11" fill="#c8323a">777</text><circle cx="24" cy="36" r="3" fill="#fff2c4"/></svg>',
   };
   const BASE_WEIGHTS = { cherry: 7, lemon: 6, plum: 5, bell: 3, bar: 2, seven: 1, star: 2, wild: 1 };
@@ -1329,7 +1373,10 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     { id: 'goldCherry', kind: 'perm', name: 'Golden Cherries', desc: 'Three cherries pay 5.5× instead of 4×.', price: () => 1500 },
     { id: 'piggy', kind: 'perm', name: 'Piggy Bank', desc: 'Get 2% of your bet back on every losing spin.', price: () => 3000 },
     { id: 'autospin', kind: 'perm', name: 'Auto-Spin Lever', desc: 'Unlocks Auto ×10: ten spins in a row.', price: () => 1000 },
+    { id: 'luckyCat', kind: 'perm', name: 'Lucky Cat', desc: 'A waving cat sits on your reels, cheers your wins and gifts you a nudge every 25 spins.', price: () => 8000 },
     { id: 'gold', kind: 'perm', name: 'Gold Cabinet', desc: 'Plates the machine in gold. Purely for show.', price: () => 25000 },
+    { id: 'neon', kind: 'perm', name: 'Neon Name', desc: 'Your name glows in rainbow neon for everyone: highscores, chat and the online list.', price: () => 40000 },
+    { id: 'lightning', kind: 'perm', name: 'Lightning Strike', desc: 'On 2% of your slot wins lightning strikes and multiplies the win ×2, ×3, ×5 or even ×10.', price: () => 250000 },
   ];
 
   const ACH = [
@@ -1363,7 +1410,8 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
 
   const fresh = () => ({
     credits: START, bet: 5, lastWin: 0, spins: 0, best: 0, sound: true,
-    owned: { horseshoe: 0, goldCherry: false, piggy: false, autospin: false, gold: false },
+    owned: { horseshoe: 0, goldCherry: false, piggy: false, autospin: false, gold: false, luckyCat: false, neon: false, lightning: false },
+    catSpins: 0,
     streak: 0, stars: 0, freeSpins: 0, freeBet: 0, freeTotal: 0, jackpots: 0,
     xp: 0, level: 1, ach: {}, adminRev: 0,
     nudges: 0, missions: [], missionsDone: 0,
@@ -1402,6 +1450,16 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
   const HORSESHOE_JACKPOT = 25;
   const GOLD_CHERRY_TRIPLE = 5.5;
   const PIGGY_REFUND = 0.02;
+  // Lightning: chance per winning slot spin (out of 1000) and how likely each multiplier is.
+  const LIGHTNING_CHANCE = 20;
+  const LIGHTNING_ODDS = [[2, 70], [3, 20], [5, 8], [10, 2]];
+  const lightningAvg = LIGHTNING_ODDS.reduce((a, [m, w]) => a + m * w, 0) / 100;
+  function pickLightning() {
+    let roll = randInt(100);
+    for (const [m, w] of LIGHTNING_ODDS) { if (roll < w) return m; roll -= w; }
+    return 2;
+  }
+  const CAT_EVERY = 25;
   const weights = () => ({ ...BASE_WEIGHTS });
 
   function buildReels() {
@@ -1452,7 +1510,8 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
       ev += p * m;
       if (!m) lose += p;
     }
-    return ev + (state.owned.piggy ? lose * PIGGY_REFUND : 0);
+    const zap = state.owned.lightning ? 1 + (LIGHTNING_CHANCE / 1000) * (lightningAvg - 1) : 1;
+    return ev * zap + (state.owned.piggy ? lose * PIGGY_REFUND : 0);
   }
 
   const spinCost = () => state.bet;
@@ -1501,6 +1560,35 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     },
     ping(p) { this.tone(1200 + p * 1600 + Math.random() * 80, 0, 0.07, 'sine', 0.05); },
     boom() { this.tone(70 + Math.random() * 50, 0, 0.4, 'sawtooth', 0.05); },
+    meow() {
+      const c = this.ensure();
+      if (!c) return;
+      const t = c.currentTime, o = c.createOscillator(), g = c.createGain();
+      o.type = 'triangle';
+      o.frequency.setValueAtTime(700, t);
+      o.frequency.exponentialRampToValueAtTime(1100, t + 0.12);
+      o.frequency.exponentialRampToValueAtTime(500, t + 0.45);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.08, t + 0.04);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+      o.connect(g).connect(c.destination);
+      o.start(t);
+      o.stop(t + 0.55);
+    },
+    thunder() {
+      const c = this.ensure();
+      if (!c) return;
+      const len = c.sampleRate * 1.6, buf = c.createBuffer(1, len, c.sampleRate), data = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.2);
+      const src = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+      src.buffer = buf;
+      f.type = 'lowpass';
+      f.frequency.value = 700;
+      g.gain.value = 0.5;
+      src.connect(f).connect(g).connect(c.destination);
+      src.start();
+      this.tone(2200, 0, 0.12, 'sawtooth', 0.04);
+    },
     finale() { [523, 659, 784, 1047, 1319].forEach(f => this.tone(f, 0, 1.8, 'triangle', 0.06)); },
   };
 
@@ -1646,6 +1734,28 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     });
   }
 
+  async function lightningStrike(m) {
+    const flash = document.createElement('div');
+    flash.className = 'bolt-flash';
+    const { x, y } = windowCenter();
+    const W = innerWidth;
+    // Three jagged bolts from the top of the screen down to the reels.
+    const bolt = (x0) => {
+      let px = x0, py = -10, d = `M${px} ${py}`;
+      while (py < y) { px += (Math.random() - 0.5) * 120 + (x - px) * 0.25; py += 40 + Math.random() * 50; d += ` L${Math.round(px)} ${Math.round(Math.min(py, y))}`; }
+      return `<path d="${d}"/>`;
+    };
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'bolt-svg');
+    svg.innerHTML = bolt(x) + bolt(W * 0.2) + bolt(W * 0.8);
+    document.body.append(flash, svg);
+    cabinet.classList.add('zapped');
+    sound.thunder();
+    fxTop.burst(x, y, 90, 190, 9, false);
+    setTimeout(() => { flash.remove(); svg.remove(); cabinet.classList.remove('zapped'); }, 1300);
+    await banner(`LIGHTNING ×${m}`, 'bolt', 1800);
+  }
+
   async function celebrateTier(win, ratio) {
     const { x, y } = windowCenter();
     if (ratio >= 75) {
@@ -1786,7 +1896,8 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     const base = payout(...syms);
     const sMult = base ? streakMult() : 1;
     const mult = base * (free ? FREE_MULT : 1) * sMult * settings.winMultiplier;
-    const win = Math.min(MAX, Math.floor(mult * bet));
+    const bolt = state.owned.lightning && base && randInt(1000) < LIGHTNING_CHANCE ? pickLightning() : 0;
+    const win = Math.min(MAX, Math.floor(mult * bet * (bolt || 1)));
     const ratio = win / bet;
     const refund = !base && state.owned.piggy ? Math.floor(bet * PIGGY_REFUND) : 0;
     state.credits = Math.min(MAX, state.credits + win + refund);
@@ -1825,6 +1936,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     if (base && sMult > 1) extras.push(`streak ×${sMult.toFixed(2)}`);
     if (free && base) extras.push(`bonus ×${FREE_MULT}`);
     if (base && settings.winMultiplier !== 1) extras.push(`happy hour ×${settings.winMultiplier}`);
+    if (bolt) extras.push(`lightning ×${bolt}`);
     const tail = extras.length ? ` (${extras.join(', ')})` : '';
     const jackpot = line === 'seven';
     let result = win ? 'win' : 'lose';
@@ -1862,13 +1974,32 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
       }
     }
     if (win) floatText('+' + fmt(win));
+    // Lucky Cat: cheers a win, and every 25 spins brings a nudge.
+    let catGift = false;
+    if (state.owned.luckyCat) {
+      state.catSpins = (state.catSpins || 0) + 1;
+      if (state.catSpins >= CAT_EVERY) { state.catSpins = 0; state.nudges++; catGift = true; }
+      const cat = $('luckyCat');
+      cat.classList.remove('cheer', 'gift');
+      void cat.getBoundingClientRect();
+      if (win || catGift) cat.classList.add('cheer');
+      if (catGift) {
+        cat.classList.add('gift');
+        sound.meow();
+        floatText('+1 nudge', 'nudge');
+        toast('Lucky Cat', 'Here, have a nudge for luck.');
+        if (!free && !autoLeft && !win) nudgeOpen = true;
+      }
+    }
     render();
 
     if (jackpot) {
       result = 'jackpot';
       state.jackpots++;
-      await celebrate(win, Math.round(mult * 100) / 100);
+      if (bolt) await lightningStrike(bolt);
+      await celebrate(win, Math.round(mult * (bolt || 1) * 100) / 100);
     } else if (win) {
+      if (bolt) await lightningStrike(bolt);
       await celebrateTier(win, ratio);
     }
     if (triggered) {
@@ -2750,7 +2881,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
         const owned = state.owned[g.id];
         btn.textContent = owned ? 'Owned' : `Buy · ${fmt(g.price())}`;
         btn.disabled = owned || busy || state.credits < g.price();
-        status.textContent = owned ? 'Active' : '';
+        status.textContent = !owned ? '' : g.id === 'luckyCat' ? `Next nudge in ${CAT_EVERY - (state.catSpins || 0)} spins` : 'Active';
       }
     }
   }
@@ -2816,6 +2947,8 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     auto.classList.toggle('running', autoLeft > 0);
     auto.disabled = !autoLeft && (busy || (!free && state.credits < cost));
     cabinet.classList.toggle('gold', state.owned.gold);
+    // An <svg> has no working .hidden property, so set the attribute itself.
+    $('luckyCat').toggleAttribute('hidden', !state.owned.luckyCat);
 
     const need = xpNeed(state.level);
     $('lvl').textContent = state.level;
@@ -2940,7 +3073,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
   const newSalt = () => [...crypto.getRandomValues(new Uint8Array(8))].map(b => b.toString(16).padStart(2, '0')).join('');
   const toPlayers = list => list.map(p => ({
     id: p.id, name: p.name || p.id, credits: Number(p.credits) || 0, best: Number(p.best) || 0, level: Number(p.level) || 1,
-    jackpots: Number(p.jackpots) || 0, admin: !!(p.admin ?? p.is_admin), banned: !!(p.banned ?? p.is_banned), adminRev: Number(p.adminRev ?? p.admin_rev) || 0,
+    jackpots: Number(p.jackpots) || 0, flair: p.flair || null, admin: !!(p.admin ?? p.is_admin), banned: !!(p.banned ?? p.is_banned), adminRev: Number(p.adminRev ?? p.admin_rev) || 0,
   }));
   const adminChanged = () => Object.assign(new Error('changed by an admin'), { code: 'admin_changed' });
   const SESSION_KEY = 'lucky-reels-session';
@@ -3230,6 +3363,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     let onlineCh = null, onlineReady = false, onlineMe = null, dmPull = null;
     // Admin columns exist once the admin part of supabase-setup.sql has run.
     const adminSchema = !(await sb.from('players').select('admin_rev').limit(1)).error;
+    let hasFlair = !(await sb.from('players').select('flair').limit(1)).error;
     const adminCols = adminSchema ? ',is_admin,is_banned,admin_rev' : '';
     // New accounts are only offered when Supabase confirms them on the spot: the made-up addresses can't receive mail.
     let canSignUp = false;
@@ -3295,7 +3429,14 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
           return q.select('id');
         };
         if (!hasJackpots) delete patch.jackpots;
+        if (!hasFlair) delete patch.flair;
         let { data, error } = await send();
+        // Before the goodies SQL runs there is no flair column; save without it.
+        if (error && hasFlair && /flair/.test(error.message || '')) {
+          hasFlair = false;
+          delete patch.flair;
+          ({ data, error } = await send());
+        }
         // Before the chat setup SQL runs there is no jackpots column; save without it.
         if (error && hasJackpots && /jackpots/.test(error.message || '')) {
           hasJackpots = false;
@@ -3414,7 +3555,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
       },
       watch(cb) {
         const pull = async () => {
-          let { data, error } = await sb.from('players').select(`id,name,credits,best,level${hasJackpots ? ',jackpots' : ''}${adminCols}`);
+          let { data, error } = await sb.from('players').select(`id,name,credits,best,level${hasJackpots ? ',jackpots' : ''}${hasFlair ? ',flair' : ''}${adminCols}`);
           if (error && hasJackpots) {
             hasJackpots = false;
             ({ data } = await sb.from('players').select(`id,name,credits,best,level${adminCols}`));
@@ -3504,7 +3645,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
           const hot = age < 6000;
           return `<tr data-id="${esc(p.id)}" class="${me ? 'me' : ''}${hot ? ' jackpot-row' : ''}"${hot ? ` style="animation-delay:-${Math.round(age)}ms"` : ''}>` +
             `<td><span class="rank">${i + 1}</span>${online.has(p.id) ? '<i class="dot" title="Online"></i>' : ''}` +
-            `${me || !account ? esc(p.name) : `<span data-dm="${esc(p.id)}" title="Send ${esc(p.name)} a private message">${esc(p.name)}</span>`}` +
+            `${me || !account ? nameHtml(p.id, p.name) : `<span data-dm="${esc(p.id)}" title="Send ${esc(p.name)} a private message">${nameHtml(p.id, p.name)}</span>`}` +
             `${me ? '<span class="you">you</span>' : ''}${hot ? '<span class="jp-badge">JACKPOT</span>' : ''}</td>` +
             `<td>${fmt(p.credits)}</td><td>${fmt(p.best)}</td><td>${p.level}</td></tr>`;
         }).join('') + '</tbody>'
@@ -3535,7 +3676,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     if (!account || !backend || account.deleted) return;
     if (saving) { saveAgain = true; return; }
     const key = account.id;
-    const body = { credits: state.credits, best: state.best, level: state.level, spins: state.spins, jackpots: state.jackpots, adminRev: state.adminRev, game: JSON.stringify(state) };
+    const body = { credits: state.credits, best: state.best, level: state.level, spins: state.spins, jackpots: state.jackpots, flair: state.owned.neon ? 'neon' : null, adminRev: state.adminRev, game: JSON.stringify(state) };
     const json = JSON.stringify(body);
     if (json === lastSaved) return;
     saving = true;
@@ -3642,6 +3783,11 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
   const clock = at => new Date(at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   const nameOf = id => players.find(p => p.id === id)?.name || 'Someone';
   const partnerOf = m => m.from === account?.id ? m.to : m.from;
+  // A player's name as HTML, glowing if they own the Neon Name (your own shows right away).
+  const nameHtml = (id, name) => {
+    const neon = id === account?.id ? state.owned.neon : players.find(p => p.id === id)?.flair === 'neon';
+    return neon ? `<span class="neon-name">${esc(name)}</span>` : esc(name);
+  };
   const byName = (a, b) => a.name.localeCompare(b.name);
 
   const readKey = () => `lucky-reels-read-${account?.id}`;
@@ -3728,7 +3874,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
 
     const others = players.filter(p => online.has(p.id) && p.id !== account?.id).sort(byName);
     $('chatOnline').innerHTML = `<span class="label">Online now · ${others.length + 1}</span>` + (others.length
-      ? others.map(p => `<button type="button" class="online-chip" data-dm="${esc(p.id)}" title="Send ${esc(p.name)} a private message"><i class="dot"></i>${esc(p.name)}</button>`).join('')
+      ? others.map(p => `<button type="button" class="online-chip" data-dm="${esc(p.id)}" title="Send ${esc(p.name)} a private message"><i class="dot"></i>${nameHtml(p.id, p.name)}</button>`).join('')
       : '<span class="online-none">Nobody else is online right now.</span>');
 
     const tabs = [{ id: '', label: 'Everyone', unread: unreadIn('all'), on: false, active: !chatWith },
@@ -3757,7 +3903,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     log.innerHTML = items.length ? items.map(m => {
       if (m.sys) return `<div class="msg sys">${esc(m.body)}</div>`;
       const mine = m.uid === account?.id;
-      return `<div class="msg${mine ? ' mine' : ''}"><span class="who" style="color:hsl(${hueFor(m.name)} 80% 68%)">${esc(m.name)}<time>${clock(m.at)}</time></span><span class="text">${esc(m.body)}</span></div>`;
+      return `<div class="msg${mine ? ' mine' : ''}"><span class="who" style="color:hsl(${hueFor(m.name)} 80% 68%)">${nameHtml(m.uid, m.name)}<time>${clock(m.at)}</time></span><span class="text">${esc(m.body)}</span></div>`;
     }).join('') : chatWith
       ? `<p class="chat-empty">No messages with ${esc(nameOf(chatWith))} yet. Only the two of you can read this chat.</p>`
       : '<p class="chat-empty">No messages yet. Say hi to the other players.</p>';
