@@ -374,8 +374,9 @@ details.ach { margin-top: 10px; }
   text-shadow: 0 0 18px #e9a23b55, 0 3px 0 #7a4a12;
 }
 .login-sub { margin: -6px 0 0; text-align: center; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
-.pick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.pick-btn { padding: 10px; background: var(--panel); color: var(--fg); border: 2px solid var(--cabinet-edge); font-weight: 600; }
+.pick { display: flex; flex-wrap: wrap; gap: 8px; }
+.pick:empty { display: none; }
+.pick-btn { flex: 1 1 calc(33.333% - 8px); min-width: 0; padding: 10px 6px; background: var(--panel); color: var(--fg); border: 2px solid var(--cabinet-edge); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pick-btn.on { border-color: var(--accent); color: var(--accent); }
 .field { display: grid; gap: 6px; }
 .field input, .pw-form input {
@@ -391,6 +392,9 @@ details.ach { margin-top: 10px; }
 .field input:focus-visible, .pw-form input:focus-visible { border-color: var(--accent); outline: none; }
 .login-error, .pw-msg { margin: 0; min-height: 20px; font-size: 13px; font-weight: 600; color: var(--lose); text-align: center; }
 .pw-msg.ok { color: var(--win); }
+.mode-switch { margin: -4px 0 0; text-align: center; font-size: 13px; color: var(--muted); }
+.mode-switch .link-btn { margin-left: 4px; color: var(--accent); }
+.login-hint { margin: -8px 0 0; font-size: 12px; color: var(--muted); }
 .login-note { margin: 0; font-size: 12px; color: var(--muted); text-align: center; line-height: 1.5; }
 .account-bar {
   max-width: 460px; margin: 0 auto 14px;
@@ -575,12 +579,15 @@ details.ach { margin-top: 10px; }
 <div class="login" id="login">
   <form class="login-card" id="loginForm" novalidate>
     <h1 class="login-logo">Lucky Reels</h1>
-    <p class="login-sub">Sign in to play</p>
-    <div class="pick"><button type="button" class="pick-btn" data-user="Lukas">Lukas</button><button type="button" class="pick-btn" data-user="Julius">Julius</button><button type="button" class="pick-btn" data-user="Finley">Finley</button></div>
-    <label class="field"><span class="label">Username</span><input id="loginUser" name="username" autocomplete="username" autocapitalize="none" spellcheck="false"></label>
+    <p class="login-sub" id="loginSub">Sign in to play</p>
+    <div class="pick" id="pick"></div>
+    <label class="field"><span class="label">Username</span><input id="loginUser" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="20"></label>
+    <p class="login-hint" id="userHint" hidden>3 to 20 letters, digits, - or _. Everyone sees it in the highscores.</p>
     <label class="field"><span class="label">Password</span><input id="loginPass" name="password" type="password" autocomplete="current-password"></label>
+    <label class="field" id="pass2Field" hidden><span class="label">Repeat password</span><input id="loginPass2" name="password2" type="password" autocomplete="new-password"></label>
     <p class="login-error" id="loginError" role="alert"></p>
     <button class="spin" id="loginBtn" type="submit" disabled>Connecting…</button>
+    <p class="mode-switch" id="modeSwitch" hidden><span id="modeText">New here?</span><button type="button" class="link-btn" id="modeBtn">Create an account</button></p>
     <div class="board-wrap"><h2 class="board-title">Highscores</h2><table class="board" id="boardLogin"></table></div>
     <p class="login-note" id="loginNote"></p>
   </form>
@@ -2041,6 +2048,18 @@ details.ach { margin-top: 10px; }
         return doc ? { key: id, doc } : null;
       },
       async signOut() { remember(null); },
+      canSignUp: true,
+      async signUp(name, pw) {
+        const id = idFor(name);
+        if (!validId(id)) return { status: 'invalid' };
+        const doc = await store.create(id, async () => {
+          const salt = newSalt();
+          return { name: name.trim(), salt, hash: await hashPw(salt, pw), credits: START, best: 0, level: 1, spins: 0 };
+        });
+        if (!doc) return { status: 'taken' };
+        remember(id);
+        return { status: 'ok', found: { key: id, doc } };
+      },
       save: (key, body) => store.save(key, body),
       async changePassword(key, oldPw, newPw) {
         const doc = await store.load(key);
@@ -2065,6 +2084,14 @@ details.ach { margin-top: 10px; }
     return {
       kind: 'local',
       async load(id) { return all[id] ? { ...all[id] } : null; },
+      async create(id, make) {
+        if (all[id]) return null;
+        const doc = await make();
+        all[id] = doc;
+        write();
+        emit();
+        return doc;
+      },
       async save(id, body) { all[id] = { ...all[id], ...body }; write(); emit(); },
       watch(cb) { listeners.add(cb); emit(); },
     };
@@ -2074,10 +2101,21 @@ details.ach { margin-top: 10px; }
     return {
       kind: 'db',
       async load(id) { const snap = await db.doc(`players/${id}`).get(); return snap.exists ? snap.data() : null; },
+      // Claim a username under a short lease so two people can't create the same one at once.
+      async create(id, make) {
+        const ref = db.doc(`players/${id}`);
+        const lease = await ref.acquire({ holder: newSalt(), ttlMs: 5000 });
+        if (!lease.acquired) return null;
+        const snap = await ref.get();
+        if (snap.exists && snap.data()?.hash) return null;
+        const doc = await make();
+        await ref.set(doc);
+        return doc;
+      },
       save(id, body) { return db.doc(`players/${id}`).update(body); },
       watch(cb) {
         db.collection('players').onSnapshot(
-          snap => cb(toPlayers(snap.docs.map(d => ({ id: d.id, ...d.data() })))),
+          snap => cb(toPlayers(snap.docs.filter(d => d.data()?.hash).map(d => ({ id: d.id, ...d.data() })))),
           () => { $('loginNote').textContent = 'Highscores stopped updating. Reload the page to reconnect.'; });
       },
     };
@@ -2100,6 +2138,13 @@ details.ach { margin-top: 10px; }
       auth: { storage: window.sessionStorage, persistSession: true, autoRefreshToken: true },
     });
     const email = name => `${idFor(name)}@${EMAIL_DOMAIN}`;
+    // New accounts are only offered when Supabase confirms them on the spot: the made-up addresses can't receive mail.
+    let canSignUp = false;
+    try {
+      const res = await fetch(`${SUPABASE.url}/auth/v1/settings`, { headers: { apikey: SUPABASE.anonKey } });
+      const cfg = await res.json();
+      canSignUp = !cfg.disable_signup && !!cfg.mailer_autoconfirm;
+    } catch {}
     async function row(uid) {
       const { data, error } = await sb.from('players').select('id,name,credits,game').eq('id', uid).maybeSingle();
       if (error) throw error;
@@ -2120,6 +2165,24 @@ details.ach { margin-top: 10px; }
         return data.session ? row(data.session.user.id).catch(() => null) : null;
       },
       async signOut() { await sb.auth.signOut(); },
+      canSignUp,
+      async signUp(name, pw) {
+        if (!canSignUp) return { status: 'closed' };
+        if (!validId(idFor(name))) return { status: 'invalid' };
+        const { data, error } = await sb.auth.signUp({ email: email(name), password: pw, options: { data: { name: name.trim() } } });
+        if (error) {
+          const code = error.code || '';
+          if (code === 'user_already_exists' || /already registered/i.test(error.message)) return { status: 'taken' };
+          if (code === 'signup_disabled' || /signups not allowed/i.test(error.message)) return { status: 'closed' };
+          if (code === 'weak_password') return { status: 'weak' };
+          if (/rate_limit/.test(code)) return { status: 'busy' };
+          throw error;
+        }
+        if (!data.session) return { status: 'taken' };
+        const found = await row(data.user.id);
+        if (!found) { await sb.auth.signOut(); return { status: 'norow' }; }
+        return { status: 'ok', found };
+      },
       async save(key, body) {
         const patch = { ...body, updated_at: new Date(body.updatedAt || Date.now()).toISOString() };
         delete patch.updatedAt;
@@ -2170,6 +2233,17 @@ details.ach { margin-top: 10px; }
       : '<tbody><tr><td class="empty" colspan="4">No players yet.</td></tr></tbody>';
     $('boardGame').innerHTML = html;
     $('boardLogin').innerHTML = html;
+
+    const names = players.map(p => p.name).sort((a, b) => a.localeCompare(b)).slice(0, 12);
+    const pick = $('pick');
+    if (pick.dataset.names !== names.join('|')) {
+      pick.dataset.names = names.join('|');
+      pick.innerHTML = names.map(n => `<button type="button" class="pick-btn" data-user="${esc(n)}">${esc(n)}</button>`).join('');
+      syncPick();
+    }
+  }
+  function syncPick() {
+    document.querySelectorAll('.pick-btn').forEach(x => x.classList.toggle('on', idFor(x.dataset.user) === idFor($('loginUser').value)));
   }
 
   // Coalesce the many renders of a spin into one write per pause.
@@ -2252,6 +2326,43 @@ details.ach { margin-top: 10px; }
     $('loginUser').focus();
   }
 
+  let signUpMode = false;
+  function setMode(up) {
+    signUpMode = up;
+    $('loginSub').textContent = up ? 'Create your account' : 'Sign in to play';
+    $('pick').hidden = up;
+    $('userHint').hidden = !up;
+    $('pass2Field').hidden = !up;
+    $('loginPass').autocomplete = up ? 'new-password' : 'current-password';
+    $('loginBtn').textContent = !backend ? 'Connecting…' : up ? 'Create account' : 'Sign in';
+    $('modeText').textContent = up ? 'Already have an account?' : 'New here?';
+    $('modeBtn').textContent = up ? 'Sign in' : 'Create an account';
+    $('loginError').textContent = '';
+    $('loginPass').value = $('loginPass2').value = '';
+  }
+  const SIGNUP_ERRORS = {
+    invalid: 'Usernames use 3 to 20 letters, digits, - or _.',
+    taken: 'That username is taken. Pick another one.',
+    closed: 'Creating accounts is switched off right now. Ask the person who runs the game.',
+    weak: 'That password is too easy to guess. Try a longer one.',
+    busy: 'Too many new accounts in a short time. Try again in a few minutes.',
+    norow: 'Your login was created, but the game has no place for new players yet. Ask the person who runs the game to finish the setup.',
+  };
+
+  async function createAccount(name, pw) {
+    const err = $('loginError');
+    const problem = !/^[A-Za-z0-9_-]{3,20}$/.test(name) ? SIGNUP_ERRORS.invalid
+      : pw.length < 6 ? 'The password needs at least 6 characters.'
+      : pw !== $('loginPass2').value ? 'The two passwords do not match.' : '';
+    if (problem) { err.textContent = problem; return; }
+    const res = await backend.signUp(name, pw);
+    if (res.status !== 'ok') { err.textContent = SIGNUP_ERRORS[res.status] || 'Could not create the account. Try again.'; return; }
+    setMode(false);
+    enterGame(res.found);
+    sound.chime();
+    toast('Account created', `Welcome, ${account.name}! You start with ${fmt(state.credits)} credits.`);
+  }
+
   $('loginForm').addEventListener('submit', async e => {
     e.preventDefault();
     if (!backend) return;
@@ -2262,22 +2373,26 @@ details.ach { margin-top: 10px; }
     $('loginBtn').disabled = true;
     err.textContent = '';
     try {
-      const found = await backend.signIn(name, pw);
-      if (found) enterGame(found);
-      else err.textContent = 'Wrong username or password.';
+      if (signUpMode) await createAccount(name, pw);
+      else {
+        const found = await backend.signIn(name, pw);
+        if (found) enterGame(found);
+        else err.textContent = 'Wrong username or password.';
+      }
     } catch {
       err.textContent = 'Could not reach the account server. Try again in a moment.';
     }
     $('loginBtn').disabled = false;
   });
-  document.querySelectorAll('.pick-btn').forEach(b => b.addEventListener('click', () => {
+  $('pick').addEventListener('click', e => {
+    const b = e.target.closest('.pick-btn');
+    if (!b) return;
     $('loginUser').value = b.dataset.user;
-    document.querySelectorAll('.pick-btn').forEach(x => x.classList.toggle('on', x === b));
+    syncPick();
     $('loginPass').focus();
-  }));
-  $('loginUser').addEventListener('input', () => {
-    document.querySelectorAll('.pick-btn').forEach(x => x.classList.toggle('on', idFor(x.dataset.user) === idFor($('loginUser').value)));
   });
+  $('loginUser').addEventListener('input', syncPick);
+  $('modeBtn').addEventListener('click', () => { setMode(!signUpMode); $('loginUser').focus(); });
   $('logout').addEventListener('click', signOut);
   $('pwToggle').addEventListener('click', () => {
     $('pwForm').hidden = !$('pwForm').hidden;
@@ -2320,7 +2435,8 @@ details.ach { margin-top: 10px; }
     }
     backend.watch(list => { players = list; renderBoards(); });
     $('loginBtn').disabled = false;
-    $('loginBtn').textContent = 'Sign in';
+    $('modeSwitch').hidden = !backend.canSignUp;
+    setMode(false);
     if (backend.kind === 'local' && !$('loginNote').textContent) $('loginNote').textContent = 'Offline copy: accounts and scores are kept in this browser only.';
     const resumed = await backend.resume().catch(() => null);
     if (resumed) enterGame(resumed);
