@@ -1071,7 +1071,9 @@ begin
 end;
 $$;
 
-create or replace function public.poker_sit(buy_in bigint)
+drop function if exists public.poker_sit(bigint);
+-- seat_no picks a free seat (0-7); null takes the first free one.
+create or replace function public.poker_sit(buy_in bigint, seat_no integer default null)
 returns void
 language plpgsql
 security definer
@@ -1091,6 +1093,12 @@ begin
   select g into free from generate_series(0, 7) g
     where g not in (select seat from public.poker_seats) order by g limit 1;
   if free is null then raise exception 'table full'; end if;
+  if seat_no is not null then
+    if seat_no not between 0 and 7 or exists (select 1 from public.poker_seats where seat = seat_no) then
+      raise exception 'seat taken';
+    end if;
+    free := seat_no;
+  end if;
   update public.players set credits = credits - buy_in, admin_rev = admin_rev + 1 where id = me.id;
   insert into public.poker_seats (seat, player_id, name, stack) values (free, me.id, me.name, buy_in);
   if t.phase = 'waiting' and (select count(*) from public.poker_seats where stack > 0) >= 2 then
@@ -1203,8 +1211,38 @@ revoke execute on function public.poker_score5(integer[]), public.poker_best(int
   public._pk_next(integer, text), public._pk_put(integer, bigint), public._pk_pulse(), public._pk_finish(boolean),
   public._pk_advance(), public._pk_start(), public._pk_act(integer, text, bigint), public._pk_cash_out(integer)
   from public, anon, authenticated;
-revoke execute on function public.poker_sit(bigint), public.poker_leave(), public.poker_act(text, bigint),
+revoke execute on function public.poker_sit(bigint, integer), public.poker_leave(), public.poker_act(text, bigint),
   public.poker_tick(), public.poker_state() from public, anon;
-grant execute on function public.poker_sit(bigint), public.poker_leave(), public.poker_act(text, bigint),
+grant execute on function public.poker_sit(bigint, integer), public.poker_leave(), public.poker_act(text, bigint),
   public.poker_tick() to authenticated;
 grant execute on function public.poker_state() to anon, authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Profile pictures and medals: run this part once (after "Admin security").
+-- Players pick their own picture; only an admin (with a live admin session)
+-- can hand out medals.
+
+alter table public.players add column if not exists avatar smallint check (avatar is null or avatar between 0 and 7);
+alter table public.players add column if not exists medals text[] not null default '{}';
+grant update (avatar) on public.players to authenticated;
+
+create or replace function public.admin_set_medals(tok uuid, target uuid, new_medals text[])
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.admin_check(tok);
+  if exists (select 1 from unnest(coalesce(new_medals, '{}')) m where m not in
+      ('founder', 'highroller', 'lucky', 'pokerking', 'champion', 'legend', 'goodsport', 'bughunter', 'nightowl', 'comeback')) then
+    raise exception 'unknown medal';
+  end if;
+  update public.players set medals = (select coalesce(array_agg(distinct m), '{}') from unnest(coalesce(new_medals, '{}')) m)
+    where id = target;
+  if not found then raise exception 'no such player'; end if;
+end;
+$$;
+
+revoke execute on function public.admin_set_medals(uuid, uuid, text[]) from public, anon;
+grant execute on function public.admin_set_medals(uuid, uuid, text[]) to authenticated;

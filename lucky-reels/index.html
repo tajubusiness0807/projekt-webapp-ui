@@ -477,6 +477,7 @@ body.wide .account-bar, body.wide .announce { max-width: 980px; }
   font: 400 14px var(--font-display); color: var(--ink);
   background: var(--av, var(--chrome));
 }
+.pk-avatar svg { width: 78%; height: 78%; }
 .pk-seat.active .pk-avatar::before {
   content: ""; position: absolute; inset: -4px; border-radius: 50%;
   background: conic-gradient(var(--accent-hi) calc(var(--t) * 360deg), #ffffff22 0);
@@ -491,6 +492,8 @@ body.wide .account-bar, body.wide .announce { max-width: 980px; }
 .pk-tag.won { background: var(--win); color: var(--ink); font-size: 11px; }
 .pk-tag.pop { animation: popIn 0.35s cubic-bezier(.2, 1.6, .4, 1); }
 .pk-empty { position: absolute; z-index: 3; translate: -50% -50%; width: 74px; height: 34px; border-radius: 999px; border: 2px dashed #ffffff26; display: grid; place-items: center; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #ffffff55; }
+.pk-empty.can-sit { cursor: pointer; border-color: #e9a23b88; color: var(--accent); background: #0004; font-weight: 600; transition: background 0.2s, transform 0.2s; }
+.pk-empty.can-sit:hover { background: #e9a23b33; transform: scale(1.06); }
 .pk-bet { position: absolute; z-index: 2; translate: -50% -50%; display: flex; align-items: center; gap: 4px; padding: 2px 8px 2px 3px; border-radius: 999px; background: #000a; font: 600 11px var(--font-mono); color: var(--fg); white-space: nowrap; }
 .pk-bet.slide { animation: betSlide 0.35s ease-out both; }
 @keyframes betSlide { from { transform: translate(var(--fx, 0), var(--fy, 0)); opacity: 0.2; } }
@@ -1159,6 +1162,50 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
 .chat-tab { display: inline-flex; align-items: center; flex: none; padding: 6px 12px; border-radius: 999px; background: var(--panel); color: var(--muted); font-size: 12px; font-weight: 600; }
 .chat-tab[aria-pressed="true"] { background: var(--accent); color: var(--ink); }
 .tab-badge { margin-left: 6px; min-width: 18px; padding: 0 5px; border-radius: 9px; background: #c8323a; color: #fff; font: 600 11px/18px var(--font-mono); text-align: center; }
+.av {
+  --h: 42;
+  flex: none;
+  display: inline-grid; place-items: center;
+  width: 22px; height: 22px; margin-right: 6px;
+  border-radius: 50%;
+  vertical-align: middle;
+  background: hsl(var(--h) 35% 20%);
+  border: 1.5px solid hsl(var(--h) 70% 60%);
+  font: 400 11px/1 var(--font-display); color: hsl(var(--h) 80% 75%);
+  overflow: hidden;
+}
+.av svg { width: 80%; height: 80%; }
+.av.lg { width: 72px; height: 72px; margin: 0; border-width: 3px; font-size: 32px; }
+.av.md { width: 28px; height: 28px; }
+button.av { padding: 0; cursor: pointer; }
+button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
+.medals { display: inline-flex; gap: 1px; margin-left: 5px; vertical-align: middle; }
+.medals svg { width: 16px; height: 16px; }
+.medals .more { font: 600 10px var(--font-mono); color: var(--muted); margin-left: 2px; align-self: center; }
+.profile-card { max-width: 420px; text-align: center; position: relative; }
+.profile-card .chat-close { position: absolute; top: 12px; right: 12px; }
+.profile-head { display: grid; justify-items: center; gap: 6px; }
+.profile-head h2 { font-size: 28px; }
+.profile-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%; }
+.profile-stats div { background: var(--panel); border-radius: 10px; padding: 8px 4px; display: grid; gap: 2px; }
+.profile-stats b { font: 600 14px var(--font-mono); color: var(--accent); }
+.profile-stats span { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.medal-list { display: grid; gap: 6px; width: 100%; text-align: left; }
+.medal-row { display: flex; gap: 10px; align-items: center; background: var(--panel); border-radius: 10px; padding: 6px 10px; }
+.medal-row svg { width: 34px; height: 34px; flex: none; }
+.medal-row b { display: block; font-size: 13px; }
+.medal-row small { color: var(--muted); font-size: 12px; }
+.medal-row.new { animation: popIn 0.5s cubic-bezier(.2, 1.6, .4, 1); }
+.avatar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; }
+.avatar-grid button { aspect-ratio: 1; border-radius: 14px; background: var(--panel); border: 2px solid transparent; display: grid; place-items: center; padding: 8px; }
+.avatar-grid button svg { width: 100%; height: 100%; }
+.avatar-grid button[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 16px #e9a23b66; }
+.avatar-grid button.none { font: 600 11px var(--font-body); color: var(--muted); }
+.profile-label { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); justify-self: start; }
+.medal-pick { display: flex; flex-wrap: wrap; gap: 4px; }
+.medal-pick button { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px 3px 3px; border-radius: 999px; background: var(--panel); color: var(--muted); font-size: 11px; border: 1.5px solid transparent; }
+.medal-pick button svg { width: 20px; height: 20px; }
+.medal-pick button[aria-pressed="true"] { color: var(--fg); border-color: var(--accent); }
 #boardGame [data-dm] { cursor: pointer; text-decoration: underline dotted #ffffff40; text-underline-offset: 3px; }
 #boardGame [data-dm]:hover { color: var(--accent); }
 .chat-close { background: var(--panel); color: var(--fg); width: 32px; height: 32px; font-size: 18px; line-height: 1; }
@@ -1433,8 +1480,8 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
 </div>
 
 <div class="account-bar" id="accountBar" hidden>
-  <span>Signed in as <b id="whoami"></b></span>
-  <span class="links"><button class="link-btn" id="pwToggle" type="button">Change password</button><button class="link-btn" id="logout" type="button">Sign out</button></span>
+  <span>Signed in as <span id="myAv"></span><b id="whoami"></b></span>
+  <span class="links"><button class="link-btn" id="profileBtn" type="button">Profile</button><button class="link-btn" id="pwToggle" type="button">Change password</button><button class="link-btn" id="logout" type="button">Sign out</button></span>
   <form class="pw-form" id="pwForm" hidden>
     <input id="pwOld" type="password" autocomplete="current-password" placeholder="Current password" aria-label="Current password">
     <input id="pwNew" type="password" autocomplete="new-password" placeholder="New password (4+ characters)" aria-label="New password">
@@ -1629,7 +1676,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
   <aside class="shop" aria-labelledby="shopTitle">
     <section class="board-wrap" aria-labelledby="boardTitle"><h2 class="board-title" id="boardTitle">Highscores</h2><table class="board" id="boardGame"></table></section>
     <h2 id="shopTitle">Goodie Shop</h2>
-    <p class="rate">Base payout rate with your goodies: <strong id="shopRate">0%</strong></p>
+    <p class="rate">Slot payout rate with your goodies: <strong id="shopRate">0%</strong></p>
     <div id="goodies"></div>
     <section class="missions" aria-labelledby="missionsTitle">
       <h3 id="missionsTitle">Missions</h3>
@@ -1640,6 +1687,13 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
       <ul id="achList"></ul>
     </details>
   </aside>
+</div>
+
+<div class="modal" id="profileModal" role="dialog" aria-modal="true" aria-labelledby="profileName" hidden>
+  <div class="modal-card profile-card">
+    <button class="chat-close" id="profileClose" type="button" aria-label="Close profile">×</button>
+    <div id="profileBody" class="profile-head"></div>
+  </div>
 </div>
 
 <div class="modal" id="wheelModal" role="dialog" aria-modal="true" aria-labelledby="wheelTitle" hidden>
@@ -1783,40 +1837,67 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     lightning: '<svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#1d2a3a"/><path d="M27 5L13 27h10l-4 16 16-24H25z" fill="#bff3ff" stroke="#4fe3ff" stroke-width="2" stroke-linejoin="round"/></svg>',
     gold: '<svg viewBox="0 0 48 48"><rect x="9" y="4" width="30" height="40" rx="6" fill="#e9a23b" stroke="#b87618" stroke-width="2"/><rect x="13" y="14" width="22" height="13" rx="2" fill="#f6efe3"/><text x="24" y="25" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="11" fill="#c8323a">777</text><circle cx="24" cy="36" r="3" fill="#fff2c4"/></svg>',
   };
+  // Profile pictures players pick from, and medals an admin can award.
+  const AVATARS = [
+    ICONS.cherry, ICONS.bell, ICONS.seven, ICONS.star, SHOP_ICONS.horseshoe, SHOP_ICONS.luckyCat,
+    '<svg viewBox="0 0 48 48"><path d="M7 36L5 14l11 9 8-14 8 14 11-9-2 22z" fill="#e9a23b" stroke="#b87618" stroke-width="2" stroke-linejoin="round"/><rect x="7" y="36" width="34" height="6" rx="2" fill="#c98a24"/><circle cx="24" cy="29" r="3.5" fill="#c8323a"/><circle cx="14" cy="31" r="2.2" fill="#3d7bd9"/><circle cx="34" cy="31" r="2.2" fill="#3d7bd9"/></svg>',
+    '<svg viewBox="0 0 48 48"><path d="M14 8h20l9 11-19 23L5 19z" fill="#4fe3ff" stroke="#1d7a99" stroke-width="2" stroke-linejoin="round"/><path d="M5 19h38M14 8l5 11 5-11 5 11 5-11M19 19l5 23 5-23" stroke="#1d7a99" stroke-width="1.5" fill="none" stroke-linejoin="round"/><path d="M12 13l3-3" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>',
+  ];
+  const AVATAR_NAMES = ['Cherry', 'Bell', 'Lucky Seven', 'Star', 'Horseshoe', 'Lucky Cat', 'Crown', 'Diamond'];
+  const MEDALS = [
+    { id: 'founder', name: 'Founder', desc: 'Was there from the very start.', color: '#e9a23b', glyph: '★' },
+    { id: 'highroller', name: 'High Roller', desc: 'Plays for the biggest stakes.', color: '#a77bff', glyph: '♦' },
+    { id: 'lucky', name: 'Lucky Charm', desc: 'Luck follows them everywhere.', color: '#7fd18b', glyph: '♣' },
+    { id: 'pokerking', name: 'Poker King', desc: 'Rules the poker table.', color: '#e0715b', glyph: '♠' },
+    { id: 'champion', name: 'Champion', desc: 'Won a Lucky Reels tournament.', color: '#f3c94b', glyph: '♛' },
+    { id: 'legend', name: 'Legend', desc: 'A true Lucky Reels legend.', color: '#4fe3ff', glyph: '✦' },
+    { id: 'goodsport', name: 'Good Sport', desc: 'Wins and loses with style.', color: '#ff8fb8', glyph: '♥' },
+    { id: 'bughunter', name: 'Bug Hunter', desc: 'Found a bug and reported it.', color: '#f08a3c', glyph: '!' },
+    { id: 'nightowl', name: 'Night Owl', desc: 'Still spinning long after midnight.', color: '#6c7bff', glyph: '☾' },
+    { id: 'comeback', name: 'Comeback Kid', desc: 'Came back from zero credits.', color: '#3fd1a4', glyph: '↑' },
+  ];
+  const MEDAL_IDS = MEDALS.map(m => m.id);
+  const medalSvg = m => `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M8 1h6l4 10h-6z" fill="#c8323a"/><path d="M24 1h-6l-4 10h6z" fill="#3d7bd9"/><circle cx="16" cy="20.5" r="10" fill="${m.color}" stroke="#0007" stroke-width="1.5"/><circle cx="16" cy="20.5" r="7.2" fill="none" stroke="#fff8" stroke-width="1"/><text x="16" y="25" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="700" fill="#1d1714">${m.glyph}</text></svg>`;
   const BASE_WEIGHTS = { cherry: 7, lemon: 6, plum: 5, bell: 3, bar: 2, seven: 1, star: 2, wild: 1 };
   const SYMS = Object.keys(BASE_WEIGHTS);
-  const PAY3 = { seven: 200, wild: 100, star: 50, bar: 40, bell: 15, plum: 8, lemon: 6, cherry: 4 };
+  const PAY3 = { seven: 150, wild: 80, star: 40, bar: 20, bell: 10, plum: 6, lemon: 4, cherry: 3 };
+  const PAY_TWO_CHERRIES = 1.5, PAY_ONE_CHERRY = 0.5;
   const NAMES = { seven: 'Sevens', wild: 'Wilds', bar: 'Bars', star: 'Stars', bell: 'Bells', plum: 'Plums', lemon: 'Lemons', cherry: 'Cherries' };
   const START = 500;
   const CELL = 66;
   const LOOPS = 6;
   const MAX = Number.MAX_SAFE_INTEGER;
-  let STAR_GOAL = 12;
-  let FREE_SPINS = 8;
+  let STAR_GOAL = 15;
+  let FREE_SPINS = 6;
   let FREE_MULT = 2;
-  const STREAK_STEP = 0.25;
-  const STREAK_MAX = 8;
+  const STREAK_STEP = 0.1;
+  const STREAK_MAX = 5;
   // Wheel prizes are multiples of 100 × level; 'free' awards free spins instead.
   const WHEEL = [2, 10, 3, 25, 5, 'free', 4, 50];
   const xpNeed = level => Math.floor(120 * level ** 1.4);
   const GAMBLE_MAX = 5;
-  let NUDGE_CHANCE = 22;
-  let HOLD_CHANCE = 30;
+  const GAMBLE_EDGE = 0.95;
+  let NUDGE_CHANCE = 12;
+  let HOLD_CHANCE = 15;
   // Game-wide settings an admin can change; every client applies them live.
   const DEFAULT_SETTINGS = {
     announcement: '', signupsOpen: true, chatEnabled: true, maintenance: false,
-    startCredits: 500, winMultiplier: 1, jackpotPay: 200, maxBet: 0,
-    starGoal: 12, freeSpins: 8, freeMult: 2, nudgeChance: 22, holdChance: 30,
+    startCredits: 500, winMultiplier: 1, jackpotPay: 150, maxBet: 0,
+    starGoal: 15, freeSpins: 6, freeMult: 2, nudgeChance: 12, holdChance: 15,
+    econ: 2,
   };
+  // Payout settings saved before the economy rework (econ 2) fall back to the new defaults.
+  const ECON_KEYS = ['jackpotPay', 'starGoal', 'freeSpins', 'freeMult', 'nudgeChance', 'holdChance'];
   const SETTING_LIMITS = {
     startCredits: [0, 1e12], winMultiplier: [0.1, 100], jackpotPay: [1, 100000], maxBet: [0, Number.MAX_SAFE_INTEGER],
-    starGoal: [3, 50], freeSpins: [1, 50], freeMult: [1, 20], nudgeChance: [0, 100], holdChance: [0, 100],
+    starGoal: [3, 50], freeSpins: [1, 50], freeMult: [1, 20], nudgeChance: [0, 100], holdChance: [0, 100], econ: [0, 100],
   };
   function cleanSettings(raw) {
     const out = { ...DEFAULT_SETTINGS };
     for (const [k, def] of Object.entries(DEFAULT_SETTINGS)) {
       const v = raw?.[k];
       if (v === undefined || v === null) continue;
+      if (ECON_KEYS.includes(k) && Number(raw.econ) !== DEFAULT_SETTINGS.econ) continue;
       if (typeof def === 'boolean') out[k] = v === true || v === 'true';
       else if (typeof def === 'string') out[k] = String(v).slice(0, 200);
       else {
@@ -1845,14 +1926,14 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
 
   // Boosts are armed for the next spin and charged as a multiple of the bet when it starts.
   const GOODIES = [
-    { id: 'horseshoe', kind: 'level', max: 3, name: 'Lucky Horseshoe', desc: 'Three sevens pay 25× more per level. Stack up to three.', price: () => 2000 * 3 ** state.owned.horseshoe },
-    { id: 'goldCherry', kind: 'perm', name: 'Golden Cherries', desc: 'Three cherries pay 5.5× instead of 4×.', price: () => 1500 },
+    { id: 'horseshoe', kind: 'level', max: 3, name: 'Lucky Horseshoe', desc: 'Three sevens pay 8× more per level. Stack up to three.', price: () => 2000 * 3 ** state.owned.horseshoe },
+    { id: 'goldCherry', kind: 'perm', name: 'Golden Cherries', desc: 'Three cherries pay 3.5× instead of 3×.', price: () => 1500 },
     { id: 'piggy', kind: 'perm', name: 'Piggy Bank', desc: 'Get 2% of your bet back on every losing spin.', price: () => 3000 },
     { id: 'autospin', kind: 'perm', name: 'Auto-Spin Lever', desc: 'Unlocks Auto ×10: ten spins in a row.', price: () => 1000 },
-    { id: 'luckyCat', kind: 'perm', name: 'Lucky Cat', desc: 'A waving cat sits on your reels, cheers your wins and gifts you a nudge every 25 spins.', price: () => 8000 },
+    { id: 'luckyCat', kind: 'perm', name: 'Lucky Cat', desc: 'A waving cat sits on your reels, cheers your wins and gifts you a nudge every 60 spins.', price: () => 8000 },
     { id: 'gold', kind: 'perm', name: 'Gold Cabinet', desc: 'Plates the machine in gold. Purely for show.', price: () => 25000 },
     { id: 'neon', kind: 'perm', name: 'Neon Name', desc: 'Your name glows in rainbow neon for everyone: highscores, chat and the online list.', price: () => 40000 },
-    { id: 'lightning', kind: 'perm', name: 'Lightning Strike', desc: 'On 2% of your slot wins lightning strikes and multiplies the win ×2, ×3, ×5 or even ×10.', price: () => 250000 },
+    { id: 'lightning', kind: 'perm', name: 'Lightning Strike', desc: 'On 1% of your slot wins lightning strikes and multiplies the win ×2, ×3, ×5 or even ×10.', price: () => 250000 },
   ];
 
   const ACH = [
@@ -1891,7 +1972,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     credits: START, bet: 5, lastWin: 0, spins: 0, best: 0, sound: true,
     owned: { horseshoe: 0, goldCherry: false, piggy: false, autospin: false, gold: false, luckyCat: false, neon: false, lightning: false },
     catSpins: 0,
-    streak: 0, stars: 0, freeSpins: 0, freeBet: 0, freeTotal: 0, jackpots: 0,
+    streak: 0, stars: 0, starBank: 0, avatar: null, freeSpins: 0, freeBet: 0, freeTotal: 0, jackpots: 0,
     xp: 0, level: 1, ach: {}, adminRev: 0,
     nudges: 0, missions: [], missionsDone: 0,
     mode: 'slots', bj: { shoe: [], round: null, bet: 0, lastBet: 0, hands: 0 },
@@ -1924,12 +2005,13 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     return buf[0] % max;
   }
 
-  // Goodie strengths, tuned so owning all of them lands just under a 100% payout rate.
-  const HORSESHOE_JACKPOT = 25;
-  const GOLD_CHERRY_TRIPLE = 5.5;
+  // Goodie strengths. Simulated with best play (holds, nudges, free spins, streaks):
+  // about 90% of bets come back without goodies and about 96% with all of them, so the house always wins in the long run.
+  const HORSESHOE_JACKPOT = 8;
+  const GOLD_CHERRY_TRIPLE = 3.5;
   const PIGGY_REFUND = 0.02;
   // Lightning: chance per winning slot spin (out of 1000) and how likely each multiplier is.
-  const LIGHTNING_CHANCE = 20;
+  const LIGHTNING_CHANCE = 10;
   const LIGHTNING_ODDS = [[2, 70], [3, 20], [5, 8], [10, 2]];
   const lightningAvg = LIGHTNING_ODDS.reduce((a, [m, w]) => a + m * w, 0) / 100;
   function pickLightning() {
@@ -1937,7 +2019,8 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     for (const [m, w] of LIGHTNING_ODDS) { if (roll < w) return m; roll -= w; }
     return 2;
   }
-  const CAT_EVERY = 25;
+  const CAT_EVERY = 60;
+  const FEATURE_BOOST = 1.44;
   const weights = () => ({ ...BASE_WEIGHTS });
 
   function buildReels() {
@@ -1973,8 +2056,8 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     if (line === 'seven') m = PAY3.seven + HORSESHOE_JACKPOT * state.owned.horseshoe;
     else if (line === 'cherry' && state.owned.goldCherry) m = GOLD_CHERRY_TRIPLE;
     else if (line) m = PAY3[line];
-    else if (cherries === 2) m = 2;
-    else if (a === 'cherry') m = 1;
+    else if (cherries === 2) m = PAY_TWO_CHERRIES;
+    else if (a === 'cherry') m = PAY_ONE_CHERRY;
     return m;
   }
 
@@ -2433,15 +2516,17 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     const bet = free ? state.freeBet : state.bet;
     const cost = free ? 0 : spinCost();
     if (state.credits < cost) return null;
-    const holds = free ? [false, false, false] : held.slice();
+    const raised = !free && held.some(Boolean) && state.bet > lastBet;
+    const holds = free || raised ? [false, false, false] : held.slice();
     held = [false, false, false];
+    state.nudges = 0;
     holdOffer = false;
     nudgeOpen = false;
     gambleOffer = 0;
     state.credits -= cost;
     state.spins++;
     reels.forEach(r => r.classList.remove('win', 'star', 'wild'));
-    say(free ? `Free spin ${freeDone} · wins ×${FREE_MULT}` : holds.some(Boolean) ? 'Spinning the reels you did not hold…' : 'Spinning…', free ? 'bonus' : '');
+    say(free ? `Free spin ${freeDone} · wins ×${FREE_MULT}` : raised ? 'Bet raised, so the holds are off. Spinning…' : holds.some(Boolean) ? 'Spinning the reels you did not hold…' : 'Spinning…', free ? 'bonus' : '');
     render();
     holds.forEach((h, i) => reels[i].classList.toggle('held', h));
 
@@ -2490,10 +2575,13 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     let triggered = false;
     if (starCount) {
       state.stars += starCount;
+      state.starBank = (state.starBank || 0) + bet * starCount;
       floatText(`+${starCount} ★`, 'star');
       if (state.stars >= STAR_GOAL) {
+        const avg = Math.max(1, Math.floor(state.starBank / state.stars));
         state.stars -= STAR_GOAL;
-        if (!state.freeSpins && !inBonus) state.freeBet = bet;
+        state.starBank = avg * state.stars;
+        if (!state.freeSpins && !inBonus) state.freeBet = avg;
         state.freeSpins += FREE_SPINS;
         triggered = true;
       }
@@ -2537,7 +2625,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
       if (win) gambleOffer = win;
       else {
         if (randInt(100) < NUDGE_CHANCE) {
-          const n = 1 + randInt(3);
+          const n = randInt(5) === 0 ? 2 : 1;
           state.nudges += n;
           floatText(`+${n} nudge${n > 1 ? 's' : ''}`, 'nudge');
           sound.chime();
@@ -2547,7 +2635,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
         if (holdOffer || nudgeOpen) say(
           holdOffer && nudgeOpen ? 'No win. Nudge a reel now, or hold reels for the next spin.'
             : holdOffer ? 'No win. Hold up to two reels for the next spin.'
-            : `No win. Nudge a reel down? ${state.nudges} nudge${state.nudges > 1 ? 's' : ''} left.`, 'hot');
+            : `No win. Nudge a reel down now? ${state.nudges} nudge${state.nudges > 1 ? 's' : ''}, gone after the next spin.`, 'hot');
       }
     }
     if (win) floatText('+' + fmt(win));
@@ -2661,13 +2749,19 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     hideCard($('cardNext'));
     modal.hidden = false;
     hi.focus();
-    update('Is the next card higher or lower? Aces are low.');
+    update('Higher or lower? The safer guess pays less. Aces are low.');
 
+    // Of the 12 other ranks, how many beat the guess; ties keep the stake.
+    function factor(higher) { const k = higher ? 12 - card.rank : card.rank; return k ? Math.floor(GAMBLE_EDGE * 12 / k * 100 + 1e-9) / 100 : 0; }
     function update(msg) {
       $('gambleStake').textContent = fmt(stake);
       ladder.forEach((el, i) => el.classList.toggle('on', i < rounds));
       if (msg) $('gambleMsg').textContent = msg;
       hi.disabled = lo.disabled = revealing || over || rounds >= GAMBLE_MAX;
+      if (!hi.disabled && !factor(true)) hi.disabled = true;
+      if (!lo.disabled && !factor(false)) lo.disabled = true;
+      hi.textContent = factor(true) ? `Higher ▲ ×${factor(true).toFixed(2)}` : 'Higher ▲';
+      lo.textContent = factor(false) ? `Lower ▼ ×${factor(false).toFixed(2)}` : 'Lower ▼';
       collect.disabled = revealing;
       collect.textContent = stake ? `Collect ${fmt(stake)}` : 'Close';
     }
@@ -2682,14 +2776,14 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
         if (next.rank === card.rank) {
           update('Same rank. Your stake stays, go again.');
         } else if ((next.rank > card.rank) === higher) {
-          stake = Math.min(MAX, stake * 2);
+          stake = Math.min(MAX, Math.floor(stake * factor(higher)));
           rounds++;
           sound.bigWin();
           const b = $('cardNext').getBoundingClientRect();
           fxTop.coinBurst(b.left + b.width / 2, b.top + b.height / 2, 24, 8);
           mission('gamble');
           if (rounds >= GAMBLE_MAX) checkAch({ gambleFull: true });
-          update(rounds >= GAMBLE_MAX ? `Five in a row! Take your ${fmt(stake)}.` : `Correct! Stake doubled to ${fmt(stake)}.`);
+          update(rounds >= GAMBLE_MAX ? `Five in a row! Take your ${fmt(stake)}.` : `Correct! Stake is now ${fmt(stake)}.`);
         } else {
           stake = 0;
           over = true;
@@ -3043,8 +3137,8 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
   document.querySelectorAll('.bj-act').forEach(b => b.addEventListener('click', () => bjAct(b.dataset.bj)));
   document.addEventListener('keydown', e => {
     if (state.mode !== 'bj' || !account || !$('lobby').hidden || e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
-    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal')) return;
-    if (!$('wheelModal').hidden || !$('gambleModal').hidden || !$('adminModal').hidden) return;
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal, #profileModal')) return;
+    if (!$('wheelModal').hidden || !$('gambleModal').hidden || !$('adminModal').hidden || !$('profileModal').hidden) return;
     const key = e.key.toLowerCase();
     const map = { h: 'hit', s: 'stand', d: 'double', p: 'split' };
     if (map[key] && bjHand()) { e.preventDefault(); bjAct(map[key]); }
@@ -3387,7 +3481,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
   $('rlSpin').addEventListener('click', rlSpin);
   document.addEventListener('keydown', e => {
     if (state.mode !== 'rl' || !account || !$('lobby').hidden || e.code !== 'Space') return;
-    if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'SUMMARY'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal')) return;
+    if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'SUMMARY'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal, #profileModal')) return;
     e.preventDefault();
     rlSpin();
   });
@@ -3619,7 +3713,8 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
 
   // ----- views -----
   let pkTimer = null, pkShown = new Set(), pkLastHand = -1, pkLastResultHand = -1, pkWorking = false, pkRaiseTo = 0;
-  const pkOnline = { st: null, watching: false, poll: null, ticker: null, lastTick: 0, jitter: Math.random() * 900 };
+  // ready: null while checking, true once the database table answers, false when it is missing.
+  const pkOnline = { st: null, watching: false, poll: null, ticker: null, lastTick: 0, jitter: Math.random() * 900, ready: null };
   const pkView = () => state.pk.view === 'online' ? 'online' : 'solo';
   const pkCurrent = () => pkView() === 'online' ? pkOnline.st : state.pk.solo;
   function pkBusy() { return pkWorking; }
@@ -3679,7 +3774,15 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     (st?.seats || Array(8).fill(null)).forEach((s, i) => {
       const [x, y] = spot(i);
       if (!s) {
-        if (pkView() === 'online') { const e = document.createElement('div'); e.className = 'pk-empty'; e.style.left = x + '%'; e.style.top = y + '%'; e.textContent = 'Open seat'; nodes.push(e); }
+        if (pkView() === 'online' && pkOnline.ready) {
+          const canSit = me < 0 && !pkWorking;
+          const e = document.createElement(canSit ? 'button' : 'div');
+          e.className = 'pk-empty' + (canSit ? ' can-sit' : '');
+          e.style.left = x + '%'; e.style.top = y + '%';
+          e.textContent = canSit ? 'Sit here' : 'Open seat';
+          if (canSit) { e.type = 'button'; e.dataset.sit = i; e.setAttribute('aria-label', `Sit down at seat ${i + 1}`); }
+          nodes.push(e);
+        }
         return;
       }
       const seat = document.createElement('div');
@@ -3702,9 +3805,10 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
         }
       }
       const av = s.bot ? pkBotByName(s.bot).av : `hsl(${hueFor(s.name)} 70% 70%)`;
+      const pic = !s.bot && Number.isInteger(avatarOf(s.pid)) ? AVATARS[avatarOf(s.pid)] : esc((s.name || '?')[0].toUpperCase());
       const plate = document.createElement('div');
       plate.className = 'pk-plate';
-      plate.innerHTML = `<span class="pk-avatar" style="--av:${av}">${esc((s.name || '?')[0].toUpperCase())}</span><span class="pk-who"><b>${nameHtml(s.pid, s.name)}</b><span>${s.leaving ? 'left' : fmt(s.stack)}</span></span>`;
+      plate.innerHTML = `<span class="pk-avatar" style="--av:${av}">${pic}</span><span class="pk-who"><b>${nameHtml(s.pid, s.name)}</b><span>${s.leaving ? 'left' : fmt(s.stack)}</span></span>`;
       seat.append(cardsBox, plate);
       let tag = null;
       if (winner) tag = [`+${fmt(s.won)}`, 'won', `w${i}`];
@@ -3800,7 +3904,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     const me = pkMySeat(st);
     const seated = me >= 0 && st?.seats[me] && !st.seats[me].leaving;
     const myTurn = seated && st.to_act === me && ['preflop', 'flop', 'turn', 'river'].includes(st.phase);
-    const offline = online && !backend?.poker;
+    const offline = online && pkOnline.ready !== true;
     $('pkInfo').textContent = online ? `Online · ${st ? st.seats.filter(Boolean).length : 0} / 8 seated · blinds ${PK_SB}/${PK_BB}` : `Solo vs bots · blinds ${PK_SB}/${PK_BB}`;
     $('pkControls').hidden = !seated;
     $('pkSit').hidden = seated || offline;
@@ -3809,7 +3913,16 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     $('pkLeave').hidden = !seated;
     $('pkSit').textContent = online ? 'Sit down' : 'Start table';
     $('pkSit').disabled = pkWorking || !account || state.credits < PK_MIN_BUYIN || (settings.maintenance && !account?.isAdmin);
-    if (offline) { pkSay('Online poker runs on the public site with its database. Play solo here.', 'lose'); }
+    if (offline) {
+      pkSay(!backend?.poker ? 'The online table only runs on the public site. Play solo here.'
+        : pkOnline.ready === null ? 'Connecting to the online table…'
+        : 'The online table is not set up yet: an admin runs the “Online poker” part of supabase-setup.sql once.', pkOnline.ready === null ? '' : 'lose');
+    } else if (!seated && !pkWorking) {
+      const sat = st ? st.seats.filter(x => x && x.pid).length : 0;
+      pkSay(online
+        ? (sat ? `${sat} player${sat > 1 ? 's' : ''} at the table. Pick a buy-in and click “Sit here” on a free seat.` : 'The table is empty. Sit down; the game starts as soon as a second player joins.')
+        : 'Pick a buy-in and start a table against five bots.');
+    }
     for (const id of ['pkFold', 'pkCall', 'pkRaise']) $(id).disabled = !myTurn || pkWorking;
     document.querySelectorAll('[data-pkr], #pkSlider').forEach(b => { b.disabled = !myTurn || pkWorking; });
     if (!seated || !st) return;
@@ -3824,7 +3937,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     if (!pkWorking) {
       if (myTurn) pkSay(L.need ? `Your turn: ${fmt(Math.min(L.need, L.s.stack))} to call.` : 'Your turn: check or bet.', 'hot');
       else if (st.phase === 'showdown') pkSay(st.result || '', (st.winners || []).includes(me) ? 'win' : '');
-      else if (st.phase === 'waiting') pkSay(online ? 'Waiting for more players to sit down…' : 'Waiting…');
+      else if (st.phase === 'waiting') pkSay(online ? 'Waiting for a second player. Invite a friend to the online table!' : 'Waiting…');
       else if (st.to_act >= 0 && st.seats[st.to_act]) pkSay(`${st.seats[st.to_act].name} is thinking…`);
       else pkSay('Dealing…');
     }
@@ -3867,7 +3980,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
   $('pkRaise').addEventListener('click', () => pkMove('raise'));
   document.addEventListener('keydown', e => {
     if (state.mode !== 'pk' || !account || !$('lobby').hidden || e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
-    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal')) return;
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal, #profileModal')) return;
     const map = { f: 'fold', c: 'call', r: 'raise' };
     const act = map[e.key.toLowerCase()];
     if (act && !$('pkFold').disabled) { e.preventDefault(); pkMove(act); }
@@ -3917,7 +4030,12 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     }
   }
 
-  $('pkSit').addEventListener('click', async () => {
+  $('pkLayer').addEventListener('click', e => {
+    const b = e.target.closest('[data-sit]');
+    if (b) pkSitDown(Number(b.dataset.sit));
+  });
+  $('pkSit').addEventListener('click', () => pkSitDown(null));
+  async function pkSitDown(seat) {
     if (!account || pkWorking) return;
     const buyIn = Math.floor(Number($('pkBuyIn').value));
     if (!(buyIn >= PK_MIN_BUYIN)) { pkSay(`The smallest buy-in is ${fmt(PK_MIN_BUYIN)}.`, 'lose'); return; }
@@ -3938,15 +4056,15 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     try {
       await flush();
       quietCreditsUntil = Date.now() + 8000;
-      await backend.poker.sit(buyIn);
+      await backend.poker.sit(buyIn, seat);
       await refreshOwn();
       pkSay('You sat down. The next hand deals you in.', 'win');
     } catch (e) {
-      pkSay(/full/i.test(e?.message || '') ? 'The table is full (8 players).' : /credits/i.test(e?.message || '') ? 'Not enough credits for that buy-in.' : /already/i.test(e?.message || '') ? 'You are already at the table.' : 'Could not sit down. Try again.', 'lose');
+      pkSay(/taken/i.test(e?.message || '') ? 'Someone just took that seat. Pick another one.' : /full/i.test(e?.message || '') ? 'The table is full (8 players).' : /credits/i.test(e?.message || '') ? 'Not enough credits for that buy-in.' : /already/i.test(e?.message || '') ? 'You are already at the table.' : 'Could not sit down. Try again.', 'lose');
     }
     pkWorking = false;
     await pkOnlineRefresh();
-  });
+  }
   $('pkLeave').addEventListener('click', async () => {
     if (pkWorking) return;
     if (pkView() === 'solo') {
@@ -3991,7 +4109,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     };
   }
   async function pkOnlineRefresh() {
-    if (!backend?.poker) return;
+    if (!backend?.poker || !pkOnline.ready) return;
     try {
       const prev = pkOnline.st;
       const st = pkNormalize(await backend.poker.state());
@@ -4011,8 +4129,15 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
       }
     } catch {}
   }
-  function pkStartOnline() {
+  async function pkStartOnline() {
     if (!backend?.poker) { pkOnline.st = null; renderPK(false); return; }
+    if (pkOnline.ready !== true) {
+      pkOnline.ready = null;
+      renderPK(false);
+      pkOnline.ready = await backend.poker.available().catch(() => false);
+      if (state.mode !== 'pk' || pkView() !== 'online') return;
+      if (!pkOnline.ready) { renderPK(false); return; }
+    }
     if (!pkOnline.watching) { pkOnline.watching = true; backend.poker.watch(() => pkOnlineRefresh()); }
     clearInterval(pkOnline.poll);
     pkOnline.poll = setInterval(pkOnlineRefresh, 4000);
@@ -4034,7 +4159,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
   function pkStopOnline() { pkStopOnlinePolling(); pkOnline.st = null; }
   // Keep ticking and refreshing while seated online, even from another game.
   setInterval(() => {
-    if (!account || !backend?.poker || !pkOnline.st) return;
+    if (!account || !backend?.poker || !pkOnline.ready || !pkOnline.st) return;
     if (state.mode !== 'pk' || pkView() !== 'online') pkOnlineRefresh();
   }, 6000);
   addEventListener('resize', () => { if (state.mode === 'pk') renderPK(false); });
@@ -4057,9 +4182,8 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
       m.prog = MISSIONS[type].max ? Math.max(m.prog, amount) : m.prog + amount;
       if (m.prog < m.goal) return;
       state.credits = Math.min(MAX, state.credits + m.reward);
-      state.nudges++;
       state.missionsDone++;
-      toast('Mission complete', `${MISSIONS[m.t].text(m.goal)} · +${fmt(m.reward)} credits, +1 nudge`);
+      toast('Mission complete', `${MISSIONS[m.t].text(m.goal)} · +${fmt(m.reward)} credits`);
       sound.chime();
       state.missions[i] = newMission(state.missions.map(x => x.t));
       checkAch();
@@ -4232,9 +4356,9 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
 
       function land(p) {
         if (p.free) {
-          if (!state.freeSpins && !inBonus) state.freeBet = state.bet;
+          if (!state.freeSpins && !inBonus) state.freeBet = Math.max(1, Math.min(state.bet, 10 * level));
           state.freeSpins += p.free;
-          res.textContent = '5 free spins at your current bet!';
+          res.textContent = `5 free spins at ${fmt(state.freeBet)} each!`;
         } else {
           state.credits = Math.min(MAX, state.credits + p.credits);
           res.textContent = `You won ${fmt(p.credits)} credits!`;
@@ -4424,13 +4548,15 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     rows.push(row(ICONS.cherry, 'on reel one', payout('cherry', 'lemon', 'lemon')));
     $('payRows').innerHTML = rows.join('');
     const rtp = computeRtp() * 100;
-    $('shopRate').textContent = rtp.toFixed(1) + '%';
+    // Streaks, free spins, holds and nudges add about 44% on top of the line wins (simulated with best play).
+    const total = Math.min(99, rtp * FEATURE_BOOST + (state.owned.luckyCat ? 1.2 : 0));
+    $('shopRate').textContent = '≈ ' + total.toFixed(1) + '%';
     $('rtp').textContent =
       `Wins are multiples of your bet. Wilds stand in for any symbol except stars, and three wilds pay ${PAY3.wild}×. ` +
-      `After a losing spin you may get nudges (move one reel down a stop) or the chance to hold up to two reels for the next spin. After a win you can gamble it on higher or lower, up to ${GAMBLE_MAX} rounds. ` +
+      `After a losing spin you may get nudges (move one reel down a stop) or the chance to hold up to two reels for the next spin. After a win you can gamble it on higher or lower, up to ${GAMBLE_MAX} rounds; a correct guess pays by its odds. ` +
       `Every star on the payline fills the bonus meter; ${STAR_GOAL} stars start ${FREE_SPINS} free spins where every win pays ×${FREE_MULT}. ` +
       `Each win in a row adds ×${STREAK_STEP} to the next win, up to ×${1 + STREAK_STEP * STREAK_MAX}; a losing spin resets it. Levels come from XP and each one spins the prize wheel. ` +
-      `Each reel has ${STRIP.length} stops. Before streaks, free spins, holds, nudges and rewards, this table returns ${rtp.toFixed(1)}% of bets over the long run.`;
+      `Each reel has ${STRIP.length} stops. Before streaks, free spins, holds, nudges and rewards, this table returns ${rtp.toFixed(1)}% of bets; with everything included about ${total.toFixed(1)}%. Losing streaks happen: the house wins in the long run.`;
   }
 
   // ---------- Render ----------
@@ -4513,7 +4639,6 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     const g = $('gamble');
     g.hidden = !gambleOffer || busy;
     g.innerHTML = `Gamble<small>${fmt(gambleOffer)}</small>`;
-    if (state.nudges && !canNudge) chips.push(`<span class="boost-chip">${state.nudges} nudge${state.nudges > 1 ? 's' : ''} saved</span>`);
     $('boosts').innerHTML = chips.join('');
     renderShop();
     renderMissions();
@@ -4566,7 +4691,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     render();
   });
   document.addEventListener('keydown', e => {
-    if (e.code === 'Space' && account && $('lobby').hidden && state.mode === 'slots' && !['BUTTON', 'SUMMARY', 'INPUT'].includes(e.target.tagName) && $('wheelModal').hidden && $('gambleModal').hidden && $('adminModal').hidden) { e.preventDefault(); play(); }
+    if (e.code === 'Space' && account && $('lobby').hidden && state.mode === 'slots' && !['BUTTON', 'SUMMARY', 'INPUT'].includes(e.target.tagName) && $('wheelModal').hidden && $('gambleModal').hidden && $('adminModal').hidden && $('profileModal').hidden) { e.preventDefault(); play(); }
   });
 
   // ---------- Accounts ----------
@@ -4595,7 +4720,9 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
   const newSalt = () => [...crypto.getRandomValues(new Uint8Array(8))].map(b => b.toString(16).padStart(2, '0')).join('');
   const toPlayers = list => list.map(p => ({
     id: p.id, name: p.name || p.id, credits: Number(p.credits) || 0, best: Number(p.best) || 0, level: Number(p.level) || 1,
-    jackpots: Number(p.jackpots) || 0, flair: p.flair || null, admin: !!(p.admin ?? p.is_admin), banned: !!(p.banned ?? p.is_banned), adminRev: Number(p.adminRev ?? p.admin_rev) || 0,
+    jackpots: Number(p.jackpots) || 0, flair: p.flair || null,
+    avatar: Number.isInteger(p.avatar) && p.avatar >= 0 && p.avatar < 8 ? p.avatar : null,
+    medals: Array.isArray(p.medals) ? p.medals.filter(m => MEDAL_IDS.includes(m)) : [], admin: !!(p.admin ?? p.is_admin), banned: !!(p.banned ?? p.is_banned), adminRev: Number(p.adminRev ?? p.admin_rev) || 0,
   }));
   const adminChanged = () => Object.assign(new Error('changed by an admin'), { code: 'admin_changed' });
   const SESSION_KEY = 'lucky-reels-session';
@@ -4669,6 +4796,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
           await store.save(id, { credits: settings.startCredits, best: 0, level: 1, spins: 0, jackpots: 0, game: null, adminRev: (Number(doc?.adminRev) || 0) + 1 });
         },
         setBanned: (id, value) => store.save(id, { banned: value }),
+        setMedals: (id, medals) => store.save(id, { medals }),
         setAdmin: (id, make) => store.save(id, { admin: make }),
         deletePlayer: id => store.remove(id),
         deleteMessage: id => store.deleteMessage(id),
@@ -4883,11 +5011,11 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     });
     const email = name => `${idFor(name)}@${EMAIL_DOMAIN}`;
     let hasJackpots = true;
-    const pokerReady = !(await sb.rpc('poker_state')).error;
     let onlineCh = null, onlineReady = false, onlineMe = null, dmPull = null;
     // Admin columns exist once the admin part of supabase-setup.sql has run.
     const adminSchema = !(await sb.from('players').select('admin_rev').limit(1)).error;
     let hasFlair = !(await sb.from('players').select('flair').limit(1)).error;
+    let hasProfile = !(await sb.from('players').select('avatar,medals').limit(1)).error;
     const adminCols = adminSchema ? ',is_admin,is_banned,admin_rev' : '';
     // New accounts are only offered when Supabase confirms them on the spot: the made-up addresses can't receive mail.
     let canSignUp = false;
@@ -4954,7 +5082,14 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
         };
         if (!hasJackpots) delete patch.jackpots;
         if (!hasFlair) delete patch.flair;
+        if (!hasProfile) delete patch.avatar;
         let { data, error } = await send();
+        // Before the profile SQL runs there is no avatar column; save without it.
+        if (error && hasProfile && /avatar/.test(error.message || '')) {
+          hasProfile = false;
+          delete patch.avatar;
+          ({ data, error } = await send());
+        }
         // Before the goodies SQL runs there is no flair column; save without it.
         if (error && hasFlair && /flair/.test(error.message || '')) {
           hasFlair = false;
@@ -4999,6 +5134,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
         addAll: amount => adminRpc('admin_give_all', { amount }),
         reset: id => adminRpc('admin_update_player', { target: id, new_credits: null, reset: true, set_banned: null }),
         setBanned: (id, value) => adminRpc('admin_update_player', { target: id, new_credits: null, reset: false, set_banned: value }),
+        setMedals: (id, medals) => adminRpc('admin_set_medals', { target: id, new_medals: medals }),
         setAdmin: (id, make, pw) => adminRpc('admin_set_admin', { target: id, make, new_pw: pw ?? null }),
         deletePlayer: id => adminRpc('admin_delete_player', { target: id }),
         changePassword: pw => adminRpc('admin_change_password', { new_pw: pw }),
@@ -5056,14 +5192,19 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
         dmPull?.();
       },
       // Online poker: the database deals and checks every move; the page only sends moves and shows the state.
-      poker: pokerReady ? {
+      poker: {
+        // The online table exists once the "Online poker" part of supabase-setup.sql has run; checked when the table opens.
+        async available() {
+          const { error } = await sb.rpc('poker_state');
+          return !error;
+        },
         async state() { const { data, error } = await sb.rpc('poker_state'); if (error) throw error; return data; },
-        async sit(buyIn) { const { error } = await sb.rpc('poker_sit', { buy_in: buyIn }); if (error) throw error; },
+        async sit(buyIn, seat) { const { error } = await sb.rpc('poker_sit', { buy_in: buyIn, seat_no: seat ?? null }); if (error) throw error; },
         async leave() { const { error } = await sb.rpc('poker_leave'); if (error) throw error; },
         async act(act, amount) { const { error } = await sb.rpc('poker_act', { act, amount: Math.floor(amount || 0) }); if (error) throw error; },
         async tick() { await sb.rpc('poker_tick'); },
         watch(cb) { sb.channel('poker-pulse').on('postgres_changes', { event: '*', schema: 'public', table: 'poker_pulse' }, cb).subscribe(); },
-      } : null,
+      },
       async chatWatch(cb) {
         let list = [];
         const pull = async () => {
@@ -5088,7 +5229,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
       },
       watch(cb) {
         const pull = async () => {
-          let { data, error } = await sb.from('players').select(`id,name,credits,best,level${hasJackpots ? ',jackpots' : ''}${hasFlair ? ',flair' : ''}${adminCols}`);
+          let { data, error } = await sb.from('players').select(`id,name,credits,best,level${hasJackpots ? ',jackpots' : ''}${hasFlair ? ',flair' : ''}${hasProfile ? ',avatar,medals' : ''}${adminCols}`);
           if (error && hasJackpots) {
             hasJackpots = false;
             ({ data } = await sb.from('players').select(`id,name,credits,best,level${adminCols}`));
@@ -5129,6 +5270,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     }
     boardPrimed = true;
     players = list;
+    if (account) checkNewMedals();
     const mine = account && list.find(p => p.id === account.id);
     if (mine) {
       if (mine.admin !== account.isAdmin) {
@@ -5178,7 +5320,9 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
           const hot = age < 6000;
           return `<tr data-id="${esc(p.id)}" class="${me ? 'me' : ''}${hot ? ' jackpot-row' : ''}"${hot ? ` style="animation-delay:-${Math.round(age)}ms"` : ''}>` +
             `<td><span class="rank">${i + 1}</span>${online.has(p.id) ? '<i class="dot" title="Online"></i>' : ''}` +
+            avatarHtml(p.id, p.name, '', account ? 'button' : 'span') +
             `${me || !account ? nameHtml(p.id, p.name) : `<span data-dm="${esc(p.id)}" title="Send ${esc(p.name)} a private message">${nameHtml(p.id, p.name)}</span>`}` +
+            medalsHtml(p.id) +
             `${me ? '<span class="you">you</span>' : ''}${hot ? '<span class="jp-badge">JACKPOT</span>' : ''}</td>` +
             `<td>${fmt(p.credits)}</td><td>${fmt(p.best)}</td><td>${p.level}</td></tr>`;
         }).join('') + '</tbody>'
@@ -5209,7 +5353,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     if (!account || !backend || account.deleted) return;
     if (saving) { saveAgain = true; return; }
     const key = account.id;
-    const body = { credits: state.credits, best: state.best, level: state.level, spins: state.spins, jackpots: state.jackpots, flair: state.owned.neon ? 'neon' : null, adminRev: state.adminRev, game: JSON.stringify(state) };
+    const body = { credits: state.credits, best: state.best, level: state.level, spins: state.spins, jackpots: state.jackpots, flair: state.owned.neon ? 'neon' : null, avatar: state.avatar ?? null, adminRev: state.adminRev, game: JSON.stringify(state) };
     const json = JSON.stringify(body);
     if (json === lastSaved) return;
     saving = true;
@@ -5232,6 +5376,8 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     Object.assign(state, fresh(), saved);
     state.owned = Object.assign(fresh().owned, saved.owned);
     delete state.boost;
+    if (saved.starBank === undefined) state.starBank = (state.stars || 0) * Math.min(state.bet || 1, 1000);
+    if (state.stars > STAR_GOAL) state.stars = STAR_GOAL - 1;
     state.ach = Object.assign({}, saved.ach);
     state.missions = (Array.isArray(saved.missions) ? saved.missions : []).filter(m => MISSIONS[m?.t]);
     state.bj = Object.assign(fresh().bj, saved.bj);
@@ -5273,6 +5419,8 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     lastSaved = '';
     loadState(saved);
     $('whoami').textContent = account.name;
+    renderMyAvatar();
+    seenMedals = null;
     syncAdminButton();
     $('accountBar').hidden = false;
     startDms();
@@ -5328,6 +5476,78 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     return neon ? `<span class="neon-name">${esc(name)}</span>` : esc(name);
   };
   const byName = (a, b) => a.name.localeCompare(b.name);
+  const avatarOf = id => id === account?.id ? state.avatar : players.find(p => p.id === id)?.avatar;
+  // A player's picture (or their initial in their name colour).
+  function avatarHtml(id, name, cls = '', tag = 'span') {
+    const a = avatarOf(id);
+    const inner = Number.isInteger(a) && AVATARS[a] ? AVATARS[a] : esc(String(name || '?')[0].toUpperCase());
+    const attrs = tag === 'button' ? ` type="button" data-profile="${esc(id)}" title="${esc(name)}'s profile" aria-label="${esc(name)}'s profile"` : ' aria-hidden="true"';
+    return `<${tag} class="av ${cls}" style="--h:${hueFor(name)}"${attrs}>${inner}</${tag}>`;
+  }
+  function medalsHtml(id, max = 4) {
+    const list = (players.find(p => p.id === id)?.medals || []).map(m => MEDALS.find(x => x.id === m)).filter(Boolean);
+    if (!list.length) return '';
+    return `<span class="medals" title="${esc(list.map(m => m.name).join(', '))}">${list.slice(0, max).map(medalSvg).join('')}${list.length > max ? `<span class="more">+${list.length - max}</span>` : ''}</span>`;
+  }
+
+  // ---------- Profiles ----------
+  let profileFor = null, seenMedals = null;
+  function openProfile(id) {
+    profileFor = id;
+    renderProfile();
+    $('profileModal').hidden = false;
+    $('profileClose').focus();
+  }
+  function renderProfile() {
+    if (!profileFor || $('profileModal').hidden && profileFor === null) return;
+    const mine = profileFor === account?.id;
+    const p = players.find(x => x.id === profileFor) || (mine ? { id: account.id, name: account.name, medals: [] } : null);
+    if (!p) { $('profileModal').hidden = true; return; }
+    const credits = mine ? state.credits : p.credits, best = mine ? state.best : p.best, level = mine ? state.level : p.level;
+    const medals = (p.medals || []).map(m => MEDALS.find(x => x.id === m)).filter(Boolean);
+    const picker = mine ? `<span class="profile-label">Your picture</span><div class="avatar-grid" id="avatarGrid">${AVATARS.map((svg, i) =>
+      `<button type="button" data-av="${i}" aria-pressed="${state.avatar === i}" aria-label="${AVATAR_NAMES[i]}" title="${AVATAR_NAMES[i]}">${svg}</button>`).join('')}</div>` +
+      `<button type="button" class="chip-btn" data-av="none"${state.avatar == null ? ' disabled' : ''}>Use my initial instead</button>` : '';
+    $('profileBody').innerHTML = `${avatarHtml(p.id, p.name, 'lg')}<h2 id="profileName">${nameHtml(p.id, p.name)}</h2>` +
+      `<div class="profile-stats"><div><b>${fmt(credits)}</b><span>Credits</span></div><div><b>${fmt(best)}</b><span>Best win</span></div><div><b>${level}</b><span>Level</span></div></div>` +
+      `<span class="profile-label">Medals (${medals.length})</span>` +
+      (medals.length ? `<div class="medal-list">${medals.map(m => `<div class="medal-row">${medalSvg(m)}<span><b>${esc(m.name)}</b><small>${esc(m.desc)}</small></span></div>`).join('')}</div>`
+        : `<p class="note">${mine ? 'No medals yet. Admins award them for special moments.' : 'No medals yet.'}</p>`) + picker;
+  }
+  $('profileBody').addEventListener('click', e => {
+    const b = e.target.closest('[data-av]');
+    if (!b) return;
+    state.avatar = b.dataset.av === 'none' ? null : Number(b.dataset.av);
+    sound.chip();
+    renderProfile();
+    renderBoards();
+    renderMyAvatar();
+    persist();
+  });
+  const closeProfile = () => { $('profileModal').hidden = true; profileFor = null; };
+  $('profileClose').addEventListener('click', closeProfile);
+  $('profileModal').addEventListener('click', e => { if (e.target === $('profileModal')) closeProfile(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('profileModal').hidden) closeProfile(); });
+  $('profileBtn').addEventListener('click', () => account && openProfile(account.id));
+  function renderMyAvatar() { if (account) $('myAv').innerHTML = avatarHtml(account.id, account.name, '', 'button'); }
+  $('myAv').addEventListener('click', () => account && openProfile(account.id));
+  // Tell a player when an admin gives them a new medal.
+  function checkNewMedals() {
+    const me = players.find(p => p.id === account?.id);
+    if (!me) return;
+    const key = `lucky-reels-medals-${account.id}`;
+    if (seenMedals === null) { try { seenMedals = JSON.parse(localStorage.getItem(key) || 'null'); } catch {} if (!Array.isArray(seenMedals)) seenMedals = me.medals.slice(); }
+    const fresh = me.medals.filter(m => !seenMedals.includes(m));
+    seenMedals = me.medals.slice();
+    try { localStorage.setItem(key, JSON.stringify(seenMedals)); } catch {}
+    for (const id of fresh) {
+      const m = MEDALS.find(x => x.id === id);
+      toast('New medal!', `You were awarded “${m.name}”: ${m.desc}`);
+      sound.levelUp();
+      for (let k = 0; k < 30; k++) fxTop.confetti([m.color, '#f6efe3', '#e9a23b']);
+    }
+    if (!$('profileModal').hidden) renderProfile();
+  }
 
   const readKey = () => `lucky-reels-read-${account?.id}`;
   function loadRead() {
@@ -5413,7 +5633,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
 
     const others = players.filter(p => online.has(p.id) && p.id !== account?.id).sort(byName);
     $('chatOnline').innerHTML = `<span class="label">Online now · ${others.length + 1}</span>` + (others.length
-      ? others.map(p => `<button type="button" class="online-chip" data-dm="${esc(p.id)}" title="Send ${esc(p.name)} a private message"><i class="dot"></i>${nameHtml(p.id, p.name)}</button>`).join('')
+      ? others.map(p => `<button type="button" class="online-chip" data-dm="${esc(p.id)}" title="Send ${esc(p.name)} a private message"><i class="dot"></i>${avatarHtml(p.id, p.name)}${nameHtml(p.id, p.name)}</button>`).join('')
       : '<span class="online-none">Nobody else is online right now.</span>');
 
     const tabs = [{ id: '', label: 'Everyone', unread: unreadIn('all'), on: false, active: !chatWith },
@@ -5442,7 +5662,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     log.innerHTML = items.length ? items.map(m => {
       if (m.sys) return `<div class="msg sys">${esc(m.body)}</div>`;
       const mine = m.uid === account?.id;
-      return `<div class="msg${mine ? ' mine' : ''}"><span class="who" style="color:hsl(${hueFor(m.name)} 80% 68%)">${nameHtml(m.uid, m.name)}<time>${clock(m.at)}</time></span><span class="text">${esc(m.body)}</span></div>`;
+      return `<div class="msg${mine ? ' mine' : ''}"><span class="who" style="color:hsl(${hueFor(m.name)} 80% 68%)">${avatarHtml(m.uid, m.name)}${nameHtml(m.uid, m.name)}<time>${clock(m.at)}</time></span><span class="text">${esc(m.body)}</span></div>`;
     }).join('') : chatWith
       ? `<p class="chat-empty">No messages with ${esc(nameOf(chatWith))} yet. Only the two of you can read this chat.</p>`
       : '<p class="chat-empty">No messages yet. Say hi to the other players.</p>';
@@ -5470,6 +5690,8 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     else if (tab) openConversation(tab.dataset.conv || null);
   });
   $('boardGame').addEventListener('click', e => {
+    const prof = e.target.closest('[data-profile]');
+    if (prof && account) { openProfile(prof.dataset.profile); return; }
     const dm = e.target.closest('[data-dm]');
     if (dm && account) openConversation(dm.dataset.dm);
   });
@@ -5676,7 +5898,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     const rows = [...players].sort((a, b) => a.name.localeCompare(b.name));
     // Rebuilding swaps out the buttons and inputs, which would swallow a click or a half-typed amount,
     // so only rebuild when players or their flags change and otherwise refresh the numbers in place.
-    const sig = rows.map(p => `${p.id}:${p.name}:${p.admin}:${p.banned}`).join('|') + '|' + account?.id;
+    const sig = rows.map(p => `${p.id}:${p.name}:${p.admin}:${p.banned}:${p.medals.join(',')}`).join('|') + '|' + account?.id;
     if (!force && table.dataset.sig === sig) {
       for (const p of rows) {
         const tr = table.querySelector(`tr[data-pid="${CSS.escape(p.id)}"]`);
@@ -5690,10 +5912,11 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     table.dataset.sig = sig;
     table.innerHTML = '<thead><tr><th>Player</th><th>Credits</th><th>Level</th><th>Actions</th></tr></thead><tbody>' + rows.map(p => `
       <tr data-pid="${esc(p.id)}">
-        <td class="pname">${esc(p.name)}${p.admin ? '<span class="tag admin">admin</span>' : ''}${p.banned ? '<span class="tag banned">blocked</span>' : ''}${p.id === account?.id ? ' <span class="tag">you</span>' : ''}</td>
+        <td class="pname">${esc(p.name)}${medalsHtml(p.id, 10)}${p.admin ? '<span class="tag admin">admin</span>' : ''}${p.banned ? '<span class="tag banned">blocked</span>' : ''}${p.id === account?.id ? ' <span class="tag">you</span>' : ''}</td>
         <td><div class="credit-edit"><input type="number" inputmode="numeric" value="${p.credits}" aria-label="Credits for ${esc(p.name)}"><button class="abtn" data-act="credits">Set</button></div></td>
         <td class="lvl">${p.level}</td>
         <td><div class="acts">
+          <button class="abtn" data-act="medals">Medals</button>
           <button class="abtn warn" data-act="reset">Reset</button>
           <button class="abtn${p.banned ? ' ok' : ' warn'}" data-act="ban"${p.id === account?.id ? ' disabled' : ''}>${p.banned ? 'Unblock' : 'Block'}</button>
           <button class="abtn" data-act="admin"${p.id === account?.id ? ' disabled' : ''}>${p.admin ? 'Remove admin' : 'Make admin'}</button>
@@ -5702,6 +5925,8 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
       </tr>`).join('') + '</tbody>';
   }
   $('adminPlayers').addEventListener('click', e => {
+    const medal = e.target.closest('[data-medal]');
+    if (medal) { medal.setAttribute('aria-pressed', String(medal.getAttribute('aria-pressed') !== 'true')); return; }
     const btn = e.target.closest('[data-act]');
     if (!btn) return;
     const tr = btn.closest('tr');
@@ -5716,6 +5941,13 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
         await backend.admin.setCredits(p.id, v);
         delete input.dataset.dirty;
       });
+    } else if (act === 'medals') {
+      const acts = btn.closest('.acts');
+      acts.innerHTML = `<div class="medal-pick">${MEDALS.map(m => `<button type="button" data-medal="${m.id}" aria-pressed="${p.medals.includes(m.id)}" title="${esc(m.desc)}">${medalSvg(m)}${esc(m.name)}</button>`).join('')}</div>` +
+        '<button class="abtn ok" data-act="medals-ok">Save medals</button><button class="abtn" data-act="admin-cancel">Cancel</button>';
+    } else if (act === 'medals-ok') {
+      const list = [...tr.querySelectorAll('[data-medal][aria-pressed="true"]')].map(b => b.dataset.medal);
+      adminDo(list.length ? `${p.name} now has ${list.length} medal${list.length > 1 ? 's' : ''}.` : `${p.name} has no medals now.`, () => backend.admin.setMedals(p.id, list));
     } else if (act === 'reset') {
       if (confirmed(btn, 'Reset?')) adminDo(`${p.name} starts over with ${fmt(settings.startCredits)} credits.`, () => backend.admin.reset(p.id));
     } else if (act === 'ban') {
@@ -5780,6 +6012,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
       const el = form.elements[k];
       if (el) raw[k] = el.type === 'checkbox' ? el.checked : el.value;
     }
+    raw.econ = DEFAULT_SETTINGS.econ;
     const patch = cleanSettings(raw);
     adminDo('Settings saved. Everyone sees them within seconds.', async () => {
       await backend.admin.saveSettings(patch);
