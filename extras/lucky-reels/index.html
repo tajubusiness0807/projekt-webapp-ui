@@ -6798,7 +6798,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (!p || sending) return;
     if (!(amount >= 1)) { msg('Enter how many credits to send.'); return; }
     if (amount > state.credits) { msg(`You only have ${fmt(state.credits)} credits.`); return; }
-    if (state.level < GIFT_LEVEL) { msg(`Reach level ${GIFT_LEVEL} to send credits.`); return; }
+    if (state.level < GIFT_LEVEL && !state.prestige) { msg(`Reach level ${GIFT_LEVEL} to send credits.`); return; }
     if (gameBusy()) { msg('Let the current round finish first.'); return; }
     sending = true;
     $('sendBtn').disabled = true;

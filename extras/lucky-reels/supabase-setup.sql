@@ -1321,8 +1321,9 @@ update public.players set flair = null where flair is not null and game is null;
 -- ---------------------------------------------------------------------------
 -- Sending credits: run this part once (after "Admin security"). Players can
 -- send each other credits from a profile. The database checks the sender's
--- balance and moves the credits in one step; accounts below level 3 can't
--- send (so fresh accounts can't just pass their start credits on). Each gift
+-- balance and moves the credits in one step; accounts below level 3 that
+-- never went Prestige can't send (so fresh accounts can't just pass their
+-- start credits on). Run it again if you ran an older copy. Each gift
 -- is kept so the recipient sees who sent it.
 
 create table if not exists public.transfers (
@@ -1359,7 +1360,8 @@ begin
   select * into them from public.players where id = target;
   if me is null or me.is_banned then raise exception 'not allowed'; end if;
   if them is null or them.is_banned then raise exception 'no such player'; end if;
-  if me.level < 3 then raise exception 'reach level 3 first'; end if;
+  -- Players who went Prestige may send at any level. (Read through jsonb so this works before the prestige column exists.)
+  if me.level < 3 and coalesce((to_jsonb(me) ->> 'prestige')::integer, 0) = 0 then raise exception 'reach level 3 first'; end if;
   if me.credits < amount then raise exception 'not enough credits'; end if;
   update public.players set credits = credits - amount, admin_rev = admin_rev + 1, updated_at = now() where id = me.id;
   update public.players set credits = credits + amount, admin_rev = admin_rev + 1, updated_at = now() where id = them.id;
