@@ -1255,6 +1255,8 @@ html[data-lang="de"] .reel.held::after { content: "GEHALTEN"; }
 .broke-bar b { color: var(--accent); }
 .broke-bar .chip-btn { padding: 8px 14px; background: var(--accent); color: var(--ink); }
 .lobby-mine { background: var(--accent); color: var(--ink); padding: 10px 16px; animation: popIn 0.4s cubic-bezier(.2, 1.6, .4, 1); }
+.start-over-yes { background: var(--lose); color: var(--fg); }
+#startOverInfo { font-weight: 400; color: var(--muted); line-height: 1.45; }
 .mine-card { max-width: 440px; position: relative; background: linear-gradient(#2a1d18, #150f0c); }
 .mine-close { position: absolute; top: 12px; right: 12px; }
 .mine-cave {
@@ -1956,6 +1958,18 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   </div>
 </div>
 
+<div class="modal" id="startOverModal" role="alertdialog" aria-modal="true" aria-labelledby="startOverTitle" aria-describedby="startOverInfo" hidden>
+  <div class="modal-card">
+    <div class="eyebrow">Start over</div>
+    <h2 id="startOverTitle">Really start over?</h2>
+    <p class="wheel-result" id="startOverInfo"></p>
+    <div class="gamble-btns">
+      <button type="button" class="chip-btn" id="startOverNo">Cancel</button>
+      <button type="button" class="chip-btn start-over-yes" id="startOverYes">Yes, start over</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal" id="mineModal" role="dialog" aria-modal="true" aria-labelledby="mineTitle" hidden>
   <div class="modal-card mine-card">
     <button class="chat-close mine-close" id="mineClose" type="button" aria-label="Leave the mine">×</button>
@@ -2240,7 +2254,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'The chat is not set up yet. Ask the person who runs the game to run the chat setup.': 'Der Chat ist noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, die Chat-Einrichtung auszuführen.',
     'Private chats are not set up yet. Ask the person who runs the game to run the private-chat setup.': 'Private Chats sind noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, sie einzurichten.',
     'The message did not go through. Try again.': 'Die Nachricht ging nicht durch. Versuch es nochmal.', 'Chat is switched off for players': 'Der Chat ist für Spieler abgeschaltet',
-    'Someone': 'Jemand', 'Actions': 'Aktionen',
+    'Someone': 'Jemand', 'Actions': 'Aktionen', 'Really start over?': 'Wirklich neu anfangen?', 'Yes, start over': 'Ja, neu anfangen',
     'Amount': 'Betrag', 'Credits to send': 'Credits zum Verschicken', 'Send': 'Senden', 'Credits sent': 'Credits verschickt',
     'Enter how many credits to send.': 'Gib ein, wie viele Credits du schicken willst.', 'Not enough credits for that.': 'Dafür reichen deine Credits nicht.',
     'That player cannot get credits right now.': 'Dieser Spieler kann gerade keine Credits bekommen.',
@@ -2327,6 +2341,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
+    ['You go back to {a} credits at level 1. Credits, goodies, achievements and missions are gone for good.', 'Du fängst wieder mit {a} Credits auf Level 1 an. Credits, Goodies, Erfolge und Missionen sind dann für immer weg.'],
     ['Send {a} credits', 'Credits an {a} schicken'], ['You have {a} credits.', 'Du hast {a} Credits.'], ['Reach level {a} to send credits.', 'Erreiche Level {a}, um Credits zu verschicken.'],
     ['{a} credits went to {b}.', '{a} Credits sind an {b} gegangen.'], ['sent you {a} credits!', 'hat dir {a} Credits geschickt!'], ['+{a} credits. Good luck!', '+{a} Credits. Viel Glück!'], ['{a} rows', '{a} Reihen'], ['Stop ({a})', 'Stopp ({a})'],
     ['Not enough credits for a {a} ball.', 'Nicht genug Credits für eine Kugel zu {a}.'], ['{a} · {b} back', '{a} · {b} zurück'], ['Collect {a} bonus stars.', 'Sammle {a} Bonussterne.'],
@@ -5711,9 +5726,21 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   });
   $('betInput').addEventListener('change', () => { $('betInput').value = state.bet; });
   $('sound').addEventListener('click', () => { state.sound = !state.sound; render(); });
+  // Starting over wipes the whole game, so it asks first.
   $('refill').addEventListener('click', () => {
-    if (busy) return;
-    Object.assign(state, fresh(), { sound: state.sound, adminRev: state.adminRev, credits: settings.startCredits, mode: state.mode });
+    if (gameBusy()) return;
+    $('startOverInfo').textContent = `You go back to ${fmt(settings.startCredits)} credits at level 1. Credits, goodies, achievements and missions are gone for good.`;
+    $('startOverModal').hidden = false;
+    $('startOverNo').focus();
+  });
+  const closeStartOver = () => { $('startOverModal').hidden = true; };
+  $('startOverNo').addEventListener('click', closeStartOver);
+  $('startOverModal').addEventListener('click', e => { if (e.target === $('startOverModal')) closeStartOver(); });
+  $('startOverModal').addEventListener('keydown', e => { if (e.key === 'Escape') closeStartOver(); });
+  $('startOverYes').addEventListener('click', () => {
+    closeStartOver();
+    if (gameBusy()) return;
+    Object.assign(state, fresh(), { sound: state.sound, adminRev: state.adminRev, credits: settings.startCredits, mode: state.mode, avatar: state.avatar, giftSeen: state.giftSeen });
     bjShown.clear();
     renderBJTable(false);
     pendingLevels.length = 0;
@@ -5738,7 +5765,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     }
   });
   document.addEventListener('keydown', e => {
-    if (e.code === 'Space' && account && $('lobby').hidden && state.mode === 'slots' && !['BUTTON', 'SUMMARY', 'INPUT'].includes(e.target.tagName) && $('gambleModal').hidden && $('adminModal').hidden && $('profileModal').hidden && $('mineModal').hidden) { e.preventDefault(); play(); }
+    if (e.code === 'Space' && account && $('lobby').hidden && state.mode === 'slots' && !['BUTTON', 'SUMMARY', 'INPUT'].includes(e.target.tagName) && $('gambleModal').hidden && $('adminModal').hidden && $('profileModal').hidden && $('mineModal').hidden && $('startOverModal').hidden) { e.preventDefault(); play(); }
   });
 
   // ---------- Accounts ----------
