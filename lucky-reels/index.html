@@ -1260,6 +1260,26 @@ html[data-lang="de"] .reel.held::after { content: "GEHALTEN"; }
 .reload-info { font-weight: 400; color: var(--muted); line-height: 1.45; }
 .reload-row { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 10px; background: #e9a23b14; border: 1px dashed #e9a23b66; font-size: 13px; color: var(--muted); }
 .reload-row b { color: var(--fg); }
+.pbadge { display: inline-block; width: 1.9em; height: 1.9em; margin-left: 3px; vertical-align: -0.55em; filter: drop-shadow(0 0 4px #ffd35588); animation: pGlow 2.4s ease-in-out infinite; }
+.pbadge svg { width: 100%; height: 100%; display: block; }
+.pbadge.rainbow { animation: pGlow 2.4s ease-in-out infinite, hue 3s linear infinite; }
+.pbadge.xl { width: 120px; height: 120px; margin: 0; animation: pSpinIn 0.9s cubic-bezier(.2, 1.4, .4, 1), pGlow 2.4s ease-in-out infinite; }
+@keyframes pGlow { 50% { filter: drop-shadow(0 0 9px #ffd355cc) brightness(1.15); } }
+@keyframes pSpinIn { from { transform: rotate(-200deg) scale(0.2); opacity: 0; } }
+.prestige-card { position: relative; overflow: hidden; max-width: 400px; }
+.prestige-card::before { content: ""; position: absolute; inset: -40%; background: conic-gradient(from 0deg, transparent, #e9a23b33, transparent 30%, #ff8fb833, transparent 60%, #4fe3ff33, transparent); animation: pRays 8s linear infinite; pointer-events: none; }
+.prestige-card > * { position: relative; }
+@keyframes pRays { to { transform: rotate(360deg); } }
+#prestigeModal.celebrate .prestige-show .pbadge.xl { animation: pSpinIn 0.9s cubic-bezier(.2, 1.4, .4, 1), pGlow 1.2s ease-in-out infinite; }
+#prestigeModal.celebrate h2 { animation: hue 1.4s linear infinite; }
+.prestige-info { font-weight: 400; color: var(--muted); line-height: 1.45; }
+.prestige-yes { background: linear-gradient(90deg, #e9a23b, #ff8fb8, #a77bff); color: var(--ink); }
+.prestige-btn { width: 100%; padding: 9px 12px; border-radius: 10px; font-weight: 700; font-size: 13px; color: var(--ink); background: linear-gradient(90deg, #f3c94b, #ff8fb8, #a77bff, #4fe3ff); background-size: 300% 100%; animation: pSlide 4s linear infinite; box-shadow: 0 0 18px #ff8fb855; }
+@keyframes pSlide { to { background-position: 300% 0; } }
+.meter-val.maxed { color: var(--accent-hi); font-weight: 700; }
+.prestige-line { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; background: linear-gradient(90deg, #f3c94b, #ff8fb8, #a77bff); -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 700; }
+#prestigeModal { z-index: 45; }
+@media (prefers-reduced-motion: reduce) { .pbadge, .pbadge.xl, .prestige-card::before, .prestige-btn, #prestigeModal.celebrate h2 { animation: none; } }
 .start-over-yes { background: var(--lose); color: var(--fg); }
 #startOverInfo { font-weight: 400; color: var(--muted); line-height: 1.45; }
 .mine-card { max-width: 440px; position: relative; background: linear-gradient(#2a1d18, #150f0c); }
@@ -1902,6 +1922,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
     <div class="meters">
       <div class="meter"><span class="label">Level <b id="lvl">1</b></span><div class="bar"><i id="xpFill"></i></div><span class="meter-val" id="xpVal">0 / 0 XP</span></div>
+      <button type="button" class="prestige-btn" id="prestigeBtn" hidden>★ Max level reached – go Prestige</button>
       <div class="meter"><span class="label">Bonus stars</span><div class="pips" id="starPips"></div><span class="meter-val" id="starVal">0 / 12</span></div>
       <div class="meter"><span class="label">Win streak</span><div class="pips" id="streakPips"></div><span class="meter-val" id="streakVal">×1.00</span></div>
     </div>
@@ -1960,6 +1981,20 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   <div class="modal-card profile-card">
     <button class="chat-close" id="profileClose" type="button" aria-label="Close profile">×</button>
     <div id="profileBody" class="profile-head"></div>
+  </div>
+</div>
+
+<div class="modal" id="prestigeModal" role="alertdialog" aria-modal="true" aria-labelledby="prestigeTitle" hidden>
+  <div class="modal-card prestige-card">
+    <div class="eyebrow">Prestige</div>
+    <div class="prestige-show" id="prestigeShow"></div>
+    <h2 id="prestigeTitle">Go Prestige?</h2>
+    <p class="wheel-result prestige-info" id="prestigeInfo"></p>
+    <div class="gamble-btns" id="prestigeAsk">
+      <button type="button" class="chip-btn" id="prestigeNo">Not yet</button>
+      <button type="button" class="chip-btn prestige-yes" id="prestigeYes">Prestige!</button>
+    </div>
+    <button type="button" class="spin" id="prestigeDone" hidden>Back to the game</button>
   </div>
 </div>
 
@@ -2276,6 +2311,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Private chats are not set up yet. Ask the person who runs the game to run the private-chat setup.': 'Private Chats sind noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, sie einzurichten.',
     'The message did not go through. Try again.': 'Die Nachricht ging nicht durch. Versuch es nochmal.', 'Chat is switched off for players': 'Der Chat ist für Spieler abgeschaltet',
     'Someone': 'Jemand', 'Actions': 'Aktionen',
+    '★ Max level reached – go Prestige': '★ Max-Level erreicht – Prestige starten', 'Max level!': 'Max-Level!', 'You can go Prestige now: open your profile.': 'Du kannst jetzt Prestige machen: Öffne dein Profil.',
+    'Prestige': 'Prestige', 'Go Prestige?': 'Prestige starten?', 'Not yet': 'Noch nicht', 'Prestige!': 'Prestige!', 'Back to the game': 'Zurück zum Spiel',
+    'Back to level 1, with a shiny new badge. Everyone can see it next to your name.': 'Zurück auf Level 1, mit einem glänzenden neuen Abzeichen. Alle sehen es neben deinem Namen.',
+    'Prestigious': 'Prestigeträchtig', 'Go Prestige for the first time.': 'Mach zum ersten Mal Prestige.', 'MAX': 'MAX',
     'Update': 'Update', 'New update!': 'Neues Update!', 'Lucky Reels just got an update. Reload the page to get the newest version.': 'Lucky Reels hat gerade ein Update bekommen. Lade die Seite neu, um die neueste Version zu bekommen.',
     'Later': 'Später', 'Reload now': 'Jetzt neu laden', 'New version online?': 'Neue Version online?',
     'Ask everyone who has the game open to reload the page.': 'Bitte alle, die das Spiel offen haben, die Seite neu zu laden.',
@@ -2367,6 +2406,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
+    ['Go Prestige {a}?', 'Prestige {a} starten?'], ['Prestige {a}!', 'Prestige {a}!'],
+    ['You go back to level 1 and earn the Prestige {a} badge next to your name, for everyone to see. Your credits, goodies and achievements stay.', 'Du gehst zurück auf Level 1 und bekommst das Prestige-{a}-Abzeichen neben deinem Namen, für alle sichtbar. Deine Credits, Goodies und Erfolge bleiben.'],
     ['You go back to {a} credits at level 1. Credits, goodies, achievements and missions are gone for good.', 'Du fängst wieder mit {a} Credits auf Level 1 an. Credits, Goodies, Erfolge und Missionen sind dann für immer weg.'],
     ['Send {a} credits', 'Credits an {a} schicken'], ['You have {a} credits.', 'Du hast {a} Credits.'], ['Reach level {a} to send credits.', 'Erreiche Level {a}, um Credits zu verschicken.'],
     ['{a} credits went to {b}.', '{a} Credits sind an {b} gegangen.'], ['sent you {a} credits!', 'hat dir {a} Credits geschickt!'], ['+{a} credits. Good luck!', '+{a} Credits. Viel Glück!'], ['{a} rows', '{a} Reihen'], ['Stop ({a})', 'Stopp ({a})'],
@@ -2607,6 +2648,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const STREAK_STEP = 0.1;
   const STREAK_MAX = 5;
   const xpNeed = level => Math.floor(120 * level ** 1.4);
+  const MAX_LEVEL = 20;
   const GAMBLE_MAX = 5;
   const GAMBLE_EDGE = 0.95;
   let NUDGE_CHANCE = 12;
@@ -2696,6 +2738,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     { id: 'shark', name: 'Card Shark', desc: 'Win a poker pot.', reward: 300, test: c => c?.pokerWin },
     { id: 'royalty', name: 'Royalty', desc: 'Win a poker pot with a straight flush.', reward: 2000, test: c => c?.pokerSF },
     { id: 'plinko', name: 'Sky Drop', desc: 'Land a Plinko ball on 25× or more.', reward: 800, test: c => c?.plinkoMult >= 25 },
+    { id: 'prestige', name: 'Prestigious', desc: 'Go Prestige for the first time.', reward: 2500, test: c => c?.prestige >= 1 },
     { id: 'miner', name: 'Gold Digger', desc: 'Come back from the gold mine.', reward: 100, test: c => c?.mined },
     { id: 'bullseye', name: 'Bullseye', desc: 'Hit a single number in roulette.', reward: 500, test: c => c?.bullseye },
     { id: 'natural', name: 'Natural', desc: 'Get a blackjack.', reward: 300, test: c => c?.natural },
@@ -2714,7 +2757,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       midnight: false, disco: false, royalFelt: false, goldBacks: false, fireworks: false },
     // Cosmetics the player owns but switched off.
     cosOff: {},
-    streak: 0, stars: 0, starBank: 0, avatar: null, freeSpins: 0, freeBet: 0, freeTotal: 0, jackpots: 0,
+    streak: 0, stars: 0, starBank: 0, avatar: null, prestige: 0, freeSpins: 0, freeBet: 0, freeTotal: 0, jackpots: 0,
     xp: 0, level: 1, ach: {}, adminRev: 0,
     nudges: 0, missions: [], missionsDone: 0,
     mode: 'slots', bj: { shoe: [], round: null, bet: 0, lastBet: 0, hands: 0 },
@@ -3237,12 +3280,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   function say(text, kind = '') { showMessage($('message'), text, kind); }
 
   function gainXp(n) {
+    if (state.level >= MAX_LEVEL) { state.xp = xpNeed(MAX_LEVEL); return; }
     state.xp += n;
-    while (state.xp >= xpNeed(state.level)) {
+    while (state.level < MAX_LEVEL && state.xp >= xpNeed(state.level)) {
       state.xp -= xpNeed(state.level);
       state.level++;
       pendingLevels.push(state.level);
     }
+    if (state.level >= MAX_LEVEL) state.xp = xpNeed(MAX_LEVEL);
   }
 
   async function spin(free = false) {
@@ -5420,6 +5465,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const prize = LEVEL_REWARD * level;
     state.credits = Math.min(MAX, state.credits + prize);
     toast(`Level ${level}!`, `+${fmt(prize)} credits`);
+    if (level >= MAX_LEVEL) setTimeout(() => toast('Max level!', 'You can go Prestige now: open your profile.'), 1200);
     floatText(`Level ${level} · +${fmt(prize)}`, 'star');
     sound.levelUp();
     for (let k = 0; k < 40; k++) fxTop.confetti(CONFETTI);
@@ -5689,7 +5735,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const need = xpNeed(state.level);
     $('lvl').textContent = state.level;
     $('xpFill').style.width = Math.min(100, (state.xp / need) * 100) + '%';
-    $('xpVal').textContent = `${fmt(state.xp)} / ${fmt(need)} XP`;
+    const maxed = state.level >= MAX_LEVEL;
+    $('xpVal').textContent = maxed ? 'MAX' : `${fmt(state.xp)} / ${fmt(need)} XP`;
+    $('xpVal').classList.toggle('maxed', maxed);
+    $('prestigeBtn').hidden = !maxed;
     [...starPips.children].forEach((p, i) => p.classList.toggle('on', i < state.stars));
     $('starVal').textContent = `${state.stars} / ${STAR_GOAL}`;
     [...streakPips.children].forEach((p, i) => p.classList.toggle('on', i < state.streak));
@@ -5754,6 +5803,46 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   });
   $('betInput').addEventListener('change', () => { $('betInput').value = state.bet; });
   $('sound').addEventListener('click', () => { state.sound = !state.sound; render(); });
+  // Prestige: from level 20 back to level 1, for a badge everyone sees. Credits, goodies and achievements stay.
+  function openPrestige() {
+    if (!account || state.level < MAX_LEVEL) return;
+    const next = (state.prestige || 0) + 1;
+    $('prestigeShow').innerHTML = prestigeBadge(next, 'xl');
+    $('prestigeTitle').textContent = `Go Prestige ${roman(next)}?`;
+    $('prestigeInfo').textContent = `You go back to level 1 and earn the Prestige ${roman(next)} badge next to your name, for everyone to see. Your credits, goodies and achievements stay.`;
+    $('prestigeAsk').hidden = false;
+    $('prestigeDone').hidden = true;
+    $('prestigeModal').classList.remove('celebrate');
+    $('prestigeModal').hidden = false;
+    $('prestigeNo').focus();
+  }
+  $('prestigeBtn').addEventListener('click', openPrestige);
+  $('prestigeNo').addEventListener('click', () => { $('prestigeModal').hidden = true; });
+  $('prestigeDone').addEventListener('click', () => { $('prestigeModal').hidden = true; });
+  $('prestigeModal').addEventListener('keydown', e => { if (e.key === 'Escape') $('prestigeModal').hidden = true; });
+  $('prestigeYes').addEventListener('click', () => {
+    if (state.level < MAX_LEVEL) return;
+    state.prestige = (state.prestige || 0) + 1;
+    state.level = 1;
+    state.xp = 0;
+    const n = state.prestige;
+    $('prestigeModal').classList.add('celebrate');
+    $('prestigeTitle').textContent = `Prestige ${roman(n)}!`;
+    $('prestigeInfo').textContent = 'Back to level 1, with a shiny new badge. Everyone can see it next to your name.';
+    $('prestigeAsk').hidden = true;
+    $('prestigeDone').hidden = false;
+    $('prestigeDone').focus();
+    sound.levelUp();
+    setTimeout(() => sound.bigWin(), 400);
+    for (let k = 0; k < 120; k++) fxTop.confetti(['#fff2c4', '#e9a23b', '#ff8fb8', '#4fe3ff', '#a77bff']);
+    const r = $('prestigeShow').getBoundingClientRect();
+    fxTop.burst(r.left + r.width / 2, r.top + r.height / 2, 140, 42, 10, false);
+    fireworks(8);
+    checkAch({ prestige: n });
+    render();
+    renderBoards();
+    if (!$('profileModal').hidden) renderProfile();
+  });
   $('reloadNow').addEventListener('click', async () => { try { await flush(); } catch {} location.reload(); });
   $('reloadLater').addEventListener('click', () => { $('reloadModal').hidden = true; });
   // Starting over wipes the whole game, so it asks first.
@@ -5770,7 +5859,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   $('startOverYes').addEventListener('click', () => {
     closeStartOver();
     if (gameBusy()) return;
-    Object.assign(state, fresh(), { sound: state.sound, adminRev: state.adminRev, credits: settings.startCredits, mode: state.mode, avatar: state.avatar, giftSeen: state.giftSeen });
+    Object.assign(state, fresh(), { sound: state.sound, adminRev: state.adminRev, credits: settings.startCredits, mode: state.mode, avatar: state.avatar, giftSeen: state.giftSeen, prestige: state.prestige });
     bjShown.clear();
     renderBJTable(false);
     pendingLevels.length = 0;
@@ -5826,7 +5915,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     id: p.id, name: p.name || p.id, credits: Number(p.credits) || 0, best: Number(p.best) || 0, level: Number(p.level) || 1,
     jackpots: Number(p.jackpots) || 0, flair: p.flair || null,
     avatar: Number.isInteger(p.avatar) && p.avatar >= 0 && p.avatar < 8 ? p.avatar : null,
-    medals: Array.isArray(p.medals) ? p.medals.filter(m => MEDAL_IDS.includes(m)) : [], admin: !!(p.admin ?? p.is_admin), banned: !!(p.banned ?? p.is_banned), adminRev: Number(p.adminRev ?? p.admin_rev) || 0,
+    medals: Array.isArray(p.medals) ? p.medals.filter(m => MEDAL_IDS.includes(m)) : [],
+    prestige: Math.max(0, Math.min(99, Number(p.prestige) || 0)), admin: !!(p.admin ?? p.is_admin), banned: !!(p.banned ?? p.is_banned), adminRev: Number(p.adminRev ?? p.admin_rev) || 0,
   }));
   const adminChanged = () => Object.assign(new Error('changed by an admin'), { code: 'admin_changed' });
   const SESSION_KEY = 'lucky-reels-session';
@@ -5899,12 +5989,12 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           for (const p of players) {
             const doc = await store.load(p.id);
             if (!doc) continue;
-            await store.save(p.id, { credits: 500, best: 0, level: 1, spins: 0, jackpots: 0, game: null, flair: null, adminRev: (Number(doc.adminRev) || 0) + 1 });
+            await store.save(p.id, { credits: 500, best: 0, level: 1, spins: 0, jackpots: 0, game: null, flair: null, prestige: 0, adminRev: (Number(doc.adminRev) || 0) + 1 });
           }
         },
         async reset(id) {
           const doc = await store.load(id);
-          await store.save(id, { credits: settings.startCredits, best: 0, level: 1, spins: 0, jackpots: 0, game: null, flair: null, adminRev: (Number(doc?.adminRev) || 0) + 1 });
+          await store.save(id, { credits: settings.startCredits, best: 0, level: 1, spins: 0, jackpots: 0, game: null, flair: null, prestige: 0, adminRev: (Number(doc?.adminRev) || 0) + 1 });
         },
         setBanned: (id, value) => store.save(id, { banned: value }),
         setMedals: (id, medals) => store.save(id, { medals }),
@@ -6140,6 +6230,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const adminSchema = !(await sb.from('players').select('admin_rev').limit(1)).error;
     let hasFlair = !(await sb.from('players').select('flair').limit(1)).error;
     let hasProfile = !(await sb.from('players').select('avatar,medals').limit(1)).error;
+    let hasPrestige = !(await sb.from('players').select('prestige').limit(1)).error;
     const adminCols = adminSchema ? ',is_admin,is_banned,admin_rev' : '';
     // New accounts are only offered when Supabase confirms them on the spot: the made-up addresses can't receive mail.
     let canSignUp = false;
@@ -6207,7 +6298,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         if (!hasJackpots) delete patch.jackpots;
         if (!hasFlair) delete patch.flair;
         if (!hasProfile) delete patch.avatar;
+        if (!hasPrestige) delete patch.prestige;
         let { data, error } = await send();
+        // Before the prestige SQL runs there is no prestige column; save without it.
+        if (error && hasPrestige && /prestige/.test(error.message || '')) {
+          hasPrestige = false;
+          delete patch.prestige;
+          ({ data, error } = await send());
+        }
         // Before the profile SQL runs there is no avatar column; save without it.
         if (error && hasProfile && /avatar/.test(error.message || '')) {
           hasProfile = false;
@@ -6368,7 +6466,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       },
       watch(cb) {
         const pull = async () => {
-          let { data, error } = await sb.from('players').select(`id,name,credits,best,level${hasJackpots ? ',jackpots' : ''}${hasFlair ? ',flair' : ''}${hasProfile ? ',avatar,medals' : ''}${adminCols}`);
+          let { data, error } = await sb.from('players').select(`id,name,credits,best,level${hasJackpots ? ',jackpots' : ''}${hasFlair ? ',flair' : ''}${hasProfile ? ',avatar,medals' : ''}${hasPrestige ? ',prestige' : ''}${adminCols}`);
           if (error && hasJackpots) {
             hasJackpots = false;
             ({ data } = await sb.from('players').select(`id,name,credits,best,level${adminCols}`));
@@ -6492,7 +6590,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (!account || !backend || account.deleted) return;
     if (saving) { saveAgain = true; return; }
     const key = account.id;
-    const body = { credits: state.credits, best: state.best, level: state.level, spins: state.spins, jackpots: state.jackpots, flair: state.owned.neon && !state.cosOff?.neon ? 'neon' : null, avatar: state.avatar ?? null, adminRev: state.adminRev, game: JSON.stringify(state) };
+    const body = { credits: state.credits, best: state.best, level: state.level, spins: state.spins, jackpots: state.jackpots, flair: state.owned.neon && !state.cosOff?.neon ? 'neon' : null, avatar: state.avatar ?? null, prestige: state.prestige || 0, adminRev: state.adminRev, game: JSON.stringify(state) };
     const json = JSON.stringify(body);
     if (json === lastSaved) return;
     saving = true;
@@ -6516,6 +6614,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     state.owned = Object.assign(fresh().owned, saved.owned);
     state.cosOff = Object.assign({}, saved.cosOff);
     if (!saved.giftSeen) state.giftSeen = Date.now();
+    if (state.level > MAX_LEVEL) { state.level = MAX_LEVEL; state.xp = xpNeed(MAX_LEVEL); }
     // The Lucky Cat goodie is gone; whoever bought it gets the 8,000 credits back once.
     if (saved.owned?.luckyCat) { state.credits = Math.min(MAX, (state.credits || 0) + 8000); delete state.owned.luckyCat; setTimeout(() => toast('Lucky Cat retired', 'The cat left the shop: you got your 8,000 credits back.'), 1500); }
     delete state.catSpins;
@@ -6627,9 +6726,23 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // A player's name as HTML, glowing if they own the Neon Name (your own shows right away).
   const nameHtml = (id, name) => {
     const neon = id === account?.id ? state.owned.neon && !state.cosOff?.neon : players.find(p => p.id === id)?.flair === 'neon';
-    return neon ? `<span class="neon-name">${esc(name)}</span>` : esc(name);
+    return (neon ? `<span class="neon-name">${esc(name)}</span>` : esc(name)) + prestigeBadge(prestigeOf(id));
   };
   const byName = (a, b) => a.name.localeCompare(b.name);
+  // Prestige badges: a jewel with the prestige number, a new colour for each of the first five.
+  const PRESTIGE_TIERS = [
+    ['#fff2c4', '#e9a23b', '#8a5a12'], ['#ffd6e4', '#f07aa0', '#8a2c4f'], ['#c8ffe4', '#3fd1a4', '#16624a'],
+    ['#d6ecff', '#4f9dff', '#1d3f8a'], ['#ecdcff', '#a77bff', '#4b2c94'],
+  ];
+  const roman = n => { let out = ''; for (const [v, r] of [[10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']]) while (n >= v) { out += r; n -= v; } return out; };
+  const prestigeOf = id => id === account?.id ? state.prestige || 0 : players.find(p => p.id === id)?.prestige || 0;
+  function prestigeBadge(n, cls = '') {
+    if (!n) return '';
+    const rainbow = n > PRESTIGE_TIERS.length;
+    const [hi, mid, lo] = PRESTIGE_TIERS[Math.min(n, PRESTIGE_TIERS.length) - 1];
+    const r = roman(n), small = r.length > 2;
+    return `<span class="pbadge${rainbow ? ' rainbow' : ''} ${cls}" title="Prestige ${r}" aria-label="Prestige ${r}"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 1.5l5.2 8.3 9.3 2-4.2 9.2 2 10.3-9.3-1.2L20 38.5l-3-8.4-9.3 1.2 2-10.3-4.2-9.2 9.3-2z" fill="${mid}" stroke="${lo}" stroke-width="1.6" stroke-linejoin="round"/><path d="M20 4.5l4 6.6-4 3.5-4-3.5z" fill="${hi}" opacity=".9"/><circle cx="20" cy="20.5" r="9.6" fill="${lo}"/><circle cx="20" cy="20.5" r="9.6" fill="none" stroke="${hi}" stroke-width="1.2" opacity=".8"/><text x="20" y="${small ? 23.5 : 24.6}" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="${small ? 8 : 11.5}" fill="#fff">${r}</text></svg></span>`;
+  }
   const avatarOf = id => id === account?.id ? state.avatar : players.find(p => p.id === id)?.avatar;
   // A player's picture (or their initial in their name colour).
   function avatarHtml(id, name, cls = '', tag = 'span') {
@@ -6665,7 +6778,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       `<button type="button" data-av="${i}" aria-pressed="${state.avatar === i}" aria-label="${AVATAR_NAMES[i]}" title="${AVATAR_NAMES[i]}">${svg}</button>`).join('')}</div>` +
       `<button type="button" class="chip-btn" data-av="none"${state.avatar == null ? ' disabled' : ''}>Use my initial instead</button>` +
       '<button type="button" class="link-btn" data-pw>Change password</button>' : '';
+    const prestigeRow = mine && state.level >= MAX_LEVEL ? '<button type="button" class="prestige-btn" data-prestige>★ Max level reached – go Prestige</button>' : '';
     $('profileBody').innerHTML = `${avatarHtml(p.id, p.name, 'lg')}<h2 id="profileName">${nameHtml(p.id, p.name)}</h2>` +
+      (prestigeOf(p.id) ? `<span class="prestige-line">Prestige ${roman(prestigeOf(p.id))}</span>` : '') + prestigeRow +
       `<div class="profile-stats"><div><b>${fmt(credits)}</b><span>Credits</span></div><div><b>${fmt(best)}</b><span>Best win</span></div><div><b>${level}</b><span>Level</span></div></div>` +
       `<span class="profile-label">Medals (${medals.length})</span>` +
       (medals.length ? `<div class="medal-list">${medals.map(m => `<div class="medal-row">${medalSvg(m)}<span><b>${esc(m.name)}</b><small>${esc(m.desc)}</small></span></div>`).join('')}</div>`
@@ -6727,6 +6842,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   $('profileBody').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'sendAmt') sendGift(); });
   $('profileBody').addEventListener('click', e => {
     if (e.target.closest('#sendBtn')) { sendGift(); return; }
+    if (e.target.closest('[data-prestige]')) { closeProfile(); openPrestige(); return; }
     if (e.target.closest('[data-send-max]')) { $('sendAmt').value = Math.max(0, Math.floor(state.credits)); return; }
     if (e.target.closest('[data-pw]')) {
       closeProfile();

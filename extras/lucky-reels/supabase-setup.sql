@@ -1370,3 +1370,73 @@ $$;
 
 revoke execute on function public.send_credits(uuid, bigint) from public, anon;
 grant execute on function public.send_credits(uuid, bigint) to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Prestige: run this part once (after "Hard reset"). Level 20 is the top;
+-- from there players can go Prestige (back to level 1 for a badge everyone
+-- sees). This stores the prestige count, and the hard reset and a player
+-- reset set it back to 0.
+
+alter table public.players add column if not exists prestige smallint not null default 0 check (prestige between 0 and 99);
+grant update (prestige) on public.players to authenticated;
+
+create or replace function public.admin_hard_reset(tok uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.admin_check(tok);
+  update public.players set
+    credits = 500, best = 0, level = 1, spins = 0, jackpots = 0, game = null, flair = null, prestige = 0,
+    admin_rev = admin_rev + 1, updated_at = now()
+  where true;
+  -- Chips at the poker table go too (only if the poker part has run).
+  if to_regclass('public.poker_seats') is not null then
+    execute 'delete from public.poker_seats where true';
+    execute $q$update public.poker_tables set phase = 'waiting', board = '{}', deck = '{}', current_bet = 0,
+      to_act = -1, deadline = null, result = null where id = 1$q$;
+    execute 'update public.poker_pulse set rev = rev + 1, at = now() where id = 1';
+  end if;
+end;
+$$;
+
+revoke execute on function public.admin_hard_reset(uuid) from public, anon;
+grant execute on function public.admin_hard_reset(uuid) to authenticated;
+
+-- Resetting one player also takes away their Neon Name and prestige.
+create or replace function public.admin_update_player(
+  tok uuid,
+  target uuid,
+  new_credits bigint default null,
+  reset boolean default false,
+  set_banned boolean default null
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  start_credits bigint := coalesce((select (data ->> 'startCredits')::bigint from public.settings where id = 1), 500);
+begin
+  perform public.admin_check(tok);
+  if new_credits is not null and new_credits < 0 then raise exception 'credits must be 0 or more'; end if;
+  if set_banned and target = auth.uid() then raise exception 'cannot block yourself'; end if;
+  update public.players set
+    credits = case when reset then coalesce(new_credits, start_credits) else coalesce(new_credits, credits) end,
+    best = case when reset then 0 else best end,
+    level = case when reset then 1 else level end,
+    spins = case when reset then 0 else spins end,
+    jackpots = case when reset then 0 else jackpots end,
+    game = case when reset then null else game end,
+    flair = case when reset then null else flair end,
+    prestige = case when reset then 0 else prestige end,
+    is_banned = coalesce(set_banned, is_banned),
+    admin_rev = admin_rev + case when reset or new_credits is not null then 1 else 0 end,
+    updated_at = now()
+  where id = target;
+end;
+$$;
+
