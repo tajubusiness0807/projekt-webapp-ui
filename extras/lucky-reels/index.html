@@ -564,6 +564,66 @@ details.ach { margin-top: 10px; }
 .ach li:not(.done) b { color: var(--muted); }
 .disclaimer { text-align: center; font-size: 12px; color: var(--muted); margin: 18px auto 0; max-width: 52ch; line-height: 1.5; }
 
+/* Game lobby between sign-in and the games */
+.lobby {
+  position: fixed; inset: 0; z-index: 39;
+  overflow-y: auto;
+  display: grid; place-items: center;
+  padding-block: 24px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background: radial-gradient(ellipse at top, #2e2019 0%, var(--bg) 65%), var(--bg);
+}
+body.has-announce .lobby { padding-top: calc(70px + env(safe-area-inset-top, 0px)); }
+.lobby-card { width: 100%; max-width: 620px; display: grid; gap: 18px; justify-items: center; text-align: center; animation: fadeIn 0.4s ease-out; }
+.lobby-hi { margin: -8px 0 0; font-size: 16px; color: var(--fg); }
+.lobby-hi b { color: var(--accent); }
+.lobby-credits { margin: -8px 0 0; font-family: var(--font-mono); font-size: 14px; color: var(--muted); }
+.lobby-credits b { color: var(--accent); font-size: 18px; }
+.lobby-games { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.game-pick {
+  position: relative;
+  display: grid; justify-items: center; gap: 8px;
+  padding: 22px 14px 18px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #33231c, var(--cabinet));
+  border: 3px solid var(--cabinet-edge);
+  color: var(--fg);
+  box-shadow: 0 18px 40px -18px #000;
+  transition: transform 0.2s cubic-bezier(.2, 1.4, .4, 1), border-color 0.2s, box-shadow 0.2s;
+  animation: tierIn 0.5s cubic-bezier(.2, 1.4, .4, 1) both;
+}
+.game-pick:nth-child(2) { animation-delay: 0.08s; }
+.game-pick:hover, .game-pick:focus-visible { transform: translateY(-6px); border-color: var(--accent); box-shadow: 0 26px 50px -18px #000, 0 0 40px -10px #e9a23b99; }
+.game-pick svg { width: min(150px, 100%); height: auto; overflow: visible; }
+.gp-title { font-family: var(--font-display); font-size: clamp(22px, 6vw, 30px); color: var(--accent); line-height: 1; }
+.gp-desc { font-size: 13px; color: var(--muted); line-height: 1.4; max-width: 24ch; }
+.gp-go { margin-top: 4px; padding: 8px 22px; border-radius: 999px; background: linear-gradient(#f3b956, #c7801f); color: var(--ink); font-family: var(--font-display); font-size: 15px; box-shadow: 0 4px 0 #7a4a12; }
+.gp-last { position: absolute; top: 10px; right: 12px; padding: 2px 8px; border-radius: 999px; background: #e9a23b26; color: var(--accent); font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+/* Slots icon: reels roll and the lever pulls on hover */
+.gp-slots .gp-strip { animation: none; }
+.game-pick:hover .gp-slots .gp-strip, .game-pick:focus-visible .gp-slots .gp-strip { animation: gpRoll 0.5s linear infinite; }
+.game-pick:hover .gp-slots .gp-strip:nth-of-type(2) { animation-duration: 0.42s; }
+.game-pick:hover .gp-slots .gp-strip:nth-of-type(3) { animation-duration: 0.36s; }
+@keyframes gpRoll { to { transform: translateY(-60px); } }
+.gp-slots .gp-lever { transform-origin: 122px 74px; transition: transform 0.25s; }
+.game-pick:hover .gp-slots .gp-lever, .game-pick:focus-visible .gp-slots .gp-lever { transform: rotate(38deg); }
+.gp-slots .gp-bulb { animation: blink 1.2s infinite; }
+.gp-slots .gp-bulb:nth-child(even) { animation-delay: 0.6s; }
+/* Blackjack icon: the cards fan out and the chip spins on hover */
+.gp-bj .gp-c1, .gp-bj .gp-c2 { transform-origin: 70px 128px; transition: transform 0.3s cubic-bezier(.2, 1.4, .4, 1); }
+.gp-bj .gp-c1 { transform: rotate(-10deg); }
+.gp-bj .gp-c2 { transform: rotate(10deg); }
+.game-pick:hover .gp-bj .gp-c1, .game-pick:focus-visible .gp-bj .gp-c1 { transform: rotate(-22deg) translateX(-6px); }
+.game-pick:hover .gp-bj .gp-c2, .game-pick:focus-visible .gp-bj .gp-c2 { transform: rotate(22deg) translateX(6px); }
+.gp-bj .gp-chip { transform-origin: 118px 118px; transition: transform 0.6s; }
+.game-pick:hover .gp-bj .gp-chip { transform: rotate(180deg) translateY(-4px); }
+@media (max-width: 420px) { .game-pick { padding: 18px 10px 14px; } .gp-desc { font-size: 12px; } }
+@media (prefers-reduced-motion: reduce) {
+  .game-pick, .lobby-card, .gp-slots .gp-bulb { animation: none; }
+  .game-pick:hover .gp-slots .gp-strip { animation: none; }
+}
+
 /* Login, account bar, highscores */
 .login {
   position: fixed; inset: 0; z-index: 40;
@@ -1055,6 +1115,50 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     <div class="board-wrap"><h2 class="board-title">Highscores</h2><table class="board" id="boardLogin"></table></div>
     <p class="login-note" id="loginNote"></p>
   </form>
+</div>
+
+<div class="lobby" id="lobby" role="dialog" aria-modal="true" aria-labelledby="lobbyTitle" hidden>
+  <div class="lobby-card">
+    <h1 class="login-logo" id="lobbyTitle">Lucky Reels</h1>
+    <p class="lobby-hi">Hi <b id="lobbyName"></b>, what do you want to play?</p>
+    <p class="lobby-credits">Credits <b id="lobbyCredits">0</b></p>
+    <div class="lobby-games">
+      <button class="game-pick" type="button" data-mode="slots">
+        <svg class="gp-slots" viewBox="0 0 140 130" aria-hidden="true">
+          <defs><clipPath id="gpWin"><rect x="26" y="40" width="70" height="30" rx="4"/></clipPath></defs>
+          <rect x="12" y="14" width="98" height="108" rx="16" fill="#4a2f24" stroke="#e9a23b" stroke-width="3"/>
+          <rect x="20" y="22" width="82" height="12" rx="6" fill="#1d1714"/>
+          <circle class="gp-bulb" cx="34" cy="28" r="3" fill="#e9a23b"/><circle class="gp-bulb" cx="48" cy="28" r="3" fill="#e9a23b"/><circle class="gp-bulb" cx="62" cy="28" r="3" fill="#e9a23b"/><circle class="gp-bulb" cx="76" cy="28" r="3" fill="#e9a23b"/><circle class="gp-bulb" cx="90" cy="28" r="3" fill="#e9a23b"/>
+          <rect x="22" y="36" width="78" height="38" rx="6" fill="#d9cbb8"/>
+          <g clip-path="url(#gpWin)" font-family="Bungee, Impact, sans-serif" font-size="22" text-anchor="middle">
+            <g class="gp-strip"><text x="38" y="64" fill="#c8323a">7</text><text x="38" y="94" fill="#6b3f8f">★</text><text x="38" y="124" fill="#c8323a">7</text></g>
+            <g class="gp-strip"><text x="61" y="64" fill="#c8323a">7</text><text x="61" y="94" fill="#e9a23b">♦</text><text x="61" y="124" fill="#c8323a">7</text></g>
+            <g class="gp-strip"><text x="84" y="64" fill="#c8323a">7</text><text x="84" y="94" fill="#2f9e6a">♣</text><text x="84" y="124" fill="#c8323a">7</text></g>
+          </g>
+          <rect x="22" y="36" width="78" height="38" rx="6" fill="none" stroke="#a8947e" stroke-width="2"/>
+          <line x1="22" y1="55" x2="100" y2="55" stroke="#e0715b" stroke-width="1.5" opacity="0.8"/>
+          <rect x="30" y="84" width="62" height="14" rx="7" fill="#e9a23b"/><text x="61" y="95" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="9" fill="#1d1714">SPIN</text>
+          <rect x="38" y="104" width="46" height="6" rx="3" fill="#1d1714"/>
+          <rect x="110" y="70" width="10" height="10" rx="3" fill="#a8947e"/>
+          <g class="gp-lever"><line x1="122" y1="74" x2="122" y2="30" stroke="#d9cbb8" stroke-width="4" stroke-linecap="round"/><circle cx="122" cy="26" r="8" fill="#c8323a"/><circle cx="119" cy="23" r="2.5" fill="#fff8"/></g>
+        </svg>
+        <span class="gp-title">Slots</span>
+        <span class="gp-desc">Spin the reels: wilds, free spins, lightning and jackpots.</span>
+        <span class="gp-go">Play</span>
+      </button>
+      <button class="game-pick" type="button" data-mode="bj">
+        <svg class="gp-bj" viewBox="0 0 140 130" aria-hidden="true">
+          <ellipse cx="70" cy="118" rx="58" ry="10" fill="#11553a"/>
+          <g class="gp-c1"><rect x="34" y="20" width="58" height="84" rx="8" fill="#f6efe3" stroke="#d9cbb8" stroke-width="2"/><text x="42" y="38" font-family="Figtree, sans-serif" font-weight="700" font-size="14" fill="#1d1714">A</text><text x="63" y="74" text-anchor="middle" font-size="34" fill="#1d1714">♠</text></g>
+          <g class="gp-c2"><rect x="48" y="20" width="58" height="84" rx="8" fill="#f6efe3" stroke="#d9cbb8" stroke-width="2"/><text x="56" y="38" font-family="Figtree, sans-serif" font-weight="700" font-size="14" fill="#c8323a">K</text><text x="77" y="74" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="30" fill="#c8323a">K</text><text x="77" y="94" text-anchor="middle" font-size="16" fill="#c8323a">♥</text></g>
+          <g class="gp-chip"><circle cx="118" cy="104" r="16" fill="#c8323a" stroke="#fff" stroke-width="3" stroke-dasharray="6 5"/><circle cx="118" cy="104" r="9" fill="#a3262d"/><text x="118" y="108" text-anchor="middle" font-family="Chivo Mono, monospace" font-weight="600" font-size="9" fill="#fff">21</text></g>
+        </svg>
+        <span class="gp-title">Blackjack</span>
+        <span class="gp-desc">Beat the dealer to 21: hit, stand, double and split.</span>
+        <span class="gp-go">Play</span>
+      </button>
+    </div>
+  </div>
 </div>
 
 <div class="account-bar" id="accountBar" hidden>
@@ -2600,7 +2704,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
   $('bjDeal').addEventListener('click', bjDeal);
   document.querySelectorAll('.bj-act').forEach(b => b.addEventListener('click', () => bjAct(b.dataset.bj)));
   document.addEventListener('keydown', e => {
-    if (state.mode !== 'bj' || !account || e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (state.mode !== 'bj' || !account || !$('lobby').hidden || e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
     if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal')) return;
     if (!$('wheelModal').hidden || !$('gambleModal').hidden || !$('adminModal').hidden) return;
     const key = e.key.toLowerCase();
@@ -2636,6 +2740,26 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
       if (!bjActive()) bjSay(state.bj.bet ? 'Deal when you are ready.' : 'Tap the chips to bet, then deal.');
     }
   }
+  // Lobby: pick a game after signing in; the switch in the cabinet header still works later.
+  function showLobby() {
+    $('lobbyName').textContent = account?.name || '';
+    $('lobbyCredits').textContent = fmt(state.credits);
+    document.querySelectorAll('.game-pick').forEach(b => {
+      b.querySelector('.gp-last')?.remove();
+      if (b.dataset.mode === state.mode && state.spins + state.bj.hands > 0) b.insertAdjacentHTML('afterbegin', '<span class="gp-last">Last played</span>');
+    });
+    $('lobby').hidden = false;
+    document.querySelector(`.game-pick[data-mode="${state.mode}"]`)?.focus();
+  }
+  document.querySelectorAll('.game-pick').forEach(b => b.addEventListener('click', () => {
+    state.mode = b.dataset.mode;
+    applyGameMode();
+    $('lobby').hidden = true;
+    sound.chime();
+    render();
+    (state.mode === 'bj' ? $('bjDeal') : $('spin')).focus({ preventScroll: true });
+  }));
+
   document.querySelectorAll('.gm').forEach(b => b.addEventListener('click', () => {
     if (busy || bjBusy || state.mode === b.dataset.mode) return;
     state.mode = b.dataset.mode;
@@ -3168,7 +3292,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     render();
   });
   document.addEventListener('keydown', e => {
-    if (e.code === 'Space' && account && state.mode !== 'bj' && !['BUTTON', 'SUMMARY', 'INPUT'].includes(e.target.tagName) && $('wheelModal').hidden && $('gambleModal').hidden && $('adminModal').hidden) { e.preventDefault(); play(); }
+    if (e.code === 'Space' && account && $('lobby').hidden && state.mode !== 'bj' && !['BUTTON', 'SUMMARY', 'INPUT'].includes(e.target.tagName) && $('wheelModal').hidden && $('gambleModal').hidden && $('adminModal').hidden) { e.preventDefault(); play(); }
   });
 
   // ---------- Accounts ----------
@@ -3869,6 +3993,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     $('loginError').textContent = '';
     render();
     say(`Welcome, ${account.name}. Pick a bet and pull.`, 'win');
+    showLobby();
   }
 
   async function signOut(force = false) {
@@ -3884,6 +4009,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     stopDms();
     $('pwForm').hidden = true;
     $('login').hidden = false;
+    $('lobby').hidden = true;
     loadState({});
     renderBoards();
     $('loginUser').focus();
