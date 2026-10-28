@@ -432,20 +432,98 @@ details.ach { margin-top: 10px; }
 @keyframes badgePop { from { transform: scale(0); } }
 @keyframes badgePulse { to { transform: scale(1.18); box-shadow: 0 0 10px #c8323a; } }
 
-/* Announcement */
+/* Announcement: a marquee band across the top, above the game and the sign-in screen */
 .announce {
-  max-width: 460px; margin: 0 auto 14px;
-  padding: 10px 14px;
-  border-radius: 12px;
-  background: linear-gradient(90deg, #e9a23b33, #a77bff33);
-  border: 2px solid var(--accent);
-  color: var(--fg);
-  font-weight: 600;
-  text-align: center;
-  overflow-wrap: anywhere;
+  --bulb: #fff2c4;
+  position: fixed; z-index: 45;
+  top: 0; left: 0; right: 0;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  display: flex; align-items: stretch;
+  height: calc(46px + env(safe-area-inset-top, 0px));
+  background:
+    repeating-linear-gradient(-45deg, #ffffff07 0 14px, transparent 14px 28px),
+    linear-gradient(90deg, #3a1210, #2a1d18 30%, #2a1d18 70%, #2a1530);
+  background-size: 40px 40px, 100% 100%;
+  color: var(--accent-hi);
+  box-shadow: 0 8px 24px -8px #000;
+  animation: stripes 1.6s linear infinite;
 }
-@media (min-width: 900px) { .announce { max-width: 960px; } }
-.login-card .announce { margin: 0; max-width: none; font-size: 13px; }
+/* Rows of marquee bulbs along the top and bottom edges, chasing to the right. */
+.announce::before, .announce::after {
+  content: "";
+  position: absolute; left: 0; right: 0; height: 4px;
+  background: radial-gradient(circle, var(--bulb) 0 1.6px, #e9a23b55 2.2px, transparent 2.6px) 0 50% / 12px 4px repeat-x;
+  animation: bulbs 0.6s steps(2) infinite;
+  pointer-events: none;
+}
+.announce::before { top: env(safe-area-inset-top, 0px); }
+.announce::after { bottom: 0; }
+@keyframes bulbs { to { background-position: 12px 50%; } }
+@keyframes stripes { to { background-position: 40px 0, 0 0; } }
+.announce.fresh { animation: stripes 1.6s linear infinite, bandIn 0.7s cubic-bezier(.2, 1.5, .4, 1), bandFlash 0.5s 0.6s ease-in-out 4 alternate; }
+@keyframes bandIn { from { transform: translateY(-110%); } }
+@keyframes bandFlash { to { box-shadow: 0 0 40px 4px #e9a23baa, inset 0 0 30px #e9a23b66; } }
+.ann-tag {
+  flex: none;
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 14px 0 max(14px, env(safe-area-inset-left, 0px));
+  background: linear-gradient(#e0414a, #a3262d);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 50%, 100% 100%, 0 100%);
+  padding-right: 24px;
+  z-index: 1;
+}
+.ann-tag svg { width: 18px; height: 18px; animation: horn 0.9s ease-in-out infinite; transform-origin: 30% 60%; }
+@keyframes horn { 50% { transform: rotate(-12deg) scale(1.12); } }
+.ann-track {
+  flex: 1; min-width: 0;
+  overflow: hidden;
+  display: flex; align-items: center;
+  -webkit-mask: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+  mask: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+}
+.ann-run {
+  display: flex; flex: none;
+  white-space: nowrap;
+  font-family: var(--font-display);
+  font-size: 17px;
+  letter-spacing: 0.03em;
+  text-shadow: 0 0 12px #e9a23b, 0 2px 0 #7a4a12;
+  animation: marquee var(--ann-dur, 20s) linear infinite;
+}
+.ann-run span { padding-right: 48px; }
+.ann-run span::after { content: "★"; color: var(--accent); margin-left: 48px; }
+.announce:hover .ann-run { animation-play-state: paused; }
+@keyframes marquee { to { transform: translateX(-50%); } }
+.ann-close {
+  flex: none;
+  width: 44px;
+  background: none;
+  color: var(--muted);
+  font-size: 20px;
+  border-radius: 0;
+  margin-right: env(safe-area-inset-right, 0px);
+}
+.ann-close:hover { color: var(--fg); }
+body.has-announce { padding-top: calc(70px + env(safe-area-inset-top, 0px)); }
+body.has-announce .login { padding-top: calc(70px + env(safe-area-inset-top, 0px)); }
+body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
+@media (max-width: 600px) {
+  .ann-tag .ann-word { display: none; }
+  .ann-run { font-size: 15px; }
+  body.has-announce .toasts { top: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .announce, .announce.fresh, .announce::before, .announce::after, .ann-tag svg { animation: none; }
+  .ann-run { animation: none; white-space: normal; }
+  .ann-run span:not(:first-child) { display: none; }
+  .ann-run span::after { content: none; }
+}
 
 /* Admin */
 .admin-card {
@@ -734,7 +812,6 @@ details.ach { margin-top: 10px; }
   <form class="login-card" id="loginForm" novalidate>
     <h1 class="login-logo">Lucky Reels</h1>
     <p class="login-sub" id="loginSub">Sign in to play</p>
-    <p class="announce" id="announceLogin" hidden></p>
     <div class="pick" id="pick"></div>
     <label class="field"><span class="label">Username</span><input id="loginUser" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="20"></label>
     <p class="login-hint" id="userHint" hidden>3 to 20 letters, digits, - or _. Everyone sees it in the highscores.</p>
@@ -759,7 +836,11 @@ details.ach { margin-top: 10px; }
   </form>
 </div>
 
-<p class="announce" id="announce" role="status" hidden></p>
+<div class="announce" id="announce" role="status" aria-live="polite" hidden>
+  <span class="ann-tag"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10v4h3l5 4V6L6 10H3z" fill="#fff"/><path d="M15 8.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg><span class="ann-word">News</span></span>
+  <div class="ann-track"><div class="ann-run" id="annRun"></div></div>
+  <button class="ann-close" id="annClose" type="button" aria-label="Hide this announcement">×</button>
+</div>
 
 <div class="layout">
   <main class="cabinet" id="cabinet">
@@ -3154,16 +3235,55 @@ details.ach { margin-top: 10px; }
     PAY3.seven = settings.jackpotPay;
     if (starPips.children.length !== STAR_GOAL) starPips.innerHTML = '<span class="pip"></span>'.repeat(STAR_GOAL);
     if (settings.maxBet && state.bet > settings.maxBet) state.bet = settings.maxBet;
-    for (const id of ['announce', 'announceLogin']) {
-      $(id).hidden = !settings.announcement;
-      $(id).textContent = settings.announcement;
-    }
+    showAnnouncement(settings.announcement);
     if (backend) $('modeSwitch').hidden = !(backend.canSignUp && settings.signupsOpen);
     if (settings.maintenance && account && !account.isAdmin) say('The game is paused by an admin.', 'lose');
     renderPaytable();
     renderChat();
     render();
   }
+
+  // The announcement scrolls as a marquee. A new text drops in with a flash; hiding it lasts until the text changes.
+  let shownAnnouncement = null;
+  let annPrimed = false;
+  function showAnnouncement(text, relayout = false) {
+    // Only announcements that arrive after the page loaded get a sound and a pop-up.
+    const isNew = annPrimed && !relayout;
+    annPrimed = true;
+    const band = $('announce');
+    let dismissed = null;
+    try { dismissed = sessionStorage.getItem('lucky-reels-ann-hidden'); } catch {}
+    const visible = !!text && text !== dismissed;
+    band.hidden = !visible;
+    document.body.classList.toggle('has-announce', visible);
+    if (!visible || text === shownAnnouncement) { if (!text) shownAnnouncement = null; return; }
+    shownAnnouncement = text;
+    const run = $('annRun');
+    run.innerHTML = `<span>${esc(text)}</span>`;
+    // Repeat the text until one half fills the band, then double it so -50% loops without a seam.
+    const copy = run.firstElementChild.offsetWidth || 300;
+    const reps = Math.max(1, Math.ceil(band.offsetWidth / copy));
+    const half = `<span>${esc(text)}</span>`.repeat(reps);
+    run.innerHTML = half + half.replace(/<span>/g, '<span aria-hidden="true">');
+    run.style.setProperty('--ann-dur', `${Math.max(8, (copy * reps) / 90)}s`);
+    if (relayout) return;
+    band.classList.remove('fresh');
+    void band.offsetWidth;
+    band.classList.add('fresh');
+    if (isNew) {
+      sound.chime();
+      if (account) toast('Announcement', text);
+    }
+  }
+  $('annClose').addEventListener('click', () => {
+    try { sessionStorage.setItem('lucky-reels-ann-hidden', settings.announcement); } catch {}
+    showAnnouncement(settings.announcement);
+  });
+  let annResize = null;
+  addEventListener('resize', () => {
+    clearTimeout(annResize);
+    annResize = setTimeout(() => { const t = shownAnnouncement; if (!t) return; shownAnnouncement = '\u0000'; showAnnouncement(t, true); }, 200);
+  });
 
   // Pick up credits or a reset an admin made to this account.
   async function refreshOwn() {
