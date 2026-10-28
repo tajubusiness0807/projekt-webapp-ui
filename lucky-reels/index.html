@@ -764,7 +764,7 @@ details.ach { margin-top: 10px; }
 
 <div class="account-bar" id="accountBar" hidden>
   <span>Signed in as <b id="whoami"></b></span>
-  <span class="links"><button class="link-btn" id="adminBtn" type="button" hidden>Admin</button><button class="link-btn" id="pwToggle" type="button">Change password</button><button class="link-btn" id="logout" type="button">Sign out</button></span>
+  <span class="links"><button class="link-btn" id="pwToggle" type="button">Change password</button><button class="link-btn" id="logout" type="button">Sign out</button></span>
   <form class="pw-form" id="pwForm" hidden>
     <input id="pwOld" type="password" autocomplete="current-password" placeholder="Current password" aria-label="Current password">
     <input id="pwNew" type="password" autocomplete="new-password" placeholder="New password (4+ characters)" aria-label="New password">
@@ -899,8 +899,8 @@ details.ach { margin-top: 10px; }
   <div class="admin-card">
     <div class="admin-head"><h2 id="adminTitle">Admin</h2><button class="chat-close" id="adminClose" type="button" aria-label="Close admin menu">×</button></div>
     <form class="admin-lock" id="adminLock">
-      <p>Enter your password again to open the admin menu.</p>
-      <input id="adminPass" type="password" autocomplete="current-password" aria-label="Password">
+      <p id="adminLockText">Enter the admin password to open the admin menu.</p>
+      <input id="adminPass" type="password" autocomplete="off" aria-label="Admin password">
       <button class="spin" type="submit" id="adminUnlock">Unlock</button>
       <p class="admin-status err" id="adminLockErr" role="alert"></p>
     </form>
@@ -909,6 +909,7 @@ details.ach { margin-top: 10px; }
         <button class="tab" role="tab" data-tab="players" aria-selected="true">Players</button>
         <button class="tab" role="tab" data-tab="game" aria-selected="false">Game settings</button>
         <button class="tab" role="tab" data-tab="chat" aria-selected="false">Chat</button>
+        <button class="tab" role="tab" data-tab="security" aria-selected="false">Security</button>
       </div>
       <p class="admin-status" id="adminStatus" role="status"></p>
 
@@ -943,6 +944,15 @@ details.ach { margin-top: 10px; }
           </div>
         </form>
         <p class="admin-note">Changes reach everyone within seconds. Payout settings change the odds shown in the paytable too.</p>
+      </section>
+
+      <section class="admin-section" data-pane="security" hidden>
+        <form class="settings-grid" id="adminPwForm">
+          <label class="setting"><span class="label">New admin password</span><input id="adminPwNew" type="password" autocomplete="new-password" minlength="8"></label>
+          <label class="setting"><span class="label">Repeat it</span><input id="adminPwNew2" type="password" autocomplete="new-password" minlength="8"></label>
+          <div class="admin-row setting wide"><button class="abtn ok" type="submit">Change admin password</button><button class="abtn warn" type="button" id="adminLockNow">Lock the admin menu now</button></div>
+        </form>
+        <p class="admin-note" id="adminSecNote">The admin menu locks itself after 15 minutes without admin actions, when you sign out, and when you close the tab. Five wrong admin passwords in 15 minutes block further tries for a while.</p>
       </section>
 
       <section class="admin-section" data-pane="chat" hidden>
@@ -2330,13 +2340,17 @@ details.ach { margin-top: 10px; }
         return store.save(key, rest);
       },
       loadOwn: key => store.load(key),
-      async verifyPassword(pw) {
-        const doc = await store.load(account.id);
-        return !!doc && (await hashPw(doc.salt, pw)) === doc.hash;
-      },
       watchSettings: cb => store.watchSettings(cb),
       admin: {
         ready: true,
+        // These copies have no server to check against; the account password stands in for an admin password.
+        async unlock(pw) {
+          const doc = await store.load(account.id);
+          if (!doc?.admin) return 'notadmin';
+          return (await hashPw(doc.salt, pw)) === doc.hash ? 'ok' : 'wrong';
+        },
+        async lock() {},
+        async changePassword() { throw Object.assign(new Error('unsupported'), { code: 'unsupported' }); },
         async setCredits(id, amount) {
           const doc = await store.load(id);
           await store.save(id, { credits: amount, adminRev: (Number(doc?.adminRev) || 0) + 1 });
@@ -2352,7 +2366,8 @@ details.ach { margin-top: 10px; }
           const doc = await store.load(id);
           await store.save(id, { credits: settings.startCredits, best: 0, level: 1, spins: 0, jackpots: 0, game: null, adminRev: (Number(doc?.adminRev) || 0) + 1 });
         },
-        setFlag: (id, flag, value) => store.save(id, { [flag]: value }),
+        setBanned: (id, value) => store.save(id, { banned: value }),
+        setAdmin: (id, make) => store.save(id, { admin: make }),
         deleteMessage: id => store.deleteMessage(id),
         clearChat: () => store.clearChat(),
         saveSettings: patch => store.saveSettings(patch),
@@ -2573,10 +2588,15 @@ details.ach { margin-top: 10px; }
       const cfg = await res.json();
       canSignUp = !cfg.disable_signup && !!cfg.mailer_autoconfirm;
     } catch {}
-    const rpc = async (fn, args) => {
-      const { error } = await sb.rpc(fn, args);
-      if (error) throw error;
-    };
+    let adminToken = null;
+    const adminLocked = () => Object.assign(new Error('admin menu locked'), { code: 'admin_locked' });
+    async function adminRpc(fn, args) {
+      if (!adminToken) throw adminLocked();
+      const { error } = await sb.rpc(fn, { tok: adminToken, ...args });
+      if (!error) return;
+      if (/session expired|not allowed/i.test(error.message || '')) { adminToken = null; throw adminLocked(); }
+      throw error;
+    }
     async function row(uid) {
       const { data, error } = await sb.from('players').select(`id,name,credits,game${adminCols}`).eq('id', uid).maybeSingle();
       if (error) throw error;
@@ -2636,10 +2656,6 @@ details.ach { margin-top: 10px; }
         if (!data?.length) throw adminChanged();
       },
       loadOwn: async key => (await row(key))?.doc,
-      async verifyPassword(pw) {
-        const { error } = await sb.auth.signInWithPassword({ email: email(account.name), password: pw });
-        return !error;
-      },
       async watchSettings(cb) {
         const pull = async () => {
           const { data, error } = await sb.from('settings').select('data').eq('id', 1).maybeSingle();
@@ -2649,17 +2665,30 @@ details.ach { margin-top: 10px; }
         sb.channel('settings').on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, pull).subscribe();
         setInterval(pull, 60000);
       },
+      // The server checks a separate admin password and hands out a session token that every admin
+      // action must carry; the token expires after 15 minutes without admin actions.
       admin: {
         ready: adminSchema,
-        async setCredits(id, amount) { await rpc('admin_update_player', { target: id, new_credits: amount, reset: false, set_admin: null, set_banned: null }); },
-        async addAll(amount) { await rpc('admin_give_all', { amount }); },
-        async reset(id) { await rpc('admin_update_player', { target: id, new_credits: null, reset: true, set_admin: null, set_banned: null }); },
-        async setFlag(id, flag, value) {
-          await rpc('admin_update_player', { target: id, new_credits: null, reset: false, set_admin: flag === 'admin' ? value : null, set_banned: flag === 'banned' ? value : null });
+        async unlock(pw) {
+          const { data, error } = await sb.rpc('admin_unlock', { pw });
+          if (error) return /admin_unlock|function/i.test(error.message || '') ? 'setup' : 'error';
+          if (String(data).startsWith('ok:')) { adminToken = String(data).slice(3); return 'ok'; }
+          return String(data);
         },
-        async deleteMessage(id) { await rpc('admin_delete_message', { msg: id }); },
-        async clearChat() { await rpc('admin_clear_chat', {}); },
-        async saveSettings(patch) { await rpc('admin_save_settings', { patch }); },
+        async lock() {
+          const tok = adminToken;
+          adminToken = null;
+          if (tok) await sb.rpc('admin_lock', { tok }).catch(() => {});
+        },
+        setCredits: (id, amount) => adminRpc('admin_update_player', { target: id, new_credits: amount, reset: false, set_banned: null }),
+        addAll: amount => adminRpc('admin_give_all', { amount }),
+        reset: id => adminRpc('admin_update_player', { target: id, new_credits: null, reset: true, set_banned: null }),
+        setBanned: (id, value) => adminRpc('admin_update_player', { target: id, new_credits: null, reset: false, set_banned: value }),
+        setAdmin: (id, make, pw) => adminRpc('admin_set_admin', { target: id, make, new_pw: pw ?? null }),
+        changePassword: pw => adminRpc('admin_change_password', { new_pw: pw }),
+        deleteMessage: id => adminRpc('admin_delete_message', { msg: id }),
+        clearChat: () => adminRpc('admin_clear_chat', {}),
+        saveSettings: patch => adminRpc('admin_save_settings', { patch }),
       },
       async changePassword(key, oldPw, newPw) {
         const { error: wrong } = await sb.auth.signInWithPassword({ email: email(account.name), password: oldPw });
@@ -2779,8 +2808,8 @@ details.ach { margin-top: 10px; }
     if (mine) {
       if (mine.admin !== account.isAdmin) {
         account.isAdmin = mine.admin;
-        $('adminBtn').hidden = !mine.admin;
-        if (!mine.admin) { adminUnlocked = false; $('adminModal').hidden = true; }
+        syncAdminButton();
+        if (!mine.admin) lockAdmin();
         render();
       }
       if (mine.banned) { toast('Signed out', 'An admin blocked this account.'); signOut(true); }
@@ -2905,7 +2934,7 @@ details.ach { margin-top: 10px; }
     lastSaved = '';
     loadState(saved);
     $('whoami').textContent = account.name;
-    $('adminBtn').hidden = !account.isAdmin;
+    syncAdminButton();
     $('accountBar').hidden = false;
     startDms();
     renderChat();
@@ -2920,9 +2949,9 @@ details.ach { margin-top: 10px; }
     if (!account) return;
     if (busy) { if (force) setTimeout(() => signOut(true), 1000); return; }
     if (!force) await flush();
+    lockAdmin();
     account = null;
-    adminUnlocked = false;
-    $('adminModal').hidden = true;
+    syncAdminButton();
     try { await backend.signOut(); } catch {}
     $('accountBar').hidden = true;
     setChat(false);
@@ -3189,15 +3218,53 @@ details.ach { margin-top: 10px; }
     adminSay('Saving…');
     try {
       await fn();
+      adminTouched = Date.now();
       adminSay(label);
       sound.tick();
     } catch (e) {
-      adminSay(/not allowed/i.test(e?.message || '') ? 'Only admins can do that.' : 'That did not work. Check the connection and try again.', false);
+      if (e?.code === 'admin_locked') { lockAdmin('The admin menu locked itself. Enter the admin password again.'); return; }
+      adminSay(/too short/i.test(e?.message || '') ? 'Admin passwords need at least 8 characters.'
+        : /remove yourself/i.test(e?.message || '') ? 'You cannot remove your own admin rights.'
+        : 'That did not work. Check the connection and try again.', false);
     }
   }
 
+  // The Admin link only exists in the page while the signed-in account is an admin.
+  function syncAdminButton() {
+    const want = !!account?.isAdmin;
+    let btn = document.getElementById('adminBtn');
+    if (want && !btn) {
+      btn = document.createElement('button');
+      btn.className = 'link-btn';
+      btn.id = 'adminBtn';
+      btn.type = 'button';
+      btn.textContent = 'Admin';
+      btn.addEventListener('click', openAdmin);
+      $('pwToggle').before(btn);
+    } else if (!want && btn) btn.remove();
+  }
+  let adminTouched = 0;
+  function lockAdmin(message = '') {
+    const wasOpen = !$('adminModal').hidden;
+    if (adminUnlocked) backend?.admin?.lock();
+    adminUnlocked = false;
+    $('adminPanel').hidden = true;
+    $('adminPlayers').innerHTML = '';
+    $('adminMsgs').innerHTML = '';
+    delete $('adminPlayers').dataset.sig;
+    if (message && wasOpen && account?.isAdmin) {
+      $('adminLock').hidden = false;
+      $('adminLockErr').textContent = message;
+      $('adminPass').focus();
+    } else $('adminModal').hidden = true;
+  }
+  setInterval(() => { if (adminUnlocked && Date.now() - adminTouched > 15 * 60 * 1000) lockAdmin('The admin menu locked itself after 15 minutes.'); }, 30000);
+
   function openAdmin() {
     if (!account?.isAdmin) return;
+    $('adminLockText').textContent = backend.kind === 'supabase'
+      ? 'Enter the admin password to open the admin menu.'
+      : 'Enter your password again to open the admin menu.';
     $('adminModal').hidden = false;
     $('adminLock').hidden = adminUnlocked;
     $('adminPanel').hidden = !adminUnlocked;
@@ -3211,6 +3278,7 @@ details.ach { margin-top: 10px; }
     if (name === 'players') renderAdminPlayers(true);
     if (name === 'game') fillSettingsForm();
     if (name === 'chat') renderAdminMsgs();
+    if (name === 'security') $('adminSecNote').hidden = backend.kind !== 'supabase';
   }
 
   function renderAdminPlayers(force = false) {
@@ -3261,9 +3329,25 @@ details.ach { margin-top: 10px; }
     } else if (act === 'reset') {
       if (confirmed(btn, 'Reset?')) adminDo(`${p.name} starts over with ${fmt(settings.startCredits)} credits.`, () => backend.admin.reset(p.id));
     } else if (act === 'ban') {
-      if (p.banned || confirmed(btn, 'Block?')) adminDo(p.banned ? `${p.name} is unblocked.` : `${p.name} is blocked.`, () => backend.admin.setFlag(p.id, 'banned', !p.banned));
+      if (p.banned || confirmed(btn, 'Block?')) adminDo(p.banned ? `${p.name} is unblocked.` : `${p.name} is blocked.`, () => backend.admin.setBanned(p.id, !p.banned));
     } else if (act === 'admin') {
-      if (p.admin ? confirmed(btn, 'Remove?') : true) adminDo(p.admin ? `${p.name} is no longer an admin.` : `${p.name} is now an admin.`, () => backend.admin.setFlag(p.id, 'admin', !p.admin));
+      if (p.admin) {
+        if (confirmed(btn, 'Remove?')) adminDo(`${p.name} is no longer an admin.`, () => backend.admin.setAdmin(p.id, false));
+      } else if (backend.kind !== 'supabase') {
+        adminDo(`${p.name} is now an admin.`, () => backend.admin.setAdmin(p.id, true));
+      } else {
+        // A new admin needs their own admin password; tell it to them yourself.
+        const acts = btn.closest('.acts');
+        acts.innerHTML = `<input type="password" autocomplete="new-password" placeholder="Admin password for ${esc(p.name)} (8+)" aria-label="Admin password for ${esc(p.name)}" class="new-admin-pw">` +
+          '<button class="abtn ok" data-act="admin-ok">Make admin</button><button class="abtn" data-act="admin-cancel">Cancel</button>';
+        acts.querySelector('input').focus();
+      }
+    } else if (act === 'admin-ok') {
+      const pw = tr.querySelector('.new-admin-pw').value;
+      if (pw.length < 8) { adminSay('Admin passwords need at least 8 characters.', false); return; }
+      adminDo(`${p.name} is now an admin. Tell them their admin password yourself.`, () => backend.admin.setAdmin(p.id, true, pw));
+    } else if (act === 'admin-cancel') {
+      renderAdminPlayers(true);
     }
   });
   $('adminPlayers').addEventListener('input', e => { if (e.target.tagName === 'INPUT') e.target.dataset.dirty = '1'; });
@@ -3334,8 +3418,20 @@ details.ach { margin-top: 10px; }
     if (confirmed(e.currentTarget, 'Delete all?')) adminDo('All messages deleted.', () => backend.admin.clearChat());
   });
 
-  $('adminBtn').addEventListener('click', openAdmin);
   $('adminClose').addEventListener('click', () => { $('adminModal').hidden = true; });
+  $('adminLockNow').addEventListener('click', () => lockAdmin());
+  $('adminPwForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const a = $('adminPwNew').value, b = $('adminPwNew2').value;
+    if (a.length < 8) { adminSay('Admin passwords need at least 8 characters.', false); return; }
+    if (a !== b) { adminSay('The two passwords do not match.', false); return; }
+    if (backend.kind !== 'supabase') { adminSay('This copy uses your account password. Change it with "Change password".', false); return; }
+    adminDo('Admin password changed.', async () => {
+      await backend.admin.changePassword(a);
+      $('adminPwNew').value = $('adminPwNew2').value = '';
+    });
+  });
+  addEventListener('pagehide', () => { if (adminUnlocked) backend?.admin?.lock(); });
   $('adminModal').addEventListener('keydown', e => { if (e.key === 'Escape') $('adminModal').hidden = true; });
   document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => showTab(t.dataset.tab)));
   $('adminLock').addEventListener('submit', async e => {
@@ -3345,12 +3441,22 @@ details.ach { margin-top: 10px; }
     $('adminUnlock').disabled = true;
     err.textContent = '';
     try {
-      if (await backend.verifyPassword($('adminPass').value)) {
+      const result = await backend.admin.unlock($('adminPass').value);
+      if (result === 'ok') {
         adminUnlocked = true;
+        adminTouched = Date.now();
         $('adminLock').hidden = true;
         $('adminPanel').hidden = false;
         showTab('players');
-      } else err.textContent = 'Wrong password.';
+      } else {
+        err.textContent = {
+          wrong: 'Wrong admin password.',
+          locked: 'Too many wrong tries. Wait 15 minutes and try again.',
+          notadmin: 'This account is not an admin.',
+          nokey: 'No admin password is set for this account yet. Set one with the SQL in supabase-setup.sql.',
+          setup: 'Run the "Admin security" part of supabase-setup.sql first.',
+        }[result] || 'Could not check the password. Try again.';
+      }
     } catch {
       err.textContent = 'Could not check the password. Try again.';
     }

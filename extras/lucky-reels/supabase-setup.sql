@@ -373,3 +373,236 @@ begin
   alter publication supabase_realtime add table public.direct_messages;
 exception when duplicate_object then null;
 end $$;
+
+-- ---------------------------------------------------------------------------
+-- Admin security: run this part once (after the admin part above), then set
+-- your admin password with the last statement.
+--
+-- Admins now need a separate admin password, checked here on the server.
+-- A correct password opens a 15-minute admin session (extended by every admin
+-- action); every admin function needs that session. Five wrong passwords in
+-- 15 minutes block further tries. None of these tables can be read through
+-- the website, not even by admins.
+
+create extension if not exists pgcrypto with schema extensions;
+
+create table if not exists public.admin_keys (
+  player_id uuid primary key references public.players (id) on delete cascade,
+  hash text not null,
+  updated_at timestamptz not null default now()
+);
+create table if not exists public.admin_sessions (
+  token uuid primary key default gen_random_uuid(),
+  player_id uuid not null references public.players (id) on delete cascade,
+  expires_at timestamptz not null
+);
+create table if not exists public.admin_attempts (
+  id bigint generated always as identity primary key,
+  player_id uuid not null,
+  ok boolean not null,
+  at timestamptz not null default now()
+);
+alter table public.admin_keys enable row level security;
+alter table public.admin_sessions enable row level security;
+alter table public.admin_attempts enable row level security;
+revoke all on public.admin_keys, public.admin_sessions, public.admin_attempts from anon, authenticated;
+
+-- The old admin functions worked without an admin session; remove them.
+drop function if exists public.admin_update_player(uuid, bigint, boolean, boolean, boolean);
+drop function if exists public.admin_give_all(bigint);
+drop function if exists public.admin_delete_message(bigint);
+drop function if exists public.admin_clear_chat();
+drop function if exists public.admin_save_settings(jsonb);
+
+create or replace function public.admin_unlock(pw text)
+returns text
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+declare
+  me uuid := auth.uid();
+  stored text;
+  fails integer;
+  tok uuid;
+begin
+  if me is null or not public.is_admin() then return 'notadmin'; end if;
+  select count(*) into fails from public.admin_attempts
+    where player_id = me and not ok and at > now() - interval '15 minutes';
+  if fails >= 5 then return 'locked'; end if;
+  select hash into stored from public.admin_keys where player_id = me;
+  if stored is null then return 'nokey'; end if;
+  if crypt(pw, stored) <> stored then
+    insert into public.admin_attempts (player_id, ok) values (me, false);
+    return 'wrong';
+  end if;
+  insert into public.admin_attempts (player_id, ok) values (me, true);
+  delete from public.admin_attempts where at < now() - interval '1 day';
+  delete from public.admin_sessions where player_id = me or expires_at < now();
+  insert into public.admin_sessions (player_id, expires_at)
+    values (me, now() + interval '15 minutes') returning token into tok;
+  return 'ok:' || tok;
+end;
+$$;
+
+-- Every admin function starts with this: an admin, with a live session, which it extends.
+create or replace function public.admin_check(tok uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not public.is_admin() then raise exception 'not allowed'; end if;
+  update public.admin_sessions set expires_at = now() + interval '15 minutes'
+    where token = tok and player_id = auth.uid() and expires_at > now();
+  if not found then raise exception 'admin session expired'; end if;
+end;
+$$;
+
+create or replace function public.admin_lock(tok uuid)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  delete from public.admin_sessions where token = tok and player_id = auth.uid();
+$$;
+
+create or replace function public.admin_update_player(
+  tok uuid,
+  target uuid,
+  new_credits bigint default null,
+  reset boolean default false,
+  set_banned boolean default null
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  start_credits bigint := coalesce((select (data ->> 'startCredits')::bigint from public.settings where id = 1), 500);
+begin
+  perform public.admin_check(tok);
+  if new_credits is not null and new_credits < 0 then raise exception 'credits must be 0 or more'; end if;
+  if set_banned and target = auth.uid() then raise exception 'cannot block yourself'; end if;
+  update public.players set
+    credits = case when reset then coalesce(new_credits, start_credits) else coalesce(new_credits, credits) end,
+    best = case when reset then 0 else best end,
+    level = case when reset then 1 else level end,
+    spins = case when reset then 0 else spins end,
+    jackpots = case when reset then 0 else jackpots end,
+    game = case when reset then null else game end,
+    is_banned = coalesce(set_banned, is_banned),
+    admin_rev = admin_rev + case when reset or new_credits is not null then 1 else 0 end,
+    updated_at = now()
+  where id = target;
+end;
+$$;
+
+create or replace function public.admin_set_admin(tok uuid, target uuid, make boolean, new_pw text default null)
+returns void
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+begin
+  perform public.admin_check(tok);
+  if make then
+    if new_pw is null or length(new_pw) < 8 then raise exception 'admin password too short'; end if;
+    update public.players set is_admin = true where id = target;
+    insert into public.admin_keys (player_id, hash) values (target, crypt(new_pw, gen_salt('bf')))
+      on conflict (player_id) do update set hash = excluded.hash, updated_at = now();
+  else
+    if target = auth.uid() then raise exception 'cannot remove yourself'; end if;
+    update public.players set is_admin = false where id = target;
+    delete from public.admin_keys where player_id = target;
+    delete from public.admin_sessions where player_id = target;
+  end if;
+end;
+$$;
+
+create or replace function public.admin_change_password(tok uuid, new_pw text)
+returns void
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+begin
+  perform public.admin_check(tok);
+  if new_pw is null or length(new_pw) < 8 then raise exception 'admin password too short'; end if;
+  update public.admin_keys set hash = crypt(new_pw, gen_salt('bf')), updated_at = now() where player_id = auth.uid();
+end;
+$$;
+
+create or replace function public.admin_give_all(tok uuid, amount bigint)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.admin_check(tok);
+  update public.players
+    set credits = greatest(0, credits + amount), admin_rev = admin_rev + 1, updated_at = now()
+    where not is_banned;
+end;
+$$;
+
+create or replace function public.admin_delete_message(tok uuid, msg bigint)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.admin_check(tok);
+  delete from public.messages where id = msg;
+end;
+$$;
+
+create or replace function public.admin_clear_chat(tok uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.admin_check(tok);
+  delete from public.messages where true;
+end;
+$$;
+
+create or replace function public.admin_save_settings(tok uuid, patch jsonb)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.admin_check(tok);
+  update public.settings set data = data || patch where id = 1;
+end;
+$$;
+
+do $$
+declare f text;
+begin
+  foreach f in array array[
+    'admin_unlock(text)', 'admin_check(uuid)', 'admin_lock(uuid)',
+    'admin_update_player(uuid, uuid, bigint, boolean, boolean)', 'admin_set_admin(uuid, uuid, boolean, text)',
+    'admin_change_password(uuid, text)', 'admin_give_all(uuid, bigint)', 'admin_delete_message(uuid, bigint)',
+    'admin_clear_chat(uuid)', 'admin_save_settings(uuid, jsonb)'
+  ] loop
+    execute format('revoke execute on function public.%s from public, anon', f);
+    execute format('grant execute on function public.%s to authenticated', f);
+  end loop;
+end $$;
+
+-- Set your admin password (at least 8 characters, different from your login
+-- password). Put in your username and run this again any time to reset it.
+insert into public.admin_keys (player_id, hash)
+select id, extensions.crypt('NEUES-ADMIN-PASSWORT', extensions.gen_salt('bf'))
+from public.players where name = 'DEIN_NAME' and is_admin
+on conflict (player_id) do update set hash = excluded.hash, updated_at = now();
