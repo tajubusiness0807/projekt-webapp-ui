@@ -406,7 +406,7 @@ details.paytable, details.bj-rules { background: var(--panel); border-radius: 10
 @media (max-width: 600px) { .back-btn { left: 10px; top: 10px; } }
 .gm { padding: 6px 16px; border-radius: 999px; background: var(--panel); color: var(--muted); font-weight: 600; font-size: 13px; }
 .gm[aria-selected="true"] { background: var(--accent); color: var(--ink); }
-.cabinet:not([data-mode="bj"]) .bj, .cabinet:not([data-mode="rl"]) .rl, .cabinet:not([data-mode="pk"]) .pk { display: none; }
+.cabinet:not([data-mode="bj"]) .bj, .cabinet:not([data-mode="rl"]) .rl, .cabinet:not([data-mode="pk"]) .pk, .cabinet:not([data-mode="pl"]) .pl { display: none; }
 .cabinet:not([data-mode="slots"]) :is(#window, #reelCtl, #tier, #message, .meters, .bet, .spin-row, #boosts, details.paytable) { display: none !important; }
 body.wide .layout { max-width: 980px; grid-template-columns: minmax(0, 1fr); }
 body.wide .account-bar { max-width: 980px; }
@@ -543,6 +543,36 @@ body.wide .account-bar { max-width: 980px; }
 @media (max-width: 420px) { .gm { padding: 6px 11px; font-size: 12px; } }
 
 /* Roulette */
+/* Plinko */
+.pl { display: grid; gap: 12px; }
+.pl-board-wrap { position: relative; border-radius: 16px; padding: 6px 6px 2px; background: radial-gradient(ellipse at 50% 0%, #2c1f3d, #160f1c 70%); border: 2px solid #3a2a4a; box-shadow: inset 0 10px 40px #0008; }
+.pl-board-wrap canvas { display: block; width: 100%; height: auto; touch-action: manipulation; }
+.pl-history { position: absolute; top: 10px; right: 10px; display: grid; gap: 4px; justify-items: end; pointer-events: none; }
+.pl-history span { min-width: 40px; padding: 3px 7px; border-radius: 7px; font: 600 11px var(--font-mono); color: var(--ink); text-align: center; box-shadow: 0 2px 0 #0006; animation: plHist 0.35s cubic-bezier(.2, 1.4, .4, 1); }
+.pl-history span:nth-child(n+5) { opacity: 0.5; }
+@keyframes plHist { from { transform: translateY(-10px) scale(0.7); opacity: 0; } }
+.pl-settings { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pl-seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 3px; padding: 3px; border-radius: 10px; background: var(--panel); }
+.pl-seg button { padding: 8px 4px; border-radius: 7px; background: transparent; color: var(--muted); font-weight: 600; font-size: 12px; }
+.pl-seg button[aria-pressed="true"] { background: var(--accent); color: var(--ink); }
+.pl-seg button:disabled { opacity: 0.5; }
+.pl-bet { display: grid; grid-template-columns: 56px minmax(0, 1fr) 56px 64px; gap: 8px; }
+.pl-bet input { min-width: 0; background: var(--panel); color: var(--accent); border: 2px solid var(--cabinet-edge); border-radius: 10px; padding: 10px; font: 600 20px var(--font-mono); text-align: center; }
+.pl-drops { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.pl-drops .chip-btn { padding: 0 16px; }
+.pl-drops .chip-btn.on { background: var(--lose); color: var(--fg); }
+@media (max-width: 600px) {
+  .pl-history { top: 6px; right: 6px; gap: 3px; }
+  .pl-history span { min-width: 0; padding: 2px 5px; font-size: 9px; }
+  .pl-history span:nth-child(n+4) { display: none; }
+  .pl-drops .spin { font-size: 20px; }
+}
+@media (max-width: 420px) { .pl-settings { grid-template-columns: 1fr; } .pl-bet { grid-template-columns: 48px minmax(0, 1fr) 48px 56px; } }
+.gp-pl .gp-pball { transition: transform 0.2s; }
+.game-pick:hover .gp-pl .gp-pball, .game-pick:focus-visible .gp-pl .gp-pball { animation: gpPlinko 1.3s ease-in infinite; }
+@keyframes gpPlinko { 0% { transform: translate(0, 0); } 20% { transform: translate(-6px, 14px); } 40% { transform: translate(5px, 28px); } 60% { transform: translate(-4px, 42px); } 80% { transform: translate(6px, 56px); } 100% { transform: translate(0, 82px); opacity: 0.2; } }
+.lobby-games .game-pick:last-child:nth-child(odd) { grid-column: 1 / -1; justify-self: center; width: calc(50% - 8px); }
+@media (max-width: 420px) { .lobby-games .game-pick:last-child:nth-child(odd) { width: calc(50% - 8px); } }
 .rl { display: grid; gap: 12px; }
 .rl-wheel-wrap { position: relative; justify-self: center; width: min(300px, 78vw); aspect-ratio: 1; max-width: 100%; }
 .rl-wheel-wrap canvas { width: 100%; height: 100%; display: block; filter: drop-shadow(0 14px 22px #000a); }
@@ -1584,6 +1614,27 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         <span class="gp-desc">Place your chips and watch the ball land.</span>
         <span class="gp-go">Play</span>
       </button>
+      <button class="game-pick" type="button" data-mode="pl">
+        <span class="gp-online">New</span>
+        <svg class="gp-pl" viewBox="0 0 140 130" aria-hidden="true">
+          <g fill="#f6efe3">
+            <circle cx="70" cy="30" r="3.2"/>
+            <circle cx="58" cy="44" r="3.2"/><circle cx="82" cy="44" r="3.2"/>
+            <circle cx="46" cy="58" r="3.2"/><circle cx="70" cy="58" r="3.2"/><circle cx="94" cy="58" r="3.2"/>
+            <circle cx="34" cy="72" r="3.2"/><circle cx="58" cy="72" r="3.2"/><circle cx="82" cy="72" r="3.2"/><circle cx="106" cy="72" r="3.2"/>
+            <circle cx="22" cy="86" r="3.2"/><circle cx="46" cy="86" r="3.2"/><circle cx="70" cy="86" r="3.2"/><circle cx="94" cy="86" r="3.2"/><circle cx="118" cy="86" r="3.2"/>
+          </g>
+          <g>
+            <rect x="12" y="98" width="20" height="14" rx="4" fill="#e0414a"/><rect x="36" y="98" width="20" height="14" rx="4" fill="#f08a3c"/>
+            <rect x="60" y="98" width="20" height="14" rx="4" fill="#e9a23b"/><rect x="84" y="98" width="20" height="14" rx="4" fill="#f08a3c"/>
+            <rect x="108" y="98" width="20" height="14" rx="4" fill="#e0414a"/>
+          </g>
+          <g class="gp-pball"><circle cx="70" cy="18" r="6" fill="#ff5fa8"/><circle cx="68" cy="16" r="2" fill="#fff" opacity=".8"/></g>
+        </svg>
+        <span class="gp-title">Plinko</span>
+        <span class="gp-desc">Drop balls through the pins and hope for the edges.</span>
+        <span class="gp-go">Play</span>
+      </button>
       <button class="game-pick" type="button" data-mode="pk">
         <span class="gp-online">Solo or online</span>
         <svg class="gp-pk" viewBox="0 0 140 130" aria-hidden="true">
@@ -1664,6 +1715,36 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       <details class="bj-rules">
         <summary>Roulette rules</summary>
         <p class="note">European wheel with one zero. A single number pays 35 to 1. Red or black, odd or even, 1–18 or 19–36 pay 1 to 1. A dozen (1st, 2nd, 3rd 12) or a column (2:1 under the numbers) pays 2 to 1. Zero loses every outside bet. Pick a chip, tap the table to place it, tap again to add more.</p>
+      </details>
+    </section>
+
+    <section class="pl" id="pl" aria-label="Plinko">
+      <div class="pl-board-wrap">
+        <canvas id="plCanvas" aria-label="Plinko board"></canvas>
+        <div class="pl-history" id="plHistory" aria-label="Last results"></div>
+      </div>
+      <p class="message" id="plMsg" role="status" aria-live="polite">Pick a bet and drop a ball.</p>
+      <div class="pl-settings">
+        <div class="pl-seg" id="plRisk" role="group" aria-label="Risk">
+          <button type="button" data-risk="low">Low</button><button type="button" data-risk="medium">Medium</button><button type="button" data-risk="high">High</button>
+        </div>
+        <div class="pl-seg" id="plRows" role="group" aria-label="Rows">
+          <button type="button" data-rows="8">8 rows</button><button type="button" data-rows="12">12 rows</button><button type="button" data-rows="16">16 rows</button>
+        </div>
+      </div>
+      <div class="pl-bet">
+        <button class="chip-btn" type="button" data-plb="half" aria-label="Halve bet">½</button>
+        <input id="plBet" type="number" min="1" step="1" inputmode="numeric" aria-label="Bet per ball">
+        <button class="chip-btn" type="button" data-plb="double" aria-label="Double bet">×2</button>
+        <button class="chip-btn" type="button" data-plb="max">Max</button>
+      </div>
+      <div class="pl-drops">
+        <button class="spin" id="plDrop" type="button">Drop ball</button>
+        <button class="chip-btn" id="plAuto" type="button">Auto ×10</button>
+      </div>
+      <details class="bj-rules">
+        <summary>Plinko rules</summary>
+        <p class="note">Drop a ball from the top: at every row of pins it bounces left or right, and the slot it lands in multiplies your bet. The edges pay the most but are hit the least. Higher risk makes the edges bigger and the middle smaller; more rows give the ball more room to wander. Over the long run about 96% of bets come back. You can drop several balls at once. Space drops a ball.</p>
       </details>
     </section>
 
@@ -2083,7 +2164,15 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'The chat is not set up yet. Ask the person who runs the game to run the chat setup.': 'Der Chat ist noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, die Chat-Einrichtung auszuführen.',
     'Private chats are not set up yet. Ask the person who runs the game to run the private-chat setup.': 'Private Chats sind noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, sie einzurichten.',
     'The message did not go through. Try again.': 'Die Nachricht ging nicht durch. Versuch es nochmal.', 'Chat is switched off for players': 'Der Chat ist für Spieler abgeschaltet',
-    'Someone': 'Jemand', 'Actions': 'Aktionen', 'Private': 'Privat', 'is now online': 'ist jetzt online', 'Back to the game selection': 'Zurück zur Spielauswahl',
+    'Someone': 'Jemand', 'Actions': 'Aktionen',
+    'Plinko': 'Plinko', 'Plinko board': 'Plinko-Brett', 'Last results': 'Letzte Ergebnisse', 'New': 'Neu', 'Plinko rules': 'Plinko-Regeln',
+    'Drop balls through the pins and hope for the edges.': 'Lass Kugeln durch die Pins fallen und hoff auf die Ränder.',
+    'Pick a bet and drop a ball.': 'Wähl einen Einsatz und lass eine Kugel fallen.', 'Drop ball': 'Kugel los!',
+    'Risk': 'Risiko', 'Rows': 'Reihen', 'Low': 'Niedrig', 'Medium': 'Mittel', 'High': 'Hoch', 'Bet per ball': 'Einsatz pro Kugel',
+    'Enter a bet of at least 1.': 'Gib einen Einsatz von mindestens 1 ein.', 'Plinko · real bounces · play credits': 'Plinko · echte Physik · Spiel-Credits',
+    'Sky Drop': 'Himmelssturz', 'Land a Plinko ball on 25× or more.': 'Lande eine Plinko-Kugel auf 25× oder mehr.',
+    'Drop a ball from the top: at every row of pins it bounces left or right, and the slot it lands in multiplies your bet. The edges pay the most but are hit the least. Higher risk makes the edges bigger and the middle smaller; more rows give the ball more room to wander. Over the long run about 96% of bets come back. You can drop several balls at once. Space drops a ball.':
+      'Lass oben eine Kugel fallen: An jeder Pin-Reihe springt sie nach links oder rechts, und das Fach, in dem sie landet, multipliziert deinen Einsatz. Die Ränder zahlen am meisten, werden aber am seltensten getroffen. Höheres Risiko macht die Ränder größer und die Mitte kleiner; mehr Reihen geben der Kugel mehr Weg. Auf Dauer kommen etwa 96 % der Einsätze zurück. Du kannst mehrere Kugeln gleichzeitig fallen lassen. Leertaste lässt eine Kugel fallen.', 'Private': 'Privat', 'is now online': 'ist jetzt online', 'Back to the game selection': 'Zurück zur Spielauswahl',
     'One moment': 'Einen Moment', 'Let the current round finish first.': 'Lass die laufende Runde erst zu Ende gehen.',
     'Power-ups': 'Power-ups', 'Cosmetics': 'Kosmetik', 'Turn on': 'Einschalten', 'Turn off': 'Ausschalten', 'On': 'An', 'Off': 'Aus', 'Active': 'Aktiv',
     'Midnight Cabinet': 'Mitternachtsgehäuse', 'A deep-blue machine with glowing cyan trim. Purely for show.': 'Eine tiefblaue Maschine mit leuchtendem Cyan-Rand. Rein zur Show.',
@@ -2145,7 +2234,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   };
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
-    ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'], ['Collect {a} bonus stars.', 'Sammle {a} Bonussterne.'],
+    ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'], ['{a} rows', '{a} Reihen'], ['Stop ({a})', 'Stopp ({a})'],
+    ['Not enough credits for a {a} ball.', 'Nicht genug Credits für eine Kugel zu {a}.'], ['{a} · {b} back', '{a} · {b} zurück'], ['Collect {a} bonus stars.', 'Sammle {a} Bonussterne.'],
     ['Bet per spin · max {a}', 'Einsatz pro Spin · max. {a}'], ['The highest bet is {a}.', 'Der höchste Einsatz ist {a}.'],
     ['Three {a}! +{b}', 'Drei {a}! +{b}'], ['Cherries pay {a}', 'Kirschen zahlen {a}'],
     ['No win, but +{a} bonus stars.', 'Kein Gewinn, aber +{a} Bonussterne.'], ['No win, but +{a} bonus star.', 'Kein Gewinn, aber +{a} Bonusstern.'],
@@ -2468,6 +2558,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     { id: 'tasks', name: 'Taskmaster', desc: 'Complete 10 missions.', reward: 3000, test: () => state.missionsDone >= 10 },
     { id: 'shark', name: 'Card Shark', desc: 'Win a poker pot.', reward: 300, test: c => c?.pokerWin },
     { id: 'royalty', name: 'Royalty', desc: 'Win a poker pot with a straight flush.', reward: 2000, test: c => c?.pokerSF },
+    { id: 'plinko', name: 'Sky Drop', desc: 'Land a Plinko ball on 25× or more.', reward: 800, test: c => c?.plinkoMult >= 25 },
     { id: 'bullseye', name: 'Bullseye', desc: 'Hit a single number in roulette.', reward: 500, test: c => c?.bullseye },
     { id: 'natural', name: 'Natural', desc: 'Get a blackjack.', reward: 300, test: c => c?.natural },
     { id: 'splitter', name: 'Splitter', desc: 'Win both hands after a split.', reward: 500, test: c => c?.splitBoth },
@@ -2490,6 +2581,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     nudges: 0, missions: [], missionsDone: 0,
     mode: 'slots', bj: { shoe: [], round: null, bet: 0, lastBet: 0, hands: 0 },
     rl: { bets: {}, last: {}, history: [], spins: 0 },
+    pl: { bet: 10, rows: 12, risk: 'medium', drops: 0, history: [], pending: [] },
     pk: { view: 'solo', solo: null, hands: 0, buyIn: 2000 },
   });
   const state = fresh();
@@ -3654,8 +3746,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     bj: 'Blackjack · pays 3 to 2 · play credits',
     rl: 'Roulette · single zero · play credits',
     pk: "Texas Hold'em · solo or online · play credits",
+    pl: 'Plinko · real bounces · play credits',
   };
-  const gameBusy = () => busy || bjBusy || rlBusy || (typeof pkBusy === 'function' && pkBusy());
+  const gameBusy = () => busy || bjBusy || rlBusy || (typeof pkBusy === 'function' && pkBusy()) || (typeof plBusy === 'function' && plBusy());
   function applyGameMode() {
     const bj = state.mode === 'bj';
     cabinet.dataset.mode = state.mode;
@@ -3663,6 +3756,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     document.body.classList.toggle('wide', state.mode === 'pk');
     $('marqueeSub').textContent = MODE_SUBS[state.mode];
     if (state.mode === 'rl') rlEnter();
+    if (state.mode === 'pl' && typeof plEnter === 'function') plEnter();
     if (state.mode === 'pk' && typeof pkEnter === 'function') pkEnter();
     if (bj) {
       renderBJTable(false);
@@ -3675,7 +3769,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     $('lobbyCredits').textContent = fmt(state.credits);
     document.querySelectorAll('.game-pick').forEach(b => {
       b.querySelector('.gp-last')?.remove();
-      if (b.dataset.mode === state.mode && state.spins + state.bj.hands + state.rl.spins + state.pk.hands > 0) b.insertAdjacentHTML('afterbegin', '<span class="gp-last">Last played</span>');
+      if (b.dataset.mode === state.mode && state.spins + state.bj.hands + state.rl.spins + state.pk.hands + state.pl.drops > 0) b.insertAdjacentHTML('afterbegin', '<span class="gp-last">Last played</span>');
     });
     $('lobby').hidden = false;
     document.querySelector(`.game-pick[data-mode="${state.mode}"]`)?.focus();
@@ -3686,7 +3780,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     $('lobby').hidden = true;
     sound.chime();
     render();
-    ({ bj: $('bjDeal'), rl: $('rlSpin'), slots: $('spin'), pk: $('pkSit') }[state.mode])?.focus({ preventScroll: true });
+    ({ bj: $('bjDeal'), rl: $('rlSpin'), slots: $('spin'), pk: $('pkSit'), pl: $('plDrop') }[state.mode])?.focus({ preventScroll: true });
   }));
 
   $('backBtn').addEventListener('click', () => {
@@ -3972,6 +4066,296 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     e.preventDefault();
     rlSpin();
   });
+
+  // ---------- Plinko ----------
+  // Multipliers per row count and risk, edge to edge. Each table returns about 96% of bets:
+  // the slot a ball lands in follows the binomial odds of R left/right bounces.
+  const PL_TABLES = {
+    8: { low: [5.4, 2, 1.1, 0.96, 0.48, 0.96, 1.1, 2, 5.4], medium: [13, 2.9, 1.3, 0.67, 0.38, 0.67, 1.3, 2.9, 13], high: [28, 3.9, 1.5, 0.29, 0.19, 0.29, 1.5, 3.9, 28] },
+    12: { low: [9.6, 2.9, 1.5, 1.3, 1.1, 0.96, 0.48, 0.96, 1.1, 1.3, 1.5, 2.9, 9.6], medium: [32, 11, 3.8, 1.9, 1.1, 0.57, 0.29, 0.57, 1.1, 1.9, 3.8, 11, 32], high: [170, 23, 7.9, 1.9, 0.68, 0.19, 0.19, 0.19, 0.68, 1.9, 7.9, 23, 170] },
+    16: { low: [15, 8.6, 1.9, 1.3, 1.3, 1.2, 1.1, 0.96, 0.48, 0.96, 1.1, 1.2, 1.3, 1.3, 1.9, 8.6, 15], medium: [110, 40, 9.7, 4.8, 2.9, 1.5, 0.97, 0.48, 0.29, 0.48, 0.97, 1.5, 2.9, 4.8, 9.7, 40, 110], high: [980, 130, 25, 8.8, 3.9, 1.9, 0.2, 0.2, 0.2, 0.2, 0.2, 1.9, 3.9, 8.8, 25, 130, 980] },
+  };
+  // The board in its own units; the canvas scales it to fit.
+  const PL_W = 600, PL_H = 600, PL_TOP = 44, PL_MAX_BALLS = 40;
+  const PL_G = 3200, PL_BOUNCE = 0.38, PL_DT = 1 / 240;
+  const plCanvas = $('plCanvas'), plCtx = plCanvas.getContext('2d');
+  let plBalls = [], plBoard = null, plRaf = 0, plLast = 0, plAutoLeft = 0, plAutoTimer = 0, plLastPing = 0, plNextId = 1;
+  function plBusy() { return plBalls.length > 0 || plAutoLeft > 0; }
+  function plSay(text, kind = '') { showMessage($('plMsg'), text, kind); }
+  const plMults = () => PL_TABLES[state.pl.rows][state.pl.risk];
+  const plFmtMult = m => (m >= 100 ? String(Math.round(m)) : m >= 10 ? String(+m.toFixed(1)) : String(+m.toFixed(2))) + '×';
+  // Colour of a slot: hot red at the edges, gold in the middle.
+  function plSlotColor(k, R) {
+    const t = Math.abs(k - R / 2) / (R / 2);
+    const lerp = (a, b) => Math.round(a + (b - a) * t);
+    return `rgb(${lerp(233, 224)}, ${lerp(162, 65)}, ${lerp(59, 74)})`;
+  }
+  function plBuild() {
+    const R = state.pl.rows;
+    const g = PL_W / (R + 2);
+    const slotH = Math.max(30, g * 0.72);
+    const rowGap = Math.min(g * 0.95, (PL_H - PL_TOP - slotH - 26) / (R - 1));
+    const pegR = Math.max(3.2, g * 0.085), ballR = Math.max(6, g * 0.23);
+    const rows = [];
+    for (let i = 0; i < R; i++) {
+      const y = PL_TOP + i * rowGap, pegs = [];
+      for (let j = 0; j < i + 3; j++) pegs.push({ x: PL_W / 2 + (j - (i + 2) / 2) * g, y, flash: 0 });
+      rows.push({ y, pegs });
+    }
+    const slotY = PL_TOP + (R - 1) * rowGap + rowGap * 0.7;
+    const slots = plMults().map((m, k) => ({ x: PL_W / 2 + (k - R / 2) * g, m, bump: 0 }));
+    plBoard = { R, g, rowGap, pegR, ballR, rows, slots, slotY, slotH, height: Math.ceil(slotY + slotH + 10) };
+    plResize();
+  }
+  function plResize() {
+    if (!plBoard) return;
+    const cssW = plCanvas.clientWidth || plCanvas.parentElement.clientWidth || PL_W;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    plCanvas.width = Math.round(cssW * dpr);
+    plCanvas.height = Math.round(cssW * (plBoard.height / PL_W) * dpr);
+    plDraw();
+  }
+  function plDraw() {
+    const b = plBoard;
+    if (!b) return;
+    const sc = plCanvas.width / PL_W, ctx = plCtx;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, plCanvas.width, plCanvas.height);
+    ctx.setTransform(sc, 0, 0, sc, 0, 0);
+    // pins
+    for (const row of b.rows) for (const p of row.pegs) {
+      if (p.flash > 0) {
+        ctx.fillStyle = `rgba(255, 210, 120, ${0.35 * p.flash})`;
+        ctx.beginPath(); ctx.arc(p.x, p.y, b.pegR * (2.2 + p.flash * 1.6), 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.fillStyle = p.flash > 0 ? '#fff2c4' : '#e8e1f0';
+      ctx.beginPath(); ctx.arc(p.x, p.y, b.pegR, 0, Math.PI * 2); ctx.fill();
+    }
+    // slots
+    const w = b.g * 0.9, h = b.slotH;
+    const font = Math.max(9, Math.min(17, b.g * 0.3));
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    b.slots.forEach((sl, k) => {
+      const y = b.slotY + sl.bump * 7;
+      const col = plSlotColor(k, b.R);
+      ctx.fillStyle = 'rgba(0,0,0,0.45)';
+      plRound(ctx, sl.x - w / 2, y + 4, w, h, 6); ctx.fill();
+      ctx.fillStyle = col;
+      plRound(ctx, sl.x - w / 2, y, w, h, 6); ctx.fill();
+      if (sl.bump > 0) { ctx.fillStyle = `rgba(255,255,255,${0.45 * sl.bump})`; plRound(ctx, sl.x - w / 2, y, w, h, 6); ctx.fill(); }
+      ctx.fillStyle = '#1d1714';
+      ctx.font = `700 ${font}px Chivo Mono, monospace`;
+      const label = plFmtMult(sl.m).replace('×', b.R >= 16 ? '' : '×');
+      ctx.fillText(label, sl.x, y + h / 2 + 1, w - 2);
+    });
+    // balls
+    for (const ball of plBalls) {
+      const r = b.ballR;
+      const grd = ctx.createRadialGradient(ball.x - r * 0.35, ball.y - r * 0.4, r * 0.1, ball.x, ball.y, r);
+      grd.addColorStop(0, '#ffd1e6'); grd.addColorStop(0.45, '#ff5fa8'); grd.addColorStop(1, '#c2186b');
+      ctx.fillStyle = 'rgba(255, 95, 168, 0.25)';
+      ctx.beginPath(); ctx.arc(ball.x, ball.y, r * 1.7, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = grd;
+      ctx.beginPath(); ctx.arc(ball.x, ball.y, r, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+  function plRound(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+  }
+
+  // Where the ball should meet row k (or its slot when k = R), following its pre-drawn path.
+  function plAim(ball, k) {
+    const b = plBoard;
+    if (k >= b.R) return { x: b.slots[ball.slot].x, y: b.slotY };
+    return { x: PL_W / 2 + (ball.rights[k] - k / 2) * b.g + ball.path[k] * (b.pegR + b.ballR) * 0.45, y: b.rows[k].y - (b.pegR + b.ballR) * 0.8 };
+  }
+  // One physics step for one ball: gravity and real bounces off the pins. When a pin of row i sends
+  // the ball off, it leaves with the sideways speed that carries it to the right spot of row i + 1,
+  // so the path the coin flips chose plays out as a natural bounce.
+  function plStep(ball, dt) {
+    const b = plBoard;
+    let k = 0;
+    while (k < b.R && ball.y > b.rows[k].y + b.pegR) k++;
+    // A light correction against drift between rows.
+    const aim = plAim(ball, k);
+    ball.vx += (aim.x - ball.x) * (k >= b.R ? 40 : 6) * dt;
+    ball.vy += PL_G * dt;
+    ball.x += ball.vx * dt;
+    ball.y += ball.vy * dt;
+    const minD = b.pegR + b.ballR;
+    for (let i = Math.max(0, k - 1); i <= Math.min(b.R - 1, k); i++) {
+      for (const peg of b.rows[i].pegs) {
+        const dx = ball.x - peg.x, dy = ball.y - peg.y;
+        const d2 = dx * dx + dy * dy;
+        if (d2 >= minD * minD) continue;
+        const d = Math.sqrt(d2) || 0.001, nx = dx / d, ny = dy / d;
+        ball.x = peg.x + nx * minD;
+        ball.y = peg.y + ny * minD;
+        const vn = ball.vx * nx + ball.vy * ny;
+        if (vn >= 0) continue;
+        ball.vx -= (1 + PL_BOUNCE) * vn * nx;
+        ball.vy -= (1 + PL_BOUNCE) * vn * ny;
+        ball.vy = Math.max(ball.vy, -260);
+        const dir = ball.path[i];
+        if (ball.row < i) {
+          // First touch on this row: head for the next row along a real throw.
+          ball.row = i;
+          // A short hop off the pin, as a real ball does, then the throw to the next row.
+          ball.vy = -(30 + Math.random() * 110) * Math.sqrt(b.rowGap / 40);
+          const next = plAim(ball, i + 1);
+          const h = Math.max(4, next.y - ball.y);
+          const t = (-ball.vy + Math.sqrt(ball.vy * ball.vy + 2 * PL_G * h)) / PL_G;
+          ball.vx = ((next.x - ball.x) / t) * (0.94 + Math.random() * 0.12);
+        } else if (Math.sign(ball.vx) !== dir) ball.vx = dir * Math.max(60, Math.abs(ball.vx));
+        if (Math.abs(vn) > 60) {
+          peg.flash = 1;
+          const now = performance.now();
+          if (now - plLastPing > 35) { plLastPing = now; sound.ping(1 - i / b.R); }
+        }
+      }
+    }
+    if (ball.x < b.ballR) { ball.x = b.ballR; ball.vx = Math.abs(ball.vx) * 0.5; }
+    if (ball.x > PL_W - b.ballR) { ball.x = PL_W - b.ballR; ball.vx = -Math.abs(ball.vx) * 0.5; }
+    return ball.y >= b.slotY + b.ballR * 0.2;
+  }
+  function plLoop(now) {
+    const dt = Math.min(0.05, (now - (plLast || now)) / 1000);
+    plLast = now;
+    const b = plBoard;
+    let steps = Math.max(1, Math.round(dt / PL_DT));
+    while (steps--) {
+      for (const ball of [...plBalls]) if (plStep(ball, PL_DT)) plLand(ball);
+    }
+    let lively = plBalls.length > 0;
+    for (const row of b.rows) for (const p of row.pegs) if (p.flash > 0) { p.flash = Math.max(0, p.flash - dt * 3.5); lively = true; }
+    for (const sl of b.slots) if (sl.bump > 0) { sl.bump = Math.max(0, sl.bump - dt * 3); lively = true; }
+    plDraw();
+    plRaf = lively ? requestAnimationFrame(plLoop) : 0;
+    if (!lively) plLast = 0;
+  }
+  function plKick() { if (!plRaf) { plLast = 0; plRaf = requestAnimationFrame(plLoop); } }
+
+  function plDrop() {
+    if (!account || !plBoard) return false;
+    if (settings.maintenance && !account.isAdmin) { plSay('The game is paused by an admin. Try again later.', 'lose'); return false; }
+    const bet = Math.floor(Number($('plBet').value));
+    if (!(bet >= 1)) { plSay('Enter a bet of at least 1.', 'lose'); return false; }
+    if (settings.maxBet && bet > settings.maxBet) { plSay(`The highest bet is ${fmt(settings.maxBet)}.`, 'lose'); return false; }
+    if (bet > state.credits) { plSay(`Not enough credits for a ${fmt(bet)} ball.`, 'lose'); return false; }
+    if (plBalls.length >= PL_MAX_BALLS) return false;
+    const R = plBoard.R;
+    // The result is drawn here, fair and up front: R coin flips.
+    const path = Array.from({ length: R }, () => (randInt(2) ? 1 : -1));
+    const rights = [0];
+    for (const d of path) rights.push(rights[rights.length - 1] + (d > 0 ? 1 : 0));
+    const slot = rights[R];
+    const mult = plMults()[slot];
+    const pay = Math.min(MAX, Math.floor(bet * mult * settings.winMultiplier));
+    const id = plNextId++;
+    state.pl.bet = bet;
+    state.credits -= bet;
+    state.pl.pending.push({ id, pay });
+    state.pl.drops++;
+    const ball = { id, bet, pay, mult, slot, path, rights, x: PL_W / 2 + (Math.random() - 0.5) * plBoard.g * 0.2, y: PL_TOP - plBoard.rowGap * 0.9, vx: (Math.random() - 0.5) * 30, vy: 0, row: -1 };
+    if (reduceMotion) { plLand(ball); render(); return true; }
+    plBalls.push(ball);
+    sound.chip();
+    plKick();
+    render();
+    return true;
+  }
+  function plLand(ball) {
+    plBalls = plBalls.filter(x => x !== ball);
+    state.pl.pending = state.pl.pending.filter(x => x.id !== ball.id);
+    const sl = plBoard.slots[ball.slot];
+    if (sl) sl.bump = 1;
+    state.credits = Math.min(MAX, state.credits + ball.pay);
+    const net = ball.pay - ball.bet;
+    state.lastWin = ball.pay;
+    state.best = Math.max(state.best, net);
+    state.pl.history.unshift({ m: ball.mult, k: ball.slot, R: plBoard.R });
+    state.pl.history.length = Math.min(state.pl.history.length, 12);
+    renderPLHistory();
+    gainXp(3 + (ball.mult >= 2 ? 4 : 0));
+    const label = plFmtMult(ball.mult);
+    if (ball.mult >= 10) {
+      plSay(`${label}! +${fmt(ball.pay)}`, 'win');
+      const r = plCanvas.getBoundingClientRect(), sc = r.width / PL_W;
+      fxTop.coinBurst(r.left + sl.x * sc, r.top + plBoard.slotY * sc, ball.mult >= 100 ? 60 : 28, 10);
+      sound.bigWin();
+      fireworks(ball.mult >= 100 ? 10 : 4);
+    } else if (ball.mult >= 1) { plSay(`${label} · +${fmt(ball.pay)}`, 'win'); sound.win(); }
+    else plSay(`${label} · ${fmt(ball.pay)} back`, ball.pay ? '' : 'lose');
+    checkAch({ win: Math.max(0, net), bet: ball.bet, plinkoMult: ball.mult });
+    render();
+    plKick();
+    if (!plBalls.length && !plAutoLeft) while (pendingLevels.length) levelUp(pendingLevels.shift());
+  }
+  function renderPLHistory() {
+    $('plHistory').innerHTML = state.pl.history.slice(0, 6).map(h => `<span style="background:${plSlotColor(h.k, h.R)}">${plFmtMult(h.m)}</span>`).join('');
+  }
+  function renderPLControls() {
+    const flying = plBalls.length > 0 || plAutoLeft > 0;
+    document.querySelectorAll('#plRisk [data-risk]').forEach(b => { b.setAttribute('aria-pressed', String(b.dataset.risk === state.pl.risk)); b.disabled = flying; });
+    document.querySelectorAll('#plRows [data-rows]').forEach(b => { b.setAttribute('aria-pressed', String(Number(b.dataset.rows) === state.pl.rows)); b.disabled = flying; });
+    const bet = Math.floor(Number($('plBet').value)) || 0;
+    $('plDrop').disabled = !account || bet < 1 || bet > state.credits;
+    $('plAuto').textContent = plAutoLeft ? `Stop (${plAutoLeft})` : 'Auto ×10';
+    $('plAuto').classList.toggle('on', plAutoLeft > 0);
+  }
+  function plEnter() {
+    if (document.activeElement !== $('plBet')) $('plBet').value = state.pl.bet;
+    if (!plBoard || plBoard.R !== state.pl.rows || plBoard.slots.some((sl, k) => sl.m !== plMults()[k])) plBuild(); else plResize();
+    renderPLHistory();
+    renderPLControls();
+    if (!plBalls.length) plSay('Pick a bet and drop a ball.');
+  }
+  $('plDrop').addEventListener('click', () => plDrop());
+  $('plAuto').addEventListener('click', () => {
+    if (plAutoLeft) { plAutoLeft = 0; clearTimeout(plAutoTimer); renderPLControls(); return; }
+    plAutoLeft = 10;
+    const next = () => {
+      if (!plAutoLeft || state.mode !== 'pl') { plAutoLeft = 0; renderPLControls(); return; }
+      if (!plDrop()) { plAutoLeft = 0; renderPLControls(); return; }
+      plAutoLeft--;
+      renderPLControls();
+      if (plAutoLeft) plAutoTimer = setTimeout(next, 280);
+    };
+    next();
+  });
+  $('plRisk').addEventListener('click', e => {
+    const b = e.target.closest('[data-risk]');
+    if (!b || plBusy()) return;
+    state.pl.risk = b.dataset.risk;
+    sound.chip();
+    plBuild(); renderPLControls(); render();
+  });
+  $('plRows').addEventListener('click', e => {
+    const b = e.target.closest('[data-rows]');
+    if (!b || plBusy()) return;
+    state.pl.rows = Number(b.dataset.rows);
+    sound.chip();
+    plBuild(); renderPLControls(); render();
+  });
+  document.querySelectorAll('[data-plb]').forEach(b => b.addEventListener('click', () => {
+    const cur = Math.max(1, Math.floor(Number($('plBet').value)) || 1);
+    const cap = Math.max(1, Math.min(state.credits, settings.maxBet || MAX));
+    const v = { half: Math.max(1, Math.floor(cur / 2)), double: Math.min(cap, cur * 2), max: cap }[b.dataset.plb];
+    $('plBet').value = v;
+    state.pl.bet = v;
+    sound.chip();
+    renderPLControls();
+  }));
+  $('plBet').addEventListener('input', () => { const v = Math.floor(Number($('plBet').value)); if (v >= 1) state.pl.bet = v; renderPLControls(); });
+  document.addEventListener('keydown', e => {
+    if (state.mode !== 'pl' || !account || !$('lobby').hidden || e.code !== 'Space') return;
+    if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'SUMMARY'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal, #profileModal')) return;
+    e.preventDefault();
+    plDrop();
+  });
+  addEventListener('resize', () => { if (state.mode === 'pl') plResize(); });
 
   // ---------- Poker ----------
   // Cards are 0-51: rank = code >> 2 (0 = two … 12 = ace), suit = code & 3.
@@ -5077,6 +5461,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     renderBJControls();
     renderRLControls();
     if (state.mode === 'pk') renderPKControls();
+    if (state.mode === 'pl' && typeof renderPLControls === 'function') renderPLControls();
     persist();
   }
 
@@ -5836,12 +6221,18 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     state.missions = (Array.isArray(saved.missions) ? saved.missions : []).filter(m => MISSIONS[m?.t]);
     state.bj = Object.assign(fresh().bj, saved.bj);
     state.rl = Object.assign(fresh().rl, saved.rl);
+    state.pl = Object.assign(fresh().pl, saved.pl);
+    if (![8, 12, 16].includes(state.pl.rows)) state.pl.rows = 12;
+    if (!['low', 'medium', 'high'].includes(state.pl.risk)) state.pl.risk = 'medium';
+    // Balls still falling when the page closed: their result was already drawn, so pay it now.
+    if (Array.isArray(state.pl.pending) && state.pl.pending.length) state.credits = Math.min(MAX, state.credits + state.pl.pending.reduce((a, b) => a + (Number(b.pay) || 0), 0));
+    state.pl.pending = [];
     state.pk = Object.assign(fresh().pk, saved.pk);
     if (state.pk.solo && !Array.isArray(state.pk.solo.seats)) state.pk.solo = null;
     if (typeof state.rl.bets !== 'object' || !state.rl.bets) state.rl.bets = {};
     if (!Array.isArray(state.bj.shoe)) state.bj.shoe = [];
     if (state.bj.round && !Array.isArray(state.bj.round.hands)) state.bj.round = null;
-    if (!['bj', 'rl', 'pk'].includes(state.mode)) state.mode = 'slots';
+    if (!['bj', 'rl', 'pk', 'pl'].includes(state.mode)) state.mode = 'slots';
     autoLeft = 0;
     pendingLevels.length = 0;
     held = [false, false, false];
