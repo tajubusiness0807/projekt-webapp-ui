@@ -402,7 +402,7 @@ details.paytable, details.ach, details.bj-rules { background: var(--panel); bord
 .cabinet:not([data-mode="slots"]) :is(#window, #reelCtl, #tier, #message, .meters, .bet, .spin-row, #boosts, details.paytable) { display: none !important; }
 .game-modes { flex-wrap: wrap; }
 body.wide .layout { max-width: 980px; grid-template-columns: minmax(0, 1fr); }
-body.wide .account-bar, body.wide .announce { max-width: 980px; }
+body.wide .account-bar { max-width: 980px; }
 
 /* Poker */
 .pk { display: grid; gap: 12px; }
@@ -1112,11 +1112,30 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
 .admin-msg { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; background: var(--panel); border-radius: 10px; padding: 8px 10px; font-size: 13px; }
 .admin-msg b { margin-right: 6px; }
 .admin-msg span { overflow-wrap: anywhere; }
+.danger-zone { display: grid; gap: 8px; margin-top: 14px; padding: 12px; border: 2px dashed #e0414a88; border-radius: 12px; background: #e0414a12; }
+.danger-zone b { display: block; color: #ff7a80; font-family: var(--font-display); font-weight: 400; letter-spacing: 0.06em; }
+.danger-zone small { color: var(--muted); font-size: 12px; }
+.hard-reset { background: linear-gradient(#e0414a, #a3262d) !important; color: #fff !important; font-family: var(--font-display); letter-spacing: 0.08em; }
 .admin-note { margin: 0; font-size: 12px; color: var(--muted); line-height: 1.5; }
 .admin-status { margin: 0; min-height: 18px; font-size: 13px; font-weight: 600; color: var(--win); }
 .admin-status.err { color: var(--lose); }
 
 /* Chat */
+.lang-toggle {
+  position: fixed; z-index: 41;
+  left: max(12px, env(safe-area-inset-left, 0px));
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  display: flex; gap: 2px; padding: 3px;
+  border-radius: 999px;
+  background: #150f0ce6;
+  border: 2px solid var(--cabinet-edge);
+  box-shadow: 0 8px 20px -8px #000;
+  font: 600 11px var(--font-mono);
+}
+.lang-toggle span { padding: 5px 9px; border-radius: 999px; color: var(--muted); transition: background 0.2s, color 0.2s; }
+.lang-toggle span.on { background: var(--accent); color: var(--ink); }
+.lang-toggle:hover { border-color: var(--accent); }
+html[data-lang="de"] .reel.held::after { content: "GEHALTEN"; }
 .chat-fab {
   position: fixed; z-index: 22;
   right: max(16px, env(safe-area-inset-right, 0px));
@@ -1757,6 +1776,13 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
           <button class="abtn ok" id="giveAll" type="button">Give to everyone</button>
         </div>
         <div class="admin-table-wrap"><table class="admin-table" id="adminPlayers"></table></div>
+        <div class="danger-zone">
+          <div><b>Hard reset</b><small>Every account, admins included, goes back to 500 credits and level 1: goodies, achievements, missions and best wins are wiped, and the online poker table is cleared. Pictures and medals stay. This can't be undone.</small></div>
+          <div class="admin-row">
+            <input id="hardResetConfirm" autocomplete="off" placeholder="Type RESET to confirm" aria-label="Type RESET to confirm the hard reset">
+            <button class="abtn warn hard-reset" id="hardReset" type="button">HARD RESET</button>
+          </div>
+        </div>
         <p class="admin-note">Set credits replaces the balance. Reset puts the player back to the start: credits, level, goodies and achievements. Blocked players can't sign in, save or chat. Delete removes the account for good, with its game, chat and private messages; admins have to lose their admin rights first. Dangerous buttons ask once more before they act.</p>
       </section>
 
@@ -1801,6 +1827,7 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
   </div>
 </div>
 
+<button class="lang-toggle" type="button" aria-label="Sprache wechseln"><span data-l="de">DE</span><span data-l="en">EN</span></button>
 <button class="chat-fab" id="chatFab" type="button" hidden>Chat <span class="badge" id="chatBadge" hidden>0</span></button>
 <section class="chat-panel" id="chatPanel" aria-labelledby="chatTitle" hidden>
   <div class="chat-head"><div><h2 id="chatTitle">Chat</h2><span id="chatSub">Everyone playing Lucky Reels</span></div><button class="chat-close" id="chatClose" type="button" aria-label="Close chat">×</button></div>
@@ -1818,6 +1845,387 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
 
 <script>
 (() => {
+  // ---------- Language ----------
+  // The page is written in English. In German every text the page shows (static or rendered later) is
+  // swapped through this table: exact texts first, then patterns whose {placeholders} carry numbers and names.
+  const DE_EXACT = {
+    // Sign-in, lobby, account
+    'Sign in to play': 'Anmelden und spielen',
+    'Username': 'Benutzername', 'Password': 'Passwort', 'Repeat password': 'Passwort wiederholen', 'Repeat it': 'Wiederholen',
+    'Sign in': 'Anmelden', 'Sign out': 'Abmelden', 'Signed in as': 'Angemeldet als', 'Signed out': 'Abgemeldet',
+    'New here?': 'Neu hier?', 'Create an account': 'Konto erstellen', 'Create account': 'Konto erstellen', 'Create your account': 'Erstelle dein Konto',
+    'Already have an account?': 'Schon ein Konto?', 'Account created': 'Konto erstellt',
+    '3 to 20 letters, digits, - or _. Everyone sees it in the highscores.': '3 bis 20 Buchstaben, Ziffern, - oder _. Alle sehen ihn in den Highscores.',
+    'Everyone playing Lucky Reels': 'Alle, die Lucky Reels spielen',
+    'Play credits only. Nothing here can be bought with real money, cashed out or won for real. Space bar spins.': 'Nur Spiel-Credits. Nichts hier kann mit echtem Geld gekauft, ausgezahlt oder wirklich gewonnen werden. Leertaste dreht.',
+    'Connecting…': 'Verbinde…', 'Hi': 'Hi', ', what do you want to play?': ', was möchtest du spielen?', 'Credits': 'Credits',
+    'Play': 'Spielen', 'Last played': 'Zuletzt gespielt', 'Solo or online': 'Solo oder online',
+    'Spin the reels: wilds, free spins, lightning and jackpots.': 'Dreh die Walzen: Wilds, Freispiele, Blitze und Jackpots.',
+    'Beat the dealer to 21: hit, stand, double and split.': 'Schlag den Dealer bis 21: ziehen, halten, verdoppeln und teilen.',
+    'Place your chips and watch the ball land.': 'Setz deine Chips und sieh zu, wo die Kugel landet.',
+    'Texas Hold\'em against bots, or online with up to 8 players.': 'Texas Hold\'em gegen Bots oder online mit bis zu 8 Spielern.',
+    'Profile': 'Profil', 'Change password': 'Passwort ändern', 'Current password': 'Aktuelles Passwort',
+    'New password (4+ characters)': 'Neues Passwort (ab 4 Zeichen)', 'New password': 'Neues Passwort', 'Save': 'Speichern',
+    'Admin': 'Admin', 'Password changed.': 'Passwort geändert.', 'The current password is wrong.': 'Das aktuelle Passwort ist falsch.',
+    'Could not change the password. Try again.': 'Passwort konnte nicht geändert werden. Versuch es nochmal.',
+    'Enter your username and password.': 'Gib Benutzername und Passwort ein.', 'Wrong username or password.': 'Falscher Benutzername oder falsches Passwort.',
+    'That username is taken. Pick another one.': 'Dieser Benutzername ist vergeben. Wähl einen anderen.',
+    'Usernames use 3 to 20 letters, digits, - or _.': 'Benutzernamen haben 3 bis 20 Buchstaben, Ziffern, - oder _.',
+    'The password needs at least 6 characters.': 'Das Passwort braucht mindestens 6 Zeichen.', 'The two passwords do not match.': 'Die beiden Passwörter stimmen nicht überein.',
+    'That password is too easy to guess. Try a longer one.': 'Dieses Passwort ist zu leicht zu erraten. Nimm ein längeres.',
+    'Could not create the account. Try again.': 'Konto konnte nicht erstellt werden. Versuch es nochmal.',
+    'Could not reach the account server. Try again in a moment.': 'Der Konto-Server ist nicht erreichbar. Versuch es gleich nochmal.',
+    'Creating accounts is switched off right now. Ask the person who runs the game.': 'Neue Konten sind gerade abgeschaltet. Frag die Person, die das Spiel betreibt.',
+    'Too many new accounts in a short time. Try again in a few minutes.': 'Zu viele neue Konten in kurzer Zeit. Versuch es in ein paar Minuten nochmal.',
+    'This account is blocked. Ask an admin.': 'Dieses Konto ist gesperrt. Frag einen Admin.',
+    'An admin blocked this account.': 'Ein Admin hat dieses Konto gesperrt.', 'An admin deleted this account.': 'Ein Admin hat dieses Konto gelöscht.',
+    'Your login was created, but the game has no place for new players yet. Ask the person who runs the game to finish the setup.': 'Dein Login wurde erstellt, aber das Spiel hat noch keinen Platz für neue Spieler. Bitte die Person, die das Spiel betreibt, die Einrichtung abzuschließen.',
+    'Offline copy: accounts and scores are kept in this browser only.': 'Offline-Kopie: Konten und Punkte bleiben nur in diesem Browser.',
+    'The account server could not be reached, so this copy keeps accounts in this browser only.': 'Der Konto-Server war nicht erreichbar, deshalb bleiben Konten in dieser Kopie nur in diesem Browser.',
+    'This link is view-only. Ask the owner for Contributor access to save progress.': 'Dieser Link ist nur zum Ansehen. Frag den Besitzer nach Bearbeitungszugriff, um Fortschritt zu speichern.',
+    'Saving…': 'Speichere…', 'Not saved': 'Nicht gespeichert', 'Saving failed. Your progress stays on this page; it will retry.': 'Speichern fehlgeschlagen. Dein Fortschritt bleibt auf der Seite; es wird erneut versucht.',
+    'Highscores stopped updating. Reload the page to reconnect.': 'Die Highscores aktualisieren nicht mehr. Lade die Seite neu.',
+    'That did not work. Check the connection and try again.': 'Das hat nicht geklappt. Prüf die Verbindung und versuch es nochmal.',
+    'News': 'News', 'Hide this announcement': 'Diese Ankündigung ausblenden',
+    'Game reset': 'Spiel zurückgesetzt', 'An admin reset your game.': 'Ein Admin hat dein Spiel zurückgesetzt.', 'Credits updated': 'Credits aktualisiert',
+    'The game is paused by an admin.': 'Das Spiel wurde von einem Admin pausiert.', 'The game is paused by an admin. Try again later.': 'Das Spiel wurde von einem Admin pausiert. Versuch es später nochmal.',
+    'Paused': 'Pausiert', 'an admin paused the game': 'ein Admin hat pausiert',
+    // Header, modes
+    'Slots': 'Slots', 'Blackjack': 'Blackjack', 'Roulette': 'Roulette', 'Poker': 'Poker', 'Game': 'Spiel',
+    'Three reels · one payline · play credits': 'Drei Walzen · eine Gewinnlinie · Spiel-Credits',
+    'Blackjack · pays 3 to 2 · play credits': 'Blackjack · zahlt 3 zu 2 · Spiel-Credits',
+    'Roulette · single zero · play credits': 'Roulette · eine Null · Spiel-Credits',
+    'Texas Hold\'em · solo or online · play credits': 'Texas Hold\'em · solo oder online · Spiel-Credits',
+    // Slots
+    'Spin': 'Drehen', 'Collect': 'Einsammeln', 'Gamble': 'Riskieren', 'Hold': 'Halten', 'Held': 'Gehalten', '▼ Nudge': '▼ Stupser',
+    'Nudge reel 1 down': 'Walze 1 runterstupsen', 'Nudge reel 2 down': 'Walze 2 runterstupsen', 'Nudge reel 3 down': 'Walze 3 runterstupsen',
+    'Last win': 'Letzter Gewinn', 'Last bet': 'Letzter Einsatz', 'Level': 'Level', 'Bonus stars': 'Bonussterne', 'Win streak': 'Gewinnserie',
+    'Bet per spin · no limit': 'Einsatz pro Spin · ohne Limit', 'Halve bet': 'Einsatz halbieren', 'Double bet': 'Einsatz verdoppeln', 'Max': 'Max', 'Min': 'Min',
+    'Auto ×10': 'Auto ×10', 'Sound: on': 'Ton: an', 'Sound: off': 'Ton: aus', 'Start over': 'Neu anfangen',
+    'Paytable & rules': 'Gewinntabelle & Regeln', 'any two': 'zwei beliebige', 'on reel one': 'auf Walze eins',
+    'Pick a bet and pull.': 'Wähl einen Einsatz und zieh den Hebel.', 'Spinning…': 'Dreht…', 'Spinning the reels you did not hold…': 'Die nicht gehaltenen Walzen drehen…',
+    'Bet raised, so the holds are off. Spinning…': 'Einsatz erhöht, das Halten fällt weg. Dreht…', 'Two sevens… come on!': 'Zwei Siebenen… komm schon!',
+    'No win. Try again.': 'Kein Gewinn. Nochmal!', 'Out of credits. Start over to play again.': 'Keine Credits mehr. Fang neu an, um weiterzuspielen.',
+    'No win. Hold up to two reels for the next spin.': 'Kein Gewinn. Halte bis zu zwei Walzen für den nächsten Spin.',
+    'No win. Nudge a reel now, or hold reels for the next spin.': 'Kein Gewinn. Stups jetzt eine Walze an oder halte Walzen für den nächsten Spin.',
+    'Hold up to two reels for the next spin': 'Halte bis zu zwei Walzen für den nächsten Spin', 'Out of nudges.': 'Keine Stupser mehr.',
+    'Here, have a nudge for luck.': 'Hier, ein Stupser für dein Glück.', 'Spin when you are ready.': 'Dreh, wenn du bereit bist.',
+    'The machine hums. Feeling lucky?': 'Die Maschine summt. Glück gehabt?', 'The machine hums…': 'Die Maschine summt…',
+    'Switch to the slots: your next spin hits the jackpot.': 'Wechsle zu den Slots: Dein nächster Spin knackt den Jackpot.',
+    'Fresh start: 500 credits, level 1, no goodies.': 'Neustart: 500 Credits, Level 1, keine Goodies.',
+    'FREE SPINS': 'FREISPIELE', 'BONUS OVER': 'BONUS VORBEI', 'BIG WIN': 'GROSSER GEWINN', 'MEGA WIN': 'MEGA-GEWINN', 'NICE WIN': 'SCHÖNER GEWINN',
+    'JACKPOT!': 'JACKPOT!', 'Jackpot!': 'Jackpot!', 'Three sevens': 'Drei Siebenen', 'Tap to continue': 'Tippen zum Weiter', 'LIGHTNING': 'BLITZ',
+    'Gamble lost.': 'Riskiert und verloren.', 'Double or nothing': 'Doppelt oder nichts', 'At stake': 'Im Spiel',
+    'Is the next card higher or lower?': 'Ist die nächste Karte höher oder tiefer?', 'Higher ▲': 'Höher ▲', 'Lower ▼': 'Tiefer ▼',
+    'Higher or lower? The safer guess pays less. Aces are low.': 'Höher oder tiefer? Der sicherere Tipp zahlt weniger. Asse sind niedrig.',
+    'Same rank. Your stake stays, go again.': 'Gleicher Wert. Dein Einsatz bleibt, nochmal.', 'Wrong card. The stake is gone.': 'Falsche Karte. Der Einsatz ist weg.',
+    'Close': 'Schließen', 'Level up': 'Level-up', 'Spin for your level reward.': 'Dreh für deine Level-Belohnung.', 'Spin the wheel': 'Rad drehen',
+    // Shop, goodies, missions, achievements
+    'Highscores': 'Highscores', 'Player': 'Spieler', 'Best win': 'Bester Gewinn', 'No players yet.': 'Noch keine Spieler.', 'you': 'du', 'Online': 'Online',
+    'Goodie Shop': 'Goodie-Shop', 'Slot payout rate with your goodies:': 'Slot-Auszahlungsquote mit deinen Goodies:', 'Owned': 'Gekauft', 'Maxed': 'Voll', 'Goodie bought': 'Goodie gekauft',
+    'Lucky Horseshoe': 'Glückshufeisen', 'Golden Cherries': 'Goldene Kirschen', 'Piggy Bank': 'Sparschwein', 'Auto-Spin Lever': 'Auto-Spin-Hebel',
+    'Lucky Cat': 'Glückskatze', 'Gold Cabinet': 'Goldgehäuse', 'Neon Name': 'Neon-Name', 'Lightning Strike': 'Blitzschlag',
+    'Three sevens pay 8× more per level. Stack up to three.': 'Drei Siebenen zahlen 8× mehr pro Stufe. Bis zu dreimal stapelbar.',
+    'Three cherries pay 3.5× instead of 3×.': 'Drei Kirschen zahlen 3,5× statt 3×.',
+    'Get 2% of your bet back on every losing spin.': 'Bekomm 2 % deines Einsatzes bei jedem verlorenen Spin zurück.',
+    'Unlocks Auto ×10: ten spins in a row.': 'Schaltet Auto ×10 frei: zehn Spins am Stück.',
+    'A waving cat sits on your reels, cheers your wins and gifts you a nudge every 60 spins.': 'Eine winkende Katze sitzt auf deinen Walzen, feiert deine Gewinne und schenkt dir alle 60 Spins einen Stupser.',
+    'Plates the machine in gold. Purely for show.': 'Vergoldet die Maschine. Rein zur Show.',
+    'Your name glows in rainbow neon for everyone: highscores, chat and the online list.': 'Dein Name leuchtet für alle in Regenbogen-Neon: Highscores, Chat und Online-Liste.',
+    'On 1% of your slot wins lightning strikes and multiplies the win ×2, ×3, ×5 or even ×10.': 'Bei 1 % deiner Slot-Gewinne schlägt ein Blitz ein und multipliziert den Gewinn ×2, ×3, ×5 oder sogar ×10.',
+    'Missions': 'Missionen', 'Mission complete': 'Mission geschafft', 'Achievements': 'Erfolge', 'Achievement unlocked': 'Erfolg freigeschaltet',
+    'Win with a nudge': 'Gewinne mit einem Stupser', 'Win a spin after holding reels': 'Gewinne einen Spin nach dem Halten',
+    'First Pull': 'Erster Zug', 'Spin once.': 'Dreh einmal.', 'Winner': 'Gewinner', 'Win anything.': 'Gewinne irgendwas.', 'Triple': 'Dreifach', 'Land three of a kind.': 'Lande drei Gleiche.',
+    'On Fire': 'Heiß gelaufen', 'Win 3 spins in a row.': 'Gewinne 3 Spins hintereinander.', 'Unstoppable': 'Unaufhaltsam', 'Win 6 spins in a row.': 'Gewinne 6 Spins hintereinander.',
+    'Starstruck': 'Sternenstaub', 'Big Win': 'Großer Gewinn', 'Win 25× your bet or more.': 'Gewinne 25× deinen Einsatz oder mehr.', 'Mega Win': 'Mega-Gewinn', 'Win 75× your bet or more.': 'Gewinne 75× deinen Einsatz oder mehr.',
+    'Lucky Sevens': 'Glückssiebenen', 'Hit the jackpot.': 'Knack den Jackpot.', 'Regular': 'Stammgast', 'Reach level 5.': 'Erreiche Level 5.', 'High Roller': 'High Roller', 'Reach level 10.': 'Erreiche Level 10.',
+    'All In': 'All In', 'Bet 10,000 or more on one spin.': 'Setz 10.000 oder mehr auf einen Spin.', 'Marathon': 'Marathon', 'Play 100 spins.': 'Spiel 100 Spins.',
+    'Millionaire': 'Millionär', 'Hold 1,000,000 credits.': 'Besitze 1.000.000 Credits.', 'Wild Thing': 'Wildes Ding', 'Win a line with a wild in it.': 'Gewinne eine Linie mit einem Wild.',
+    'Nudge Master': 'Stupser-Meister', 'Win with a nudge.': 'Gewinne mit einem Stupser.', 'Double Trouble': 'Doppelter Ärger', 'Taskmaster': 'Missionsprofi', 'Complete 10 missions.': 'Schaffe 10 Missionen.',
+    'Card Shark': 'Kartenhai', 'Win a poker pot.': 'Gewinne einen Poker-Pot.', 'Royalty': 'Königlich', 'Win a poker pot with a straight flush.': 'Gewinne einen Poker-Pot mit einem Straight Flush.',
+    'Bullseye': 'Volltreffer', 'Hit a single number in roulette.': 'Triff eine einzelne Zahl beim Roulette.', 'Natural': 'Naturtalent', 'Get a blackjack.': 'Hol einen Blackjack.',
+    'Splitter': 'Splitter', 'Win both hands after a split.': 'Gewinne beide Hände nach einem Split.', 'Collector': 'Sammler', 'Own every goodie, horseshoe maxed.': 'Besitze jedes Goodie, Hufeisen voll.',
+    // Blackjack
+    'Blackjack table': 'Blackjack-Tisch', 'Dealer': 'Dealer', 'Deal': 'Austeilen', 'Deal again': 'Neu austeilen', 'Hit': 'Karte', 'Stand': 'Halten', 'Double': 'Verdoppeln', 'Split': 'Teilen',
+    'Clear': 'Leeren', 'Rebet': 'Nochmal setzen', 'Undo': 'Rückgängig', 'Your cards land here.': 'Hier landen deine Karten.', 'tap chips to bet': 'Chips antippen zum Setzen',
+    'Tap the chips to bet, then deal.': 'Tipp die Chips an, um zu setzen, dann austeilen.', 'Tap the chips to place a bet first.': 'Tipp zuerst die Chips an, um zu setzen.',
+    'Deal when you are ready.': 'Teil aus, wenn du bereit bist.', 'Dealer has blackjack.': 'Der Dealer hat Blackjack.', 'Shuffling a fresh shoe…': 'Neuer Schlitten wird gemischt…',
+    'Face-down card': 'Verdeckte Karte', 'card back': 'Kartenrückseite', 'Bust.': 'Überkauft.', 'BUST': 'ÜBER', 'LOSE': 'VERLOREN', 'PUSH': 'UNENTSCHIEDEN', 'WIN': 'GEWONNEN', 'BLACKJACK': 'BLACKJACK',
+    'Not enough credits to double the bets.': 'Nicht genug Credits, um die Einsätze zu verdoppeln.', 'Not enough credits to repeat the last bet.': 'Nicht genug Credits, um den letzten Einsatz zu wiederholen.',
+    'Not enough credits for another chip.': 'Nicht genug Credits für einen weiteren Chip.', 'Blackjack rules': 'Blackjack-Regeln',
+    'Get closer to 21 than the dealer without going over. Number cards count their value, J, Q and K count 10, an ace counts 1 or 11. A blackjack (ace plus a ten-card as your first two cards) pays 3 to 2; other wins pay 1 to 1, a tie returns your bet. The dealer draws to 16 and stands on every 17. Double: double your bet for exactly one more card. Split: two cards of the same value become two hands with their own bet (once per round; split aces get one card each). Six decks, shuffled when a quarter is left. Keys: H hit, S stand, D double, P split, Space deal.':
+      'Komm näher an 21 als der Dealer, ohne drüber zu gehen. Zahlenkarten zählen ihren Wert, B, D und K zählen 10, ein Ass zählt 1 oder 11. Ein Blackjack (Ass plus Zehnerkarte als erste zwei Karten) zahlt 3 zu 2; andere Gewinne zahlen 1 zu 1, bei Gleichstand gibt es den Einsatz zurück. Der Dealer zieht bis 16 und hält bei jeder 17. Verdoppeln: doppelter Einsatz für genau eine weitere Karte. Teilen: Zwei Karten mit gleichem Wert werden zwei Hände mit eigenem Einsatz (einmal pro Runde; geteilte Asse bekommen je eine Karte). Sechs Decks, gemischt wenn ein Viertel übrig ist. Tasten: H Karte, S halten, D verdoppeln, P teilen, Leertaste austeilen.',
+    // Roulette
+    'Roulette wheel': 'Roulette-Rad', 'Last numbers': 'Letzte Zahlen', 'On the table:': 'Auf dem Tisch:', 'No more bets!': 'Nichts geht mehr!',
+    'Pick a chip, place it on the table, then spin.': 'Wähl einen Chip, setz ihn auf den Tisch, dann dreh.', 'Place a chip on the table first.': 'Setz zuerst einen Chip auf den Tisch.',
+    'place a chip first': 'erst einen Chip setzen', 'Red': 'Rot', 'Black': 'Schwarz', 'Odd': 'Ungerade', 'Even': 'Gerade', '1st 12': '1. 12', '2nd 12': '2. 12', '3rd 12': '3. 12',
+    'Roulette rules': 'Roulette-Regeln', 'Roulette table': 'Roulette-Tisch',
+    'European wheel with one zero. A single number pays 35 to 1. Red or black, odd or even, 1–18 or 19–36 pay 1 to 1. A dozen (1st, 2nd, 3rd 12) or a column (2:1 under the numbers) pays 2 to 1. Zero loses every outside bet. Pick a chip, tap the table to place it, tap again to add more.':
+      'Europäisches Rad mit einer Null. Eine einzelne Zahl zahlt 35 zu 1. Rot oder Schwarz, ungerade oder gerade, 1–18 oder 19–36 zahlen 1 zu 1. Ein Dutzend (1., 2., 3. 12) oder eine Spalte (2:1 unter den Zahlen) zahlt 2 zu 1. Bei Null verlieren alle Außenwetten. Wähl einen Chip, tipp auf den Tisch, um ihn zu setzen, nochmal tippen für mehr.',
+    // Poker
+    'Poker table': 'Pokertisch', 'Solo vs bots': 'Solo gegen Bots', 'Online table': 'Online-Tisch', 'No-limit Hold\'em · blinds 10/20': 'No-Limit Hold\'em · Blinds 10/20',
+    'Fold': 'Passen', 'Check': 'Schieben', 'Call': 'Mitgehen', 'Raise': 'Erhöhen', 'Bet': 'Setzen', 'All-in': 'All-in', '½ pot': '½ Pot', 'Pot': 'Pot', 'Raise to': 'Erhöhen auf',
+    'Buy-in': 'Buy-in', 'Sit down': 'Hinsetzen', 'Start table': 'Tisch starten', 'Leave table': 'Tisch verlassen', 'Left the table': 'Tisch verlassen', 'Sit here': 'Hier sitzen', 'Open seat': 'Freier Platz',
+    'Small blind': 'Small Blind', 'Big blind': 'Big Blind', 'Left': 'Weg', 'left': 'weg', 'Dealing…': 'Teile aus…', 'Waiting…': 'Warte…', 'Poker rules': 'Poker-Regeln',
+    'High card': 'Höchste Karte', 'Pair': 'Paar', 'Two pair': 'Zwei Paare', 'Three of a kind': 'Drilling', 'Straight': 'Straße', 'Flush': 'Flush', 'Full house': 'Full House',
+    'Four of a kind': 'Vierling', 'Straight flush': 'Straight Flush', 'Royal flush': 'Royal Flush',
+    'Your turn: check or bet.': 'Du bist dran: schieben oder setzen.', 'Your chips went back to your credits.': 'Deine Chips sind zurück bei deinen Credits.',
+    'You sat down. The next hand deals you in.': 'Du sitzt. In der nächsten Hand bist du dabei.', 'You are already at the table.': 'Du sitzt schon am Tisch.',
+    'The table is full (8 players).': 'Der Tisch ist voll (8 Spieler).', 'Not enough credits for that buy-in.': 'Nicht genug Credits für dieses Buy-in.',
+    'Could not sit down. Try again.': 'Hinsetzen hat nicht geklappt. Versuch es nochmal.', 'Could not leave the table. Try again.': 'Aufstehen hat nicht geklappt. Versuch es nochmal.',
+    'Too late: the turn moved on.': 'Zu spät: Der Zug ist weiter.', 'That raise is too small.': 'Diese Erhöhung ist zu klein.', 'The move did not go through. Try again.': 'Der Zug ging nicht durch. Versuch es nochmal.',
+    'You are out of chips. Buy in again to keep playing.': 'Du hast keine Chips mehr. Kauf dich neu ein, um weiterzuspielen.',
+    'Someone just took that seat. Pick another one.': 'Jemand hat sich gerade dorthin gesetzt. Wähl einen anderen Platz.',
+    'Pick a buy-in and start a table against five bots.': 'Wähl ein Buy-in und starte einen Tisch gegen fünf Bots.',
+    'The table is empty. Sit down; the game starts as soon as a second player joins.': 'Der Tisch ist leer. Setz dich; das Spiel startet, sobald ein zweiter Spieler dazukommt.',
+    'Waiting for a second player. Invite a friend to the online table!': 'Warte auf einen zweiten Spieler. Lad einen Freund an den Online-Tisch ein!',
+    'Connecting to the online table…': 'Verbinde mit dem Online-Tisch…', 'The online table only runs on the public site. Play solo here.': 'Der Online-Tisch läuft nur auf der öffentlichen Seite. Spiel hier solo.',
+    'The online table is not set up yet: an admin runs the “Online poker” part of supabase-setup.sql once.': 'Der Online-Tisch ist noch nicht eingerichtet: Ein Admin führt einmal den Teil „Online poker“ aus supabase-setup.sql aus.',
+    'Not your turn.': 'Du bist nicht dran.', 'You cannot check.': 'Du kannst nicht schieben.', 'Raise more than the current bet.': 'Erhöh über den aktuellen Einsatz.', 'Unknown move.': 'Unbekannter Zug.',
+    'No-limit Texas Hold\'em, blinds 10/20. Everyone gets two cards; five shared cards come in three rounds (flop, turn, river). Make the best five-card hand from your two cards and the board, or make everyone else fold. Each betting round you can fold, check or call, or raise (at least the last raise). Hands, best first: royal flush, straight flush, four of a kind, full house, flush, straight, three of a kind, two pair, pair, high card. Your buy-in comes from your credits; leaving the table puts your chips back. Online: up to 8 players share one table and one dealer, and you have 25 seconds per move; missing two moves in a row sits you out. Keys: F fold, C check/call, R raise.':
+      'No-Limit Texas Hold\'em, Blinds 10/20. Jeder bekommt zwei Karten; fünf gemeinsame Karten kommen in drei Runden (Flop, Turn, River). Bilde die beste Fünf-Karten-Hand aus deinen zwei Karten und dem Board oder bring alle anderen zum Passen. In jeder Setzrunde kannst du passen, schieben oder mitgehen oder erhöhen (mindestens um die letzte Erhöhung). Hände, beste zuerst: Royal Flush, Straight Flush, Vierling, Full House, Flush, Straße, Drilling, zwei Paare, Paar, höchste Karte. Dein Buy-in kommt von deinen Credits; beim Aufstehen gehen die Chips zurück. Online: Bis zu 8 Spieler teilen sich einen Tisch und einen Dealer, du hast 25 Sekunden pro Zug; wer zweimal hintereinander nicht zieht, wird ausgesetzt. Tasten: F passen, C schieben/mitgehen, R erhöhen.',
+    // Profile, medals
+    'Close profile': 'Profil schließen', 'Your picture': 'Dein Bild', 'Use my initial instead': 'Stattdessen meinen Anfangsbuchstaben', 'New medal!': 'Neue Medaille!',
+    'No medals yet. Admins award them for special moments.': 'Noch keine Medaillen. Admins vergeben sie für besondere Momente.', 'No medals yet.': 'Noch keine Medaillen.',
+    'Cherry': 'Kirsche', 'Bell': 'Glocke', 'Lucky Seven': 'Glückssieben', 'Star': 'Stern', 'Horseshoe': 'Hufeisen', 'Crown': 'Krone', 'Diamond': 'Diamant',
+    'Founder': 'Gründer', 'Was there from the very start.': 'War von Anfang an dabei.', 'Plays for the biggest stakes.': 'Spielt um die höchsten Einsätze.',
+    'Lucky Charm': 'Glücksbringer', 'Luck follows them everywhere.': 'Das Glück folgt ihnen überallhin.', 'Poker King': 'Poker-König', 'Rules the poker table.': 'Beherrscht den Pokertisch.',
+    'Champion': 'Champion', 'Won a Lucky Reels tournament.': 'Hat ein Lucky-Reels-Turnier gewonnen.', 'Legend': 'Legende', 'A true Lucky Reels legend.': 'Eine echte Lucky-Reels-Legende.',
+    'Good Sport': 'Fairer Sportsfreund', 'Wins and loses with style.': 'Gewinnt und verliert mit Stil.', 'Bug Hunter': 'Bug-Jäger', 'Found a bug and reported it.': 'Hat einen Fehler gefunden und gemeldet.',
+    'Night Owl': 'Nachteule', 'Still spinning long after midnight.': 'Dreht noch lange nach Mitternacht.', 'Comeback Kid': 'Comeback-Kid', 'Came back from zero credits.': 'Ist von null Credits zurückgekommen.',
+    // Chat
+    'Chat': 'Chat', 'Close chat': 'Chat schließen', 'Conversations': 'Unterhaltungen', 'Everyone': 'Alle', 'Message': 'Nachricht', 'Send': 'Senden',
+    'Say something…': 'Sag etwas…', 'Say something to everyone…': 'Sag allen etwas…', 'Nobody else is online right now.': 'Gerade ist sonst niemand online.',
+    'No messages yet. Say hi to the other players.': 'Noch keine Nachrichten. Sag Hallo zu den anderen.',
+    'The chat is not set up yet. Ask the person who runs the game to run the chat setup.': 'Der Chat ist noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, die Chat-Einrichtung auszuführen.',
+    'Private chats are not set up yet. Ask the person who runs the game to run the private-chat setup.': 'Private Chats sind noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, sie einzurichten.',
+    'The message did not go through. Try again.': 'Die Nachricht ging nicht durch. Versuch es nochmal.', 'Chat is switched off for players': 'Der Chat ist für Spieler abgeschaltet',
+    'Someone': 'Jemand', 'Actions': 'Aktionen', 'No messages.': 'Keine Nachrichten.',
+    'BLACKJACK PAYS 3 TO 2 · DEALER STANDS ON SOFT 17': 'BLACKJACK ZAHLT 3 ZU 2 · DEALER HÄLT BEI 17', 'SPIN': 'DREH',
+    // Words that end up inside longer messages
+    'Sevens': 'Siebenen', 'Wilds': 'Wilds', 'Bars': 'Bars', 'Stars': 'Sterne', 'Bells': 'Glocken', 'Plums': 'Pflaumen', 'Lemons': 'Zitronen', 'Cherries': 'Kirschen',
+    'wild': 'Wild', 'high card': 'höchster Karte', 'pair': 'einem Paar', 'two pair': 'zwei Paaren', 'three of a kind': 'einem Drilling', 'straight': 'einer Straße',
+    'flush': 'einem Flush', 'full house': 'einem Full House', 'four of a kind': 'einem Vierling', 'straight flush': 'einem Straight Flush', 'royal flush': 'einem Royal Flush',
+    'Switch to English': 'Switch to English', 'Auf Deutsch umstellen': 'Auf Deutsch umstellen',
+    // Admin
+    'Admin password': 'Admin-Passwort', 'Unlock': 'Entsperren', 'Enter the admin password to open the admin menu.': 'Gib das Admin-Passwort ein, um das Admin-Menü zu öffnen.',
+    'Enter your password again to open the admin menu.': 'Gib dein Passwort nochmal ein, um das Admin-Menü zu öffnen.', 'Wrong admin password.': 'Falsches Admin-Passwort.',
+    'This account is not an admin.': 'Dieses Konto ist kein Admin.', 'Too many wrong tries. Wait 15 minutes and try again.': 'Zu viele Fehlversuche. Warte 15 Minuten und versuch es nochmal.',
+    'Could not check the password. Try again.': 'Passwort konnte nicht geprüft werden. Versuch es nochmal.',
+    'No admin password is set for this account yet. Set one with the SQL in supabase-setup.sql.': 'Für dieses Konto ist noch kein Admin-Passwort gesetzt. Setz eines mit dem SQL in supabase-setup.sql.',
+    'Run the "Admin security" part of supabase-setup.sql first.': 'Führ zuerst den Teil „Admin security“ aus supabase-setup.sql aus.',
+    'The admin part of the database setup has not been run yet.': 'Der Admin-Teil der Datenbank-Einrichtung wurde noch nicht ausgeführt.',
+    'This copy uses your account password. Change it with "Change password".': 'Diese Kopie nutzt dein Konto-Passwort. Ändere es mit „Passwort ändern“.',
+    'The admin menu locked itself after 15 minutes.': 'Das Admin-Menü hat sich nach 15 Minuten gesperrt.', 'The admin menu locked itself. Enter the admin password again.': 'Das Admin-Menü hat sich gesperrt. Gib das Admin-Passwort nochmal ein.',
+    'Close admin menu': 'Admin-Menü schließen', 'Lock the admin menu now': 'Admin-Menü jetzt sperren', 'Players': 'Spieler', 'Game settings': 'Spieleinstellungen', 'Security': 'Sicherheit',
+    'Credits for everyone, e.g. 1000 or -500': 'Credits für alle, z. B. 1000 oder -500', 'Credits for everyone': 'Credits für alle', 'Give to everyone': 'An alle geben',
+    'Set': 'Setzen', 'Medals': 'Medaillen', 'Reset': 'Zurücksetzen', 'Block': 'Sperren', 'Unblock': 'Entsperren', 'Make admin': 'Zum Admin machen', 'Remove admin': 'Admin entfernen',
+    'Delete': 'Löschen', 'Delete for good': 'Endgültig löschen', 'Cancel': 'Abbrechen', 'Save medals': 'Medaillen speichern', 'admin': 'Admin', 'blocked': 'gesperrt',
+    'Remove admin rights first': 'Erst die Admin-Rechte entfernen', 'Delete this account for good': 'Dieses Konto endgültig löschen',
+    'Set credits replaces the balance. Reset puts the player back to the start: credits, level, goodies and achievements. Blocked players can\'t sign in, save or chat. Delete removes the account for good, with its game, chat and private messages; admins have to lose their admin rights first. Dangerous buttons ask once more before they act.':
+      '„Setzen“ ersetzt den Kontostand. „Zurücksetzen“ bringt den Spieler an den Start: Credits, Level, Goodies und Erfolge. Gesperrte Spieler können sich nicht anmelden, speichern oder chatten. „Löschen“ entfernt das Konto endgültig, mit Spielstand, Chat und privaten Nachrichten; Admins müssen vorher ihre Admin-Rechte verlieren. Gefährliche Knöpfe fragen einmal nach.',
+    'Hard reset': 'Hard Reset', 'HARD RESET': 'HARD RESET', 'Type RESET to confirm': 'Zum Bestätigen RESET eintippen', 'Type RESET to confirm the hard reset': 'Zum Bestätigen des Hard Resets RESET eintippen',
+    'Every account, admins included, goes back to 500 credits and level 1: goodies, achievements, missions and best wins are wiped, and the online poker table is cleared. Pictures and medals stay. This can\'t be undone.':
+      'Jedes Konto, auch Admins, geht zurück auf 500 Credits und Level 1: Goodies, Erfolge, Missionen und Bestgewinne werden gelöscht, und der Online-Pokertisch wird geleert. Profilbilder und Medaillen bleiben. Das lässt sich nicht rückgängig machen.',
+    'Type RESET in the box first.': 'Tipp zuerst RESET in das Feld.', 'Really reset everyone?': 'Wirklich alle zurücksetzen?',
+    'Hard reset done: every account starts again with 500 credits at level 1.': 'Hard Reset erledigt: Jedes Konto startet neu mit 500 Credits auf Level 1.',
+    'Sure?': 'Sicher?', 'Reset?': 'Zurücksetzen?', 'Block?': 'Sperren?', 'Remove?': 'Entfernen?', 'Delete?': 'Löschen?', 'Delete all?': 'Alle löschen?', 'Reset all?': 'Alle zurücksetzen?',
+    'Enter 0 or more credits.': 'Gib 0 oder mehr Credits ein.', 'Enter how many credits everyone gets (negative takes them away).': 'Gib ein, wie viele Credits alle bekommen (negativ zieht ab).',
+    'Admin passwords need at least 8 characters.': 'Admin-Passwörter brauchen mindestens 8 Zeichen.', 'Admin password changed.': 'Admin-Passwort geändert.',
+    'You cannot delete your own account here.': 'Dein eigenes Konto kannst du hier nicht löschen.', 'You cannot remove your own admin rights.': 'Deine eigenen Admin-Rechte kannst du nicht entfernen.',
+    'Remove their admin rights first, then delete the account.': 'Entfern erst die Admin-Rechte, dann lösch das Konto.',
+    'Announcement for everyone': 'Ankündigung für alle', 'e.g. Happy hour tonight: all wins ×2!': 'z. B. Happy Hour heute Abend: alle Gewinne ×2!',
+    'Shown at the top of the game and the sign-in screen. Leave empty to hide it.': 'Wird oben im Spiel und auf der Anmeldeseite gezeigt. Leer lassen zum Ausblenden.',
+    'Pause the game': 'Spiel pausieren', 'Nobody but admins can spin.': 'Nur Admins können spielen.', 'New accounts allowed': 'Neue Konten erlaubt',
+    'Shows "Create an account" on the sign-in screen.': 'Zeigt „Konto erstellen“ auf der Anmeldeseite.', 'Chat on': 'Chat an', 'When off, only admins can open the chat.': 'Wenn aus, können nur Admins den Chat öffnen.',
+    'Start credits for new accounts': 'Start-Credits für neue Konten', 'Win multiplier (happy hour)': 'Gewinn-Multiplikator (Happy Hour)', '×1 (normal)': '×1 (normal)',
+    'Three sevens pay (× bet)': 'Drei Siebenen zahlen (× Einsatz)', 'Highest bet (0 = no limit)': 'Höchster Einsatz (0 = ohne Limit)',
+    'Bonus stars for free spins': 'Bonussterne für Freispiele', 'Free spins per bonus': 'Freispiele pro Bonus', 'Free spin win multiplier': 'Freispiel-Gewinnmultiplikator',
+    'Nudge chance after a loss (%)': 'Stupser-Chance nach Verlust (%)', 'Hold chance after a loss (%)': 'Halten-Chance nach Verlust (%)',
+    'Save settings': 'Einstellungen speichern', 'Back to defaults': 'Zurück zu den Standardwerten',
+    'Changes reach everyone within seconds. Payout settings change the odds shown in the paytable too.': 'Änderungen erreichen alle innerhalb von Sekunden. Auszahlungseinstellungen ändern auch die Quoten in der Gewinntabelle.',
+    'Settings saved. Everyone sees them within seconds.': 'Einstellungen gespeichert. Alle sehen sie innerhalb von Sekunden.', 'Settings are back to the defaults.': 'Die Einstellungen sind zurück auf Standard.',
+    'Delete all messages': 'Alle Nachrichten löschen', 'All messages deleted.': 'Alle Nachrichten gelöscht.', 'Message deleted.': 'Nachricht gelöscht.', 'The chat is not set up yet.': 'Der Chat ist noch nicht eingerichtet.',
+    'Change admin password': 'Admin-Passwort ändern', 'New admin password': 'Neues Admin-Passwort', 'admin menu locked': 'Admin-Menü gesperrt',
+    'The admin menu locks itself after 15 minutes without admin actions, when you sign out, and when you close the tab. Five wrong admin passwords in 15 minutes block further tries for a while.':
+      'Das Admin-Menü sperrt sich nach 15 Minuten ohne Admin-Aktion, beim Abmelden und beim Schließen des Tabs. Fünf falsche Admin-Passwörter in 15 Minuten blockieren weitere Versuche für eine Weile.',
+  };
+  // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
+  const DE_PATTERNS = [
+    ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
+    ['Bet per spin · max {a}', 'Einsatz pro Spin · max. {a}'], ['The highest bet is {a}.', 'Der höchste Einsatz ist {a}.'],
+    ['Three {a}! +{b}', 'Drei {a}! +{b}'], ['Cherries pay {a}', 'Kirschen zahlen {a}'],
+    ['No win, but +{a} bonus stars.', 'Kein Gewinn, aber +{a} Bonussterne.'], ['No win, but +{a} bonus star.', 'Kein Gewinn, aber +{a} Bonusstern.'],
+    ['No win. Piggy Bank returns {a}.', 'Kein Gewinn. Das Sparschwein gibt {a} zurück.'],
+    ['No win. Nudge a reel down now? {a} nudges, gone after the next spin.', 'Kein Gewinn. Jetzt eine Walze runterstupsen? {a} Stupser, nach dem nächsten Spin weg.'],
+    ['No win. Nudge a reel down now? {a} nudge, gone after the next spin.', 'Kein Gewinn. Jetzt eine Walze runterstupsen? {a} Stupser, nach dem nächsten Spin weg.'],
+    ['Still nothing. {a} nudges left.', 'Immer noch nichts. {a} Stupser übrig.'], ['Still nothing. {a} nudge left.', 'Immer noch nichts. {a} Stupser übrig.'],
+    ['{a} nudges left', '{a} Stupser übrig'], ['{a} nudge left', '{a} Stupser übrig'], ['▼ Nudge ({a})', '▼ Stupser ({a})'],
+    ['+{a} nudges', '+{a} Stupser'], ['+{a} nudge', '+{a} Stupser'],
+    ['Nudge win! Three {a} pay {b}.', 'Stupser-Gewinn! Drei {a} zahlen {b}.'], ['Nudge win! Cherries pay {a}.', 'Stupser-Gewinn! Kirschen zahlen {a}.'],
+    ['Not enough credits for this spin ({a}). Lower your bet.', 'Nicht genug Credits für diesen Spin ({a}). Senk deinen Einsatz.'],
+    ['Free spin {a} · wins ×{b}', 'Freispiel {a} · Gewinne ×{b}'], ['Free spin {a} · bonus +{b}', 'Freispiel {a} · Bonus +{b}'],
+    ['Free spins paid {a} in total.', 'Die Freispiele haben insgesamt {a} gezahlt.'], ['{a} waiting', '{a} warten'], ['Free spins', 'Freispiele'],
+    ['{a} spins · every win ×{b}', '{a} Spins · jeder Gewinn ×{b}'], ['Next nudge in {a} spins', 'Nächster Stupser in {a} Spins'],
+    ['Gamble collected: {a}.', 'Riskiert und eingesammelt: {a}.'], ['Collect {a}', '{a} einsammeln'], ['Correct! Stake is now {a}.', 'Richtig! Der Einsatz ist jetzt {a}.'],
+    ['Five in a row! Take your {a}.', 'Fünf in Folge! Nimm deine {a}.'], ['Higher ▲ ×{a}', 'Höher ▲ ×{a}'], ['Lower ▼ ×{a}', 'Tiefer ▼ ×{a}'],
+    ['Level {a}!', 'Level {a}!'], ['Level {a} of {b}', 'Stufe {a} von {b}'], ['Buy · {a}', 'Kaufen · {a}'], ['{a} / {b} XP', '{a} / {b} XP'],
+    ['You won {a} credits!', 'Du hast {a} Credits gewonnen!'], ['5 free spins at {a} each!', '5 Freispiele zu je {a}!'], ['{a} FREE', '{a} FREI'],
+    ['{a}× your bet', '{a}× dein Einsatz'], ['happy hour ×{a}', 'Happy Hour ×{a}'], ['streak ×{a}', 'Serie ×{a}'], ['bonus ×{a}', 'Bonus ×{a}'], ['lightning ×{a}', 'Blitz ×{a}'],
+    ['({a})', '({a})'],
+    ['Welcome, {a}. Pick a bet and pull.', 'Willkommen, {a}. Wähl einen Einsatz und zieh den Hebel.'],
+    ['Welcome, {a}! You start with {b} credits.', 'Willkommen, {a}! Du startest mit {b} Credits.'],
+    ['Your balance is now {a}.', 'Dein Kontostand ist jetzt {a}.'], ['{a} · +{b} credits', '{a} · +{b} Credits'],
+    ['{a} · +{b} credits, +1 nudge', '{a} · +{b} Credits, +1 Stupser'], ['+{a} · +1 nudge', '+{a} · +1 Stupser'], ['Swap · {a}', 'Tauschen · {a}'],
+    ['{a} · +{b} credits', '{a} · +{b} Credits'],
+    ['Use {a} chips', '{a}er-Chips nehmen'], ['Add {a} to the bet', '{a} zum Einsatz legen'], ['· {a}', '· {a}'],
+    ['Spin {a} times', 'Dreh {a}-mal'], ['Win {a} spins', 'Gewinne {a} Spins'], ['Win {a}× your bet in total', 'Gewinne insgesamt {a}× deinen Einsatz'],
+    ['Land {a} bonus stars', 'Lande {a} Bonussterne'], ['Land {a} lines of three', 'Lande {a} Dreierlinien'], ['Land {a} line of three', 'Lande {a} Dreierlinie'],
+    ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Land {a} wilds', 'Lande {a} Wilds'], ['Win with a nudge {a} times', 'Gewinne {a}-mal mit einem Stupser'],
+    ['Win {a} gamble rounds', 'Gewinne {a} Riskier-Runden'], ['Win {a} spins after holding reels', 'Gewinne {a} Spins nach dem Halten'],
+    ['Collect {a} bonus stars.', 'Sammle {a} Bonussterne.'], ['Win all {a} gamble rounds.', 'Gewinne alle {a} Riskier-Runden.'],
+    ['Wins are multiples of your bet. Wilds stand in for any symbol except stars, and three wilds pay {a}×. After a losing spin you may get nudges (move one reel down a stop) or the chance to hold up to two reels for the next spin. After a win you can gamble it on higher or lower, up to {b} rounds; a correct guess pays by its odds. Every star on the payline fills the bonus meter; {c} stars start {d} free spins where every win pays ×{e}. Each win in a row adds ×{f} to the next win, up to ×{g}; a losing spin resets it. Levels come from XP and each one spins the prize wheel. Each reel has {h} stops. Before streaks, free spins, holds, nudges and rewards, this table returns {i}% of bets; with everything included about {j}%. Losing streaks happen: the house wins in the long run.',
+      'Gewinne sind Vielfache deines Einsatzes. Wilds ersetzen jedes Symbol außer Sternen, drei Wilds zahlen {a}×. Nach einem verlorenen Spin bekommst du manchmal Stupser (eine Walze eine Position runter) oder darfst bis zu zwei Walzen für den nächsten Spin halten. Nach einem Gewinn kannst du ihn bei Höher/Tiefer riskieren, bis zu {b} Runden; ein richtiger Tipp zahlt nach seiner Wahrscheinlichkeit. Jeder Stern auf der Linie füllt die Bonusanzeige; {c} Sterne starten {d} Freispiele, in denen jeder Gewinn ×{e} zahlt. Jeder Gewinn in Folge legt ×{f} auf den nächsten Gewinn drauf, bis ×{g}; ein verlorener Spin setzt das zurück. Level kommen aus XP und jedes dreht das Glücksrad. Jede Walze hat {h} Positionen. Ohne Serien, Freispiele, Halten, Stupser und Belohnungen zahlt diese Tabelle {i} % der Einsätze zurück; mit allem etwa {j} %. Verlustserien kommen vor: Auf Dauer gewinnt das Haus.'],
+    // Blackjack
+    ['Deal{a}', 'Austeilen{a}'], ['bet {a}', 'Einsatz {a}'], ['Not enough credits for a {a} bet.', 'Nicht genug Credits für einen Einsatz von {a}.'],
+    ['You have {a}. Hit or stand?', 'Du hast {a}. Karte oder halten?'], ['Hand {a}: {b}. Hit or stand?', 'Hand {a}: {b}. Karte oder halten?'],
+    ['Bust with {a}.', 'Überkauft mit {a}.'], ['Dealer has {a} and draws…', 'Der Dealer hat {a} und zieht…'], ['Blackjack! +{a}', 'Blackjack! +{a}'],
+    ['Dealer busts with {a}. You win +{b}.', 'Der Dealer überkauft sich mit {a}. Du gewinnst +{b}.'], ['You win +{a}.', 'Du gewinnst +{a}.'],
+    ['Push. Your {a} comes back.', 'Unentschieden. Deine {a} kommen zurück.'], ['Bust. −{a}', 'Überkauft. −{a}'], ['Dealer wins with {a}. −{b}', 'Der Dealer gewinnt mit {a}. −{b}'],
+    ['soft {a}', 'weich {a}'],
+    // Roulette
+    ['{a} red! You win +{b}.', '{a} Rot! Du gewinnst +{b}.'], ['{a} black! You win +{b}.', '{a} Schwarz! Du gewinnst +{b}.'], ['{a} green! You win +{b}.', '{a} Grün! Du gewinnst +{b}.'],
+    ['{a} red. Some bets won; you are down {b}.', '{a} Rot. Einige Wetten gewonnen; du liegst {b} hinten.'], ['{a} black. Some bets won; you are down {b}.', '{a} Schwarz. Einige Wetten gewonnen; du liegst {b} hinten.'],
+    ['{a} green. Some bets won; you are down {b}.', '{a} Grün. Einige Wetten gewonnen; du liegst {b} hinten.'],
+    ['{a} red. No luck this time.', '{a} Rot. Diesmal kein Glück.'], ['{a} black. No luck this time.', '{a} Schwarz. Diesmal kein Glück.'], ['{a} green. No luck this time.', '{a} Grün. Diesmal kein Glück.'],
+    ['Not enough credits for {a}.', 'Nicht genug Credits für {a}.'], ['Spin{a}', 'Drehen{a}'],
+    // Poker
+    ['Your turn: {a} to call.', 'Du bist dran: {a} zum Mitgehen.'], ['{a} is thinking…', '{a} überlegt…'], ['{a} wins {b} with {c}', '{a} gewinnt {b} mit {c}'], ['{a} wins {b}', '{a} gewinnt {b}'],
+    ['Split pot: {a} · {b}', 'Geteilter Pot: {a} · {b}'], ['Solo vs bots · blinds {a}/{b}', 'Solo gegen Bots · Blinds {a}/{b}'], ['Online · {a} / 8 seated · blinds {b}/{c}', 'Online · {a} / 8 am Tisch · Blinds {b}/{c}'],
+    ['Raise {a}', 'Erhöht {a}'], ['Bet {a}', 'Setzt {a}'], ['to {a}', 'auf {a}'], ['Pot {a}', 'Pot {a}'],
+    ['The smallest buy-in is {a}.', 'Das kleinste Buy-in ist {a}.'], ['You only have {a} credits.', 'Du hast nur {a} Credits.'], ['The smallest raise is to {a}.', 'Die kleinste Erhöhung geht auf {a}.'],
+    ['{a} chips went back to your credits.', '{a} Chips sind zurück bei deinen Credits.'], ['Sit down at seat {a}', 'Auf Platz {a} setzen'],
+    ['{a} players at the table. Pick a buy-in and click “Sit here” on a free seat.', '{a} Spieler am Tisch. Wähl ein Buy-in und klick auf einem freien Platz auf „Hier sitzen“.'],
+    ['{a} player at the table. Pick a buy-in and click “Sit here” on a free seat.', '{a} Spieler am Tisch. Wähl ein Buy-in und klick auf einem freien Platz auf „Hier sitzen“.'],
+    ['+{a}', '+{a}'],
+    // Profiles, highscores, chat
+    ['{a}\'s profile', 'Profil von {a}'], ['Medals ({a})', 'Medaillen ({a})'], ['You were awarded “{a}”: {b}', 'Du hast die Medaille „{a}“ bekommen: {b}'],
+    ['Send {a} a private message', '{a} eine private Nachricht schicken'], ['Private chat with {a} · online', 'Privater Chat mit {a} · online'], ['Private chat with {a}', 'Privater Chat mit {a}'],
+    ['No messages with {a} yet. Only the two of you can read this chat.', 'Noch keine Nachrichten mit {a}. Nur ihr zwei könnt diesen Chat lesen.'],
+    ['Online now · {a}', 'Jetzt online · {a}'], ['{a} hit the JACKPOT!', '{a} hat den JACKPOT geknackt!'], ['{a} just hit three sevens!', '{a} hat gerade drei Siebenen getroffen!'],
+    // Admin
+    ['Credits for {a}', 'Credits für {a}'], ['Type {a} to delete', 'Zum Löschen {a} eintippen'], ['Type {a} to confirm', 'Zum Bestätigen {a} eintippen'], ['Type {a} exactly to confirm.', 'Tipp {a} genau so ein, um zu bestätigen.'],
+    ['Admin password for {a} (8+)', 'Admin-Passwort für {a} (ab 8)'], ['Admin password for {a}', 'Admin-Passwort für {a}'],
+    ['{a} now has {b} credits.', '{a} hat jetzt {b} Credits.'], ['{a} starts over with {b} credits.', '{a} fängt neu an mit {b} Credits.'], ['{a} is blocked.', '{a} ist gesperrt.'], ['{a} is unblocked.', '{a} ist entsperrt.'],
+    ['{a} is no longer an admin.', '{a} ist kein Admin mehr.'], ['{a} is now an admin. Tell them their admin password yourself.', '{a} ist jetzt Admin. Sag das Admin-Passwort selbst weiter.'], ['{a} is now an admin.', '{a} ist jetzt Admin.'],
+    ['{a} was deleted: account, game, chat and private messages.', '{a} wurde gelöscht: Konto, Spielstand, Chat und private Nachrichten.'],
+    ['{a} now has {b} medals.', '{a} hat jetzt {b} Medaillen.'], ['{a} now has {b} medal.', '{a} hat jetzt {b} Medaille.'], ['{a} has no medals now.', '{a} hat jetzt keine Medaillen.'],
+    ['Everyone got {a} credits.', 'Alle haben {a} Credits bekommen.'], ['{a} credits taken from everyone.', 'Allen wurden {a} Credits abgezogen.'], ['Give {a}?', '{a} geben?'], ['Take {a}?', '{a} abziehen?'],
+    ['The new password needs at least {a} characters.', 'Das neue Passwort braucht mindestens {a} Zeichen.'],
+    // Generic last: lists and bracketed extras get their parts translated one by one.
+    ['{a} ({b})', '{a} ({b})'], ['{a}, {b}', '{a}, {b}'],
+  ].map(([en, de]) => {
+    const keys = [];
+    const parts = en.split(/\{([a-j])\}/);
+    const src = parts.map((part, i) => i % 2 ? (keys.push(part), '(.+?)') : part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('');
+    return [new RegExp('^' + src + '$', 's'), keys, de];
+  });
+  const LANG_KEY = 'lucky-reels-lang';
+  let lang = (() => { try { const v = localStorage.getItem(LANG_KEY); if (v === 'de' || v === 'en') return v; } catch {} return /^de\b/i.test(navigator.language || '') ? 'de' : 'en'; })();
+  const deCache = new Map();
+  function toDe(text) {
+    if (deCache.has(text)) return deCache.get(text);
+    let out = DE_EXACT[text];
+    if (out === undefined) {
+      for (const [re, keys, de] of DE_PATTERNS) {
+        const m = text.match(re);
+        if (!m) continue;
+        const vals = {};
+        keys.forEach((k, i) => { vals[k] = toDe(m[i + 1]); });
+        out = de.replace(/\{([a-j])\}/g, (_, k) => vals[k] ?? '');
+        break;
+      }
+    }
+    if (out === undefined) out = text;
+    if (deCache.size > 5000) deCache.clear();
+    deCache.set(text, out);
+    return out;
+  }
+  // Short texts the page builds itself (canvas labels and the like).
+  const i18n = text => lang === 'de' ? toDe(text) : text;
+  // Each translated node or attribute remembers its English text, so switching back restores it.
+  const enText = new WeakMap(), deText = new WeakMap();
+  const I18N_ATTRS = ['placeholder', 'title', 'aria-label'];
+  // Never translate what players typed: chat messages and the like.
+  const I18N_SKIP = 'script, style, textarea, .msg .text, .admin-msg span, .announce .ann-run, .pk-who b, .board .name, .neon-name';
+  function trText(node) {
+    const raw = node.data;
+    if (deText.get(node) === raw || !/[A-Za-z]/.test(raw)) return;
+    const core = raw.trim();
+    if (!core) return;
+    const de = toDe(core);
+    enText.set(node, raw);
+    if (de === core) { deText.set(node, raw); return; }
+    const out = raw.replace(core, de);
+    deText.set(node, out);
+    node.data = out;
+  }
+  function trAttrs(el) {
+    for (const a of I18N_ATTRS) {
+      const v = el.getAttribute(a);
+      if (v == null || !/[A-Za-z]/.test(v)) continue;
+      const store = el.__i18n || (el.__i18n = {});
+      if (store[a]?.de === v) continue;
+      const de = toDe(v.trim());
+      store[a] = { en: v, de };
+      if (de !== v) el.setAttribute(a, de);
+    }
+  }
+  function trTree(root) {
+    if (root.nodeType === 3) { if (!root.parentElement?.closest(I18N_SKIP)) trText(root); return; }
+    if (root.nodeType !== 1 || root.matches('script, style')) return;
+    trAttrs(root);
+    const walk = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+    for (let n = walk.nextNode(); n; n = walk.nextNode()) {
+      if (n.nodeType === 1) { if (n.matches('script, style')) continue; trAttrs(n); }
+      else if (!n.parentElement?.closest(I18N_SKIP)) trText(n);
+    }
+  }
+  function untrTree() {
+    const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+    for (let n = walk.nextNode(); n; n = walk.nextNode()) {
+      if (n.nodeType === 3) { if (enText.has(n) && deText.get(n) === n.data) n.data = enText.get(n); enText.delete(n); deText.delete(n); }
+      else if (n.__i18n) { for (const [a, v] of Object.entries(n.__i18n)) if (n.getAttribute(a) === v.de) n.setAttribute(a, v.en); n.__i18n = null; }
+    }
+  }
+  const i18nObserver = new MutationObserver(list => {
+    if (lang !== 'de') return;
+    for (const m of list) {
+      if (m.type === 'characterData') trText(m.target);
+      else if (m.type === 'attributes') trAttrs(m.target);
+      else m.addedNodes.forEach(n => { if (!(n.nodeType === 3 ? n.parentElement : n)?.closest?.(I18N_SKIP)) trTree(n); });
+    }
+  });
+  function applyLang() {
+    document.documentElement.lang = lang;
+    document.documentElement.dataset.lang = lang;
+    document.title = lang === 'de' ? 'Lucky Reels' : 'Lucky Reels';
+    if (lang === 'de') trTree(document.body); else untrTree();
+    document.querySelectorAll('.lang-toggle').forEach(b => {
+      b.setAttribute('aria-label', lang === 'de' ? 'Switch to English' : 'Auf Deutsch umstellen');
+      b.querySelectorAll('[data-l]').forEach(s => s.classList.toggle('on', s.dataset.l === lang));
+    });
+  }
+  i18nObserver.observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: I18N_ATTRS });
+  function setLang(next) {
+    lang = next;
+    try { localStorage.setItem(LANG_KEY, lang); } catch {}
+    deCache.clear();
+    applyLang();
+  }
+  document.querySelectorAll('.lang-toggle').forEach(b => b.addEventListener('click', () => setLang(lang === 'de' ? 'en' : 'de')));
+  applyLang();
+
   const ICONS = {
     cherry: '<svg viewBox="0 0 48 48"><path d="M24 6c-2 8-8 14-12 20M24 6c2 8 6 14 12 18" stroke="#3f7a35" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M24 6c6-3 12-2 15 2-5 2-10 1-15-2z" fill="#5aa04a"/><circle cx="13" cy="32" r="9" fill="#c8323a"/><circle cx="35" cy="30" r="9" fill="#d93c44"/><circle cx="10" cy="29" r="2.5" fill="#fff8"/><circle cx="32" cy="27" r="2.5" fill="#fff8"/></svg>',
     lemon: '<svg viewBox="0 0 48 48"><ellipse cx="24" cy="25" rx="17" ry="13" fill="#f2c935"/><path d="M6 25c0-2 1-3 2-3M42 25c0-2-1-3-2-3" stroke="#d9a91c" stroke-width="3" stroke-linecap="round"/><ellipse cx="18" cy="20" rx="5" ry="2.5" fill="#fff6"/></svg>',
@@ -4202,7 +4610,7 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
     $('missionList').innerHTML = state.missions.map((m, i) => `
       <div class="mission">
         <span class="m-text">${MISSIONS[m.t].text(m.goal)}</span>
-        <span class="m-reward">+${fmt(m.reward)} · +1 nudge</span>
+        <span class="m-reward">+${fmt(m.reward)}</span>
         <div class="bar"><i style="width:${Math.min(100, (m.prog / m.goal) * 100)}%"></i></div>
         <span class="m-prog">${fmt(Math.min(m.prog, m.goal))} / ${fmt(m.goal)}</span>
         <button class="m-swap" data-swap="${i}"${busy || state.credits < swapCost() ? ' disabled' : ''}>Swap · ${fmt(swapCost())}</button>
@@ -4327,7 +4735,7 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
       const base = 100 * level;
       const compact = n => new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(n);
       const prizes = WHEEL.map(f => f === 'free'
-        ? { free: 5, short: '5 FREE' }
+        ? { free: 5, short: i18n('5 FREE') }
         : { credits: f * base, short: compact(f * base) });
       let rot = 0, phase = 'ready';
       $('wheelTitle').textContent = `Level ${level}!`;
@@ -4809,6 +5217,13 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
             await store.save(p.id, { credits: Math.max(0, (Number(doc.credits) || 0) + amount), adminRev: (Number(doc.adminRev) || 0) + 1 });
           }
         },
+        async hardReset() {
+          for (const p of players) {
+            const doc = await store.load(p.id);
+            if (!doc) continue;
+            await store.save(p.id, { credits: 500, best: 0, level: 1, spins: 0, jackpots: 0, game: null, adminRev: (Number(doc.adminRev) || 0) + 1 });
+          }
+        },
         async reset(id) {
           const doc = await store.load(id);
           await store.save(id, { credits: settings.startCredits, best: 0, level: 1, spins: 0, jackpots: 0, game: null, adminRev: (Number(doc?.adminRev) || 0) + 1 });
@@ -5052,7 +5467,7 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
       throw error;
     }
     async function row(uid) {
-      const { data, error } = await sb.from('players').select(`id,name,credits,game${adminCols}`).eq('id', uid).maybeSingle();
+      const { data, error } = await sb.from('players').select(`id,name,credits,game${hasProfile ? ',avatar' : ''}${adminCols}`).eq('id', uid).maybeSingle();
       if (error) throw error;
       return data ? { key: uid, doc: { ...data, admin: !!data.is_admin, banned: !!data.is_banned, adminRev: Number(data.admin_rev) || 0 } } : null;
     }
@@ -5150,6 +5565,7 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
         },
         setCredits: (id, amount) => adminRpc('admin_update_player', { target: id, new_credits: amount, reset: false, set_banned: null }),
         addAll: amount => adminRpc('admin_give_all', { amount }),
+        hardReset: () => adminRpc('admin_hard_reset', {}),
         reset: id => adminRpc('admin_update_player', { target: id, new_credits: null, reset: true, set_banned: null }),
         setBanned: (id, value) => adminRpc('admin_update_player', { target: id, new_credits: null, reset: false, set_banned: value }),
         setMedals: (id, medals) => adminRpc('admin_set_medals', { target: id, new_medals: medals }),
@@ -5428,7 +5844,7 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
   function enterGame({ key, doc }) {
     let saved = {};
     try { saved = doc.game ? JSON.parse(doc.game) : {}; } catch { saved = {}; }
-    if (!doc.game) saved = { credits: Number(doc.credits) || 0 };
+    if (!doc.game) saved = { credits: Number(doc.credits) || 0, avatar: Number.isInteger(doc.avatar) ? doc.avatar : null };
     // An admin changed the credits while this player was away.
     const rev = Number(doc.adminRev) || 0;
     if (rev > (Number(saved.adminRev) || 0)) saved.credits = Number(doc.credits) || 0;
@@ -5808,8 +6224,9 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
       const rev = Number(doc?.adminRev) || 0;
       if (doc && rev > (state.adminRev || 0)) {
         if (!doc.game) {
-          loadState({ credits: Number(doc.credits) || 0, adminRev: rev });
+          loadState({ credits: Number(doc.credits) || 0, adminRev: rev, avatar: Number.isInteger(doc.avatar) ? doc.avatar : state.avatar });
           toast('Game reset', 'An admin reset your game.');
+          if (account) { renderMyAvatar(); applyGameMode(); }
         } else {
           state.credits = Number(doc.credits) || 0;
           state.adminRev = rev;
@@ -6003,6 +6420,16 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
   $('adminPlayers').addEventListener('input', e => { if (e.target.tagName === 'INPUT') e.target.dataset.dirty = '1'; });
   $('adminPlayers').addEventListener('keydown', e => {
     if (e.key === 'Enter' && e.target.tagName === 'INPUT') e.target.closest('tr').querySelector('[data-act="credits"]').click();
+  });
+  $('hardReset').addEventListener('click', () => {
+    if ($('hardResetConfirm').value.trim().toUpperCase() !== 'RESET') { adminSay('Type RESET in the box first.', false); $('hardResetConfirm').focus(); return; }
+    if (!confirmed($('hardReset'), 'Really reset everyone?')) return;
+    adminDo('Hard reset done: every account starts again with 500 credits at level 1.', async () => {
+      await backend.admin.hardReset();
+      $('hardResetConfirm').value = '';
+      clearTimeout(saveTimer);
+      await refreshOwn();
+    });
   });
   $('giveAll').addEventListener('click', () => {
     const v = Math.floor(Number($('giveAllAmount').value));

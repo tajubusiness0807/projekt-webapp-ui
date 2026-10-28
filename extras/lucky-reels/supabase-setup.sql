@@ -1246,3 +1246,34 @@ $$;
 
 revoke execute on function public.admin_set_medals(uuid, uuid, text[]) from public, anon;
 grant execute on function public.admin_set_medals(uuid, uuid, text[]) to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Hard reset: run this part once (after "Admin security"). Gives the admin
+-- menu its HARD RESET button: every account, admins included, goes back to
+-- 500 credits and level 1, and the online poker table is cleared. Pictures
+-- and medals stay.
+
+create or replace function public.admin_hard_reset(tok uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.admin_check(tok);
+  update public.players set
+    credits = 500, best = 0, level = 1, spins = 0, jackpots = 0, game = null,
+    admin_rev = admin_rev + 1, updated_at = now()
+  where true;
+  -- Chips at the poker table go too (only if the poker part has run).
+  if to_regclass('public.poker_seats') is not null then
+    execute 'delete from public.poker_seats where true';
+    execute $q$update public.poker_tables set phase = 'waiting', board = '{}', deck = '{}', current_bet = 0,
+      to_act = -1, deadline = null, result = null where id = 1$q$;
+    execute 'update public.poker_pulse set rev = rev + 1, at = now() where id = 1';
+  end if;
+end;
+$$;
+
+revoke execute on function public.admin_hard_reset(uuid) from public, anon;
+grant execute on function public.admin_hard_reset(uuid) to authenticated;
