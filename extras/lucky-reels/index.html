@@ -5234,12 +5234,12 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           for (const p of players) {
             const doc = await store.load(p.id);
             if (!doc) continue;
-            await store.save(p.id, { credits: 500, best: 0, level: 1, spins: 0, jackpots: 0, game: null, adminRev: (Number(doc.adminRev) || 0) + 1 });
+            await store.save(p.id, { credits: 500, best: 0, level: 1, spins: 0, jackpots: 0, game: null, flair: null, adminRev: (Number(doc.adminRev) || 0) + 1 });
           }
         },
         async reset(id) {
           const doc = await store.load(id);
-          await store.save(id, { credits: settings.startCredits, best: 0, level: 1, spins: 0, jackpots: 0, game: null, adminRev: (Number(doc?.adminRev) || 0) + 1 });
+          await store.save(id, { credits: settings.startCredits, best: 0, level: 1, spins: 0, jackpots: 0, game: null, flair: null, adminRev: (Number(doc?.adminRev) || 0) + 1 });
         },
         setBanned: (id, value) => store.save(id, { banned: value }),
         setMedals: (id, medals) => store.save(id, { medals }),

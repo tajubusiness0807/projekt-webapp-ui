@@ -1248,10 +1248,12 @@ revoke execute on function public.admin_set_medals(uuid, uuid, text[]) from publ
 grant execute on function public.admin_set_medals(uuid, uuid, text[]) to authenticated;
 
 -- ---------------------------------------------------------------------------
--- Hard reset: run this part once (after "Admin security"). Gives the admin
--- menu its HARD RESET button: every account, admins included, goes back to
--- 500 credits and level 1, and the online poker table is cleared. Pictures
--- and medals stay.
+-- Hard reset: run this part once (after "Admin security" and "Neon Name").
+-- Gives the admin menu its HARD RESET button: every account, admins
+-- included, goes back to 500 credits and level 1, loses the Neon Name, and
+-- the online poker table is cleared. Pictures and medals stay. Resetting a
+-- single player removes their Neon Name too. Run it again if you ran an
+-- older copy of this part.
 
 create or replace function public.admin_hard_reset(tok uuid)
 returns void
@@ -1262,7 +1264,7 @@ as $$
 begin
   perform public.admin_check(tok);
   update public.players set
-    credits = 500, best = 0, level = 1, spins = 0, jackpots = 0, game = null,
+    credits = 500, best = 0, level = 1, spins = 0, jackpots = 0, game = null, flair = null,
     admin_rev = admin_rev + 1, updated_at = now()
   where true;
   -- Chips at the poker table go too (only if the poker part has run).
@@ -1277,3 +1279,41 @@ $$;
 
 revoke execute on function public.admin_hard_reset(uuid) from public, anon;
 grant execute on function public.admin_hard_reset(uuid) to authenticated;
+
+-- Resetting one player also takes away their Neon Name.
+create or replace function public.admin_update_player(
+  tok uuid,
+  target uuid,
+  new_credits bigint default null,
+  reset boolean default false,
+  set_banned boolean default null
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  start_credits bigint := coalesce((select (data ->> 'startCredits')::bigint from public.settings where id = 1), 500);
+begin
+  perform public.admin_check(tok);
+  if new_credits is not null and new_credits < 0 then raise exception 'credits must be 0 or more'; end if;
+  if set_banned and target = auth.uid() then raise exception 'cannot block yourself'; end if;
+  update public.players set
+    credits = case when reset then coalesce(new_credits, start_credits) else coalesce(new_credits, credits) end,
+    best = case when reset then 0 else best end,
+    level = case when reset then 1 else level end,
+    spins = case when reset then 0 else spins end,
+    jackpots = case when reset then 0 else jackpots end,
+    game = case when reset then null else game end,
+    flair = case when reset then null else flair end,
+    is_banned = coalesce(set_banned, is_banned),
+    admin_rev = admin_rev + case when reset or new_credits is not null then 1 else 0 end,
+    updated_at = now()
+  where id = target;
+end;
+$$;
+
+-- Clean up after a hard reset that ran before this fix: nobody who has not
+-- played since keeps the Neon Name.
+update public.players set flair = null where flair is not null and game is null;
