@@ -1192,6 +1192,39 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
 .lang-toggle span.on { background: var(--accent); color: var(--ink); }
 .lang-toggle:hover { border-color: var(--accent); }
 html[data-lang="de"] .reel.held::after { content: "GEHALTEN"; }
+.chat-pops {
+  position: fixed; z-index: 30;
+  left: max(16px, env(safe-area-inset-left, 0px));
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  display: grid; gap: 8px; justify-items: start;
+  width: min(320px, calc(100vw - 32px));
+  pointer-events: none;
+}
+.chat-pop {
+  pointer-events: auto;
+  display: flex; gap: 10px; align-items: flex-start;
+  max-width: 100%;
+  padding: 10px 14px 10px 10px;
+  border-radius: 16px 16px 16px 4px;
+  background: var(--cabinet);
+  border: 2px solid var(--cabinet-edge);
+  box-shadow: 0 14px 30px -10px #000;
+  color: var(--fg); text-align: left;
+  animation: popUp 0.35s cubic-bezier(.2, 1.4, .4, 1);
+}
+.chat-pop.private { border-color: var(--accent); }
+.chat-pop:hover { border-color: var(--accent-hi); }
+.chat-pop .av { margin: 0; }
+.chat-pop .body { display: grid; gap: 2px; min-width: 0; }
+.chat-pop .head { display: flex; gap: 6px; align-items: center; font-size: 12px; }
+.chat-pop .head b { color: var(--accent); }
+.chat-pop .tag { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; padding: 1px 6px; border-radius: 999px; background: var(--accent); color: var(--ink); }
+.chat-pop .text { font-size: 13px; line-height: 1.35; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.chat-pop.out { animation: popOut 0.4s ease-in forwards; }
+@keyframes popUp { from { opacity: 0; transform: translateY(16px) scale(0.9); } }
+@keyframes popOut { to { opacity: 0; transform: translateX(-30px); } }
+@media (max-width: 600px) { .chat-pops { width: min(300px, calc(100vw - 150px)); } }
+@media (prefers-reduced-motion: reduce) { .chat-pop, .chat-pop.out { animation: none; } }
 .chat-fab {
   position: fixed; z-index: 22;
   right: max(16px, env(safe-area-inset-right, 0px));
@@ -1889,6 +1922,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 </div>
 
 <button class="lang-toggle float" type="button" aria-label="Sprache wechseln"><span data-l="de">DE</span><span data-l="en">EN</span></button>
+<div class="chat-pops" id="chatPops" aria-live="polite"></div>
 <button class="chat-fab" id="chatFab" type="button" hidden>Chat <span class="badge" id="chatBadge" hidden>0</span></button>
 <section class="chat-panel" id="chatPanel" aria-labelledby="chatTitle" hidden>
   <div class="chat-head"><div><h2 id="chatTitle">Chat</h2><span id="chatSub">Everyone playing Lucky Reels</span></div><button class="chat-close" id="chatClose" type="button" aria-label="Close chat">×</button></div>
@@ -2060,7 +2094,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'The chat is not set up yet. Ask the person who runs the game to run the chat setup.': 'Der Chat ist noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, die Chat-Einrichtung auszuführen.',
     'Private chats are not set up yet. Ask the person who runs the game to run the private-chat setup.': 'Private Chats sind noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, sie einzurichten.',
     'The message did not go through. Try again.': 'Die Nachricht ging nicht durch. Versuch es nochmal.', 'Chat is switched off for players': 'Der Chat ist für Spieler abgeschaltet',
-    'Someone': 'Jemand', 'Actions': 'Aktionen', 'Back to the game selection': 'Zurück zur Spielauswahl',
+    'Someone': 'Jemand', 'Actions': 'Aktionen', 'Private': 'Privat', 'Back to the game selection': 'Zurück zur Spielauswahl',
     'One moment': 'Einen Moment', 'Let the current round finish first.': 'Lass die laufende Runde erst zu Ende gehen.',
     'Power-ups': 'Power-ups', 'Cosmetics': 'Kosmetik', 'Turn on': 'Einschalten', 'Turn off': 'Ausschalten', 'On': 'An', 'Off': 'Aus', 'Active': 'Aktiv',
     'Midnight Cabinet': 'Mitternachtsgehäuse', 'A deep-blue machine with glowing cyan trim. Purely for show.': 'Eine tiefblaue Maschine mit leuchtendem Cyan-Rand. Rein zur Show.',
@@ -2227,7 +2261,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const enText = new WeakMap(), deText = new WeakMap();
   const I18N_ATTRS = ['placeholder', 'title', 'aria-label'];
   // Never translate what players typed: chat messages and the like.
-  const I18N_SKIP = 'script, style, textarea, .msg .text, .admin-msg span, .announce .ann-run, .pk-who b, .board .name, .neon-name';
+  const I18N_SKIP = 'script, style, textarea, .msg .text, .chat-pop .text, .admin-msg span, .announce .ann-run, .pk-who b, .board .name, .neon-name';
   function trText(node) {
     const raw = node.data;
     if (deText.get(node) === raw || !/[A-Za-z]/.test(raw)) return;
@@ -6020,7 +6054,26 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const fresh = list.filter(m => !seenMsgs.has(kind + m.id));
     list.forEach(m => seenMsgs.add(kind + m.id));
     if (!primed[kind]) { primed[kind] = true; return; }
-    if (account && fresh.some(m => !mine(m))) sound.tick();
+    const incoming = fresh.filter(m => !mine(m) && !m.sys);
+    if (!account || !incoming.length) return;
+    sound.tick();
+    for (const m of incoming.slice(-3)) chatPop(m, kind === 'dm' ? m.from : null);
+  }
+  // A new message pops up bottom left for a few seconds; tapping it opens the chat. The badge stays.
+  function chatPop(m, conv) {
+    if (!settings.chatEnabled && !account?.isAdmin) return;
+    if (chatOpen && document.visibilityState === 'visible' && (chatWith || null) === conv) return;
+    const box = $('chatPops');
+    const who = conv ? nameOf(m.from) : m.name;
+    const uid = conv ? m.from : m.uid;
+    const el = document.createElement('button');
+    el.type = 'button';
+    el.className = 'chat-pop' + (conv ? ' private' : '');
+    el.innerHTML = `${avatarHtml(uid, who, 'md')}<span class="body"><span class="head"><b>${nameHtml(uid, who)}</b>${conv ? '<span class="tag">Private</span>' : ''}</span><span class="text">${esc(String(m.body).slice(0, 140))}</span></span>`;
+    el.addEventListener('click', () => { el.remove(); openConversation(conv); });
+    box.append(el);
+    while (box.children.length > 3) box.firstElementChild.remove();
+    setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 400); }, 5500);
   }
 
   function startChat() {
