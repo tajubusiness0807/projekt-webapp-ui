@@ -447,6 +447,83 @@ details.ach { margin-top: 10px; }
 @keyframes badgePop { from { transform: scale(0); } }
 @keyframes badgePulse { to { transform: scale(1.18); box-shadow: 0 0 10px #c8323a; } }
 
+/* Announcement */
+.announce {
+  max-width: 460px; margin: 0 auto 14px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #e9a23b33, #a77bff33);
+  border: 2px solid var(--accent);
+  color: var(--fg);
+  font-weight: 600;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+@media (min-width: 900px) { .announce { max-width: 960px; } }
+.login-card .announce { margin: 0; max-width: none; font-size: 13px; }
+
+/* Admin */
+.admin-card {
+  width: 100%; max-width: 760px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  background: var(--cabinet);
+  border: 3px solid var(--lose);
+  border-radius: 20px;
+  padding: 18px;
+  display: grid; gap: 14px;
+  box-shadow: 0 0 60px -10px #e0715b88;
+  animation: tierIn 0.4s cubic-bezier(.2, 1.4, .4, 1);
+}
+.admin-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.admin-head h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 26px; color: var(--lose); }
+.admin-lock { display: grid; gap: 10px; max-width: 340px; width: 100%; justify-self: center; text-align: center; }
+.admin-lock p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+.admin-lock input, .admin-card input:not([type="checkbox"]), .admin-card select, .admin-card textarea {
+  width: 100%; min-width: 0;
+  background: var(--panel); color: var(--fg);
+  border: 2px solid var(--cabinet-edge);
+  border-radius: 10px;
+  padding: 9px 11px;
+  font: inherit; font-size: 15px;
+}
+.admin-card input:focus-visible, .admin-card select:focus-visible, .admin-card textarea:focus-visible { border-color: var(--accent); outline: none; }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; border-bottom: 1px solid #ffffff14; padding-bottom: 10px; }
+.tab { padding: 8px 14px; background: var(--panel); color: var(--muted); font-weight: 600; }
+.tab[aria-selected="true"] { background: var(--lose); color: var(--fg); }
+.admin-section { display: grid; gap: 12px; }
+.admin-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.admin-row > input { flex: 1 1 140px; width: auto; }
+.abtn { padding: 8px 12px; background: var(--chrome); font-weight: 600; font-size: 13px; white-space: nowrap; }
+.abtn.warn { background: var(--lose); color: var(--fg); }
+.abtn.armed-confirm { background: #c8323a; color: #fff; }
+.abtn.ok { background: var(--win); }
+.admin-table-wrap { overflow-x: auto; }
+.admin-table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.admin-table th { text-align: left; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 0 8px 6px 0; }
+.admin-table td { padding: 8px 8px 8px 0; border-top: 1px solid #ffffff12; vertical-align: middle; }
+.admin-table .pname { font-weight: 600; white-space: nowrap; }
+.admin-table .tag { display: inline-block; margin-left: 4px; padding: 1px 6px; border-radius: 999px; font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+.tag.admin { background: #e9a23b33; color: var(--accent); }
+.tag.banned { background: #e0715b33; color: var(--lose); }
+.admin-table .credit-edit { display: flex; gap: 6px; min-width: 190px; }
+.admin-table .credit-edit input { width: 110px; padding: 6px 8px; font-size: 13px; }
+.admin-table .acts { display: flex; gap: 6px; flex-wrap: wrap; }
+.settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.setting { display: grid; gap: 4px; }
+.setting small { color: var(--muted); font-size: 12px; line-height: 1.4; }
+.setting.check { grid-template-columns: auto 1fr; align-items: start; gap: 4px 10px; }
+.setting.check input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--accent); }
+.setting.check small { grid-column: 2; }
+.setting.wide { grid-column: 1 / -1; }
+.admin-msgs { display: grid; gap: 6px; max-height: 50vh; overflow-y: auto; }
+.admin-msg { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; background: var(--panel); border-radius: 10px; padding: 8px 10px; font-size: 13px; }
+.admin-msg b { margin-right: 6px; }
+.admin-msg span { overflow-wrap: anywhere; }
+.admin-note { margin: 0; font-size: 12px; color: var(--muted); line-height: 1.5; }
+.admin-status { margin: 0; min-height: 18px; font-size: 13px; font-weight: 600; color: var(--win); }
+.admin-status.err { color: var(--lose); }
+
 /* Chat */
 .chat-fab {
   position: fixed; z-index: 22;
@@ -660,6 +737,7 @@ details.ach { margin-top: 10px; }
   <form class="login-card" id="loginForm" novalidate>
     <h1 class="login-logo">Lucky Reels</h1>
     <p class="login-sub" id="loginSub">Sign in to play</p>
+    <p class="announce" id="announceLogin" hidden></p>
     <div class="pick" id="pick"></div>
     <label class="field"><span class="label">Username</span><input id="loginUser" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="20"></label>
     <p class="login-hint" id="userHint" hidden>3 to 20 letters, digits, - or _. Everyone sees it in the highscores.</p>
@@ -675,7 +753,7 @@ details.ach { margin-top: 10px; }
 
 <div class="account-bar" id="accountBar" hidden>
   <span>Signed in as <b id="whoami"></b></span>
-  <span class="links"><button class="link-btn" id="pwToggle" type="button">Change password</button><button class="link-btn" id="logout" type="button">Sign out</button></span>
+  <span class="links"><button class="link-btn" id="adminBtn" type="button" hidden>Admin</button><button class="link-btn" id="pwToggle" type="button">Change password</button><button class="link-btn" id="logout" type="button">Sign out</button></span>
   <form class="pw-form" id="pwForm" hidden>
     <input id="pwOld" type="password" autocomplete="current-password" placeholder="Current password" aria-label="Current password">
     <input id="pwNew" type="password" autocomplete="new-password" placeholder="New password (4+ characters)" aria-label="New password">
@@ -683,6 +761,8 @@ details.ach { margin-top: 10px; }
     <p class="pw-msg" id="pwMsg" role="status"></p>
   </form>
 </div>
+
+<p class="announce" id="announce" role="status" hidden></p>
 
 <div class="layout">
   <main class="cabinet" id="cabinet">
@@ -721,7 +801,7 @@ details.ach { margin-top: 10px; }
     </div>
 
     <div class="bet">
-      <label class="label" for="betInput">Bet per spin · no limit</label>
+      <label class="label" for="betInput" id="betLabel">Bet per spin · no limit</label>
       <div class="bet-row">
         <button class="chip-btn" id="betHalf" aria-label="Halve bet">½</button>
         <input id="betInput" type="number" min="1" step="1" inputmode="numeric">
@@ -804,6 +884,64 @@ details.ach { margin-top: 10px; }
   </div>
 </div>
 <canvas id="fxTop" aria-hidden="true"></canvas>
+<div class="modal" id="adminModal" role="dialog" aria-modal="true" aria-labelledby="adminTitle" hidden>
+  <div class="admin-card">
+    <div class="admin-head"><h2 id="adminTitle">Admin</h2><button class="chat-close" id="adminClose" type="button" aria-label="Close admin menu">×</button></div>
+    <form class="admin-lock" id="adminLock">
+      <p>Enter your password again to open the admin menu.</p>
+      <input id="adminPass" type="password" autocomplete="current-password" aria-label="Password">
+      <button class="spin" type="submit" id="adminUnlock">Unlock</button>
+      <p class="admin-status err" id="adminLockErr" role="alert"></p>
+    </form>
+    <div id="adminPanel" hidden>
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" data-tab="players" aria-selected="true">Players</button>
+        <button class="tab" role="tab" data-tab="game" aria-selected="false">Game settings</button>
+        <button class="tab" role="tab" data-tab="chat" aria-selected="false">Chat</button>
+      </div>
+      <p class="admin-status" id="adminStatus" role="status"></p>
+
+      <section class="admin-section" data-pane="players">
+        <div class="admin-row">
+          <input id="giveAllAmount" type="number" inputmode="numeric" placeholder="Credits for everyone, e.g. 1000 or -500" aria-label="Credits for everyone">
+          <button class="abtn ok" id="giveAll" type="button">Give to everyone</button>
+        </div>
+        <div class="admin-table-wrap"><table class="admin-table" id="adminPlayers"></table></div>
+        <p class="admin-note">Set credits replaces the balance. Reset puts the player back to the start: credits, level, goodies and achievements. Blocked players can't sign in, save or chat. Dangerous buttons ask once more before they act.</p>
+      </section>
+
+      <section class="admin-section" data-pane="game" hidden>
+        <form id="settingsForm" class="settings-grid">
+          <label class="setting wide"><span class="label">Announcement for everyone</span><input name="announcement" maxlength="200" placeholder="e.g. Happy hour tonight: all wins ×2!"><small>Shown at the top of the game and the sign-in screen. Leave empty to hide it.</small></label>
+          <label class="setting check"><input type="checkbox" name="signupsOpen"><span>New accounts allowed</span><small>Shows "Create an account" on the sign-in screen.</small></label>
+          <label class="setting check"><input type="checkbox" name="chatEnabled"><span>Chat on</span><small>When off, only admins can open the chat.</small></label>
+          <label class="setting check"><input type="checkbox" name="maintenance"><span>Pause the game</span><small>Nobody but admins can spin.</small></label>
+          <label class="setting"><span class="label">Start credits for new accounts</span><input name="startCredits" type="number" min="0" step="1"></label>
+          <label class="setting"><span class="label">Win multiplier (happy hour)</span>
+            <select name="winMultiplier"><option value="0.5">×0.5</option><option value="1">×1 (normal)</option><option value="1.5">×1.5</option><option value="2">×2</option><option value="3">×3</option><option value="5">×5</option><option value="10">×10</option></select></label>
+          <label class="setting"><span class="label">Three sevens pay (× bet)</span><input name="jackpotPay" type="number" min="1" step="1"></label>
+          <label class="setting"><span class="label">Highest bet (0 = no limit)</span><input name="maxBet" type="number" min="0" step="1"></label>
+          <label class="setting"><span class="label">Bonus stars for free spins</span><input name="starGoal" type="number" min="3" max="50" step="1"></label>
+          <label class="setting"><span class="label">Free spins per bonus</span><input name="freeSpins" type="number" min="1" max="50" step="1"></label>
+          <label class="setting"><span class="label">Free spin win multiplier</span><input name="freeMult" type="number" min="1" max="20" step="1"></label>
+          <label class="setting"><span class="label">Nudge chance after a loss (%)</span><input name="nudgeChance" type="number" min="0" max="100" step="1"></label>
+          <label class="setting"><span class="label">Hold chance after a loss (%)</span><input name="holdChance" type="number" min="0" max="100" step="1"></label>
+          <div class="admin-row setting wide">
+            <button class="abtn ok" type="submit">Save settings</button>
+            <button class="abtn" type="button" id="settingsDefaults">Back to defaults</button>
+          </div>
+        </form>
+        <p class="admin-note">Changes reach everyone within seconds. Payout settings change the odds shown in the paytable too.</p>
+      </section>
+
+      <section class="admin-section" data-pane="chat" hidden>
+        <div class="admin-row"><button class="abtn warn" id="clearChat" type="button">Delete all messages</button></div>
+        <div class="admin-msgs" id="adminMsgs"></div>
+      </section>
+    </div>
+  </div>
+</div>
+
 <button class="chat-fab" id="chatFab" type="button" hidden>Chat <span class="badge" id="chatBadge" hidden>0</span></button>
 <section class="chat-panel" id="chatPanel" aria-labelledby="chatTitle" hidden>
   <div class="chat-head"><div><h2 id="chatTitle">Chat</h2><span id="chatSub">Everyone playing Lucky Reels</span></div><button class="chat-close" id="chatClose" type="button" aria-label="Close chat">×</button></div>
@@ -846,17 +984,44 @@ details.ach { margin-top: 10px; }
   const CELL = 66;
   const LOOPS = 6;
   const MAX = Number.MAX_SAFE_INTEGER;
-  const STAR_GOAL = 12;
-  const FREE_SPINS = 8;
-  const FREE_MULT = 2;
+  let STAR_GOAL = 12;
+  let FREE_SPINS = 8;
+  let FREE_MULT = 2;
   const STREAK_STEP = 0.25;
   const STREAK_MAX = 8;
   // Wheel prizes are multiples of 100 × level; 'free' awards free spins instead.
   const WHEEL = [2, 10, 3, 25, 5, 'free', 4, 50];
   const xpNeed = level => Math.floor(120 * level ** 1.4);
   const GAMBLE_MAX = 5;
-  const NUDGE_CHANCE = 22;
-  const HOLD_CHANCE = 30;
+  let NUDGE_CHANCE = 22;
+  let HOLD_CHANCE = 30;
+  // Game-wide settings an admin can change; every client applies them live.
+  const DEFAULT_SETTINGS = {
+    announcement: '', signupsOpen: true, chatEnabled: true, maintenance: false,
+    startCredits: 500, winMultiplier: 1, jackpotPay: 200, maxBet: 0,
+    starGoal: 12, freeSpins: 8, freeMult: 2, nudgeChance: 22, holdChance: 30,
+  };
+  const SETTING_LIMITS = {
+    startCredits: [0, 1e12], winMultiplier: [0.1, 100], jackpotPay: [1, 100000], maxBet: [0, Number.MAX_SAFE_INTEGER],
+    starGoal: [3, 50], freeSpins: [1, 50], freeMult: [1, 20], nudgeChance: [0, 100], holdChance: [0, 100],
+  };
+  function cleanSettings(raw) {
+    const out = { ...DEFAULT_SETTINGS };
+    for (const [k, def] of Object.entries(DEFAULT_SETTINGS)) {
+      const v = raw?.[k];
+      if (v === undefined || v === null) continue;
+      if (typeof def === 'boolean') out[k] = v === true || v === 'true';
+      else if (typeof def === 'string') out[k] = String(v).slice(0, 200);
+      else {
+        const n = Number(v);
+        if (!Number.isFinite(n)) continue;
+        const [lo, hi] = SETTING_LIMITS[k];
+        out[k] = Math.min(hi, Math.max(lo, k === 'winMultiplier' ? n : Math.round(n)));
+      }
+    }
+    return out;
+  }
+  let settings = { ...DEFAULT_SETTINGS };
   // Missions: `goals` are the three difficulty tiers; `max` tracks a best value instead of a running total.
   const MISSIONS = {
     spins: { text: g => `Spin ${g} times`, goals: [15, 25, 40] },
@@ -914,7 +1079,7 @@ details.ach { margin-top: 10px; }
     owned: { horseshoe: 0, goldCherry: false, piggy: false, autospin: false, gold: false },
     boost: { double: false, magnet: false },
     streak: 0, stars: 0, freeSpins: 0, freeBet: 0, freeTotal: 0, jackpots: 0,
-    xp: 0, level: 1, ach: {},
+    xp: 0, level: 1, ach: {}, adminRev: 0,
     nudges: 0, missions: [], missionsDone: 0,
   });
   const state = fresh();
@@ -1326,7 +1491,7 @@ details.ach { margin-top: 10px; }
     const line = lineSymbol(...syms);
     const base = payout(...syms);
     const sMult = base ? streakMult() : 1;
-    const mult = base * (double ? 2 : 1) * (free ? FREE_MULT : 1) * sMult;
+    const mult = base * (double ? 2 : 1) * (free ? FREE_MULT : 1) * sMult * settings.winMultiplier;
     const win = Math.min(MAX, Math.floor(mult * bet));
     const ratio = win / bet;
     const refund = !base && state.owned.piggy ? Math.floor(bet * 0.1) : 0;
@@ -1366,6 +1531,7 @@ details.ach { margin-top: 10px; }
     if (base && sMult > 1) extras.push(`streak ×${sMult.toFixed(2)}`);
     if (double && base) extras.push('doubled');
     if (free && base) extras.push(`bonus ×${FREE_MULT}`);
+    if (base && settings.winMultiplier !== 1) extras.push(`happy hour ×${settings.winMultiplier}`);
     const tail = extras.length ? ` (${extras.join(', ')})` : '';
     const jackpot = line === 'seven';
     let result = win ? 'win' : 'lose';
@@ -1441,7 +1607,7 @@ details.ach { margin-top: 10px; }
     if (base) {
       const bet = lastBet;
       const sMult = streakMult();
-      const win = Math.min(MAX, Math.floor(base * bet * sMult));
+      const win = Math.min(MAX, Math.floor(base * bet * sMult * settings.winMultiplier));
       state.credits = Math.min(MAX, state.credits + win);
       state.lastWin = win;
       state.best = Math.max(state.best, win);
@@ -1630,6 +1796,8 @@ details.ach { margin-top: 10px; }
 
   async function play() {
     if (busy || !account) return null;
+    if (settings.maintenance && !account.isAdmin) { say('The game is paused by an admin. Try again later.', 'lose'); return null; }
+    if (settings.maxBet && state.bet > settings.maxBet) state.bet = settings.maxBet;
     busy = true;
     render();
     let result;
@@ -1990,11 +2158,14 @@ details.ach { margin-top: 10px; }
     ['betHalf', 'betDouble', 'betMax', 'betInput', 'refill', 'logout'].forEach(id => ($(id).disabled = busy));
 
     const spinBtn = $('spin');
-    spinBtn.disabled = busy || (!free && state.credits < cost);
+    const paused = settings.maintenance && !account?.isAdmin;
+    spinBtn.disabled = busy || paused || (!free && state.credits < cost);
     spinBtn.classList.toggle('free', free || inBonus);
     spinBtn.innerHTML = free && !inBonus ? `Free spins<small>${state.freeSpins} waiting</small>`
       : inBonus ? `Bonus<small>${state.freeSpins} left</small>`
       : cost !== state.bet ? `Spin<small>costs ${fmt(cost)}</small>` : 'Spin';
+    if (paused) spinBtn.innerHTML = 'Paused<small>an admin paused the game</small>';
+    $('betLabel').textContent = settings.maxBet ? `Bet per spin · max ${fmt(settings.maxBet)}` : 'Bet per spin · no limit';
     if (!busy && !free && state.credits < cost && state.credits >= 1) say(`Not enough credits for this spin (${fmt(cost)}). Lower your bet.`, 'lose');
 
     const auto = $('auto');
@@ -2042,7 +2213,8 @@ details.ach { margin-top: 10px; }
   }
 
   // ---------- Controls ----------
-  const setBet = v => { state.bet = Math.max(1, Math.min(MAX, Math.floor(v) || 1)); render(); };
+  const betCap = () => settings.maxBet || MAX;
+  const setBet = v => { state.bet = Math.max(1, Math.min(betCap(), Math.floor(v) || 1)); render(); };
   $('spin').addEventListener('click', play);
   $('auto').addEventListener('click', autoSpin);
   $('gamble').addEventListener('click', openGamble);
@@ -2060,7 +2232,7 @@ details.ach { margin-top: 10px; }
   $('betMax').addEventListener('click', () => setBet(state.credits / costFactor()));
   $('betInput').addEventListener('input', e => {
     const v = Math.floor(Number(e.target.value));
-    if (v >= 1) { state.bet = Math.min(MAX, v); render(); }
+    if (v >= 1) { state.bet = Math.min(betCap(), v); render(); }
   });
   $('betInput').addEventListener('change', () => { $('betInput').value = state.bet; });
   $('sound').addEventListener('click', () => { state.sound = !state.sound; render(); });
@@ -2082,7 +2254,7 @@ details.ach { margin-top: 10px; }
     render();
   });
   document.addEventListener('keydown', e => {
-    if (!account || e.target.closest?.('#chatPanel')) return;
+    if (!account || e.target.closest?.('#chatPanel, #adminModal')) return;
     typed = [...typed, e.key.length === 1 ? e.key.toLowerCase() : e.key].slice(-SECRET.length);
     if (typed.join() === SECRET.join() && !rigged) {
       rigged = true;
@@ -2091,7 +2263,7 @@ details.ach { margin-top: 10px; }
     }
   });
   document.addEventListener('keydown', e => {
-    if (e.code === 'Space' && account && !['BUTTON', 'SUMMARY', 'INPUT'].includes(e.target.tagName) && $('wheelModal').hidden && $('gambleModal').hidden) { e.preventDefault(); play(); }
+    if (e.code === 'Space' && account && !['BUTTON', 'SUMMARY', 'INPUT'].includes(e.target.tagName) && $('wheelModal').hidden && $('gambleModal').hidden && $('adminModal').hidden) { e.preventDefault(); play(); }
   });
 
   // ---------- Accounts ----------
@@ -2104,7 +2276,7 @@ details.ach { margin-top: 10px; }
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhmdHNhenlhZ2Z1dW5zb2p4aXlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxNzAyMDksImV4cCI6MjEwODc0NjIwOX0.oIaS7jGQXzyufCGHyaxELAV2W4oGcMQ4oH_eZDyfCRw',
   };
   const EMAIL_DOMAIN = 'lucky-reels.app';
-  const LOCAL_ACCOUNTS = {"lukas": {"name": "Lukas", "salt": "609251a2290fc994", "hash": "2d0b6e200d1e84675de054182f28e9388d72143fe58397f9d0465248f99b4c6a", "credits": 1000, "best": 0, "level": 1, "spins": 0}, "julius": {"name": "Julius", "salt": "ed552e28ed575e75", "hash": "6607c8490c975680b5e546b46c515b6a2a794d0f853833f1a3f85d50479b8e3f", "credits": 750, "best": 0, "level": 1, "spins": 0}};
+  const LOCAL_ACCOUNTS = {"lukas": {"name": "Lukas", "salt": "609251a2290fc994", "hash": "2d0b6e200d1e84675de054182f28e9388d72143fe58397f9d0465248f99b4c6a", "credits": 1000, "best": 0, "level": 1, "spins": 0, "admin": true}, "julius": {"name": "Julius", "salt": "ed552e28ed575e75", "hash": "6607c8490c975680b5e546b46c515b6a2a794d0f853833f1a3f85d50479b8e3f", "credits": 750, "best": 0, "level": 1, "spins": 0}};
   let backend = null;
   let account = null;
   let players = [];
@@ -2118,7 +2290,11 @@ details.ach { margin-top: 10px; }
     return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
   }
   const newSalt = () => [...crypto.getRandomValues(new Uint8Array(8))].map(b => b.toString(16).padStart(2, '0')).join('');
-  const toPlayers = list => list.map(p => ({ id: p.id, name: p.name || p.id, credits: Number(p.credits) || 0, best: Number(p.best) || 0, level: Number(p.level) || 1, jackpots: Number(p.jackpots) || 0 }));
+  const toPlayers = list => list.map(p => ({
+    id: p.id, name: p.name || p.id, credits: Number(p.credits) || 0, best: Number(p.best) || 0, level: Number(p.level) || 1,
+    jackpots: Number(p.jackpots) || 0, admin: !!(p.admin ?? p.is_admin), banned: !!(p.banned ?? p.is_banned), adminRev: Number(p.adminRev ?? p.admin_rev) || 0,
+  }));
+  const adminChanged = () => Object.assign(new Error('changed by an admin'), { code: 'admin_changed' });
   const SESSION_KEY = 'lucky-reels-session';
   const remember = id => { try { id ? sessionStorage.setItem(SESSION_KEY, id) : sessionStorage.removeItem(SESSION_KEY); } catch {} };
   const remembered = () => { try { return sessionStorage.getItem(SESSION_KEY); } catch { return null; } };
@@ -2143,16 +2319,52 @@ details.ach { margin-top: 10px; }
       canSignUp: true,
       async signUp(name, pw) {
         const id = idFor(name);
+        if (!settings.signupsOpen) return { status: 'closed' };
         if (!validId(id)) return { status: 'invalid' };
         const doc = await store.create(id, async () => {
           const salt = newSalt();
-          return { name: name.trim(), salt, hash: await hashPw(salt, pw), credits: START, best: 0, level: 1, spins: 0 };
+          return { name: name.trim(), salt, hash: await hashPw(salt, pw), credits: settings.startCredits, best: 0, level: 1, spins: 0 };
         });
         if (!doc) return { status: 'taken' };
         remember(id);
         return { status: 'ok', found: { key: id, doc } };
       },
-      save: (key, body) => store.save(key, body),
+      // Don't overwrite a change an admin made since this page last loaded the account.
+      async save(key, body) {
+        const { adminRev, ...rest } = body;
+        const cur = await store.load(key);
+        if (cur && (Number(cur.adminRev) || 0) > (adminRev || 0)) throw adminChanged();
+        if (cur?.banned) return;
+        return store.save(key, rest);
+      },
+      loadOwn: key => store.load(key),
+      async verifyPassword(pw) {
+        const doc = await store.load(account.id);
+        return !!doc && (await hashPw(doc.salt, pw)) === doc.hash;
+      },
+      watchSettings: cb => store.watchSettings(cb),
+      admin: {
+        ready: true,
+        async setCredits(id, amount) {
+          const doc = await store.load(id);
+          await store.save(id, { credits: amount, adminRev: (Number(doc?.adminRev) || 0) + 1 });
+        },
+        async addAll(amount) {
+          for (const p of players) {
+            const doc = await store.load(p.id);
+            if (!doc || doc.banned) continue;
+            await store.save(p.id, { credits: Math.max(0, (Number(doc.credits) || 0) + amount), adminRev: (Number(doc.adminRev) || 0) + 1 });
+          }
+        },
+        async reset(id) {
+          const doc = await store.load(id);
+          await store.save(id, { credits: settings.startCredits, best: 0, level: 1, spins: 0, jackpots: 0, game: null, adminRev: (Number(doc?.adminRev) || 0) + 1 });
+        },
+        setFlag: (id, flag, value) => store.save(id, { [flag]: value }),
+        deleteMessage: id => store.deleteMessage(id),
+        clearChat: () => store.clearChat(),
+        saveSettings: patch => store.saveSettings(patch),
+      },
       async changePassword(key, oldPw, newPw) {
         const doc = await store.load(key);
         if (!doc || (await hashPw(doc.salt, oldPw)) !== doc.hash) return 'wrong';
@@ -2178,6 +2390,31 @@ details.ach { margin-top: 10px; }
     return {
       kind: 'local',
       async load(id) { return all[id] ? { ...all[id] } : null; },
+      watchSettings(cb) {
+        const SET = 'lucky-reels-settings';
+        const readSet = () => { try { return JSON.parse(localStorage.getItem(SET) || '{}'); } catch { return {}; } };
+        settingsListeners.add(cb);
+        cb(readSet());
+        addEventListener('storage', e => { if (e.key === SET) cb(readSet()); });
+      },
+      async saveSettings(patch) {
+        const SET = 'lucky-reels-settings';
+        let cur = {};
+        try { cur = JSON.parse(localStorage.getItem(SET) || '{}'); } catch {}
+        const next = { ...cur, ...patch };
+        try { localStorage.setItem(SET, JSON.stringify(next)); } catch {}
+        settingsListeners.forEach(cb => cb(next));
+      },
+      async deleteMessage(id) { this.rewriteChat(list => list.filter(m => m.id !== id)); },
+      async clearChat() { this.rewriteChat(() => []); },
+      rewriteChat(fn) {
+        const CHAT = 'lucky-reels-chat';
+        let list = [];
+        try { list = JSON.parse(localStorage.getItem(CHAT) || '[]'); } catch {}
+        list = fn(list);
+        try { localStorage.setItem(CHAT, JSON.stringify(list)); } catch {}
+        chatListeners.forEach(cb => cb(list));
+      },
       async create(id, make) {
         if (all[id]) return null;
         const doc = await make();
@@ -2206,11 +2443,23 @@ details.ach { margin-top: 10px; }
     };
   }
   const chatListeners = new Set();
+  const settingsListeners = new Set();
 
   function artifactStore(db) {
     return {
       kind: 'db',
       async load(id) { const snap = await db.doc(`players/${id}`).get(); return snap.exists ? snap.data() : null; },
+      watchSettings(cb) { db.doc('config/settings').onSnapshot(snap => cb(snap.exists ? snap.data() : {}), () => {}); },
+      async saveSettings(patch) {
+        const ref = db.doc('config/settings');
+        const snap = await ref.get();
+        await ref.set({ ...(snap.exists ? snap.data() : {}), ...patch });
+      },
+      deleteMessage: id => db.doc(`chat/${id}`).delete(),
+      async clearChat() {
+        const snap = await db.collection('chat').limit(500).get();
+        for (const d of snap.docs) await db.doc(`chat/${d.id}`).delete();
+      },
       // Claim a username under a short lease so two people can't create the same one at once.
       async create(id, make) {
         const ref = db.doc(`players/${id}`);
@@ -2257,6 +2506,9 @@ details.ach { margin-top: 10px; }
     });
     const email = name => `${idFor(name)}@${EMAIL_DOMAIN}`;
     let hasJackpots = true;
+    // Admin columns exist once the admin part of supabase-setup.sql has run.
+    const adminSchema = !(await sb.from('players').select('admin_rev').limit(1)).error;
+    const adminCols = adminSchema ? ',is_admin,is_banned,admin_rev' : '';
     // New accounts are only offered when Supabase confirms them on the spot: the made-up addresses can't receive mail.
     let canSignUp = false;
     try {
@@ -2264,10 +2516,14 @@ details.ach { margin-top: 10px; }
       const cfg = await res.json();
       canSignUp = !cfg.disable_signup && !!cfg.mailer_autoconfirm;
     } catch {}
-    async function row(uid) {
-      const { data, error } = await sb.from('players').select('id,name,credits,game').eq('id', uid).maybeSingle();
+    const rpc = async (fn, args) => {
+      const { error } = await sb.rpc(fn, args);
       if (error) throw error;
-      return data ? { key: uid, doc: data } : null;
+    };
+    async function row(uid) {
+      const { data, error } = await sb.from('players').select(`id,name,credits,game${adminCols}`).eq('id', uid).maybeSingle();
+      if (error) throw error;
+      return data ? { key: uid, doc: { ...data, admin: !!data.is_admin, banned: !!data.is_banned, adminRev: Number(data.admin_rev) || 0 } } : null;
     }
     return {
       kind: 'supabase',
@@ -2303,17 +2559,50 @@ details.ach { margin-top: 10px; }
         return { status: 'ok', found };
       },
       async save(key, body) {
-        const patch = { ...body, updated_at: new Date(body.updatedAt || Date.now()).toISOString() };
-        delete patch.updatedAt;
+        const { adminRev, updatedAt, ...rest } = body;
+        const patch = { ...rest, updated_at: new Date(updatedAt || Date.now()).toISOString() };
+        // Only write if no admin changed this account since it was loaded.
+        const send = () => {
+          let q = sb.from('players').update(patch).eq('id', key);
+          if (adminSchema) q = q.eq('admin_rev', adminRev || 0);
+          return q.select('id');
+        };
         if (!hasJackpots) delete patch.jackpots;
-        let { error } = await sb.from('players').update(patch).eq('id', key);
+        let { data, error } = await send();
         // Before the chat setup SQL runs there is no jackpots column; save without it.
         if (error && hasJackpots && /jackpots/.test(error.message || '')) {
           hasJackpots = false;
           delete patch.jackpots;
-          ({ error } = await sb.from('players').update(patch).eq('id', key));
+          ({ data, error } = await send());
         }
         if (error) throw error;
+        if (!data?.length) throw adminChanged();
+      },
+      loadOwn: async key => (await row(key))?.doc,
+      async verifyPassword(pw) {
+        const { error } = await sb.auth.signInWithPassword({ email: email(account.name), password: pw });
+        return !error;
+      },
+      async watchSettings(cb) {
+        const pull = async () => {
+          const { data, error } = await sb.from('settings').select('data').eq('id', 1).maybeSingle();
+          cb(error ? {} : data?.data || {});
+        };
+        await pull();
+        sb.channel('settings').on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, pull).subscribe();
+        setInterval(pull, 60000);
+      },
+      admin: {
+        ready: adminSchema,
+        async setCredits(id, amount) { await rpc('admin_update_player', { target: id, new_credits: amount, reset: false, set_admin: null, set_banned: null }); },
+        async addAll(amount) { await rpc('admin_give_all', { amount }); },
+        async reset(id) { await rpc('admin_update_player', { target: id, new_credits: null, reset: true, set_admin: null, set_banned: null }); },
+        async setFlag(id, flag, value) {
+          await rpc('admin_update_player', { target: id, new_credits: null, reset: false, set_admin: flag === 'admin' ? value : null, set_banned: flag === 'banned' ? value : null });
+        },
+        async deleteMessage(id) { await rpc('admin_delete_message', { msg: id }); },
+        async clearChat() { await rpc('admin_clear_chat', {}); },
+        async saveSettings(patch) { await rpc('admin_save_settings', { patch }); },
       },
       async changePassword(key, oldPw, newPw) {
         const { error: wrong } = await sb.auth.signInWithPassword({ email: email(account.name), password: oldPw });
@@ -2332,6 +2621,7 @@ details.ach { margin-top: 10px; }
           return true;
         };
         if (!(await pull())) return;
+        sb.channel('chat-deletes').on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'messages' }, pull).subscribe();
         sb.channel('chat').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, ({ new: m }) => {
           if (list.some(x => x.id === m.id)) return;
           list = [...list, { id: m.id, uid: m.user_id, name: m.name, body: m.body, at: Date.parse(m.created_at) }].slice(-100);
@@ -2345,10 +2635,10 @@ details.ach { margin-top: 10px; }
       },
       watch(cb) {
         const pull = async () => {
-          let { data, error } = await sb.from('players').select(`id,name,credits,best,level${hasJackpots ? ',jackpots' : ''}`);
+          let { data, error } = await sb.from('players').select(`id,name,credits,best,level${hasJackpots ? ',jackpots' : ''}${adminCols}`);
           if (error && hasJackpots) {
             hasJackpots = false;
-            ({ data } = await sb.from('players').select('id,name,credits,best,level'));
+            ({ data } = await sb.from('players').select(`id,name,credits,best,level${adminCols}`));
           }
           if (data) cb(toPlayers(data));
         };
@@ -2382,6 +2672,18 @@ details.ach { margin-top: 10px; }
     }
     boardPrimed = true;
     players = list;
+    const mine = account && list.find(p => p.id === account.id);
+    if (mine) {
+      if (mine.admin !== account.isAdmin) {
+        account.isAdmin = mine.admin;
+        $('adminBtn').hidden = !mine.admin;
+        if (!mine.admin) { adminUnlocked = false; $('adminModal').hidden = true; }
+        render();
+      }
+      if (mine.banned) { toast('Signed out', 'An admin blocked this account.'); signOut(true); }
+      else if (mine.adminRev > (state.adminRev || 0)) refreshOwn();
+    }
+    renderAdminPlayers();
     renderBoards();
   }
   function jackpotOnBoard(p) {
@@ -2443,7 +2745,7 @@ details.ach { margin-top: 10px; }
     if (!account || !backend) return;
     if (saving) { saveAgain = true; return; }
     const key = account.id;
-    const body = { credits: state.credits, best: state.best, level: state.level, spins: state.spins, jackpots: state.jackpots, game: JSON.stringify(state) };
+    const body = { credits: state.credits, best: state.best, level: state.level, spins: state.spins, jackpots: state.jackpots, adminRev: state.adminRev, game: JSON.stringify(state) };
     const json = JSON.stringify(body);
     if (json === lastSaved) return;
     saving = true;
@@ -2451,6 +2753,7 @@ details.ach { margin-top: 10px; }
       await backend.save(key, { ...body, updatedAt: Date.now() });
       lastSaved = json;
     } catch (e) {
+      if (e?.code === 'admin_changed') { refreshOwn(); return; }
       toast('Not saved', e?.code === 'invalid_argument'
         ? 'This link is view-only. Ask the owner for Contributor access to save progress.'
         : 'Saving failed. Your progress stays on this page; it will retry.');
@@ -2486,11 +2789,17 @@ details.ach { margin-top: 10px; }
   function enterGame({ key, doc }) {
     let saved = {};
     try { saved = doc.game ? JSON.parse(doc.game) : {}; } catch { saved = {}; }
-    if (!doc.game) saved = { credits: Number(doc.credits) || START };
-    account = { id: key, name: doc.name || key };
+    if (!doc.game) saved = { credits: Number(doc.credits) || 0 };
+    // An admin changed the credits while this player was away.
+    const rev = Number(doc.adminRev) || 0;
+    if (rev > (Number(saved.adminRev) || 0)) saved.credits = Number(doc.credits) || 0;
+    saved.adminRev = rev;
+    account = { id: key, name: doc.name || key, isAdmin: !!doc.admin };
+    adminUnlocked = false;
     lastSaved = '';
     loadState(saved);
     $('whoami').textContent = account.name;
+    $('adminBtn').hidden = !account.isAdmin;
     $('accountBar').hidden = false;
     chatUnread = 0;
     renderChat();
@@ -2501,10 +2810,13 @@ details.ach { margin-top: 10px; }
     say(`Welcome, ${account.name}. Pick a bet and pull.`, 'win');
   }
 
-  async function signOut() {
-    if (busy || !account) return;
-    await flush();
+  async function signOut(force = false) {
+    if (!account) return;
+    if (busy) { if (force) setTimeout(() => signOut(true), 1000); return; }
+    if (!force) await flush();
     account = null;
+    adminUnlocked = false;
+    $('adminModal').hidden = true;
     try { await backend.signOut(); } catch {}
     $('accountBar').hidden = true;
     setChat(false);
@@ -2544,7 +2856,11 @@ details.ach { margin-top: 10px; }
     renderChat();
   }
   function renderChat() {
-    $('chatFab').hidden = !account || chatOpen;
+    const chatAllowed = settings.chatEnabled || account?.isAdmin;
+    $('chatFab').hidden = !account || chatOpen || !chatAllowed;
+    $('chatInput').disabled = $('chatSend').disabled = !chatAllowed;
+    $('chatSub').textContent = settings.chatEnabled ? 'Everyone playing Lucky Reels' : 'Chat is switched off for players';
+    renderAdminMsgs();
     $('chatBadge').hidden = !chatUnread;
     $('chatBadge').textContent = chatUnread > 99 ? '99+' : chatUnread;
     $('chatForm').hidden = chatMessages === null;
@@ -2588,6 +2904,229 @@ details.ach { margin-top: 10px; }
     }
     $('chatSend').disabled = false;
     input.focus();
+  });
+
+  // ---------- Settings & admin ----------
+  let adminUnlocked = false;
+  let refreshing = false;
+
+  function applySettings(raw) {
+    settings = cleanSettings(raw);
+    STAR_GOAL = settings.starGoal;
+    FREE_SPINS = settings.freeSpins;
+    FREE_MULT = settings.freeMult;
+    NUDGE_CHANCE = settings.nudgeChance;
+    HOLD_CHANCE = settings.holdChance;
+    PAY3.seven = settings.jackpotPay;
+    if (starPips.children.length !== STAR_GOAL) starPips.innerHTML = '<span class="pip"></span>'.repeat(STAR_GOAL);
+    if (settings.maxBet && state.bet > settings.maxBet) state.bet = settings.maxBet;
+    for (const id of ['announce', 'announceLogin']) {
+      $(id).hidden = !settings.announcement;
+      $(id).textContent = settings.announcement;
+    }
+    if (backend) $('modeSwitch').hidden = !(backend.canSignUp && settings.signupsOpen);
+    if (settings.maintenance && account && !account.isAdmin) say('The game is paused by an admin.', 'lose');
+    renderPaytable();
+    renderChat();
+    render();
+  }
+
+  // Pick up credits or a reset an admin made to this account.
+  async function refreshOwn() {
+    if (refreshing || !account) return;
+    if (busy) { setTimeout(refreshOwn, 1000); return; }
+    refreshing = true;
+    try {
+      const doc = await backend.loadOwn(account.id);
+      const rev = Number(doc?.adminRev) || 0;
+      if (doc && rev > (state.adminRev || 0)) {
+        if (!doc.game) {
+          loadState({ credits: Number(doc.credits) || 0, adminRev: rev });
+          toast('Game reset', 'An admin reset your game.');
+        } else {
+          state.credits = Number(doc.credits) || 0;
+          state.adminRev = rev;
+          toast('Credits changed', `An admin set your credits to ${fmt(state.credits)}.`);
+        }
+        lastSaved = '';
+        render();
+      }
+    } catch {}
+    refreshing = false;
+  }
+
+  // Two-step buttons: the first click arms, the second within 3 s acts.
+  function confirmed(btn, label = 'Sure?') {
+    if (btn.dataset.armed) { delete btn.dataset.armed; btn.classList.remove('armed-confirm'); return true; }
+    btn.dataset.armed = '1';
+    btn.dataset.label = btn.textContent;
+    btn.textContent = label;
+    btn.classList.add('armed-confirm');
+    setTimeout(() => {
+      if (!btn.dataset.armed) return;
+      delete btn.dataset.armed;
+      btn.classList.remove('armed-confirm');
+      btn.textContent = btn.dataset.label;
+    }, 3000);
+    return false;
+  }
+  function adminSay(text, ok = true) {
+    const el = $('adminStatus');
+    el.textContent = text;
+    el.className = 'admin-status' + (ok ? '' : ' err');
+  }
+  async function adminDo(label, fn) {
+    adminSay('Saving…');
+    try {
+      await fn();
+      adminSay(label);
+      sound.tick();
+    } catch (e) {
+      adminSay(/not allowed/i.test(e?.message || '') ? 'Only admins can do that.' : 'That did not work. Check the connection and try again.', false);
+    }
+  }
+
+  function openAdmin() {
+    if (!account?.isAdmin) return;
+    $('adminModal').hidden = false;
+    $('adminLock').hidden = adminUnlocked;
+    $('adminPanel').hidden = !adminUnlocked;
+    $('adminLockErr').textContent = '';
+    if (adminUnlocked) { showTab('players'); } else { $('adminPass').value = ''; $('adminPass').focus(); }
+  }
+  function showTab(name) {
+    document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.tab === name)));
+    document.querySelectorAll('[data-pane]').forEach(p => { p.hidden = p.dataset.pane !== name; });
+    adminSay('');
+    if (name === 'players') renderAdminPlayers(true);
+    if (name === 'game') fillSettingsForm();
+    if (name === 'chat') renderAdminMsgs();
+  }
+
+  function renderAdminPlayers(force = false) {
+    if (!adminUnlocked || $('adminModal').hidden) return;
+    const table = $('adminPlayers');
+    // Don't rebuild while an admin is typing an amount.
+    if (!force && table.contains(document.activeElement) && document.activeElement.tagName === 'INPUT') return;
+    const rows = [...players].sort((a, b) => a.name.localeCompare(b.name));
+    table.innerHTML = '<thead><tr><th>Player</th><th>Credits</th><th>Level</th><th>Actions</th></tr></thead><tbody>' + rows.map(p => `
+      <tr data-pid="${esc(p.id)}">
+        <td class="pname">${esc(p.name)}${p.admin ? '<span class="tag admin">admin</span>' : ''}${p.banned ? '<span class="tag banned">blocked</span>' : ''}${p.id === account?.id ? ' <span class="tag">you</span>' : ''}</td>
+        <td><div class="credit-edit"><input type="number" inputmode="numeric" value="${p.credits}" aria-label="Credits for ${esc(p.name)}"><button class="abtn" data-act="credits">Set</button></div></td>
+        <td>${p.level}</td>
+        <td><div class="acts">
+          <button class="abtn warn" data-act="reset">Reset</button>
+          <button class="abtn${p.banned ? ' ok' : ' warn'}" data-act="ban"${p.id === account?.id ? ' disabled' : ''}>${p.banned ? 'Unblock' : 'Block'}</button>
+          <button class="abtn" data-act="admin"${p.id === account?.id ? ' disabled' : ''}>${p.admin ? 'Remove admin' : 'Make admin'}</button>
+        </div></td>
+      </tr>`).join('') + '</tbody>';
+  }
+  $('adminPlayers').addEventListener('click', e => {
+    const btn = e.target.closest('[data-act]');
+    if (!btn) return;
+    const tr = btn.closest('tr');
+    const p = players.find(x => x.id === tr.dataset.pid);
+    if (!p) return;
+    const act = btn.dataset.act;
+    if (act === 'credits') {
+      const v = Math.floor(Number(tr.querySelector('input').value));
+      if (!Number.isFinite(v) || v < 0) { adminSay('Enter 0 or more credits.', false); return; }
+      adminDo(`${p.name} now has ${fmt(v)} credits.`, () => backend.admin.setCredits(p.id, v));
+    } else if (act === 'reset') {
+      if (confirmed(btn, 'Reset?')) adminDo(`${p.name} starts over with ${fmt(settings.startCredits)} credits.`, () => backend.admin.reset(p.id));
+    } else if (act === 'ban') {
+      if (p.banned || confirmed(btn, 'Block?')) adminDo(p.banned ? `${p.name} is unblocked.` : `${p.name} is blocked.`, () => backend.admin.setFlag(p.id, 'banned', !p.banned));
+    } else if (act === 'admin') {
+      if (p.admin ? confirmed(btn, 'Remove?') : true) adminDo(p.admin ? `${p.name} is no longer an admin.` : `${p.name} is now an admin.`, () => backend.admin.setFlag(p.id, 'admin', !p.admin));
+    }
+  });
+  $('adminPlayers').addEventListener('focusout', () => setTimeout(() => renderAdminPlayers(), 0));
+  $('giveAll').addEventListener('click', () => {
+    const v = Math.floor(Number($('giveAllAmount').value));
+    if (!Number.isFinite(v) || v === 0) { adminSay('Enter how many credits everyone gets (negative takes them away).', false); return; }
+    if (!confirmed($('giveAll'), v > 0 ? `Give ${fmt(v)}?` : `Take ${fmt(-v)}?`)) return;
+    adminDo(v > 0 ? `Everyone got ${fmt(v)} credits.` : `${fmt(-v)} credits taken from everyone.`, async () => {
+      await backend.admin.addAll(v);
+      $('giveAllAmount').value = '';
+    });
+  });
+
+  function fillSettingsForm() {
+    const form = $('settingsForm');
+    for (const [k, v] of Object.entries(settings)) {
+      const el = form.elements[k];
+      if (!el) continue;
+      if (el.type === 'checkbox') el.checked = v;
+      else el.value = v;
+    }
+  }
+  $('settingsForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const form = $('settingsForm');
+    const raw = {};
+    for (const k of Object.keys(DEFAULT_SETTINGS)) {
+      const el = form.elements[k];
+      if (el) raw[k] = el.type === 'checkbox' ? el.checked : el.value;
+    }
+    const patch = cleanSettings(raw);
+    adminDo('Settings saved. Everyone sees them within seconds.', async () => {
+      await backend.admin.saveSettings(patch);
+      applySettings(patch);
+      fillSettingsForm();
+    });
+  });
+  $('settingsDefaults').addEventListener('click', e => {
+    if (!confirmed(e.currentTarget, 'Reset all?')) return;
+    adminDo('Settings are back to the defaults.', async () => {
+      await backend.admin.saveSettings({ ...DEFAULT_SETTINGS });
+      applySettings(DEFAULT_SETTINGS);
+      fillSettingsForm();
+    });
+  });
+
+  function renderAdminMsgs() {
+    if (!adminUnlocked || $('adminModal').hidden) return;
+    const box = $('adminMsgs');
+    if (chatMessages === null) { box.innerHTML = '<p class="admin-note">The chat is not set up yet.</p>'; return; }
+    const list = [...chatMessages].reverse();
+    box.innerHTML = list.length ? list.map(m => `
+      <div class="admin-msg" data-mid="${esc(m.id)}"><span><b>${esc(m.name)}</b>${esc(m.body)}</span><button class="abtn warn" data-del>Delete</button></div>`).join('')
+      : '<p class="admin-note">No messages.</p>';
+  }
+  $('adminMsgs').addEventListener('click', e => {
+    const btn = e.target.closest('[data-del]');
+    if (!btn) return;
+    const raw = btn.closest('[data-mid]').dataset.mid;
+    const id = chatMessages?.find(m => String(m.id) === raw)?.id;
+    if (id == null) return;
+    if (confirmed(btn, 'Delete?')) adminDo('Message deleted.', () => backend.admin.deleteMessage(id));
+  });
+  $('clearChat').addEventListener('click', e => {
+    if (confirmed(e.currentTarget, 'Delete all?')) adminDo('All messages deleted.', () => backend.admin.clearChat());
+  });
+
+  $('adminBtn').addEventListener('click', openAdmin);
+  $('adminClose').addEventListener('click', () => { $('adminModal').hidden = true; });
+  $('adminModal').addEventListener('keydown', e => { if (e.key === 'Escape') $('adminModal').hidden = true; });
+  document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => showTab(t.dataset.tab)));
+  $('adminLock').addEventListener('submit', async e => {
+    e.preventDefault();
+    const err = $('adminLockErr');
+    if (!backend.admin?.ready) { err.textContent = 'The admin part of the database setup has not been run yet.'; return; }
+    $('adminUnlock').disabled = true;
+    err.textContent = '';
+    try {
+      if (await backend.verifyPassword($('adminPass').value)) {
+        adminUnlocked = true;
+        $('adminLock').hidden = true;
+        $('adminPanel').hidden = false;
+        showTab('players');
+      } else err.textContent = 'Wrong password.';
+    } catch {
+      err.textContent = 'Could not check the password. Try again.';
+    }
+    $('adminPass').value = '';
+    $('adminUnlock').disabled = false;
   });
 
   let signUpMode = false;
@@ -2640,7 +3179,8 @@ details.ach { margin-top: 10px; }
       if (signUpMode) await createAccount(name, pw);
       else {
         const found = await backend.signIn(name, pw);
-        if (found) enterGame(found);
+        if (found?.doc?.banned) { await backend.signOut(); err.textContent = 'This account is blocked. Ask an admin.'; }
+        else if (found) enterGame(found);
         else err.textContent = 'Wrong username or password.';
       }
     } catch {
@@ -2697,14 +3237,15 @@ details.ach { margin-top: 10px; }
       $('loginNote').textContent = 'The account server could not be reached, so this copy keeps accounts in this browser only.';
       backend = hashedAccounts(localStore());
     }
+    await backend.watchSettings(applySettings);
     backend.watch(onPlayers);
     startChat();
     $('loginBtn').disabled = false;
-    $('modeSwitch').hidden = !backend.canSignUp;
+    $('modeSwitch').hidden = !(backend.canSignUp && settings.signupsOpen);
     setMode(false);
     if (backend.kind === 'local' && !$('loginNote').textContent) $('loginNote').textContent = 'Offline copy: accounts and scores are kept in this browser only.';
     const resumed = await backend.resume().catch(() => null);
-    if (resumed) enterGame(resumed);
+    if (resumed && !resumed.doc.banned) enterGame(resumed);
   })();
 })();
 </script>
