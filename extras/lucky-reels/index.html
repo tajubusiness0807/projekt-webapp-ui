@@ -135,10 +135,13 @@ body {
   background: var(--lose);
 }
 .reel.spinning .strip { filter: blur(1.2px); }
-.reel-ctl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-.reel-ctl .ctl-note { grid-column: 1 / -1; text-align: center; font-size: 12px; color: var(--muted); }
-.reel-ctl .col { display: grid; gap: 4px; }
-.reel-ctl button { padding: 7px 4px; background: var(--chrome); font-size: 12px; font-weight: 600; }
+.reel-ctl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; height: 30px; margin-top: -6px; }
+/* The strip keeps its space when nothing is offered, so offering hold or nudge doesn't shift the cabinet. */
+.reel-ctl[hidden] { display: grid !important; visibility: hidden; }
+.reel-ctl .ctl-note { display: none; }
+.reel-ctl .col { display: flex; gap: 4px; }
+.reel-ctl button { flex: 1; min-width: 0; padding: 0 4px; background: var(--chrome); font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.reel-ctl button[hidden] { display: none !important; }
 .reel-ctl .hold.on { background: var(--lose); color: var(--fg); }
 .reel-ctl .nudge { background: var(--accent); }
 .reel.star { box-shadow: inset 0 0 0 3px var(--bonus); }
@@ -198,7 +201,20 @@ body {
 .readout div { background: var(--panel); border-radius: 8px; padding: 8px 10px; display: grid; gap: 2px; min-width: 0; }
 .label { font-family: var(--font-body); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
 .readout output { font-size: 20px; font-weight: 600; color: var(--accent); overflow-wrap: anywhere; }
-.message { min-height: 22px; text-align: center; font-weight: 600; margin: 0; }
+/* Always two lines tall, so a longer message never pushes the controls below it around. */
+.message {
+  display: flex; align-items: center; justify-content: center;
+  height: 36px;
+  margin: 0;
+  overflow: hidden;
+  text-align: center;
+  text-wrap: balance;
+  font-weight: 600;
+  line-height: 18px;
+}
+.message.fade { animation: msgIn 0.25s ease-out; }
+@keyframes msgIn { from { opacity: 0; transform: translateY(3px); } }
+@media (prefers-reduced-motion: reduce) { .message.fade { animation: none; } }
 .message.win { color: var(--win); }
 .message.lose { color: var(--muted); }
 .message.hot { color: var(--accent); }
@@ -263,7 +279,7 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 .auto { padding: 0 16px; background: var(--chrome); font-weight: 600; box-shadow: 0 5px 0 #8c7d6a; }
 .auto.running { background: var(--lose); }
 .boosts { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
-.boosts:empty { display: none; }
+.boosts { min-height: 24px; align-items: center; }
 .boost-chip {
   font-size: 12px; font-weight: 600;
   padding: 4px 10px;
@@ -996,9 +1012,9 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     </div>
     <div class="reel-ctl" id="reelCtl" hidden>
       <div class="ctl-note" id="ctlNote"></div>
-      <div class="col"><button class="hold" data-i="0">Hold</button><button class="nudge" data-i="0">▼ Nudge</button></div>
-      <div class="col"><button class="hold" data-i="1">Hold</button><button class="nudge" data-i="1">▼ Nudge</button></div>
-      <div class="col"><button class="hold" data-i="2">Hold</button><button class="nudge" data-i="2">▼ Nudge</button></div>
+      <div class="col"><button class="hold" data-i="0">Hold</button><button class="nudge" data-i="0" aria-label="Nudge reel 1 down">▼ Nudge</button></div>
+      <div class="col"><button class="hold" data-i="1">Hold</button><button class="nudge" data-i="1" aria-label="Nudge reel 2 down">▼ Nudge</button></div>
+      <div class="col"><button class="hold" data-i="2">Hold</button><button class="nudge" data-i="2" aria-label="Nudge reel 3 down">▼ Nudge</button></div>
     </div>
     <div class="tier" id="tier" role="status" hidden><div class="tier-title" id="tierTitle"></div><div class="tier-sub" id="tierSub"></div></div>
 
@@ -1687,10 +1703,14 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     else syms.forEach((s, i) => s === 'cherry' && reels[i].classList.add('win'));
   }
 
-  function say(text, kind = '') {
-    $('message').textContent = text;
-    $('message').className = 'message ' + kind;
+  // Fade a message in only when its text changes; repeated calls with the same text stay still.
+  function showMessage(el, text, kind) {
+    const changed = el.textContent !== text;
+    el.textContent = text;
+    el.className = 'message ' + kind;
+    if (changed) { void el.offsetWidth; el.classList.add('fade'); }
   }
+  function say(text, kind = '') { showMessage($('message'), text, kind); }
 
   function gainXp(n) {
     state.xp += n;
@@ -2010,7 +2030,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
   const bjHand = () => { const r = bjRound(); return r?.phase === 'player' ? r.hands[r.active] : null; };
   const bjWait = ms => sleep(reduceMotion ? 0 : ms);
   const bjLabel = cards => { const t = bjTotal(cards); return t.soft && t.total < 21 ? `${t.total - 10} / ${t.total}` : String(t.total); };
-  function bjSay(text, kind = '') { $('bjMsg').textContent = text; $('bjMsg').className = 'message ' + kind; }
+  function bjSay(text, kind = '') { showMessage($('bjMsg'), text, kind); }
 
   function bjCard(c, hidden) {
     const el = document.createElement('div');
@@ -2806,7 +2826,10 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
       b.textContent = held[i] ? 'Held' : 'Hold';
       b.disabled = !held[i] && heldCount >= 2;
     });
-    document.querySelectorAll('.reel-ctl .nudge').forEach(b => { b.hidden = !canNudge; });
+    document.querySelectorAll('.reel-ctl .nudge').forEach(b => {
+      b.hidden = !canNudge;
+      b.textContent = holdOffer ? `▼ ${state.nudges}` : `▼ Nudge (${state.nudges})`;
+    });
     $('ctlNote').textContent = [holdOffer && 'Hold up to two reels for the next spin', canNudge && `${state.nudges} nudge${state.nudges > 1 ? 's' : ''} left`].filter(Boolean).join(' · ');
     if (!busy) reels.forEach((r, i) => r.classList.toggle('held', held[i]));
     const g = $('gamble');
