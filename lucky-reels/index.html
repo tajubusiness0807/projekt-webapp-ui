@@ -1140,9 +1140,9 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
 
   // Boosts are armed for the next spin and charged as a multiple of the bet when it starts.
   const GOODIES = [
-    { id: 'horseshoe', kind: 'level', max: 3, name: 'Lucky Horseshoe', desc: 'Adds one more 7 to every reel. Stack up to three.', price: () => 2000 * 3 ** state.owned.horseshoe },
-    { id: 'goldCherry', kind: 'perm', name: 'Golden Cherries', desc: 'Every cherry win pays double.', price: () => 1500 },
-    { id: 'piggy', kind: 'perm', name: 'Piggy Bank', desc: 'Get 10% of your bet back on every losing spin.', price: () => 3000 },
+    { id: 'horseshoe', kind: 'level', max: 3, name: 'Lucky Horseshoe', desc: 'Three sevens pay 25× more per level. Stack up to three.', price: () => 2000 * 3 ** state.owned.horseshoe },
+    { id: 'goldCherry', kind: 'perm', name: 'Golden Cherries', desc: 'Three cherries pay 5.5× instead of 4×.', price: () => 1500 },
+    { id: 'piggy', kind: 'perm', name: 'Piggy Bank', desc: 'Get 2% of your bet back on every losing spin.', price: () => 3000 },
     { id: 'autospin', kind: 'perm', name: 'Auto-Spin Lever', desc: 'Unlocks Auto ×10: ten spins in a row.', price: () => 1000 },
     { id: 'gold', kind: 'perm', name: 'Gold Cabinet', desc: 'Plates the machine in gold. Purely for show.', price: () => 25000 },
   ];
@@ -1210,7 +1210,11 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     return buf[0] % max;
   }
 
-  const weights = () => ({ ...BASE_WEIGHTS, seven: BASE_WEIGHTS.seven + state.owned.horseshoe });
+  // Goodie strengths, tuned so owning all of them lands just under a 100% payout rate.
+  const HORSESHOE_JACKPOT = 25;
+  const GOLD_CHERRY_TRIPLE = 5.5;
+  const PIGGY_REFUND = 0.02;
+  const weights = () => ({ ...BASE_WEIGHTS });
 
   function buildReels() {
     STRIP = Object.entries(weights()).flatMap(([s, n]) => Array(n).fill(s));
@@ -1242,10 +1246,11 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     let m = 0;
     const cherries = [a, b, c].filter(s => s === 'cherry').length;
     const line = lineSymbol(a, b, c);
-    if (line) m = PAY3[line];
+    if (line === 'seven') m = PAY3.seven + HORSESHOE_JACKPOT * state.owned.horseshoe;
+    else if (line === 'cherry' && state.owned.goldCherry) m = GOLD_CHERRY_TRIPLE;
+    else if (line) m = PAY3[line];
     else if (cherries === 2) m = 2;
     else if (a === 'cherry') m = 1;
-    if (state.owned.goldCherry && cherries && m) m *= 2;
     return m;
   }
 
@@ -1259,7 +1264,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
       ev += p * m;
       if (!m) lose += p;
     }
-    return ev + (state.owned.piggy ? lose * 0.1 : 0);
+    return ev + (state.owned.piggy ? lose * PIGGY_REFUND : 0);
   }
 
   const spinCost = () => state.bet;
@@ -1589,7 +1594,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     const mult = base * (free ? FREE_MULT : 1) * sMult * settings.winMultiplier;
     const win = Math.min(MAX, Math.floor(mult * bet));
     const ratio = win / bet;
-    const refund = !base && state.owned.piggy ? Math.floor(bet * 0.1) : 0;
+    const refund = !base && state.owned.piggy ? Math.floor(bet * PIGGY_REFUND) : 0;
     state.credits = Math.min(MAX, state.credits + win + refund);
     state.lastWin = win;
     state.best = Math.max(state.best, win);
