@@ -344,7 +344,7 @@ body.cos-goldBacks .card.back { background: repeating-linear-gradient(45deg, #e9
 .message.bonus { color: var(--bonus); }
 
 .meters { display: grid; gap: 8px; background: var(--panel); border-radius: 10px; padding: 10px 12px; }
-.meter { display: grid; grid-template-columns: 86px minmax(0, 1fr) 78px; gap: 10px; align-items: center; }
+.meter { display: grid; grid-template-columns: 86px minmax(0, 1fr) minmax(78px, auto); gap: 10px; align-items: center; }
 .meter-val { font-family: var(--font-mono); font-size: 12px; color: var(--fg); text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .meter .label b { color: var(--accent); font-family: var(--font-mono); font-size: 12px; letter-spacing: 0; }
 .bar { height: 8px; border-radius: 4px; background: var(--track); overflow: hidden; }
@@ -1648,6 +1648,10 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
 .lang-toggle.floating { display: none; }
 body:not(.signed-in) .lang-toggle.floating { display: flex; }
 @media (max-width: 600px) {
+  .meter { grid-template-columns: 88px minmax(0, 1fr) auto; gap: 8px; }
+  .meter .label { letter-spacing: 0.06em; font-size: 10px; white-space: nowrap; }
+  .meter .meter-val { font-size: 11px; }
+  .xp-unit { display: none; }
   .ach-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
   .ach-grid li { padding: 8px; gap: 2px; }
   .ach-grid li .mark { position: static; width: 22px; height: 22px; font-size: 11px; margin-bottom: 2px; }
@@ -5799,7 +5803,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     $('lvl').textContent = state.level;
     $('xpFill').style.width = Math.min(100, (state.xp / need) * 100) + '%';
     const maxed = state.level >= MAX_LEVEL;
-    $('xpVal').textContent = maxed ? 'MAX' : `${fmt(state.xp)} / ${fmt(need)} XP`;
+    // The unit hides on narrow screens so big numbers still fit next to the bar.
+    $('xpVal').innerHTML = maxed ? 'MAX' : `${fmt(state.xp)} / ${fmt(need)}<span class="xp-unit"> XP</span>`;
     $('xpVal').classList.toggle('maxed', maxed);
     $('prestigeBtn').hidden = !maxed;
     [...starPips.children].forEach((p, i) => p.classList.toggle('on', i < state.stars));
