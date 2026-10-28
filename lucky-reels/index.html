@@ -449,7 +449,7 @@ details.paytable, details.bj-rules { background: var(--panel); border-radius: 10
 @media (max-width: 600px) { .back-btn { left: 10px; top: 10px; } }
 .gm { padding: 6px 16px; border-radius: 999px; background: var(--panel); color: var(--muted); font-weight: 600; font-size: 13px; }
 .gm[aria-selected="true"] { background: var(--accent); color: var(--ink); }
-.cabinet:not([data-mode="bj"]) .bj, .cabinet:not([data-mode="rl"]) .rl, .cabinet:not([data-mode="pk"]) .pk, .cabinet:not([data-mode="pl"]) .pl { display: none; }
+.cabinet:not([data-mode="bj"]) .bj, .cabinet:not([data-mode="rl"]) .rl, .cabinet:not([data-mode="pk"]) .pk, .cabinet:not([data-mode="pl"]) .pl, .cabinet:not([data-mode="ck"]) .ck { display: none; }
 .cabinet:not([data-mode="slots"]) :is(#window, #reelCtl, #tier, #message, .meters, .bet, .spin-row, #boosts, details.paytable) { display: none !important; }
 body.wide .layout { max-width: 980px; grid-template-columns: minmax(0, 1fr); }
 body.wide .account-bar { max-width: 980px; }
@@ -586,6 +586,51 @@ body.wide .account-bar { max-width: 980px; }
 @media (max-width: 420px) { .gm { padding: 6px 11px; font-size: 12px; } }
 
 /* Roulette */
+/* Chicken */
+.ck { display: grid; gap: 12px; --lane: 76px; --road-h: 290px; }
+.ck-view { position: relative; overflow: hidden; height: var(--road-h); border-radius: 16px; border: 3px solid #2a2530; box-shadow: inset 0 8px 30px #000a; background: #2f2b35; }
+.ck-track { position: absolute; inset: 0 auto 0 0; display: flex; height: 100%; transition: transform 0.45s cubic-bezier(.3, .8, .3, 1); }
+.ck-col { position: relative; flex: none; width: var(--lane); height: 100%; }
+.ck-side { width: calc(var(--lane) * 1.1); background: repeating-linear-gradient(0deg, #6e6a62 0 22px, #5d5952 22px 24px), #67635b; box-shadow: inset -6px 0 0 #8d887d; }
+.ck-side.end { box-shadow: inset 6px 0 0 #8d887d; background: repeating-linear-gradient(0deg, #4f8a3c 0 22px, #457a35 22px 24px); }
+.ck-side.end::after { content: "🏁"; position: absolute; top: 12px; left: 50%; translate: -50% 0; font-size: 24px; }
+.ck-lane { background: linear-gradient(90deg, transparent calc(100% - 3px), transparent 0), #38343f; }
+.ck-lane + .ck-lane::before { content: ""; position: absolute; left: -1px; top: 0; bottom: 0; width: 2px; background: repeating-linear-gradient(#f6efe388 0 18px, transparent 18px 34px); }
+.ck-mult { position: absolute; left: 50%; bottom: 16px; translate: -50% 0; z-index: 1; min-width: 54px; padding: 6px 4px; border-radius: 10px; text-align: center; font: 700 13px var(--font-mono); color: #f6efe3; background: #ffffff14; border: 2px dashed #ffffff33; transition: background 0.3s, color 0.3s, transform 0.3s; }
+.ck-lane.next .ck-mult { border-color: var(--accent); color: var(--accent-hi); animation: ckPulse 1.1s ease-in-out infinite; }
+@keyframes ckPulse { 50% { transform: scale(1.08); box-shadow: 0 0 16px #e9a23b66; } }
+.ck-lane.safe .ck-mult { background: var(--accent); color: var(--ink); border: 2px solid #fff2c4; }
+.ck-lane.safe::after { content: ""; position: absolute; left: 8px; right: 8px; top: 18px; height: 14px; border-radius: 4px; background: repeating-linear-gradient(-45deg, #e0414a 0 8px, #f6efe3 8px 16px); box-shadow: 0 3px 0 #0006; animation: ckBar 0.35s cubic-bezier(.2, 1.6, .4, 1); }
+@keyframes ckBar { from { transform: translateY(-40px) scaleX(0.4); opacity: 0; } }
+.ck-lane.dead .ck-mult { background: var(--lose); color: #fff; border-color: #fff; }
+.ck-car { position: absolute; left: 50%; top: 0; z-index: 2; width: 42px; height: 70px; margin-left: -21px; animation: ckDrive var(--dur, 1.6s) linear forwards; pointer-events: none; }
+.ck-car svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 6px 4px #0008); }
+.ck-car.gone { transition: opacity 0.2s; opacity: 0; }
+@keyframes ckDrive { from { transform: translateY(-90px); } to { transform: translateY(calc(var(--road-h) + 20px)); } }
+.ck-car.killer { animation: ckKill 0.36s cubic-bezier(.55, 0, 1, .45) forwards; }
+@keyframes ckKill { from { transform: translateY(-90px); } to { transform: translateY(calc(var(--road-h) / 2 - 50px)); } }
+.ck-chicken { position: absolute; top: 50%; z-index: 3; width: 56px; height: 56px; margin: -40px 0 0 -28px; transition: left 0.42s cubic-bezier(.4, 0, .3, 1); }
+.ck-chicken svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 6px 3px #0007); transform-origin: 50% 90%; animation: ckIdle 1.4s ease-in-out infinite; }
+@keyframes ckIdle { 50% { transform: translateY(-2px) rotate(-3deg); } }
+.ck-chicken.hop svg { animation: ckHop 0.42s cubic-bezier(.3, .7, .4, 1); }
+@keyframes ckHop { 0% { transform: scale(1.1, 0.85); } 45% { transform: translateY(-34px) scale(0.92, 1.1) rotate(8deg); } 85% { transform: translateY(0) scale(1.12, 0.86); } 100% { transform: none; } }
+.ck-chicken.splat svg { animation: ckSplat 0.5s ease-out forwards; }
+@keyframes ckSplat { 30% { transform: scale(1.4, 0.3) rotate(-10deg); } 100% { transform: translateY(12px) scale(1.5, 0.2) rotate(-14deg); filter: grayscale(0.6) brightness(0.8); } }
+.ck-chicken.win svg { animation: ckWin 0.7s ease-in-out 3; }
+@keyframes ckWin { 25% { transform: translateY(-20px) rotate(-12deg); } 50% { transform: none; } 75% { transform: translateY(-14px) rotate(12deg); } }
+.ck-view.shake { animation: mineShake 0.4s; }
+.ck-btns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+.ck-btns .spin:only-child, .ck-btns .spin.solo { grid-column: 1 / -1; }
+.ck-btns .spin { font-size: 22px; }
+.ck-cash { padding: 10px; font-size: 15px; background: var(--win); line-height: 1.2; }
+.ck-cash small { display: block; font-size: 11px; opacity: 0.8; }
+.gp-ck .gp-car { transition: transform 0.4s; }
+.game-pick:hover .gp-ck .gp-car, .game-pick:focus-visible .gp-ck .gp-car { animation: gpCar 0.9s linear infinite; }
+@keyframes gpCar { from { transform: translateY(-30px); } to { transform: translateY(70px); } }
+.game-pick:hover .gp-ck .gp-chicken, .game-pick:focus-visible .gp-chicken { animation: gpChick 0.6s ease-in-out infinite alternate; }
+@keyframes gpChick { to { transform: translate(28px, 52px) scale(.62); } }
+@media (max-width: 600px) { .ck { --lane: 64px; --road-h: 240px; } .ck-mult { min-width: 48px; font-size: 12px; } .ck-chicken { width: 48px; height: 48px; margin: -34px 0 0 -24px; } .ck-car { width: 36px; height: 60px; margin-left: -18px; } }
+@media (prefers-reduced-motion: reduce) { .ck-chicken svg, .ck-lane.next .ck-mult, .ck-chicken.hop svg { animation: none; } .ck-track { transition: none; } }
 /* Plinko */
 .pl { display: grid; gap: 12px; }
 .pl-board-wrap { position: relative; border-radius: 16px; padding: 6px 6px 2px; background: radial-gradient(ellipse at 50% 0%, #2c1f3d, #160f1c 70%); border: 2px solid #3a2a4a; box-shadow: inset 0 10px 40px #0008; }
@@ -1768,7 +1813,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         <span class="gp-go">Play</span>
       </button>
       <button class="game-pick" type="button" data-mode="pl">
-        <span class="gp-online">New</span>
         <svg class="gp-pl" viewBox="0 0 140 130" aria-hidden="true">
           <g fill="#f6efe3">
             <circle cx="70" cy="30" r="3.2"/>
@@ -1786,6 +1830,18 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         </svg>
         <span class="gp-title">Plinko</span>
         <span class="gp-desc">Drop balls through the pins and hope for the edges.</span>
+        <span class="gp-go">Play</span>
+      </button>
+      <button class="game-pick" type="button" data-mode="ck">
+        <span class="gp-online">New</span>
+        <svg class="gp-ck" viewBox="0 0 140 130" aria-hidden="true">
+          <rect x="8" y="20" width="124" height="90" rx="10" fill="#3a3640"/>
+          <path d="M38 24v82M70 24v82M102 24v82" stroke="#f6efe3" stroke-width="2.5" stroke-dasharray="9 8" opacity=".55"/>
+          <g class="gp-car"><rect x="77" y="28" width="18" height="30" rx="5" fill="#e0414a"/><rect x="80" y="34" width="12" height="7" rx="2" fill="#bfe8ff"/><rect x="80" y="47" width="12" height="5" rx="2" fill="#bfe8ff"/></g>
+          <g class="gp-chicken" transform="translate(28 60) scale(.62)"><g class="ck-legs"><path d="M27 50v8M37 50v8M24 58h6M34 58h6" stroke="#f08a3c" stroke-width="3" stroke-linecap="round"/></g><ellipse cx="32" cy="38" rx="17" ry="15" fill="#fff"/><path d="M16 36q-6-2-8 3 5 4 10 1z" fill="#ececec"/><circle cx="38" cy="20" r="11" fill="#fff"/><path d="M33 9q2-6 5-2 2-5 5 0 4-2 3 4z" fill="#e0414a"/><path d="M48 20l8 3-8 3z" fill="#f3a73b"/><path d="M45 27q2 5-2 6-2-3 2-6z" fill="#e0414a"/><circle cx="41" cy="18" r="2.2" fill="#1d1714"/><circle cx="41.7" cy="17.3" r=".7" fill="#fff"/><path d="M22 36q8 8 18 0" fill="none" stroke="#e5e5e5" stroke-width="2.5" stroke-linecap="round"/></g>
+        </svg>
+        <span class="gp-title">Chicken</span>
+        <span class="gp-desc">Hop across the road. Every lane pays more, every car could end it.</span>
         <span class="gp-go">Play</span>
       </button>
       <button class="game-pick" type="button" data-mode="pk">
@@ -1900,6 +1956,30 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       <details class="bj-rules">
         <summary>Plinko rules</summary>
         <p class="note">Drop a ball from the top: at every row of pins it bounces left or right, and the slot it lands in multiplies your bet. The edges pay the most but are hit the least. Higher risk makes the edges bigger and the middle smaller; more rows give the ball more room to wander. Over the long run about 96% of bets come back. You can drop several balls at once. Space drops a ball.</p>
+      </details>
+    </section>
+
+    <section class="ck" id="ck" aria-label="Chicken">
+      <div class="ck-view" id="ckView">
+        <div class="ck-track" id="ckTrack"></div>
+      </div>
+      <p class="message" id="ckMsg" role="status" aria-live="polite">Pick a bet and help the chicken cross.</p>
+      <div class="pl-seg ck-diff" id="ckDiff" role="group" aria-label="Difficulty">
+        <button type="button" data-diff="easy">Easy</button><button type="button" data-diff="medium">Medium</button><button type="button" data-diff="hard">Hard</button>
+      </div>
+      <div class="pl-bet">
+        <button class="chip-btn" type="button" data-ckb="half" aria-label="Halve bet">½</button>
+        <input id="ckBet" type="number" min="1" step="1" inputmode="numeric" aria-label="Bet per round">
+        <button class="chip-btn" type="button" data-ckb="double" aria-label="Double bet">×2</button>
+        <button class="chip-btn" type="button" data-ckb="max">Max</button>
+      </div>
+      <div class="ck-btns">
+        <button class="spin" id="ckGo" type="button">Start</button>
+        <button class="chip-btn ck-cash" id="ckCash" type="button" hidden>Cash out</button>
+      </div>
+      <details class="bj-rules">
+        <summary>Chicken rules</summary>
+        <p class="note">Put down a bet and send the chicken across ten lanes of traffic, one hop at a time. Every lane it survives raises the multiplier; cash out whenever you like, or risk the next hop. Get hit and the bet is gone. Easy: about 1 in 12 hops ends badly, Medium about 1 in 6, Hard about 1 in 4, and the payouts grow to match. Over the long run about 96% of bets come back, whenever you cash out. Keys: Space hops, C cashes out.</p>
       </details>
     </section>
 
@@ -2388,7 +2468,16 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'The chat is not set up yet. Ask the person who runs the game to run the chat setup.': 'Der Chat ist noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, die Chat-Einrichtung auszuführen.',
     'Private chats are not set up yet. Ask the person who runs the game to run the private-chat setup.': 'Private Chats sind noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, sie einzurichten.',
     'The message did not go through. Try again.': 'Die Nachricht ging nicht durch. Versuch es nochmal.', 'Chat is switched off for players': 'Der Chat ist für Spieler abgeschaltet',
-    'Someone': 'Jemand', 'Actions': 'Aktionen', 'Night mode': 'Nachtmodus', 'Search players…': 'Spieler suchen…', 'Search players': 'Spieler suchen',
+    'Someone': 'Jemand', 'Actions': 'Aktionen',
+    'Chicken': 'Chicken', 'Bet per round': 'Einsatz pro Runde', 'Chicken rules': 'Chicken-Regeln', 'Difficulty': 'Schwierigkeit', 'Easy': 'Leicht', 'Hard': 'Schwer',
+    'Start': 'Start', 'Hop ›': 'Hüpf ›', 'Next lane ›': 'Weiter ›', 'Cash out': 'Auszahlen',
+    'Hop across the road. Every lane pays more, every car could end it.': 'Hüpf über die Straße. Jede Spur zahlt mehr, jedes Auto kann alles beenden.',
+    'Pick a bet and help the chicken cross.': 'Wähl einen Einsatz und hilf dem Huhn über die Straße.', 'Off we go! Hop into the first lane.': 'Los geht’s! Hüpf in die erste Spur.',
+    'Hop into the first lane.': 'Hüpf in die erste Spur.', 'Splat! Hit in the very first lane.': 'Platsch! Gleich in der ersten Spur erwischt.',
+    'Chicken · cross the road · play credits': 'Chicken · über die Straße · Spiel-Credits',
+    'Why Did the Chicken…': 'Warum lief das Huhn…', 'Get the chicken across all ten lanes.': 'Bring das Huhn über alle zehn Spuren.',
+    'Put down a bet and send the chicken across ten lanes of traffic, one hop at a time. Every lane it survives raises the multiplier; cash out whenever you like, or risk the next hop. Get hit and the bet is gone. Easy: about 1 in 12 hops ends badly, Medium about 1 in 6, Hard about 1 in 4, and the payouts grow to match. Over the long run about 96% of bets come back, whenever you cash out. Keys: Space hops, C cashes out.':
+      'Setz einen Einsatz und schick das Huhn Hüpfer für Hüpfer über zehn befahrene Spuren. Jede überlebte Spur erhöht den Multiplikator; zahl aus, wann du willst, oder riskier den nächsten Hüpfer. Wird es erwischt, ist der Einsatz weg. Leicht: etwa jeder 12. Hüpfer geht schief, Mittel etwa jeder 6., Schwer etwa jeder 4., und die Auszahlungen steigen entsprechend. Auf Dauer kommen etwa 96 % der Einsätze zurück, egal wann du auszahlst. Tasten: Leertaste hüpft, C zahlt aus.', 'Night mode': 'Nachtmodus', 'Search players…': 'Spieler suchen…', 'Search players': 'Spieler suchen',
     'Sort players': 'Spieler sortieren', 'A–Z': 'A–Z', 'Online first': 'Online zuerst', 'Offline': 'Offline', 'Help with gambling behaviour disorders': 'Hilfe bei Verhaltensstörungen bei Glücksspiel', 'Level changed': 'Level geändert',
     '★ Max level reached – go Prestige': '★ Max-Level erreicht – Prestige starten', 'Max level!': 'Max-Level!', 'You can go Prestige now: open your profile.': 'Du kannst jetzt Prestige machen: Öffne dein Profil.',
     'Prestige': 'Prestige', 'Go Prestige?': 'Prestige starten?', 'Not yet': 'Noch nicht', 'Prestige!': 'Prestige!', 'Back to the game': 'Zurück zum Spiel',
@@ -2485,6 +2574,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
+    ['Lane {a} made it! ×{b} · cash out {c} or keep going.', 'Spur {a} geschafft! ×{b} · {c} auszahlen oder weiter.'], ['Splat! Hit in lane {a}. The {b} is gone.', 'Platsch! In Spur {a} erwischt. Die {b} sind weg.'],
+    ['Made it across! ×{a} · +{b}', 'Geschafft, ganz rüber! ×{a} · +{b}'], ['Cashed out at lane {a}: ×{b} · +{c}', 'In Spur {a} ausgezahlt: ×{b} · +{c}'],
+    ['Back in lane {a}. Cash out or keep going.', 'Zurück in Spur {a}. Auszahlen oder weiter.'], ['Cash out{a}', 'Auszahlen{a}'],
     ['{a} players', '{a} Spieler'], ['Best win {a}', 'Bester Gewinn {a}'], ['{a} × jackpot', '{a} × Jackpot'],
     ['Level for {a}', 'Level für {a}'], ['Enter a level from 1 to {a}.', 'Gib ein Level von 1 bis {a} ein.'], ['{a} is now level {b}.', '{a} ist jetzt Level {b}.'], ['An admin set you to level {a}.', 'Ein Admin hat dich auf Level {a} gesetzt.'],
     ['Go Prestige {a}?', 'Prestige {a} starten?'], ['Prestige {a}!', 'Prestige {a}!'],
@@ -2818,6 +2910,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     { id: 'tasks', name: 'Taskmaster', desc: 'Complete 10 missions.', reward: 3000, test: () => state.missionsDone >= 10 },
     { id: 'shark', name: 'Card Shark', desc: 'Win a poker pot.', reward: 300, test: c => c?.pokerWin },
     { id: 'royalty', name: 'Royalty', desc: 'Win a poker pot with a straight flush.', reward: 2000, test: c => c?.pokerSF },
+    { id: 'chicken', name: 'Why Did the Chicken…', desc: 'Get the chicken across all ten lanes.', reward: 600, test: c => c?.chickenCrossed },
     { id: 'plinko', name: 'Sky Drop', desc: 'Land a Plinko ball on 25× or more.', reward: 800, test: c => c?.plinkoMult >= 25 },
     { id: 'prestige', name: 'Prestigious', desc: 'Go Prestige for the first time.', reward: 2500, test: c => c?.prestige >= 1 },
     { id: 'miner', name: 'Gold Digger', desc: 'Come back from the gold mine.', reward: 100, test: c => c?.mined },
@@ -2844,6 +2937,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     mode: 'slots', bj: { shoe: [], round: null, bet: 0, lastBet: 0, hands: 0 },
     rl: { bets: {}, last: {}, history: [], spins: 0 },
     pl: { bet: 10, rows: 12, risk: 'medium', drops: 0, history: [], pending: [] },
+    ck: { bet: 10, diff: 'medium', games: 0, round: null },
     pk: { view: 'solo', solo: null, hands: 0, buyIn: 2000 },
   });
   const state = fresh();
@@ -2854,7 +2948,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const strips = reels.map(r => r.querySelector('.strip'));
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   // Secret code (↑ ↑ ↓ ↓ ← → ← → B A), for admins only. The next round in any game but poker is rigged:
-  // three sevens on the slots, a blackjack, zero in roulette, an outermost Plinko slot.
+  // three sevens on the slots, a blackjack, zero in roulette, an outermost Plinko slot, a chicken that makes it across.
   const SECRET = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
   let typed = [];
   let rigged = false;
@@ -4019,8 +4113,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     rl: 'Roulette · single zero · play credits',
     pk: "Texas Hold'em · solo or online · play credits",
     pl: 'Plinko · real bounces · play credits',
+    ck: 'Chicken · cross the road · play credits',
   };
-  const gameBusy = () => busy || bjBusy || rlBusy || (typeof pkBusy === 'function' && pkBusy()) || (typeof plBusy === 'function' && plBusy());
+  const gameBusy = () => busy || bjBusy || rlBusy || (typeof pkBusy === 'function' && pkBusy()) || (typeof plBusy === 'function' && plBusy()) || (typeof ckBusy === 'function' && ckBusy());
   function applyGameMode() {
     const bj = state.mode === 'bj';
     cabinet.dataset.mode = state.mode;
@@ -4029,6 +4124,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     $('marqueeSub').textContent = MODE_SUBS[state.mode];
     if (state.mode === 'rl') rlEnter();
     if (state.mode === 'pl' && typeof plEnter === 'function') plEnter();
+    if (state.mode === 'ck' && typeof ckEnter === 'function') ckEnter();
     if (state.mode === 'pk' && typeof pkEnter === 'function') pkEnter();
     if (bj) {
       renderBJTable(false);
@@ -4042,7 +4138,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     renderBroke();
     document.querySelectorAll('.game-pick').forEach(b => {
       b.querySelector('.gp-last')?.remove();
-      if (b.dataset.mode === state.mode && state.spins + state.bj.hands + state.rl.spins + state.pk.hands + state.pl.drops > 0) b.insertAdjacentHTML('afterbegin', '<span class="gp-last">Last played</span>');
+      if (b.dataset.mode === state.mode && state.spins + state.bj.hands + state.rl.spins + state.pk.hands + state.pl.drops + state.ck.games > 0) b.insertAdjacentHTML('afterbegin', '<span class="gp-last">Last played</span>');
     });
     $('lobby').hidden = false;
     document.querySelector(`.game-pick[data-mode="${state.mode}"]`)?.focus();
@@ -4053,7 +4149,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     $('lobby').hidden = true;
     sound.chime();
     render();
-    ({ bj: $('bjDeal'), rl: $('rlSpin'), slots: $('spin'), pk: $('pkSit'), pl: $('plDrop') }[state.mode])?.focus({ preventScroll: true });
+    ({ bj: $('bjDeal'), rl: $('rlSpin'), slots: $('spin'), pk: $('pkSit'), pl: $('plDrop'), ck: $('ckGo') }[state.mode])?.focus({ preventScroll: true });
   }));
 
   $('backBtn').addEventListener('click', () => {
@@ -4630,6 +4726,219 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     plDrop();
   });
   addEventListener('resize', () => { if (state.mode === 'pl') plResize(); });
+
+  // ---------- Chicken ----------
+  // Ten lanes. Each hop survives with probability s; after k lanes a cash-out pays 0.96 / s^k,
+  // so every stopping point returns 96% on average and no strategy beats the house.
+  const CK_LANES = 10, CK_EDGE = 0.96;
+  const CK_SURVIVE = { easy: 0.92, medium: 0.84, hard: 0.75 };
+  const ckMult = (k, diff = state.ck.diff) => k ? Math.floor((CK_EDGE / CK_SURVIVE[diff] ** k) * 100) / 100 : 1;
+  const CK_CAR_COLORS = ['#e0414a', '#3d7bd9', '#f3c94b', '#7fd18b', '#a77bff', '#f6efe3', '#f08a3c'];
+  const ckCarSvg = col => `<svg viewBox="0 0 42 70"><rect x="3" y="4" width="36" height="62" rx="10" fill="${col}" stroke="#0005" stroke-width="2"/><rect x="8" y="14" width="26" height="13" rx="4" fill="#bfe8ff"/><rect x="8" y="44" width="26" height="9" rx="3" fill="#9fcde8"/><rect x="6" y="60" width="8" height="4" rx="2" fill="#ffd35a"/><rect x="28" y="60" width="8" height="4" rx="2" fill="#ffd35a"/><rect x="1" y="16" width="3" height="10" rx="1.5" fill="#1d1714"/><rect x="38" y="16" width="3" height="10" rx="1.5" fill="#1d1714"/><rect x="1" y="46" width="3" height="10" rx="1.5" fill="#1d1714"/><rect x="38" y="46" width="3" height="10" rx="1.5" fill="#1d1714"/></svg>`;
+  const CK_CHICKEN = `<svg viewBox="0 0 64 64" aria-hidden="true"><g class="ck-legs"><path d="M27 50v8M37 50v8M24 58h6M34 58h6" stroke="#f08a3c" stroke-width="3" stroke-linecap="round"/></g><ellipse cx="32" cy="38" rx="17" ry="15" fill="#fff"/><path d="M16 36q-6-2-8 3 5 4 10 1z" fill="#ececec"/><circle cx="38" cy="20" r="11" fill="#fff"/><path d="M33 9q2-6 5-2 2-5 5 0 4-2 3 4z" fill="#e0414a"/><path d="M48 20l8 3-8 3z" fill="#f3a73b"/><path d="M45 27q2 5-2 6-2-3 2-6z" fill="#e0414a"/><circle cx="41" cy="18" r="2.2" fill="#1d1714"/><circle cx="41.7" cy="17.3" r=".7" fill="#fff"/><path d="M22 36q8 8 18 0" fill="none" stroke="#e5e5e5" stroke-width="2.5" stroke-linecap="round"/></svg>`;
+  let ckAnim = false, ckTraffic = 0, ckLastCar = [];
+  function ckBusy() { return ckAnim; }
+  function ckSay(text, kind = '') { showMessage($('ckMsg'), text, kind); }
+  const ckRound = () => state.ck.round;
+  // Build the road: start pavement, ten lanes with their multipliers, finish pavement, and the chicken.
+  function ckBuild() {
+    const r = ckRound(), diff = r ? r.diff : state.ck.diff;
+    const cols = [`<div class="ck-col ck-side"></div>`];
+    for (let k = 1; k <= CK_LANES; k++) cols.push(`<div class="ck-col ck-lane" data-k="${k}"><span class="ck-mult">${ckMult(k, diff).toFixed(2)}×</span></div>`);
+    cols.push(`<div class="ck-col ck-side end"></div>`);
+    $('ckTrack').innerHTML = cols.join('') + `<div class="ck-chicken" id="ckChicken">${CK_CHICKEN}</div>`;
+    ckLastCar = [];
+    ckPlace(false);
+  }
+  const ckLaneW = () => $('ckTrack').querySelector('.ck-lane')?.offsetWidth || 76;
+  const ckSideW = () => $('ckTrack').querySelector('.ck-side')?.offsetWidth || 84;
+  // Put the chicken in its lane, mark lanes it crossed, and slide the road so it stays in view.
+  function ckPlace(animate = true) {
+    const r = ckRound(), lane = r ? r.lane : 0;
+    const x = lane === 0 ? ckSideW() / 2 : ckSideW() + (lane - 0.5) * ckLaneW();
+    const ch = $('ckChicken');
+    if (!ch) return;
+    if (!animate) ch.style.transition = 'none';
+    ch.style.left = x + 'px';
+    if (!animate) { void ch.offsetWidth; ch.style.transition = ''; }
+    $('ckTrack').querySelectorAll('.ck-lane').forEach(el => {
+      const k = Number(el.dataset.k);
+      el.classList.toggle('safe', !!r && k <= lane);
+      el.classList.toggle('next', !!r && k === lane + 1);
+      el.classList.remove('dead');
+    });
+    const view = $('ckView').clientWidth, track = $('ckTrack').scrollWidth;
+    const off = Math.max(0, Math.min(track - view, x - view * 0.35));
+    if (!animate) $('ckTrack').style.transition = 'none';
+    $('ckTrack').style.transform = `translateX(${-off}px)`;
+    if (!animate) { void $('ckTrack').offsetWidth; $('ckTrack').style.transition = ''; }
+  }
+  function ckSpawn(lane, kind = '') {
+    const el = $('ckTrack').querySelector(`.ck-lane[data-k="${lane}"]`);
+    if (!el) return null;
+    const car = document.createElement('div');
+    car.className = 'ck-car ' + kind;
+    car.style.setProperty('--dur', (1.1 + Math.random() * 1.2).toFixed(2) + 's');
+    car.innerHTML = ckCarSvg(kind ? '#e0414a' : CK_CAR_COLORS[randInt(CK_CAR_COLORS.length)]);
+    if (!kind) car.addEventListener('animationend', () => car.remove());
+    el.append(car);
+    return car;
+  }
+  // Background traffic on the lanes ahead of the chicken.
+  function ckTrafficTick() {
+    if (state.mode !== 'ck' || document.hidden || !$('ckTrack').firstChild) return;
+    const r = ckRound(), lane = r ? r.lane : 0, now = performance.now();
+    for (let k = lane + 1; k <= CK_LANES; k++) {
+      if (r && k === lane + 1 && ckAnim) continue;
+      if (now - (ckLastCar[k] || 0) < 1300 || Math.random() > 0.22) continue;
+      ckLastCar[k] = now;
+      ckSpawn(k);
+    }
+  }
+  function ckClearLane(k) { $('ckTrack').querySelectorAll(`.ck-lane[data-k="${k}"] .ck-car`).forEach(c => { c.classList.add('gone'); setTimeout(() => c.remove(), 220); }); }
+
+  async function ckGo() {
+    if (!account || ckAnim) return;
+    let r = ckRound();
+    if (!r) {
+      if (settings.maintenance && !account.isAdmin) { ckSay('The game is paused by an admin. Try again later.', 'lose'); return; }
+      const bet = Math.floor(Number($('ckBet').value));
+      if (!(bet >= 1)) { ckSay('Enter a bet of at least 1.', 'lose'); return; }
+      if (settings.maxBet && bet > settings.maxBet) { ckSay(`The highest bet is ${fmt(settings.maxBet)}.`, 'lose'); return; }
+      if (bet > state.credits) { ckSay(`Not enough credits for a ${fmt(bet)} bet.`, 'lose'); return; }
+      state.credits -= bet;
+      state.ck.bet = bet;
+      state.ck.round = r = { bet, diff: state.ck.diff, lane: 0, rigged: takeRigged() };
+      ckBuild();
+      sound.chip();
+      ckSay('Off we go! Hop into the first lane.', 'hot');
+      render();
+    }
+    // One hop: decided now, with the lane's survival odds.
+    ckAnim = true;
+    renderCKControls();
+    const next = r.lane + 1;
+    const hit = !r.rigged && randInt(10000) >= CK_SURVIVE[r.diff] * 10000;
+    ckClearLane(next);
+    r.lane = next;
+    const ch = $('ckChicken');
+    ch.classList.remove('hop'); void ch.offsetWidth; ch.classList.add('hop');
+    sound.tone(520, 0, 0.06, 'square', 0.04); sound.tone(780, 0.08, 0.06, 'square', 0.04);
+    if (hit) {
+      // Show the hop into the lane, then the car that ends it.
+      const x = ckSideW() + (next - 0.5) * ckLaneW();
+      ch.style.left = x + 'px';
+      await sleep(reduceMotion ? 0 : 380);
+      ckSpawn(next, 'killer');
+      sound.tone(300, 0, 0.3, 'sawtooth', 0.04);
+      await sleep(reduceMotion ? 0 : 340);
+      ch.classList.remove('hop'); ch.classList.add('splat');
+      $('ckTrack').querySelector(`.ck-lane[data-k="${next}"]`)?.classList.add('dead');
+      $('ckView').classList.remove('shake'); void $('ckView').offsetWidth; $('ckView').classList.add('shake');
+      sound.boom();
+      const cr = ch.getBoundingClientRect();
+      for (let k = 0; k < 26; k++) fxTop.confetti(['#ffffff', '#f6efe3', '#f3a73b']);
+      fxTop.burst(cr.left + cr.width / 2, cr.top + cr.height / 2, 40, 30, 6, false);
+      state.ck.round = null;
+      state.ck.games++;
+      state.lastWin = 0;
+      gainXp(3 + next);
+      ckSay(next === 1 ? 'Splat! Hit in the very first lane.' : `Splat! Hit in lane ${next}. The ${fmt(r.bet)} is gone.`, 'lose');
+      await sleep(reduceMotion ? 0 : 1300);
+      ckAnim = false;
+      ckBuild();
+      render();
+      while (pendingLevels.length) levelUp(pendingLevels.shift());
+      return;
+    }
+    ckPlace(true);
+    await sleep(reduceMotion ? 0 : 430);
+    ckAnim = false;
+    if (next >= CK_LANES) { ckCashOut(true); return; }
+    sound.ping(next / CK_LANES);
+    const m = ckMult(next, r.diff);
+    ckSay(`Lane ${next} made it! ×${m.toFixed(2)} · cash out ${fmt(Math.floor(r.bet * m * settings.winMultiplier))} or keep going.`, 'win');
+    render();
+  }
+  function ckCashOut(crossed = false) {
+    const r = ckRound();
+    if (!r || !r.lane || ckAnim) return;
+    const m = ckMult(r.lane, r.diff);
+    const pay = Math.min(MAX, Math.floor(r.bet * m * settings.winMultiplier));
+    state.credits = Math.min(MAX, state.credits + pay);
+    state.lastWin = pay;
+    state.best = Math.max(state.best, pay - r.bet);
+    state.ck.round = null;
+    state.ck.games++;
+    gainXp(4 + r.lane * 2);
+    const ch = $('ckChicken');
+    ch?.classList.add('win');
+    const cr = ch?.getBoundingClientRect();
+    if (cr) fxTop.coinBurst(cr.left + cr.width / 2, cr.top, crossed ? 50 : 22, crossed ? 11 : 8);
+    if (crossed) {
+      sound.bigWin();
+      for (let k = 0; k < 60; k++) fxTop.confetti(CONFETTI);
+      fireworks(8);
+      ckSay(`Made it across! ×${m.toFixed(2)} · +${fmt(pay)}`, 'win');
+    } else { sound.win(); ckSay(`Cashed out at lane ${r.lane}: ×${m.toFixed(2)} · +${fmt(pay)}`, 'win'); }
+    checkAch({ win: pay - r.bet, bet: r.bet, chickenCrossed: crossed });
+    render();
+    ckAnim = true;
+    setTimeout(() => { ckAnim = false; ckBuild(); render(); while (pendingLevels.length) levelUp(pendingLevels.shift()); }, reduceMotion ? 0 : 1600);
+  }
+  function renderCKControls() {
+    const r = ckRound();
+    document.querySelectorAll('#ckDiff [data-diff]').forEach(b => { b.setAttribute('aria-pressed', String(b.dataset.diff === (r ? r.diff : state.ck.diff))); b.disabled = !!r || ckAnim; });
+    document.querySelectorAll('[data-ckb]').forEach(b => { b.disabled = !!r || ckAnim; });
+    $('ckBet').disabled = !!r || ckAnim;
+    const go = $('ckGo'), cash = $('ckCash');
+    go.textContent = r ? (r.lane ? 'Next lane ›' : 'Hop ›') : 'Start';
+    go.disabled = !account || ckAnim || (!r && !(Math.floor(Number($('ckBet').value)) >= 1 && Number($('ckBet').value) <= state.credits));
+    go.classList.toggle('solo', !r || !r.lane);
+    cash.hidden = !r || !r.lane;
+    if (r && r.lane) {
+      const m = ckMult(r.lane, r.diff);
+      cash.innerHTML = `Cash out<small>${fmt(Math.floor(r.bet * m * settings.winMultiplier))} · ×${m.toFixed(2)}</small>`;
+      cash.disabled = ckAnim;
+    }
+  }
+  function ckEnter() {
+    if (document.activeElement !== $('ckBet')) $('ckBet').value = ckRound() ? ckRound().bet : state.ck.bet;
+    ckBuild();
+    renderCKControls();
+    if (!ckAnim) {
+      const r = ckRound();
+      ckSay(!r ? 'Pick a bet and help the chicken cross.' : r.lane ? `Back in lane ${r.lane}. Cash out or keep going.` : 'Hop into the first lane.');
+    }
+    clearInterval(ckTraffic);
+    ckTraffic = setInterval(ckTrafficTick, 260);
+  }
+  $('ckGo').addEventListener('click', ckGo);
+  $('ckCash').addEventListener('click', () => ckCashOut(false));
+  $('ckDiff').addEventListener('click', e => {
+    const b = e.target.closest('[data-diff]');
+    if (!b || ckRound() || ckAnim) return;
+    state.ck.diff = b.dataset.diff;
+    sound.chip();
+    ckBuild(); renderCKControls(); render();
+  });
+  document.querySelectorAll('[data-ckb]').forEach(b => b.addEventListener('click', () => {
+    const cur = Math.max(1, Math.floor(Number($('ckBet').value)) || 1);
+    const cap = Math.max(1, Math.min(state.credits, settings.maxBet || MAX));
+    const v = { half: Math.max(1, Math.floor(cur / 2)), double: Math.min(cap, cur * 2), max: cap }[b.dataset.ckb];
+    $('ckBet').value = v;
+    state.ck.bet = v;
+    sound.chip();
+    renderCKControls();
+  }));
+  $('ckBet').addEventListener('input', () => { const v = Math.floor(Number($('ckBet').value)); if (v >= 1) state.ck.bet = v; renderCKControls(); });
+  document.addEventListener('keydown', e => {
+    if (state.mode !== 'ck' || !account || !$('lobby').hidden || e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'SUMMARY'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal, #profileModal, #mineModal')) return;
+    if (e.code === 'Space') { e.preventDefault(); ckGo(); }
+    else if (e.key.toLowerCase() === 'c') ckCashOut(false);
+  });
+  addEventListener('resize', () => { if (state.mode === 'ck') ckPlace(false); });
 
   // ---------- Poker ----------
   // Cards are 0-51: rank = code >> 2 (0 = two … 12 = ace), suit = code & 3.
@@ -5858,6 +6167,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     renderBroke();
     if (state.mode === 'pk') renderPKControls();
     if (state.mode === 'pl' && typeof renderPLControls === 'function') renderPLControls();
+    if (state.mode === 'ck' && typeof renderCKControls === 'function') renderCKControls();
     persist();
   }
 
@@ -6713,6 +7023,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     state.bj = Object.assign(fresh().bj, saved.bj);
     state.rl = Object.assign(fresh().rl, saved.rl);
     state.pl = Object.assign(fresh().pl, saved.pl);
+    state.ck = Object.assign(fresh().ck, saved.ck);
+    if (!['easy', 'medium', 'hard'].includes(state.ck.diff)) state.ck.diff = 'medium';
+    if (state.ck.round && !(state.ck.round.lane >= 0 && state.ck.round.bet > 0 && CK_SURVIVE[state.ck.round.diff])) state.ck.round = null;
     if (![8, 12, 16].includes(state.pl.rows)) state.pl.rows = 12;
     if (!['low', 'medium', 'high'].includes(state.pl.risk)) state.pl.risk = 'medium';
     // Balls still falling when the page closed: their result was already drawn, so pay it now.
@@ -6723,7 +7036,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (typeof state.rl.bets !== 'object' || !state.rl.bets) state.rl.bets = {};
     if (!Array.isArray(state.bj.shoe)) state.bj.shoe = [];
     if (state.bj.round && !Array.isArray(state.bj.round.hands)) state.bj.round = null;
-    if (!['bj', 'rl', 'pk', 'pl'].includes(state.mode)) state.mode = 'slots';
+    if (!['bj', 'rl', 'pk', 'pl', 'ck'].includes(state.mode)) state.mode = 'slots';
     autoLeft = 0;
     pendingLevels.length = 0;
     held = [false, false, false];
