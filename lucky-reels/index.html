@@ -1220,6 +1220,9 @@ html[data-lang="de"] .reel.held::after { content: "GEHALTEN"; }
 .chat-pop .head b { color: var(--accent); }
 .chat-pop .tag { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; padding: 1px 6px; border-radius: 999px; background: var(--accent); color: var(--ink); }
 .chat-pop .text { font-size: 13px; line-height: 1.35; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.chat-pop.online-pop { border-color: #7fd18b88; align-items: center; }
+.chat-pop .head .dot { margin: 0; }
+.chat-pop .note { font-size: 12px; color: var(--win); }
 .chat-pop.out { animation: popOut 0.4s ease-in forwards; }
 @keyframes popUp { from { opacity: 0; transform: translateY(16px) scale(0.9); } }
 @keyframes popOut { to { opacity: 0; transform: translateX(-30px); } }
@@ -2094,7 +2097,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'The chat is not set up yet. Ask the person who runs the game to run the chat setup.': 'Der Chat ist noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, die Chat-Einrichtung auszuführen.',
     'Private chats are not set up yet. Ask the person who runs the game to run the private-chat setup.': 'Private Chats sind noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, sie einzurichten.',
     'The message did not go through. Try again.': 'Die Nachricht ging nicht durch. Versuch es nochmal.', 'Chat is switched off for players': 'Der Chat ist für Spieler abgeschaltet',
-    'Someone': 'Jemand', 'Actions': 'Aktionen', 'Private': 'Privat', 'Back to the game selection': 'Zurück zur Spielauswahl',
+    'Someone': 'Jemand', 'Actions': 'Aktionen', 'Private': 'Privat', 'is now online': 'ist jetzt online', 'Back to the game selection': 'Zurück zur Spielauswahl',
     'One moment': 'Einen Moment', 'Let the current round finish first.': 'Lass die laufende Runde erst zu Ende gehen.',
     'Power-ups': 'Power-ups', 'Cosmetics': 'Kosmetik', 'Turn on': 'Einschalten', 'Turn off': 'Ausschalten', 'On': 'An', 'Off': 'Aus', 'Active': 'Aktiv',
     'Midnight Cabinet': 'Mitternachtsgehäuse', 'A deep-blue machine with glowing cyan trim. Purely for show.': 'Eine tiefblaue Maschine mit leuchtendem Cyan-Rand. Rein zur Show.',
@@ -6059,11 +6062,41 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     sound.tick();
     for (const m of incoming.slice(-3)) chatPop(m, kind === 'dm' ? m.from : null);
   }
+  // Someone coming online pops up bottom left. The first list after the page loads is only remembered,
+  // and a short drop-out (a reload, a flaky connection) within two minutes doesn't count as coming back.
+  let onlinePrimed = false;
+  const lastSeenOnline = new Map();
+  function noteOnline(next) {
+    const now = Date.now();
+    for (const id of online) if (!next.has(id)) lastSeenOnline.set(id, now);
+    if (!onlinePrimed) { onlinePrimed = true; return; }
+    if (!account) return;
+    for (const id of next) {
+      if (online.has(id) || id === account.id) continue;
+      const gone = lastSeenOnline.get(id);
+      if (gone && now - gone < 120000) continue;
+      const name = nameOf(id);
+      if (name === 'Someone') continue;
+      const el = document.createElement('button');
+      el.type = 'button';
+      el.className = 'chat-pop online-pop';
+      el.innerHTML = `${avatarHtml(id, name, 'md')}<span class="body"><span class="head"><i class="dot"></i><b>${nameHtml(id, name)}</b></span><span class="note">is now online</span></span>`;
+      el.title = `Send ${name} a private message`;
+      el.addEventListener('click', () => { el.remove(); openConversation(id); });
+      showPop(el, 4500);
+      sound.chime();
+    }
+  }
+  function showPop(el, ms) {
+    const box = $('chatPops');
+    box.append(el);
+    while (box.children.length > 3) box.firstElementChild.remove();
+    setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 400); }, ms);
+  }
   // A new message pops up bottom left for a few seconds; tapping it opens the chat. The badge stays.
   function chatPop(m, conv) {
     if (!settings.chatEnabled && !account?.isAdmin) return;
     if (chatOpen && document.visibilityState === 'visible' && (chatWith || null) === conv) return;
-    const box = $('chatPops');
     const who = conv ? nameOf(m.from) : m.name;
     const uid = conv ? m.from : m.uid;
     const el = document.createElement('button');
@@ -6071,9 +6104,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     el.className = 'chat-pop' + (conv ? ' private' : '');
     el.innerHTML = `${avatarHtml(uid, who, 'md')}<span class="body"><span class="head"><b>${nameHtml(uid, who)}</b>${conv ? '<span class="tag">Private</span>' : ''}</span><span class="text">${esc(String(m.body).slice(0, 140))}</span></span>`;
     el.addEventListener('click', () => { el.remove(); openConversation(conv); });
-    box.append(el);
-    while (box.children.length > 3) box.firstElementChild.remove();
-    setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 400); }, 5500);
+    showPop(el, 5500);
   }
 
   function startChat() {
@@ -6083,7 +6114,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       renderChat();
     });
     backend.presence(ids => {
-      online = new Set(ids);
+      const next = new Set(ids);
+      noteOnline(next);
+      online = next;
       renderChat();
       renderBoards();
     });
