@@ -278,7 +278,140 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 .link-btn { background: none; color: var(--muted); text-decoration: underline; padding: 4px 0; font-size: 13px; }
 .link-btn:hover { color: var(--fg); }
 
-details.paytable, details.ach { background: var(--panel); border-radius: 10px; padding: 10px 14px; }
+details.paytable, details.ach, details.bj-rules { background: var(--panel); border-radius: 10px; padding: 10px 14px; }
+
+/* Game switch */
+.game-modes { display: flex; justify-content: center; gap: 6px; margin-top: 8px; }
+.gm { padding: 6px 16px; border-radius: 999px; background: var(--panel); color: var(--muted); font-weight: 600; font-size: 13px; }
+.gm[aria-selected="true"] { background: var(--accent); color: var(--ink); }
+.cabinet:not(.mode-bj) .bj { display: none; }
+.cabinet.mode-bj :is(#window, #reelCtl, #tier, #message, .meters, .bet, .spin-row, #boosts, details.paytable) { display: none !important; }
+
+/* Blackjack table */
+.bj { display: grid; gap: 12px; }
+.felt {
+  position: relative;
+  display: grid; gap: 4px;
+  min-height: 340px;
+  padding: 16px 10px 14px;
+  border-radius: 180px 180px 18px 18px / 64px 64px 18px 18px;
+  border: 6px solid #5a3a22;
+  background:
+    radial-gradient(circle at 20% 30%, #ffffff08 0 1px, transparent 2px) 0 0 / 7px 7px,
+    radial-gradient(ellipse at 50% 28%, #23885a, #11553a 62%, #0a3a26);
+  box-shadow: inset 0 0 0 2px #e9a23b55, inset 0 12px 40px #0009, 0 8px 0 #2e1d12;
+  overflow: hidden;
+}
+.felt-arc { width: 100%; height: 40px; margin: -6px 0 -4px; }
+.felt-arc text { font: 400 10.5px var(--font-display); fill: #ffffff4d; letter-spacing: 1px; }
+.shoe {
+  position: absolute; top: 12px; right: 14px;
+  width: 42px; height: 54px;
+  border-radius: 6px 6px 8px 8px;
+  background: linear-gradient(#3a2418, #1d120b);
+  box-shadow: 0 4px 10px #0008, inset 0 1px 0 #fff2;
+  display: grid; align-items: end; justify-items: center;
+}
+.shoe-card {
+  position: absolute; top: 6px; left: 6px; right: 6px; height: 28px;
+  border-radius: 3px; border: 2px solid var(--glass);
+  background: repeating-linear-gradient(45deg, #c8323a 0 4px, #a3262d 4px 8px);
+}
+.shoe span { font: 600 10px var(--font-mono); color: #fffb; margin-bottom: 4px; }
+.shoe.shuffling .shoe-card { animation: shuffle 0.25s ease-in-out 4 alternate; }
+@keyframes shuffle { to { transform: translateX(-6px) rotate(-8deg); } }
+.bj-zone { display: grid; justify-items: center; gap: 6px; }
+.bj-label { display: flex; gap: 8px; align-items: center; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #ffffffb0; }
+.bj-total { padding: 2px 9px; border-radius: 999px; background: #0009; color: var(--fg); font: 600 12px var(--font-mono); letter-spacing: 0; }
+.bj-hand { display: flex; min-height: 90px; }
+.bj .card {
+  position: relative; flex: none;
+  width: 62px; height: 88px;
+  border-radius: 8px;
+  font-size: 24px;
+  box-shadow: 0 5px 12px -3px #000a;
+}
+.bj .card .suit { font-size: 20px; }
+.bj .card + .card { margin-left: -24px; }
+.bj .card[data-c]::before, .bj .card[data-c]::after {
+  content: attr(data-c);
+  position: absolute;
+  font: 700 13px/1 var(--font-body);
+  letter-spacing: -0.02em;
+}
+.bj .card[data-c]::before { top: 5px; left: 5px; }
+.bj .card[data-c]::after { bottom: 5px; right: 5px; transform: rotate(180deg); }
+.bj .card.dealt { animation: dealIn 0.42s cubic-bezier(.2, .9, .3, 1) both; }
+@keyframes dealIn { from { transform: translate(var(--dx, 0px), var(--dy, -120px)) rotate(-35deg) scale(0.55); opacity: 0.4; } }
+.bj-players { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; min-height: 130px; align-content: end; }
+.bj-seat {
+  position: relative;
+  display: grid; justify-items: center; gap: 6px;
+  padding: 6px 8px;
+  border-radius: 14px;
+  border: 2px dashed transparent;
+  transition: border-color 0.2s, background 0.2s;
+}
+.bj-seat.active { border-color: #fff2c488; background: #ffffff10; box-shadow: 0 0 24px #e9a23b33; }
+.bj-seat.bust .bj-hand, .bj-seat.lose .bj-hand { filter: grayscale(0.7) brightness(0.75); }
+.bj-info { display: flex; gap: 6px; align-items: center; }
+.bj-chip { position: relative; padding: 2px 8px 2px 20px; border-radius: 999px; background: #0009; color: var(--accent); font: 600 12px var(--font-mono); }
+.bj-chip::before { content: ""; position: absolute; left: 5px; top: 50%; translate: 0 -50%; width: 10px; height: 10px; border-radius: 50%; background: #c8323a; border: 2px dashed #fff; box-sizing: border-box; }
+.bj-result {
+  position: absolute; z-index: 3; top: 32px; left: 50%; translate: -50% 0;
+  padding: 4px 10px; border-radius: 8px;
+  font: 400 14px var(--font-display);
+  white-space: nowrap;
+  box-shadow: 0 6px 16px #0009;
+  animation: popIn 0.45s cubic-bezier(.2, 1.6, .4, 1) both;
+}
+@keyframes popIn { from { transform: scale(0.3); opacity: 0; } }
+.bj-seat.win .bj-result { background: var(--win); color: var(--ink); }
+.bj-seat.blackjack .bj-result { background: linear-gradient(100deg, #b87618, #fff2c4, #e9a23b); color: var(--ink); }
+.bj-seat.push .bj-result { background: var(--chrome); color: var(--ink); }
+.bj-seat.lose .bj-result, .bj-seat.bust .bj-result { background: var(--lose); color: var(--fg); }
+.bj-empty { align-self: center; color: #ffffff70; font-size: 13px; }
+.bet-spot {
+  justify-self: center;
+  position: relative;
+  width: 86px; height: 86px;
+  border-radius: 50%;
+  border: 2px dashed #ffffff66;
+  display: grid; place-items: center;
+}
+.bet-spot .bet-amt { position: relative; z-index: 2; padding: 1px 8px; border-radius: 999px; background: #000a; font: 600 13px var(--font-mono); color: var(--fg); }
+.chip-stack { position: absolute; inset: 0; display: grid; place-items: center; }
+.chip-stack i { position: absolute; width: 46px; height: 46px; border-radius: 50%; border: 4px dashed #fff9; background: var(--chip); box-shadow: 0 3px 0 #0007; }
+.chip-tray { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.bj-chipbtn, .fly-chip {
+  width: 50px; height: 50px;
+  border-radius: 50%;
+  border: 4px dashed #ffffffb0;
+  background: var(--chip);
+  color: var(--chip-ink, #fff);
+  font: 600 12px var(--font-mono);
+  box-shadow: 0 4px 0 #0007, inset 0 0 0 3px var(--chip);
+}
+.bj-chipbtn { transition: transform 0.12s; }
+.bj-chipbtn:hover:not(:disabled) { transform: translateY(-3px); }
+.bj-chipbtn:disabled { opacity: 0.35; }
+.fly-chip { position: fixed; z-index: 30; pointer-events: none; display: grid; place-items: center; }
+@media (max-width: 480px) {
+  .chip-tray { gap: 6px; }
+  .bj-chipbtn { width: 44px; height: 44px; font-size: 11px; border-width: 3px; }
+}
+.bj-bet-row, .bj-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.bj-bet-row .chip-btn { padding: 10px 4px; font-size: 13px; }
+.bj-act { padding: 12px 4px; font-family: var(--font-display); font-size: 15px; box-shadow: 0 4px 0 #0007; }
+.bj-act small { display: block; font: 600 10px var(--font-mono); opacity: 0.7; }
+.bj-act[data-bj="hit"] { background: var(--win); }
+.bj-act[data-bj="stand"] { background: var(--lose); color: var(--fg); }
+.bj-act[data-bj="double"] { background: var(--accent); }
+.bj-act[data-bj="split"] { background: var(--bonus); }
+.bj .message { margin: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .bj .card.dealt, .bj-result, .shoe.shuffling .shoe-card { animation: none; }
+}
 details summary { cursor: pointer; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
 .paytable table { width: 100%; border-collapse: collapse; margin-top: 8px; font-variant-numeric: tabular-nums; }
 .paytable td { padding: 4px 0; border-bottom: 1px solid #ffffff10; }
@@ -847,7 +980,11 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     <header class="marquee">
       <div class="bulbs" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
       <h1>Lucky Reels</h1>
-      <p>Three reels · one payline · play credits</p>
+      <p id="marqueeSub">Three reels · one payline · play credits</p>
+      <div class="game-modes" role="tablist" aria-label="Game">
+        <button class="gm" role="tab" data-mode="slots" aria-selected="true">Slots</button>
+        <button class="gm" role="tab" data-mode="bj" aria-selected="false">Blackjack</button>
+      </div>
     </header>
 
     <div class="window" id="window">
@@ -864,6 +1001,38 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
       <div class="col"><button class="hold" data-i="2">Hold</button><button class="nudge" data-i="2">▼ Nudge</button></div>
     </div>
     <div class="tier" id="tier" role="status" hidden><div class="tier-title" id="tierTitle"></div><div class="tier-sub" id="tierSub"></div></div>
+
+    <section class="bj" id="bj" aria-label="Blackjack table">
+      <div class="felt" id="felt">
+        <div class="shoe" id="shoe" aria-hidden="true"><div class="shoe-card"></div><span id="shoeLeft">312</span></div>
+        <div class="bj-zone">
+          <div class="bj-label">Dealer <span class="bj-total" id="dealerTotal" hidden></span></div>
+          <div class="bj-hand" id="dealerHand"></div>
+        </div>
+        <svg class="felt-arc" viewBox="0 0 400 40" aria-hidden="true"><path id="bjArc" d="M30,36 Q200,-6 370,36" fill="none"/><text><textPath href="#bjArc" startOffset="50%" text-anchor="middle">BLACKJACK PAYS 3 TO 2 · DEALER STANDS ON SOFT 17</textPath></text></svg>
+        <div class="bj-players" id="bjPlayers"></div>
+        <div class="bet-spot" id="betSpot"><div class="chip-stack" id="chipStack"></div><span class="bet-amt" id="bjBetAmt">0</span></div>
+      </div>
+      <p class="message" id="bjMsg" role="status" aria-live="polite">Tap the chips to bet, then deal.</p>
+      <div class="chip-tray" id="chipTray"></div>
+      <div class="bj-bet-row" id="bjBetRow">
+        <button class="chip-btn" id="bjClear">Clear</button>
+        <button class="chip-btn" id="bjRebet">Last bet</button>
+        <button class="chip-btn" id="bjX2">×2</button>
+        <button class="chip-btn" id="bjMax">Max</button>
+      </div>
+      <button class="spin" id="bjDeal">Deal</button>
+      <div class="bj-actions" id="bjActions" hidden>
+        <button class="bj-act" data-bj="hit">Hit<small>H</small></button>
+        <button class="bj-act" data-bj="stand">Stand<small>S</small></button>
+        <button class="bj-act" data-bj="double">Double<small>D</small></button>
+        <button class="bj-act" data-bj="split">Split<small>P</small></button>
+      </div>
+      <details class="bj-rules">
+        <summary>Blackjack rules</summary>
+        <p class="note">Get closer to 21 than the dealer without going over. Number cards count their value, J, Q and K count 10, an ace counts 1 or 11. A blackjack (ace plus a ten-card as your first two cards) pays 3 to 2; other wins pay 1 to 1, a tie returns your bet. The dealer draws to 16 and stands on every 17. Double: double your bet for exactly one more card. Split: two cards of the same value become two hands with their own bet (once per round; split aces get one card each). Six decks, shuffled when a quarter is left. Keys: H hit, S stand, D double, P split, Space deal.</p>
+      </details>
+    </section>
 
     <p class="message" id="message" role="status" aria-live="polite">Pick a bet and pull.</p>
 
@@ -1152,6 +1321,8 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     { id: 'nudger', name: 'Nudge Master', desc: 'Win with a nudge.', reward: 300, test: c => c?.nudgeWin },
     { id: 'gambler', name: 'Double Trouble', desc: `Win all ${GAMBLE_MAX} gamble rounds.`, reward: 2000, test: c => c?.gambleFull },
     { id: 'tasks', name: 'Taskmaster', desc: 'Complete 10 missions.', reward: 3000, test: () => state.missionsDone >= 10 },
+    { id: 'natural', name: 'Natural', desc: 'Get a blackjack.', reward: 300, test: c => c?.natural },
+    { id: 'splitter', name: 'Splitter', desc: 'Win both hands after a split.', reward: 500, test: c => c?.splitBoth },
     { id: 'collector', name: 'Collector', desc: 'Own every goodie, horseshoe maxed.', reward: 5000, test: () => state.owned.horseshoe >= 3 && state.owned.goldCherry && state.owned.piggy && state.owned.autospin && state.owned.gold },
   ];
 
@@ -1166,6 +1337,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     streak: 0, stars: 0, freeSpins: 0, freeBet: 0, freeTotal: 0, jackpots: 0,
     xp: 0, level: 1, ach: {}, adminRev: 0,
     nudges: 0, missions: [], missionsDone: 0,
+    mode: 'slots', bj: { shoe: [], round: null, bet: 0, lastBet: 0, hands: 0 },
   });
   const state = fresh();
 
@@ -1287,6 +1459,8 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     star() { [1319, 1760, 2093].forEach((f, i) => this.tone(f, i * 0.05, 0.2, 'sine', 0.05)); },
     tease() { this.tone(330, 0, 0.12, 'square', 0.04); },
     tick() { this.tone(1100, 0, 0.025, 'square', 0.03); },
+    card() { this.tone(2600, 0, 0.025, 'triangle', 0.05); this.tone(700, 0.015, 0.05, 'square', 0.02); },
+    chip() { this.tone(1800, 0, 0.03, 'sine', 0.05); this.tone(2400, 0.03, 0.03, 'sine', 0.04); },
     lose() { this.tone(220, 0, 0.3, 'sawtooth', 0.05); this.tone(150, 0.18, 0.4, 'sawtooth', 0.05); },
     chime() { [1047, 1568, 2093].forEach((f, i) => this.tone(f, i * 0.07, 0.3, 'triangle', 0.06)); },
     levelUp() { [392, 523, 659, 784, 1047].forEach((f, i) => this.tone(f, i * 0.07, 0.25, 'square', 0.05)); },
@@ -1809,6 +1983,366 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     };
   }
 
+  // ---------- Blackjack ----------
+  // Six-deck shoe of card codes 0-51 (rank = code / 4, suit = code % 4); the round lives in state.bj so a reload resumes it.
+  const BJ_DECKS = 6;
+  const BJ_CHIPS = [[10, '#3d7bd9'], [50, '#c8323a'], [100, '#1d1714'], [500, '#7b4fd6'], [1000, '#e9a23b', '#1d1714'], [5000, '#2f9e6a']];
+  let bjBusy = false;
+  const bjShown = new Set();
+  const bjRank = c => Math.floor(c / 4) % 13;
+  const bjValue = c => { const r = bjRank(c); return r === 0 ? 11 : Math.min(10, r + 1); };
+  function bjTotal(cards) {
+    let total = 0, aces = 0;
+    for (const c of cards) { total += bjValue(c); if (bjRank(c) === 0) aces++; }
+    while (total > 21 && aces) { total -= 10; aces--; }
+    return { total, soft: aces > 0 };
+  }
+  const bjNatural = h => h.cards.length === 2 && !h.split && bjTotal(h.cards).total === 21;
+  function bjShuffle() {
+    const shoe = [];
+    for (let d = 0; d < BJ_DECKS; d++) for (let c = 0; c < 52; c++) shoe.push(c);
+    for (let i = shoe.length - 1; i > 0; i--) { const j = randInt(i + 1); [shoe[i], shoe[j]] = [shoe[j], shoe[i]]; }
+    return shoe;
+  }
+  const bjDraw = () => { if (!state.bj.shoe.length) state.bj.shoe = bjShuffle(); return state.bj.shoe.pop(); };
+  const bjRound = () => state.bj.round;
+  const bjActive = () => !!bjRound() && bjRound().phase !== 'done';
+  const bjHand = () => { const r = bjRound(); return r?.phase === 'player' ? r.hands[r.active] : null; };
+  const bjWait = ms => sleep(reduceMotion ? 0 : ms);
+  const bjLabel = cards => { const t = bjTotal(cards); return t.soft && t.total < 21 ? `${t.total - 10} / ${t.total}` : String(t.total); };
+  function bjSay(text, kind = '') { $('bjMsg').textContent = text; $('bjMsg').className = 'message ' + kind; }
+
+  function bjCard(c, hidden) {
+    const el = document.createElement('div');
+    if (hidden) { el.className = 'card back'; el.setAttribute('aria-label', 'Face-down card'); return el; }
+    const [sym, red] = SUITS[c % 4];
+    const rank = RANKS[bjRank(c)];
+    el.className = 'card' + (red ? ' red' : '');
+    el.dataset.c = rank + sym;
+    el.innerHTML = `<span>${rank}</span><span class="suit">${sym}</span>`;
+    el.setAttribute('aria-label', rank + sym);
+    return el;
+  }
+
+  // Rebuild the table from the round; cards not on the table before fly in from the shoe.
+  function renderBJTable(animate = true) {
+    const r = bjRound();
+    const fresh = [];
+    const lay = (box, cards, prefix, hideAt = -1) => {
+      box.replaceChildren(...cards.map((c, i) => {
+        const el = bjCard(c, i === hideAt);
+        const key = prefix + i;
+        if (!bjShown.has(key)) { bjShown.add(key); if (animate) fresh.push(el); }
+        return el;
+      }));
+    };
+    lay($('dealerHand'), r ? r.dealer : [], 'd', r?.hole ? 1 : -1);
+    const dt = $('dealerTotal');
+    dt.hidden = !r || !r.dealer.length;
+    if (r?.dealer.length) dt.textContent = r.hole ? String(bjValue(r.dealer[0])) : bjLabel(r.dealer);
+
+    const seats = $('bjPlayers');
+    seats.replaceChildren();
+    if (!r) seats.innerHTML = '<span class="bj-empty">Your cards land here.</span>';
+    (r?.hands || []).forEach((h, hi) => {
+      const seat = document.createElement('div');
+      seat.className = 'bj-seat' + (r.phase === 'player' && hi === r.active && r.hands.length > 1 ? ' active' : '') + (h.result ? ' ' + h.result : '');
+      const hand = document.createElement('div');
+      hand.className = 'bj-hand';
+      lay(hand, h.cards, `h${hi}-`);
+      const info = document.createElement('div');
+      info.className = 'bj-info';
+      info.innerHTML = `<span class="bj-total">${bjLabel(h.cards)}</span><span class="bj-chip">${fmt(h.bet)}</span>`;
+      seat.append(hand, info);
+      if (h.result) {
+        const label = { win: `WIN +${fmt(h.win - h.bet)}`, blackjack: `BLACKJACK +${fmt(h.win - h.bet)}`, push: 'PUSH', lose: 'LOSE', bust: 'BUST' }[h.result];
+        seat.insertAdjacentHTML('beforeend', `<span class="bj-result">${label}</span>`);
+      }
+      seats.append(seat);
+    });
+
+    const shoe = $('shoe').getBoundingClientRect();
+    for (const el of fresh) {
+      const b = el.getBoundingClientRect();
+      el.style.setProperty('--dx', `${shoe.left - b.left}px`);
+      el.style.setProperty('--dy', `${shoe.top - b.top}px`);
+      el.classList.add('dealt');
+    }
+    renderBJControls();
+  }
+
+  function renderBJControls() {
+    const r = bjRound();
+    const active = bjActive();
+    const h = bjHand();
+    const paused = settings.maintenance && !account?.isAdmin;
+    const bet = state.bj.bet;
+    const deal = $('bjDeal');
+    deal.hidden = active;
+    deal.disabled = bjBusy || paused || !bet || bet > state.credits || !account;
+    deal.innerHTML = paused ? 'Paused<small>an admin paused the game</small>'
+      : bet ? `${r?.phase === 'done' ? 'Deal again' : 'Deal'}<small>bet ${fmt(bet)}</small>` : 'Deal<small>tap chips to bet</small>';
+    $('bjActions').hidden = !active;
+    const act = name => document.querySelector(`.bj-act[data-bj="${name}"]`);
+    act('hit').disabled = act('stand').disabled = bjBusy || !h;
+    act('double').disabled = bjBusy || !h || h.cards.length !== 2 || state.credits < h.bet;
+    act('split').disabled = bjBusy || !h || r.hands.length > 1 || h.cards.length !== 2 || bjValue(h.cards[0]) !== bjValue(h.cards[1]) || state.credits < h.bet;
+    const room = Math.min(state.credits, settings.maxBet || MAX) - bet;
+    document.querySelectorAll('.bj-chipbtn').forEach(b => { b.disabled = active || bjBusy || Number(b.dataset.v) > room; });
+    for (const id of ['bjClear', 'bjRebet', 'bjX2', 'bjMax']) $(id).disabled = active || bjBusy;
+    $('bjRebet').disabled ||= !state.bj.lastBet;
+    $('betSpot').hidden = active;
+    $('bjBetAmt').textContent = fmt(bet);
+    const stack = [];
+    let left = bet;
+    for (const [v, color] of [...BJ_CHIPS].reverse()) while (left >= v && stack.length < 6) { stack.push(color); left -= v; }
+    $('chipStack').innerHTML = stack.map((c, i) => `<i style="--chip:${c};transform:translateY(${-i * 4}px)"></i>`).join('');
+    $('shoeLeft').textContent = state.bj.shoe.length || BJ_DECKS * 52;
+  }
+
+  $('chipTray').innerHTML = BJ_CHIPS.map(([v, color, ink]) =>
+    `<button class="bj-chipbtn" data-v="${v}" style="--chip:${color}${ink ? `;--chip-ink:${ink}` : ''}" aria-label="Add ${fmt(v)} to the bet">${v >= 1000 ? v / 1000 + 'K' : v}</button>`).join('');
+  $('chipTray').addEventListener('click', e => {
+    const b = e.target.closest('.bj-chipbtn');
+    if (!b || b.disabled) return;
+    state.bj.bet = Math.min(state.credits, settings.maxBet || MAX, state.bj.bet + Number(b.dataset.v));
+    sound.chip();
+    // Toss a chip from the tray onto the bet spot.
+    if (!reduceMotion) {
+      const from = b.getBoundingClientRect(), to = $('betSpot').getBoundingClientRect();
+      const chip = document.createElement('div');
+      chip.className = 'fly-chip';
+      chip.style.cssText = `--chip:${b.style.getPropertyValue('--chip')};left:${from.left}px;top:${from.top}px`;
+      document.body.append(chip);
+      const dx = to.left + to.width / 2 - 25 - from.left, dy = to.top + to.height / 2 - 25 - from.top;
+      chip.animate([{ transform: 'none' }, { transform: `translate(${dx}px, ${dy - 40}px) scale(0.9)`, offset: 0.6 }, { transform: `translate(${dx}px, ${dy}px) scale(0.9)` }],
+        { duration: 380, easing: 'ease-out' }).onfinish = () => { chip.remove(); render(); };
+    }
+    render();
+  });
+  const setBjBet = v => { state.bj.bet = Math.max(0, Math.min(state.credits, settings.maxBet || MAX, Math.floor(v))); sound.chip(); render(); };
+  $('bjClear').addEventListener('click', () => setBjBet(0));
+  $('bjRebet').addEventListener('click', () => setBjBet(state.bj.lastBet));
+  $('bjX2').addEventListener('click', () => setBjBet(state.bj.bet * 2));
+  $('bjMax').addEventListener('click', () => setBjBet(state.credits));
+
+  async function bjDeal() {
+    if (bjBusy || bjActive() || !account || busy) return;
+    if (settings.maintenance && !account.isAdmin) { bjSay('The game is paused by an admin. Try again later.', 'lose'); return; }
+    const bet = Math.min(state.bj.bet, settings.maxBet || MAX);
+    if (!bet) { bjSay('Tap the chips to place a bet first.', 'lose'); return; }
+    if (bet > state.credits) { bjSay(`Not enough credits for a ${fmt(bet)} bet.`, 'lose'); return; }
+    bjBusy = true;
+    if (state.bj.shoe.length < (BJ_DECKS * 52) / 4) {
+      state.bj.shoe = bjShuffle();
+      bjSay('Shuffling a fresh shoe…', 'hot');
+      $('shoe').classList.add('shuffling');
+      for (let k = 0; k < 6; k++) setTimeout(() => sound.card(), k * 90);
+      await bjWait(900);
+      $('shoe').classList.remove('shuffling');
+    }
+    state.credits -= bet;
+    state.bj.lastBet = bet;
+    state.bj.round = { hands: [{ cards: [], bet, split: false, result: null, win: 0, done: false }], dealer: [], active: 0, phase: 'player', hole: true };
+    bjShown.clear();
+    bjSay('Dealing…');
+    renderBJTable();
+    render();
+    const r = bjRound();
+    for (const to of ['p', 'd', 'p', 'd']) {
+      (to === 'p' ? r.hands[0].cards : r.dealer).push(bjDraw());
+      sound.card();
+      renderBJTable();
+      await bjWait(340);
+    }
+    // The dealer checks for blackjack straight away; a player blackjack ends the hand too.
+    if (bjNatural(r.hands[0]) || bjTotal(r.dealer).total === 21) await bjFinish();
+    else bjSay(`You have ${bjLabel(r.hands[0].cards)}. Hit or stand?`);
+    bjBusy = false;
+    renderBJTable(false);
+    render();
+  }
+
+  async function bjAct(kind) {
+    const r = bjRound();
+    const h = bjHand();
+    if (bjBusy || !h) return;
+    if (kind === 'double' && (h.cards.length !== 2 || state.credits < h.bet)) return;
+    if (kind === 'split' && (r.hands.length > 1 || h.cards.length !== 2 || bjValue(h.cards[0]) !== bjValue(h.cards[1]) || state.credits < h.bet)) return;
+    bjBusy = true;
+    renderBJControls();
+    if (kind === 'hit' || kind === 'double') {
+      if (kind === 'double') { state.credits -= h.bet; h.bet *= 2; sound.chip(); }
+      h.cards.push(bjDraw());
+      sound.card();
+      renderBJTable();
+      render();
+      await bjWait(380);
+      const t = bjTotal(h.cards).total;
+      if (t > 21) {
+        h.result = 'bust';
+        sound.lose();
+        bjSay(`Bust with ${t}.`, 'lose');
+        renderBJTable();
+        await bjWait(600);
+        await bjNext();
+      } else if (t === 21 || kind === 'double') {
+        await bjNext();
+      } else bjSay(`You have ${bjLabel(h.cards)}. Hit or stand?`);
+    } else if (kind === 'stand') {
+      await bjNext();
+    } else if (kind === 'split') {
+      state.credits -= h.bet;
+      sound.chip();
+      const [a, b] = h.cards;
+      r.hands = [
+        { cards: [a], bet: h.bet, split: true, result: null, win: 0, done: false },
+        { cards: [b], bet: h.bet, split: true, result: null, win: 0, done: false },
+      ];
+      bjShown.add('h1-0');
+      bjShown.delete('h0-1');
+      renderBJTable();
+      render();
+      await bjWait(300);
+      for (const hand of r.hands) { hand.cards.push(bjDraw()); sound.card(); renderBJTable(); await bjWait(340); }
+      if (bjRank(a) === 0) {
+        // Split aces get one card each.
+        r.hands.forEach(x => { x.done = true; });
+        await bjFinish();
+      } else if (bjTotal(r.hands[0].cards).total === 21) await bjNext();
+      else bjSay(`Hand 1: ${bjLabel(r.hands[0].cards)}. Hit or stand?`);
+    }
+    bjBusy = false;
+    renderBJTable(false);
+    render();
+  }
+
+  async function bjNext() {
+    const r = bjRound();
+    r.hands[r.active].done = true;
+    const next = r.hands.findIndex(h => !h.done);
+    if (next >= 0) {
+      r.active = next;
+      renderBJTable();
+      bjSay(`Hand ${next + 1}: ${bjLabel(r.hands[next].cards)}. Hit or stand?`);
+      if (bjTotal(r.hands[next].cards).total === 21) { await bjWait(400); await bjNext(); }
+      return;
+    }
+    await bjFinish();
+  }
+
+  async function bjFinish() {
+    const r = bjRound();
+    r.phase = 'dealer';
+    r.hole = false;
+    renderBJTable();
+    $('dealerHand').children[1]?.classList.add('flip');
+    sound.card();
+    await bjWait(650);
+    const dealerBJ = bjTotal(r.dealer).total === 21 && r.dealer.length === 2;
+    const someoneStands = r.hands.some(h => h.result !== 'bust' && !bjNatural(h));
+    if (someoneStands && !dealerBJ) {
+      while (bjTotal(r.dealer).total < 17) {
+        bjSay(`Dealer has ${bjTotal(r.dealer).total} and draws…`);
+        r.dealer.push(bjDraw());
+        sound.card();
+        renderBJTable();
+        await bjWait(600);
+      }
+    }
+    const d = bjTotal(r.dealer).total;
+    let back = 0, staked = 0, wins = 0;
+    for (const h of r.hands) {
+      staked += h.bet;
+      const t = bjTotal(h.cards).total;
+      if (h.result === 'bust') h.win = 0;
+      else if (bjNatural(h) && !dealerBJ) { h.result = 'blackjack'; h.win = h.bet * 2.5; }
+      else if (dealerBJ && !bjNatural(h)) { h.result = 'lose'; h.win = 0; }
+      else if (d > 21 || t > d) { h.result = 'win'; h.win = h.bet * 2; }
+      else if (t === d) { h.result = 'push'; h.win = h.bet; }
+      else { h.result = 'lose'; h.win = 0; }
+      // Happy hour from the admin menu multiplies the winnings, not the returned stake.
+      if (h.win > h.bet) h.win = h.bet + (h.win - h.bet) * settings.winMultiplier;
+      h.win = Math.min(MAX, Math.floor(h.win));
+      back += h.win;
+      if (h.result === 'win' || h.result === 'blackjack') wins++;
+    }
+    state.credits = Math.min(MAX, state.credits + back);
+    const net = back - staked;
+    state.lastWin = Math.max(0, net);
+    state.best = Math.max(state.best, net);
+    state.bj.hands++;
+    r.phase = 'done';
+    renderBJTable();
+    const natural = r.hands.some(h => h.result === 'blackjack');
+    if (natural) bjSay(`Blackjack! +${fmt(net)}`, 'win');
+    else if (dealerBJ) bjSay('Dealer has blackjack.', 'lose');
+    else if (net > 0) bjSay(`${d > 21 ? `Dealer busts with ${d}. ` : ''}You win +${fmt(net)}.`, 'win');
+    else if (net === 0) bjSay(`Push. Your ${fmt(staked)} comes back.`, '');
+    else bjSay(`${r.hands.every(h => h.result === 'bust') ? 'Bust.' : `Dealer wins with ${d}.`} −${fmt(-net)}`, 'lose');
+    if (wins) {
+      natural ? sound.bigWin() : sound.win();
+      [...$('bjPlayers').children].forEach((seat, i) => {
+        const res = r.hands[i]?.result;
+        if (res !== 'win' && res !== 'blackjack') return;
+        const b = seat.getBoundingClientRect();
+        fxTop.coinBurst(b.left + b.width / 2, b.top + b.height / 3, res === 'blackjack' ? 40 : 18, res === 'blackjack' ? 11 : 8);
+        if (res === 'blackjack') fxTop.burst(b.left + b.width / 2, b.top, 70, 42, 7, false);
+      });
+      floatText('+' + fmt(net));
+    } else if (net < 0) sound.lose();
+    gainXp(8 + wins * 6);
+    checkAch({ natural, splitBoth: r.hands.length === 2 && wins === 2, win: Math.max(0, net), bet: staked });
+    render();
+    while (pendingLevels.length) await prizeWheel(pendingLevels.shift());
+  }
+
+  $('bjDeal').addEventListener('click', bjDeal);
+  document.querySelectorAll('.bj-act').forEach(b => b.addEventListener('click', () => bjAct(b.dataset.bj)));
+  document.addEventListener('keydown', e => {
+    if (state.mode !== 'bj' || !account || e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal')) return;
+    if (!$('wheelModal').hidden || !$('gambleModal').hidden || !$('adminModal').hidden) return;
+    const key = e.key.toLowerCase();
+    const map = { h: 'hit', s: 'stand', d: 'double', p: 'split' };
+    if (map[key] && bjHand()) { e.preventDefault(); bjAct(map[key]); }
+    else if ((e.code === 'Space' || e.key === 'Enter') && !bjActive() && e.target.tagName !== 'BUTTON') { e.preventDefault(); bjDeal(); }
+  });
+
+  // A reload can land mid-deal or mid-dealer-turn; complete the deal and let the dealer finish.
+  function bjRepair() {
+    const r = bjRound();
+    if (!r || r.phase === 'done') return;
+    for (const h of r.hands) while (h.cards.length < 2 && !(h.split && h.done)) h.cards.push(bjDraw());
+    while (r.dealer.length < 2) r.dealer.push(bjDraw());
+    if (r.active >= r.hands.length) r.active = 0;
+    renderBJTable(false);
+    if (r.phase === 'dealer' || r.hands.every(h => h.done)) {
+      bjBusy = true;
+      bjFinish().finally(() => { bjBusy = false; renderBJTable(false); render(); });
+    } else if (r.hands.length === 1 && (bjNatural(r.hands[0]) || bjTotal(r.dealer).total === 21)) {
+      bjBusy = true;
+      bjFinish().finally(() => { bjBusy = false; renderBJTable(false); render(); });
+    } else bjSay(`You have ${bjLabel(r.hands[r.active].cards)}. Hit or stand?`);
+  }
+
+  function applyGameMode() {
+    const bj = state.mode === 'bj';
+    cabinet.classList.toggle('mode-bj', bj);
+    document.querySelectorAll('.gm').forEach(b => b.setAttribute('aria-selected', String((b.dataset.mode === 'bj') === bj)));
+    $('marqueeSub').textContent = bj ? 'Blackjack · pays 3 to 2 · play credits' : 'Three reels · one payline · play credits';
+    if (bj) {
+      renderBJTable(false);
+      if (!bjActive()) bjSay(state.bj.bet ? 'Deal when you are ready.' : 'Tap the chips to bet, then deal.');
+    }
+  }
+  document.querySelectorAll('.gm').forEach(b => b.addEventListener('click', () => {
+    if (busy || bjBusy || state.mode === b.dataset.mode) return;
+    state.mode = b.dataset.mode;
+    applyGameMode();
+    render();
+  }));
+
   // ---------- Missions ----------
   function newMission(exclude) {
     const types = Object.keys(MISSIONS).filter(t => !exclude.includes(t));
@@ -2283,6 +2817,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     renderShop();
     renderMissions();
     renderBoards();
+    renderBJControls();
     persist();
   }
 
@@ -2312,7 +2847,9 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
   $('sound').addEventListener('click', () => { state.sound = !state.sound; render(); });
   $('refill').addEventListener('click', () => {
     if (busy) return;
-    Object.assign(state, fresh(), { sound: state.sound, adminRev: state.adminRev, credits: settings.startCredits });
+    Object.assign(state, fresh(), { sound: state.sound, adminRev: state.adminRev, credits: settings.startCredits, mode: state.mode });
+    bjShown.clear();
+    renderBJTable(false);
     rigged = false;
     pendingLevels.length = 0;
     held = [false, false, false];
@@ -2337,7 +2874,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     }
   });
   document.addEventListener('keydown', e => {
-    if (e.code === 'Space' && account && !['BUTTON', 'SUMMARY', 'INPUT'].includes(e.target.tagName) && $('wheelModal').hidden && $('gambleModal').hidden && $('adminModal').hidden) { e.preventDefault(); play(); }
+    if (e.code === 'Space' && account && state.mode !== 'bj' && !['BUTTON', 'SUMMARY', 'INPUT'].includes(e.target.tagName) && $('wheelModal').hidden && $('gambleModal').hidden && $('adminModal').hidden) { e.preventDefault(); play(); }
   });
 
   // ---------- Accounts ----------
@@ -2986,6 +3523,10 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     delete state.boost;
     state.ach = Object.assign({}, saved.ach);
     state.missions = (Array.isArray(saved.missions) ? saved.missions : []).filter(m => MISSIONS[m?.t]);
+    state.bj = Object.assign(fresh().bj, saved.bj);
+    if (!Array.isArray(state.bj.shoe)) state.bj.shoe = [];
+    if (state.bj.round && !Array.isArray(state.bj.round.hands)) state.bj.round = null;
+    if (state.mode !== 'bj') state.mode = 'slots';
     rigged = false;
     autoLeft = 0;
     pendingLevels.length = 0;
@@ -3000,6 +3541,9 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     renderAch();
     shownCredits = state.credits;
     say('Pick a bet and pull.');
+    bjShown.clear();
+    applyGameMode();
+    if (account) bjRepair();
   }
 
   function enterGame({ key, doc }) {
