@@ -2000,7 +2000,10 @@ details.ach { margin-top: 10px; }
   //  - the public site: a Supabase project (fill SUPABASE below); its auth checks passwords server-side;
   //  - the claude.ai artifact: the artifact's shared store at players/<id>;
   //  - a plain file: this browser's storage with the two default accounts.
-  const SUPABASE = { url: '', anonKey: '' };
+  const SUPABASE = {
+    url: 'https://xftsazyagfuunsojxiyj.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhmdHNhenlhZ2Z1dW5zb2p4aXlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxNzAyMDksImV4cCI6MjEwODc0NjIwOX0.oIaS7jGQXzyufCGHyaxELAV2W4oGcMQ4oH_eZDyfCRw',
+  };
   const EMAIL_DOMAIN = 'lucky-reels.app';
   const LOCAL_ACCOUNTS = {"lukas": {"name": "Lukas", "salt": "609251a2290fc994", "hash": "2d0b6e200d1e84675de054182f28e9388d72143fe58397f9d0465248f99b4c6a", "credits": 1000, "best": 0, "level": 1, "spins": 0}, "julius": {"name": "Julius", "salt": "ed552e28ed575e75", "hash": "6607c8490c975680b5e546b46c515b6a2a794d0f853833f1a3f85d50479b8e3f", "credits": 750, "best": 0, "level": 1, "spins": 0}};
   let backend = null;
