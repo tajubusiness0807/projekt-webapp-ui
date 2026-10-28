@@ -636,3 +636,575 @@ grant execute on function public.admin_delete_player(uuid, uuid) to authenticate
 
 alter table public.players add column if not exists flair text check (flair is null or flair in ('neon'));
 grant update (flair) on public.players to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Online poker: run this part once (after "Admin menu").
+-- One Texas Hold'em table for up to 8 players. The database is the dealer: it
+-- shuffles, deals, checks every move and pays the pots, so nobody can peek at
+-- other hands or change the chips from the browser. The table and the seats
+-- (with the cards) can't be read through the website at all; poker_state()
+-- hands each player only their own cards. poker_pulse is a public counter the
+-- page listens to, so everyone sees each move right away.
+
+create table if not exists public.poker_tables (
+  id integer primary key default 1 check (id = 1),
+  phase text not null default 'waiting',
+  hand integer not null default 0,
+  button integer not null default -1,
+  sb bigint not null default 10,
+  bb bigint not null default 20,
+  board integer[] not null default '{}',
+  deck integer[] not null default '{}',
+  current_bet bigint not null default 0,
+  min_raise bigint not null default 20,
+  to_act integer not null default -1,
+  deadline timestamptz,
+  result text
+);
+insert into public.poker_tables (id) values (1) on conflict do nothing;
+
+create table if not exists public.poker_seats (
+  seat integer primary key check (seat between 0 and 7),
+  player_id uuid unique references public.players (id) on delete cascade,
+  name text not null,
+  stack bigint not null default 0,
+  bet bigint not null default 0,
+  committed bigint not null default 0,
+  in_hand boolean not null default false,
+  folded boolean not null default false,
+  allin boolean not null default false,
+  acted boolean not null default false,
+  last text,
+  won bigint not null default 0,
+  hand_name text,
+  cards integer[] not null default '{}',
+  revealed boolean not null default false,
+  misses integer not null default 0
+);
+
+create table if not exists public.poker_pulse (
+  id integer primary key default 1 check (id = 1),
+  rev bigint not null default 0,
+  at timestamptz not null default now()
+);
+insert into public.poker_pulse (id) values (1) on conflict do nothing;
+
+alter table public.poker_tables enable row level security;
+alter table public.poker_seats enable row level security;
+alter table public.poker_pulse enable row level security;
+revoke all on public.poker_tables, public.poker_seats, public.poker_pulse from anon, authenticated;
+grant select on public.poker_pulse to anon, authenticated;
+drop policy if exists "Poker pulse is public" on public.poker_pulse;
+create policy "Poker pulse is public" on public.poker_pulse for select using (true);
+do $$
+begin
+  alter publication supabase_realtime add table public.poker_pulse;
+exception when duplicate_object then null;
+end $$;
+
+-- Cards are 0-51: rank = card / 4 (0 = two ... 12 = ace), suit = card % 4.
+-- A five-card hand as one number; bigger wins. Same scoring as the page's solo table.
+create or replace function public.poker_score5(cs integer[])
+returns bigint
+language plpgsql
+immutable
+set search_path = public
+as $$
+declare
+  r integer[];
+  g integer[];
+  cnt integer[];
+  flush boolean;
+  high integer := -1;
+  cat integer;
+  kick integer[];
+  sc bigint;
+begin
+  select array_agg(c / 4 order by c / 4 desc) into r from unnest(cs) c;
+  flush := (select count(distinct c % 4) from unnest(cs) c) = 1;
+  if (select count(distinct x) from unnest(r) x) = 5 then
+    if r[1] - r[5] = 4 then high := r[1];
+    elsif r[1] = 12 and r[2] = 3 then high := 3;
+    end if;
+  end if;
+  select array_agg(x order by n desc, x desc), array_agg(n order by n desc, x desc) into g, cnt
+    from (select x, count(*)::integer n from unnest(r) x group by x) q;
+  if high >= 0 and flush then cat := 8; kick := array[high];
+  elsif cnt[1] = 4 then cat := 7; kick := g;
+  elsif cnt[1] = 3 and cnt[2] = 2 then cat := 6; kick := g;
+  elsif flush then cat := 5; kick := r;
+  elsif high >= 0 then cat := 4; kick := array[high];
+  elsif cnt[1] = 3 then cat := 3; kick := g;
+  elsif cnt[1] = 2 and cnt[2] = 2 then cat := 2; kick := g;
+  elsif cnt[1] = 2 then cat := 1; kick := g;
+  else cat := 0; kick := r;
+  end if;
+  sc := cat;
+  for i in 1..5 loop sc := sc * 13 + coalesce(kick[i], 0); end loop;
+  return sc;
+end;
+$$;
+
+-- The best five of up to seven cards.
+create or replace function public.poker_best(cs integer[])
+returns bigint
+language plpgsql
+immutable
+set search_path = public
+as $$
+declare
+  n integer := coalesce(array_length(cs, 1), 0);
+  best bigint := -1;
+  sc bigint;
+begin
+  for a in 1..n loop for b in a + 1..n loop for c in b + 1..n loop for d in c + 1..n loop for e in d + 1..n loop
+    sc := public.poker_score5(array[cs[a], cs[b], cs[c], cs[d], cs[e]]);
+    if sc > best then best := sc; end if;
+  end loop; end loop; end loop; end loop; end loop;
+  return best;
+end;
+$$;
+
+create or replace function public.poker_hand_name(sc bigint)
+returns text
+language sql
+immutable
+as $$
+  select case
+    when sc / 371293 = 8 and (sc / 28561) % 13 = 12 then 'Royal flush'
+    else (array['High card', 'Pair', 'Two pair', 'Three of a kind', 'Straight', 'Flush', 'Full house', 'Four of a kind', 'Straight flush'])[(sc / 371293)::integer + 1]
+  end;
+$$;
+
+-- The next seat after "from" (clockwise, "from" itself last) that fits the test:
+-- 'stack' has chips, 'hand' is dealt in, 'act' can still act, 'needs' still has to act this round.
+create or replace function public._pk_next(from_seat integer, test text)
+returns integer
+language sql
+stable
+set search_path = public
+as $$
+  select s.seat from public.poker_seats s, public.poker_tables t
+  where t.id = 1 and case test
+    when 'stack' then s.stack > 0 and s.player_id is not null
+    when 'hand' then s.in_hand
+    when 'act' then s.in_hand and not s.folded and not s.allin
+    else s.in_hand and not s.folded and not s.allin and (not s.acted or s.bet < t.current_bet)
+  end
+  order by (s.seat - from_seat - 1 + 16) % 8
+  limit 1;
+$$;
+
+create or replace function public._pk_put(p_seat integer, amt bigint)
+returns void
+language sql
+set search_path = public
+as $$
+  update public.poker_seats set
+    stack = stack - greatest(0, least(amt, stack)),
+    bet = bet + greatest(0, least(amt, stack)),
+    committed = committed + greatest(0, least(amt, stack)),
+    allin = allin or (in_hand and stack - greatest(0, least(amt, stack)) = 0)
+  where seat = p_seat;
+$$;
+
+create or replace function public._pk_pulse()
+returns void
+language sql
+set search_path = public
+as $$
+  update public.poker_pulse set rev = rev + 1, at = now() where id = 1;
+$$;
+
+create or replace function public._pk_finish(showdown boolean)
+returns void
+language plpgsql
+set search_path = public
+as $$
+declare
+  t public.poker_tables;
+  pot bigint;
+  lvl bigint;
+  prev bigint := 0;
+  part bigint;
+  top bigint;
+  nwin integer;
+  share bigint;
+  odd_seat integer;
+  w record;
+  paid bigint := 0;
+  last_top bigint;
+begin
+  select * into t from public.poker_tables where id = 1;
+  select coalesce(sum(committed), 0) into pot from public.poker_seats;
+  if not showdown then
+    update public.poker_seats set stack = stack + pot, won = pot
+      where in_hand and not folded returning * into w;
+    update public.poker_tables set result = w.name || ' wins ' || pot where id = 1;
+  else
+    update public.poker_seats set
+      hand_name = public.poker_hand_name(public.poker_best(cards || t.board)),
+      revealed = true
+      where in_hand and not folded;
+    for lvl in select distinct committed from public.poker_seats where in_hand and not folded order by 1 loop
+      select coalesce(sum(least(committed, lvl) - least(committed, prev)), 0) into part from public.poker_seats;
+      select max(public.poker_best(cards || t.board)) into top
+        from public.poker_seats where in_hand and not folded and committed >= lvl;
+      select count(*) into nwin from public.poker_seats
+        where in_hand and not folded and committed >= lvl and public.poker_best(cards || t.board) = top;
+      share := part / nwin;
+      update public.poker_seats set stack = stack + share, won = won + share
+        where in_hand and not folded and committed >= lvl and public.poker_best(cards || t.board) = top;
+      if part - share * nwin > 0 then
+        select seat into odd_seat from public.poker_seats
+          where in_hand and not folded and committed >= lvl and public.poker_best(cards || t.board) = top
+          order by (seat - t.button - 1 + 16) % 8 limit 1;
+        update public.poker_seats set stack = stack + (part - share * nwin), won = won + (part - share * nwin) where seat = odd_seat;
+      end if;
+      paid := paid + part; prev := lvl; last_top := top;
+    end loop;
+    -- Chips above the highest contender (from players who folded after betting more) go to the last winner.
+    if pot > paid then
+      update public.poker_seats set stack = stack + (pot - paid), won = won + (pot - paid)
+        where seat = (select seat from public.poker_seats where in_hand and not folded and public.poker_best(cards || t.board) = last_top
+                      order by committed desc, (seat - t.button - 1 + 16) % 8 limit 1);
+    end if;
+    update public.poker_tables set result = (
+      select case when count(*) > 1
+        then 'Split pot: ' || string_agg(name, ' & ' order by won desc) || ' · ' || min(hand_name)
+        else min(name) || ' wins ' || max(won) || ' with ' || lower(min(hand_name)) end
+      from public.poker_seats where won > 0
+    ) where id = 1;
+  end if;
+  update public.poker_tables set phase = 'showdown', to_act = -1,
+    deadline = now() + case when showdown then interval '6 seconds' else interval '3.5 seconds' end
+    where id = 1;
+end;
+$$;
+
+-- Move the hand on after a move: next player, next street, or the showdown.
+create or replace function public._pk_advance()
+returns void
+language plpgsql
+set search_path = public
+as $$
+declare
+  t public.poker_tables;
+  alive integer;
+  can_act integer;
+  facing boolean;
+  nxt integer;
+  n integer;
+begin
+  select * into t from public.poker_tables where id = 1;
+  select count(*) filter (where in_hand and not folded),
+         count(*) filter (where in_hand and not folded and not allin),
+         coalesce(bool_or(in_hand and not folded and not allin and bet < t.current_bet), false)
+    into alive, can_act, facing from public.poker_seats;
+  if alive <= 1 then perform public._pk_finish(false); return; end if;
+  if can_act >= 2 or facing then
+    nxt := public._pk_next(case when t.to_act >= 0 then t.to_act else t.button end, 'needs');
+    if nxt is not null then
+      update public.poker_tables set to_act = nxt, deadline = now() + interval '25 seconds' where id = 1;
+      return;
+    end if;
+  end if;
+  update public.poker_seats set bet = 0, acted = false,
+    last = case when in_hand and not folded and not allin then null else last end
+    where true;
+  if t.phase = 'river' then
+    update public.poker_tables set current_bet = 0, min_raise = bb where id = 1;
+    perform public._pk_finish(true);
+    return;
+  end if;
+  n := case when t.phase = 'preflop' then 3 else 1 end;
+  update public.poker_tables set
+    board = board || deck[1:n], deck = deck[n + 1:],
+    phase = case phase when 'preflop' then 'flop' when 'flop' then 'turn' else 'river' end,
+    current_bet = 0, min_raise = bb
+    where id = 1;
+  if can_act < 2 then
+    update public.poker_tables set to_act = -1, deadline = now() + interval '1.3 seconds' where id = 1;
+  else
+    update public.poker_tables set to_act = public._pk_next(t.button, 'act'), deadline = now() + interval '25 seconds' where id = 1;
+  end if;
+end;
+$$;
+
+create or replace function public._pk_start()
+returns void
+language plpgsql
+set search_path = public
+as $$
+declare
+  t public.poker_tables;
+  live integer;
+  btn integer;
+  sb_seat integer;
+  bb_seat integer;
+  v_deck integer[];
+  i integer;
+begin
+  delete from public.poker_seats where player_id is null or stack <= 0;
+  update public.poker_seats set in_hand = false, folded = false, allin = false, acted = false, bet = 0, committed = 0,
+    cards = '{}', last = null, won = 0, hand_name = null, revealed = false
+    where true;
+  update public.poker_tables set board = '{}', result = null where id = 1;
+  select count(*) into live from public.poker_seats where stack > 0;
+  if live < 2 then
+    update public.poker_tables set phase = 'waiting', to_act = -1, deadline = null where id = 1;
+    return;
+  end if;
+  select * into t from public.poker_tables where id = 1;
+  btn := public._pk_next(t.button, 'stack');
+  update public.poker_seats set in_hand = true where stack > 0;
+  select array_agg(g order by gen_random_uuid()) into v_deck from generate_series(0, 51) g;
+  for r in 1..2 loop
+    i := btn;
+    for k in 1..live loop
+      i := public._pk_next(i, 'hand');
+      update public.poker_seats set cards = cards || v_deck[1] where seat = i;
+      v_deck := v_deck[2:];
+    end loop;
+  end loop;
+  update public.poker_tables set button = btn, deck = v_deck, phase = 'preflop', hand = hand + 1,
+    current_bet = bb, min_raise = bb where id = 1;
+  sb_seat := case when live = 2 then btn else public._pk_next(btn, 'hand') end;
+  bb_seat := public._pk_next(sb_seat, 'hand');
+  perform public._pk_put(sb_seat, t.sb);
+  update public.poker_seats set last = 'Small blind' where seat = sb_seat;
+  perform public._pk_put(bb_seat, t.bb);
+  update public.poker_seats set last = 'Big blind' where seat = bb_seat;
+  i := public._pk_next(bb_seat, 'act');
+  if i is null then
+    update public.poker_tables set to_act = -1 where id = 1;
+    perform public._pk_advance();
+  else
+    update public.poker_tables set to_act = i, deadline = now() + interval '25 seconds' where id = 1;
+  end if;
+end;
+$$;
+
+-- One move by the player in p_seat. Returns an error text, or null when the move counted.
+create or replace function public._pk_act(p_seat integer, act text, amount bigint)
+returns text
+language plpgsql
+set search_path = public
+as $$
+declare
+  t public.poker_tables;
+  s public.poker_seats;
+  need bigint;
+  cap bigint;
+  target bigint;
+  was bigint;
+begin
+  select * into t from public.poker_tables where id = 1;
+  select * into s from public.poker_seats where seat = p_seat;
+  if s is null or t.to_act <> p_seat or t.phase not in ('preflop', 'flop', 'turn', 'river') then return 'Not your turn.'; end if;
+  need := t.current_bet - s.bet;
+  if act = 'fold' then
+    update public.poker_seats set folded = true, last = 'Fold' where seat = p_seat;
+  elsif act = 'check' then
+    if need > 0 then return 'You cannot check.'; end if;
+    update public.poker_seats set last = 'Check' where seat = p_seat;
+  elsif act = 'call' then
+    perform public._pk_put(p_seat, need);
+    update public.poker_seats set last = case when allin then 'All-in' when need > 0 then 'Call' else 'Check' end where seat = p_seat;
+  elsif act = 'raise' then
+    cap := s.bet + s.stack;
+    target := least(amount, cap);
+    if target <= t.current_bet then return 'Raise more than the current bet.'; end if;
+    if target - t.current_bet < t.min_raise and target < cap then
+      return 'The smallest raise is to ' || (t.current_bet + t.min_raise) || '.';
+    end if;
+    was := t.current_bet;
+    perform public._pk_put(p_seat, target - s.bet);
+    if target - t.current_bet >= t.min_raise then
+      update public.poker_tables set min_raise = target - t.current_bet where id = 1;
+      update public.poker_seats set acted = false where seat <> p_seat and in_hand and not folded and not allin;
+    end if;
+    update public.poker_tables set current_bet = target where id = 1;
+    update public.poker_seats set last = case when allin then 'All-in' when was > 0 then 'Raise ' || target else 'Bet ' || target end
+      where seat = p_seat;
+  else
+    return 'Unknown move.';
+  end if;
+  update public.poker_seats set acted = true where seat = p_seat;
+  perform public._pk_advance();
+  return null;
+end;
+$$;
+
+-- Leaving: chips not in the pot go back to the player's credits. A seat in a
+-- running hand stays as an empty "left" seat until that hand ends.
+create or replace function public._pk_cash_out(p_seat integer)
+returns void
+language plpgsql
+set search_path = public
+as $$
+declare
+  t public.poker_tables;
+  s public.poker_seats;
+begin
+  select * into t from public.poker_tables where id = 1;
+  select * into s from public.poker_seats where seat = p_seat;
+  if s is null or s.player_id is null then return; end if;
+  if s.in_hand and not s.folded and t.phase in ('preflop', 'flop', 'turn', 'river') then
+    if t.to_act = p_seat then perform public._pk_act(p_seat, 'fold', 0);
+    else update public.poker_seats set folded = true, last = 'Fold' where seat = p_seat;
+    end if;
+  end if;
+  select * into s from public.poker_seats where seat = p_seat;
+  update public.players set credits = credits + s.stack, admin_rev = admin_rev + 1 where id = s.player_id;
+  if s.committed > 0 and t.phase <> 'waiting' then
+    update public.poker_seats set player_id = null, stack = 0, last = 'Left' where seat = p_seat;
+  else
+    delete from public.poker_seats where seat = p_seat;
+  end if;
+  -- A fold out of turn can leave a single player in the hand.
+  select * into t from public.poker_tables where id = 1;
+  if t.phase in ('preflop', 'flop', 'turn', 'river')
+     and (select count(*) from public.poker_seats where in_hand and not folded) <= 1 then
+    perform public._pk_finish(false);
+  end if;
+end;
+$$;
+
+create or replace function public.poker_sit(buy_in bigint)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  me public.players;
+  t public.poker_tables;
+  free integer;
+begin
+  select * into t from public.poker_tables where id = 1 for update;
+  select * into me from public.players where id = auth.uid() for update;
+  if me is null or me.is_banned then raise exception 'not allowed'; end if;
+  if exists (select 1 from public.poker_seats where player_id = me.id) then raise exception 'already seated'; end if;
+  if buy_in is null or buy_in < 200 then raise exception 'buy-in too small'; end if;
+  if me.credits < buy_in then raise exception 'not enough credits'; end if;
+  select g into free from generate_series(0, 7) g
+    where g not in (select seat from public.poker_seats) order by g limit 1;
+  if free is null then raise exception 'table full'; end if;
+  update public.players set credits = credits - buy_in, admin_rev = admin_rev + 1 where id = me.id;
+  insert into public.poker_seats (seat, player_id, name, stack) values (free, me.id, me.name, buy_in);
+  if t.phase = 'waiting' and (select count(*) from public.poker_seats where stack > 0) >= 2 then
+    update public.poker_tables set deadline = now() + interval '1.5 seconds' where id = 1;
+  end if;
+  perform public._pk_pulse();
+end;
+$$;
+
+create or replace function public.poker_leave()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  my_seat integer;
+begin
+  perform 1 from public.poker_tables where id = 1 for update;
+  select seat into my_seat from public.poker_seats where player_id = auth.uid();
+  if my_seat is null then return; end if;
+  perform public._pk_cash_out(my_seat);
+  perform public._pk_pulse();
+end;
+$$;
+
+create or replace function public.poker_act(act text, amount bigint default 0)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  my_seat integer;
+  err text;
+begin
+  perform 1 from public.poker_tables where id = 1 for update;
+  select seat into my_seat from public.poker_seats where player_id = auth.uid();
+  if my_seat is null then raise exception 'Not your turn.'; end if;
+  err := public._pk_act(my_seat, act, amount);
+  if err is not null then raise exception '%', err; end if;
+  update public.poker_seats set misses = 0 where seat = my_seat;
+  perform public._pk_pulse();
+end;
+$$;
+
+-- Anyone at the table calls this when a deadline has passed: a player who ran
+-- out of time checks (or folds); two missed turns in a row sit them out. It
+-- also deals the next card during an all-in run-out and starts the next hand.
+create or replace function public.poker_tick()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  t public.poker_tables;
+  s public.poker_seats;
+begin
+  select * into t from public.poker_tables where id = 1 for update;
+  if t.phase = 'waiting' then
+    if (select count(*) from public.poker_seats where stack > 0 and player_id is not null) < 2
+       or (t.deadline is not null and t.deadline > now()) then return; end if;
+    perform public._pk_start();
+  elsif t.deadline is null or t.deadline > now() then
+    return;
+  elsif t.phase = 'showdown' then
+    perform public._pk_start();
+  elsif t.to_act < 0 then
+    perform public._pk_advance();
+  else
+    select * into s from public.poker_seats where seat = t.to_act;
+    update public.poker_seats set misses = misses + 1 where seat = t.to_act;
+    if s.misses + 1 >= 2 then
+      perform public._pk_cash_out(t.to_act);
+    else
+      perform public._pk_act(t.to_act, case when t.current_bet > s.bet then 'fold' else 'check' end, 0);
+    end if;
+  end if;
+  perform public._pk_pulse();
+end;
+$$;
+
+-- The table as one player sees it: their own cards, and other cards only once shown.
+create or replace function public.poker_state()
+returns json
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select json_build_object(
+    'now', now(),
+    'phase', t.phase, 'hand', t.hand, 'button', t.button, 'sb', t.sb, 'bb', t.bb,
+    'board', t.board, 'current_bet', t.current_bet, 'min_raise', t.min_raise,
+    'to_act', t.to_act, 'deadline', t.deadline, 'result', t.result,
+    'me', coalesce((select seat from public.poker_seats where player_id = auth.uid() and auth.uid() is not null), -1),
+    'seats', coalesce((select json_agg(json_build_object(
+        'seat', s.seat, 'pid', s.player_id, 'name', s.name, 'stack', s.stack, 'bet', s.bet,
+        'committed', s.committed, 'in_hand', s.in_hand, 'folded', s.folded, 'allin', s.allin,
+        'acted', s.acted, 'last', s.last, 'leaving', s.player_id is null, 'won', s.won,
+        'hand_name', s.hand_name, 'revealed', s.revealed,
+        'has_cards', s.in_hand and not s.folded and cardinality(s.cards) = 2,
+        'cards', case when s.revealed or (s.player_id = auth.uid() and auth.uid() is not null) then s.cards else '{}'::integer[] end
+      ) order by s.seat) from public.poker_seats s), '[]'::json)
+  ) from public.poker_tables t where t.id = 1;
+$$;
+
+revoke execute on function public.poker_score5(integer[]), public.poker_best(integer[]), public.poker_hand_name(bigint),
+  public._pk_next(integer, text), public._pk_put(integer, bigint), public._pk_pulse(), public._pk_finish(boolean),
+  public._pk_advance(), public._pk_start(), public._pk_act(integer, text, bigint), public._pk_cash_out(integer)
+  from public, anon, authenticated;
+revoke execute on function public.poker_sit(bigint), public.poker_leave(), public.poker_act(text, bigint),
+  public.poker_tick(), public.poker_state() from public, anon;
+grant execute on function public.poker_sit(bigint), public.poker_leave(), public.poker_act(text, bigint),
+  public.poker_tick() to authenticated;
+grant execute on function public.poker_state() to anon, authenticated;

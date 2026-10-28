@@ -383,8 +383,212 @@ details.paytable, details.ach, details.bj-rules { background: var(--panel); bord
 .game-modes { display: flex; justify-content: center; gap: 6px; margin-top: 8px; }
 .gm { padding: 6px 16px; border-radius: 999px; background: var(--panel); color: var(--muted); font-weight: 600; font-size: 13px; }
 .gm[aria-selected="true"] { background: var(--accent); color: var(--ink); }
-.cabinet:not(.mode-bj) .bj { display: none; }
-.cabinet.mode-bj :is(#window, #reelCtl, #tier, #message, .meters, .bet, .spin-row, #boosts, details.paytable) { display: none !important; }
+.cabinet:not([data-mode="bj"]) .bj, .cabinet:not([data-mode="rl"]) .rl, .cabinet:not([data-mode="pk"]) .pk { display: none; }
+.cabinet:not([data-mode="slots"]) :is(#window, #reelCtl, #tier, #message, .meters, .bet, .spin-row, #boosts, details.paytable) { display: none !important; }
+.game-modes { flex-wrap: wrap; }
+body.wide .layout { max-width: 980px; grid-template-columns: minmax(0, 1fr); }
+body.wide .account-bar, body.wide .announce { max-width: 980px; }
+
+/* Poker */
+.pk { display: grid; gap: 12px; }
+.pk-top { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: center; }
+.pk-views { display: flex; gap: 6px; }
+.pk-info { font: 600 12px var(--font-mono); color: var(--muted); }
+.pk-table {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 8.6;
+  margin: 18px 0 30px;
+}
+.pk-felt {
+  position: absolute; inset: 9% 7%;
+  border-radius: 999px;
+  border: 10px solid #5a3a22;
+  background:
+    radial-gradient(circle at 20% 30%, #ffffff08 0 1px, transparent 2px) 0 0 / 7px 7px,
+    radial-gradient(ellipse at 50% 40%, #23885a, #11553a 62%, #0a3a26);
+  box-shadow: inset 0 0 0 3px #e9a23b55, inset 0 14px 50px #000a, 0 10px 0 #2e1d12, 0 24px 50px -20px #000;
+}
+.pk-felt::after { content: "LUCKY REELS · HOLD'EM"; position: absolute; left: 50%; top: 70%; translate: -50% 0; font: 400 clamp(9px, 1.4vw, 13px) var(--font-display); letter-spacing: 0.2em; color: #ffffff1f; white-space: nowrap; }
+.pk-center { position: absolute; left: 50%; top: 47%; translate: -50% -50%; display: grid; justify-items: center; gap: 8px; z-index: 2; }
+.pk-board { display: flex; gap: 6px; min-height: 70px; }
+.pk-board .slot { width: 50px; height: 70px; border-radius: 7px; border: 2px dashed #ffffff22; }
+.pk .card { position: relative; flex: none; width: 50px; height: 70px; border-radius: 7px; font-size: 20px; box-shadow: 0 4px 10px -3px #000a; }
+.pk .card .suit { font-size: 16px; }
+.pk .card[data-c]::before { content: attr(data-c); position: absolute; top: 3px; left: 4px; font: 700 11px/1 var(--font-body); }
+.pk .card.dealt { animation: dealIn 0.4s cubic-bezier(.2, .9, .3, 1) both; }
+.pk .card.flipin { animation: flip 0.45s ease-out both; }
+.pk .card.win-card { box-shadow: 0 0 0 3px var(--accent-hi), 0 0 18px var(--accent); translate: 0 -5px; transition: translate 0.3s; }
+.pk-pot { display: flex; align-items: center; gap: 8px; padding: 4px 12px 4px 6px; border-radius: 999px; background: #0009; font: 600 14px var(--font-mono); color: var(--accent-hi); min-height: 28px; }
+.pk-pot:empty { visibility: hidden; }
+.pk-pot i, .pk-bet i { display: inline-block; width: 18px; height: 18px; border-radius: 50%; background: var(--chip, #c8323a); border: 3px dashed #fff; box-sizing: border-box; box-shadow: 0 2px 0 #0008; }
+.pk-result { max-width: 320px; text-align: center; font: 400 clamp(13px, 2vw, 17px) var(--font-display); color: var(--accent-hi); text-shadow: 0 2px 0 #0008; min-height: 20px; }
+.pk-result.pop { animation: popIn 0.4s cubic-bezier(.2, 1.6, .4, 1); }
+.pk-seat {
+  position: absolute; z-index: 3;
+  translate: -50% -50%;
+  display: grid; justify-items: center; gap: 2px;
+  width: 112px;
+  transition: opacity 0.3s;
+}
+.pk-seat.folded .pk-cards, .pk-seat.out { opacity: 0.45; }
+.pk-cards { display: flex; height: 54px; margin-bottom: -10px; z-index: 1; }
+.pk-cards .card { width: 38px; height: 54px; font-size: 15px; }
+.pk-cards .card .suit { font-size: 12px; }
+.pk-cards .card + .card { margin-left: -14px; }
+.pk-cards .card[data-c]::before { font-size: 9px; }
+.pk-seat.me .pk-cards { height: 74px; margin-bottom: -12px; }
+.pk-seat.me .pk-cards .card { width: 52px; height: 74px; font-size: 21px; }
+.pk-seat.me .pk-cards .card + .card { margin-left: -10px; }
+.pk-plate {
+  position: relative; z-index: 2;
+  display: flex; align-items: center; gap: 7px;
+  width: 100%;
+  padding: 5px 9px 5px 5px;
+  border-radius: 999px;
+  background: linear-gradient(#2a1d18, #150f0c);
+  border: 2px solid var(--cabinet-edge);
+  box-shadow: 0 6px 14px -6px #000;
+}
+.pk-seat.me .pk-plate { border-color: var(--accent); }
+.pk-seat.active .pk-plate { border-color: var(--accent-hi); box-shadow: 0 0 0 3px #e9a23b55, 0 0 24px #e9a23b88; }
+.pk-seat.winner .pk-plate { border-color: var(--win); box-shadow: 0 0 0 3px #7fd18b55, 0 0 30px #7fd18b; animation: winnerGlow 0.6s ease-in-out 4 alternate; }
+@keyframes winnerGlow { to { transform: scale(1.06); } }
+.pk-avatar {
+  --t: 1;
+  flex: none;
+  position: relative;
+  width: 30px; height: 30px; border-radius: 50%;
+  display: grid; place-items: center;
+  font: 400 14px var(--font-display); color: var(--ink);
+  background: var(--av, var(--chrome));
+}
+.pk-seat.active .pk-avatar::before {
+  content: ""; position: absolute; inset: -4px; border-radius: 50%;
+  background: conic-gradient(var(--accent-hi) calc(var(--t) * 360deg), #ffffff22 0);
+  -webkit-mask: radial-gradient(circle, transparent 15px, #000 16px); mask: radial-gradient(circle, transparent 15px, #000 16px);
+}
+.pk-seat.active.urgent .pk-avatar::before { background: conic-gradient(var(--lose) calc(var(--t) * 360deg), #ffffff22 0); }
+.pk-who { display: grid; min-width: 0; line-height: 1.15; text-align: left; }
+.pk-who b { font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pk-who span { font: 600 11px var(--font-mono); color: var(--accent); }
+.pk-tag { position: absolute; z-index: 4; top: 100%; margin-top: 3px; padding: 1px 8px; border-radius: 999px; font: 600 10px var(--font-body); letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; background: #000b; color: var(--fg); }
+.pk-tag.hand { background: var(--accent); color: var(--ink); }
+.pk-tag.won { background: var(--win); color: var(--ink); font-size: 11px; }
+.pk-tag.pop { animation: popIn 0.35s cubic-bezier(.2, 1.6, .4, 1); }
+.pk-empty { position: absolute; z-index: 3; translate: -50% -50%; width: 74px; height: 34px; border-radius: 999px; border: 2px dashed #ffffff26; display: grid; place-items: center; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #ffffff55; }
+.pk-bet { position: absolute; z-index: 2; translate: -50% -50%; display: flex; align-items: center; gap: 4px; padding: 2px 8px 2px 3px; border-radius: 999px; background: #000a; font: 600 11px var(--font-mono); color: var(--fg); white-space: nowrap; }
+.pk-bet.slide { animation: betSlide 0.35s ease-out both; }
+@keyframes betSlide { from { transform: translate(var(--fx, 0), var(--fy, 0)); opacity: 0.2; } }
+.pk-dealer { position: absolute; z-index: 2; translate: -50% -50%; width: 22px; height: 22px; border-radius: 50%; background: #f6efe3; color: var(--ink); display: grid; place-items: center; font: 400 11px var(--font-display); box-shadow: 0 2px 0 #0008; transition: left 0.5s, top 0.5s; }
+.pk-fly { position: fixed; z-index: 25; width: 16px; height: 16px; border-radius: 50%; border: 3px dashed #fff; background: var(--chip, #e9a23b); pointer-events: none; }
+.pk-controls { display: grid; gap: 10px; }
+.pk-acts { display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 8px; }
+.pk-acts button { padding: 13px 6px; font-family: var(--font-display); font-size: 15px; box-shadow: 0 4px 0 #0007; }
+.pk-acts button small { display: block; font: 600 10px var(--font-mono); opacity: 0.75; }
+#pkFold { background: var(--lose); color: var(--fg); }
+#pkCall { background: var(--win); }
+#pkRaise { background: var(--accent); }
+.pk-raise { display: grid; grid-template-columns: repeat(4, 1fr) minmax(0, 2fr); gap: 6px; align-items: center; }
+.pk-raise .chip-btn { padding: 8px 2px; font-size: 12px; }
+.pk-raise input[type="range"] { width: 100%; accent-color: var(--accent); }
+.pk-join { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; }
+.pk-join label { font-size: 12px; color: var(--muted); }
+.pk-join input { width: 120px; background: var(--panel); color: var(--accent); border: 2px solid var(--cabinet-edge); border-radius: 10px; padding: 9px 10px; font: 600 15px var(--font-mono); text-align: center; }
+.pk-join .spin { padding: 10px 18px; font-size: 16px; }
+.pk-join .chip-btn { padding: 10px 14px; }
+@media (max-width: 600px) {
+  .pk-table { aspect-ratio: 4 / 5.4; margin: 8px 0 26px; }
+  .pk-felt { inset: 7% 12%; border-width: 8px; }
+  .pk-seat { width: 92px; }
+  .pk-who b { font-size: 11px; }
+  .pk .card { width: 40px; height: 56px; font-size: 16px; }
+  .pk-board { min-height: 56px; gap: 4px; }
+  .pk-board .slot { width: 40px; height: 56px; }
+  .pk-seat.me .pk-cards .card { width: 46px; height: 64px; }
+  .pk-cards { height: 42px; margin-bottom: -8px; }
+  .pk-cards .card { width: 30px; height: 42px; font-size: 12px; }
+  .pk-cards .card + .card { margin-left: -10px; }
+  .pk-cards .card .suit { font-size: 10px; }
+  .pk-acts button { font-size: 13px; }
+  .pk-raise { grid-template-columns: repeat(4, 1fr); }
+  .pk-raise input[type="range"] { grid-column: 1 / -1; }
+}
+@media (prefers-reduced-motion: reduce) { .pk .card.dealt, .pk .card.flipin, .pk-bet.slide, .pk-seat.winner .pk-plate, .pk-tag.pop, .pk-result.pop { animation: none; } }
+@media (max-width: 420px) { .gm { padding: 6px 11px; font-size: 12px; } }
+
+/* Roulette */
+.rl { display: grid; gap: 12px; }
+.rl-wheel-wrap { position: relative; justify-self: center; width: min(300px, 78vw); aspect-ratio: 1; max-width: 100%; }
+.rl-wheel-wrap canvas { width: 100%; height: 100%; display: block; filter: drop-shadow(0 14px 22px #000a); }
+.rl-result {
+  position: absolute; left: 50%; top: 50%; translate: -50% -50%;
+  width: 84px; height: 84px; border-radius: 50%;
+  display: grid; place-items: center;
+  font: 400 38px var(--font-display); color: #fff;
+  border: 4px solid var(--accent-hi);
+  box-shadow: 0 0 0 4px #0008, 0 0 40px #e9a23b;
+  animation: tierIn 0.5s cubic-bezier(.2, 1.6, .4, 1);
+}
+.rl-result.red { background: #c8323a; } .rl-result.black { background: #1d1714; } .rl-result.green { background: #2f9e6a; }
+.rl-history { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; min-height: 24px; }
+.rl-history span { min-width: 24px; height: 24px; padding: 0 4px; border-radius: 6px; display: grid; place-items: center; font: 600 11px var(--font-mono); color: #fff; }
+.rl-history span:first-child { outline: 2px solid var(--accent-hi); }
+.rl-history .red { background: #c8323a; } .rl-history .black { background: #1d1714; border: 1px solid #ffffff22; } .rl-history .green { background: #2f9e6a; }
+.rl-board {
+  display: grid;
+  grid-template-columns: 50px repeat(3, minmax(0, 1fr)) 50px;
+  grid-template-rows: 34px repeat(12, 30px) 32px;
+  gap: 3px;
+  padding: 10px;
+  border-radius: 14px;
+  border: 5px solid #5a3a22;
+  background: radial-gradient(ellipse at 50% 30%, #23885a, #11553a 70%, #0a3a26);
+  box-shadow: inset 0 0 0 2px #e9a23b55, 0 6px 0 #2e1d12;
+  user-select: none;
+}
+.rl-cell {
+  position: relative;
+  display: grid; place-items: center;
+  border-radius: 5px;
+  border: 1px solid #ffffff40;
+  color: #fff;
+  background: #ffffff0d;
+  font: 400 14px var(--font-display);
+  padding: 0;
+  transition: transform 0.1s, box-shadow 0.2s;
+}
+.rl-cell:disabled { opacity: 1; cursor: default; }
+.rl-cell:hover:not(:disabled) { box-shadow: inset 0 0 0 2px var(--accent-hi); }
+.rl-cell:active:not(:disabled) { transform: scale(0.96); }
+.rl-cell.red { background: #c8323a; } .rl-cell.black { background: #1d1714; } .rl-cell.green { background: #2f9e6a; }
+.rl-cell.side { font-size: 11px; letter-spacing: 0.04em; }
+.rl-cell.vert span { writing-mode: vertical-rl; transform: rotate(180deg); }
+.rl-cell .diamond { width: 16px; height: 16px; transform: rotate(45deg); border-radius: 2px; }
+.rl-cell.hit { box-shadow: 0 0 0 3px var(--accent-hi), 0 0 24px var(--accent); z-index: 2; animation: hitPulse 0.5s ease-in-out 4 alternate; }
+@keyframes hitPulse { to { transform: scale(1.12); } }
+.rl-cell.won { box-shadow: inset 0 0 0 3px var(--win); }
+.rl-chip {
+  position: absolute; z-index: 3; top: 50%; left: 50%; translate: -50% -50%;
+  min-width: 26px; height: 26px; padding: 0 4px;
+  border-radius: 13px; border: 3px dashed #fffc;
+  background: var(--chip, #c8323a);
+  color: #fff; font: 600 10px/20px var(--font-mono);
+  box-shadow: 0 3px 0 #0008;
+  animation: popIn 0.3s cubic-bezier(.2, 1.6, .4, 1);
+  pointer-events: none;
+}
+.rl-chip.lost { animation: chipLost 0.6s ease-in forwards; }
+@keyframes chipLost { to { transform: translateY(-30px) scale(0.4); opacity: 0; } }
+.rl-chip.paid { background: var(--win); color: var(--ink); border-color: #fff; }
+.rl-chips { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.rl-chips .bj-chipbtn[aria-pressed="true"] { outline: 3px solid var(--accent-hi); outline-offset: 2px; transform: translateY(-4px); }
+.rl-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.rl-row .chip-btn { padding: 10px 4px; font-size: 13px; }
+.rl-total { text-align: center; font-family: var(--font-mono); font-size: 13px; color: var(--muted); }
+.rl-total b { color: var(--accent); }
+@media (max-width: 420px) { .rl-board { grid-template-columns: 42px repeat(3, minmax(0, 1fr)) 42px; grid-template-rows: 30px repeat(12, 27px) 30px; padding: 8px; } .rl-cell { font-size: 12px; } }
+@media (prefers-reduced-motion: reduce) { .rl-result, .rl-cell.hit, .rl-chip, .rl-chip.lost { animation: none; } }
 
 /* Blackjack table */
 .bj { display: grid; gap: 12px; }
@@ -594,6 +798,21 @@ body.has-announce .lobby { padding-top: calc(70px + env(safe-area-inset-top, 0px
   animation: tierIn 0.5s cubic-bezier(.2, 1.4, .4, 1) both;
 }
 .game-pick:nth-child(2) { animation-delay: 0.08s; }
+.game-pick:nth-child(3) { animation-delay: 0.16s; }
+.game-pick:nth-child(4) { animation-delay: 0.24s; }
+/* Roulette icon: the wheel turns and the ball orbits on hover */
+.gp-rl .gp-wheel { transform-origin: 70px 66px; }
+.gp-rl .gp-ball { transform-origin: 70px 66px; }
+.game-pick:hover .gp-rl .gp-wheel, .game-pick:focus-visible .gp-rl .gp-wheel { animation: gpSpin 1.6s linear infinite; }
+.game-pick:hover .gp-rl .gp-ball, .game-pick:focus-visible .gp-rl .gp-ball { animation: gpSpin 0.9s linear infinite reverse; }
+@keyframes gpSpin { to { transform: rotate(360deg); } }
+/* Poker icon: chips stack up and the cards lift on hover */
+.gp-pk .gp-card { transition: transform 0.3s cubic-bezier(.2, 1.4, .4, 1); transform-origin: 70px 110px; }
+.game-pick:hover .gp-pk .gp-ca { transform: rotate(-16deg) translateY(-6px); }
+.game-pick:hover .gp-pk .gp-cb { transform: rotate(14deg) translateY(-6px); }
+.gp-pk .gp-stack { transition: transform 0.3s; }
+.game-pick:hover .gp-pk .gp-stack { transform: translateY(-5px); }
+.gp-online { position: absolute; top: 10px; left: 12px; padding: 2px 8px; border-radius: 999px; background: #7fd18b26; color: var(--win); font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
 .game-pick:hover, .game-pick:focus-visible { transform: translateY(-6px); border-color: var(--accent); box-shadow: 0 26px 50px -18px #000, 0 0 40px -10px #e9a23b99; }
 .game-pick svg { width: min(150px, 100%); height: auto; overflow: visible; }
 .gp-title { font-family: var(--font-display); font-size: clamp(22px, 6vw, 30px); color: var(--accent); line-height: 1; }
@@ -1157,6 +1376,44 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
         <span class="gp-desc">Beat the dealer to 21: hit, stand, double and split.</span>
         <span class="gp-go">Play</span>
       </button>
+      <button class="game-pick" type="button" data-mode="rl">
+        <svg class="gp-rl" viewBox="0 0 140 130" aria-hidden="true">
+          <circle cx="70" cy="66" r="56" fill="#5a3a22" stroke="#e9a23b" stroke-width="3"/>
+          <circle cx="70" cy="66" r="47" fill="#1d1714"/>
+          <g class="gp-wheel">
+            <path d="M70 66L70 23A43 43 0 0 1 91.5 28.8Z" fill="#c8323a"/><path d="M70 66L91.5 28.8A43 43 0 0 1 107.2 44.5Z" fill="#1d1714"/>
+            <path d="M70 66L107.2 44.5A43 43 0 0 1 113 66Z" fill="#c8323a"/><path d="M70 66L113 66A43 43 0 0 1 107.2 87.5Z" fill="#1d1714"/>
+            <path d="M70 66L107.2 87.5A43 43 0 0 1 91.5 103.2Z" fill="#c8323a"/><path d="M70 66L91.5 103.2A43 43 0 0 1 70 109Z" fill="#1d1714"/>
+            <path d="M70 66L70 109A43 43 0 0 1 48.5 103.2Z" fill="#2f9e6a"/><path d="M70 66L48.5 103.2A43 43 0 0 1 32.8 87.5Z" fill="#c8323a"/>
+            <path d="M70 66L32.8 87.5A43 43 0 0 1 27 66Z" fill="#1d1714"/><path d="M70 66L27 66A43 43 0 0 1 32.8 44.5Z" fill="#c8323a"/>
+            <path d="M70 66L32.8 44.5A43 43 0 0 1 48.5 28.8Z" fill="#1d1714"/><path d="M70 66L48.5 28.8A43 43 0 0 1 70 23Z" fill="#c8323a"/>
+            <circle cx="70" cy="66" r="22" fill="#b87618" stroke="#e9a23b" stroke-width="2"/>
+            <path d="M70 50v32M54 66h32" stroke="#fff2c4" stroke-width="4" stroke-linecap="round"/><circle cx="70" cy="66" r="5" fill="#fff2c4"/>
+          </g>
+          <g class="gp-ball"><circle cx="70" cy="17" r="5" fill="#fff"/><circle cx="68.5" cy="15.5" r="1.6" fill="#fff" opacity=".9"/></g>
+        </svg>
+        <span class="gp-title">Roulette</span>
+        <span class="gp-desc">Place your chips and watch the ball land.</span>
+        <span class="gp-go">Play</span>
+      </button>
+      <button class="game-pick" type="button" data-mode="pk">
+        <span class="gp-online">Solo or online</span>
+        <svg class="gp-pk" viewBox="0 0 140 130" aria-hidden="true">
+          <ellipse cx="70" cy="118" rx="60" ry="9" fill="#11553a"/>
+          <g class="gp-card gp-ca"><rect x="30" y="24" width="50" height="72" rx="7" fill="#f6efe3" stroke="#d9cbb8" stroke-width="2"/><text x="37" y="40" font-family="Figtree, sans-serif" font-weight="700" font-size="13" fill="#1d1714">A</text><text x="55" y="72" text-anchor="middle" font-size="28" fill="#1d1714">♣</text></g>
+          <g class="gp-card gp-cb"><rect x="58" y="24" width="50" height="72" rx="7" fill="#f6efe3" stroke="#d9cbb8" stroke-width="2"/><text x="65" y="40" font-family="Figtree, sans-serif" font-weight="700" font-size="13" fill="#c8323a">A</text><text x="83" y="72" text-anchor="middle" font-size="28" fill="#c8323a">♦</text></g>
+          <g class="gp-stack">
+            <ellipse cx="112" cy="112" rx="16" ry="5" fill="#3d7bd9" stroke="#fff" stroke-width="2" stroke-dasharray="4 4"/>
+            <ellipse cx="112" cy="106" rx="16" ry="5" fill="#c8323a" stroke="#fff" stroke-width="2" stroke-dasharray="4 4"/>
+            <ellipse cx="112" cy="100" rx="16" ry="5" fill="#1d1714" stroke="#e9a23b" stroke-width="2" stroke-dasharray="4 4"/>
+            <ellipse cx="112" cy="94" rx="16" ry="5" fill="#7b4fd6" stroke="#fff" stroke-width="2" stroke-dasharray="4 4"/>
+          </g>
+          <ellipse cx="26" cy="110" rx="14" ry="4.5" fill="#e9a23b" stroke="#fff" stroke-width="2" stroke-dasharray="4 4"/>
+        </svg>
+        <span class="gp-title">Poker</span>
+        <span class="gp-desc">Texas Hold'em against bots, or online with up to 8 players.</span>
+        <span class="gp-go">Play</span>
+      </button>
     </div>
   </div>
 </div>
@@ -1179,7 +1436,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
 </div>
 
 <div class="layout">
-  <main class="cabinet" id="cabinet">
+  <main class="cabinet" id="cabinet" data-mode="slots">
     <header class="marquee">
       <div class="bulbs" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
       <h1>Lucky Reels</h1>
@@ -1187,6 +1444,8 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
       <div class="game-modes" role="tablist" aria-label="Game">
         <button class="gm" role="tab" data-mode="slots" aria-selected="true">Slots</button>
         <button class="gm" role="tab" data-mode="bj" aria-selected="false">Blackjack</button>
+        <button class="gm" role="tab" data-mode="rl" aria-selected="false">Roulette</button>
+        <button class="gm" role="tab" data-mode="pk" aria-selected="false">Poker</button>
       </div>
     </header>
 
@@ -1215,6 +1474,66 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
       <div class="col"><button class="hold" data-i="2">Hold</button><button class="nudge" data-i="2" aria-label="Nudge reel 3 down">▼ Nudge</button></div>
     </div>
     <div class="tier" id="tier" role="status" hidden><div class="tier-title" id="tierTitle"></div><div class="tier-sub" id="tierSub"></div></div>
+
+    <section class="rl" id="rl" aria-label="Roulette">
+      <div class="rl-wheel-wrap"><canvas id="rlWheel" width="600" height="600" aria-label="Roulette wheel"></canvas><div class="rl-result" id="rlResult" hidden></div></div>
+      <div class="rl-history" id="rlHistory" aria-label="Last numbers"></div>
+      <p class="message" id="rlMsg" role="status" aria-live="polite">Pick a chip, place it on the table, then spin.</p>
+      <div class="rl-chips" id="rlChips"></div>
+      <div class="rl-board" id="rlBoard"></div>
+      <p class="rl-total">On the table: <b id="rlTotal">0</b></p>
+      <div class="rl-row">
+        <button class="chip-btn" id="rlUndo">Undo</button>
+        <button class="chip-btn" id="rlClear">Clear</button>
+        <button class="chip-btn" id="rlRebet">Rebet</button>
+        <button class="chip-btn" id="rlX2">×2</button>
+      </div>
+      <button class="spin" id="rlSpin">Spin</button>
+      <details class="bj-rules">
+        <summary>Roulette rules</summary>
+        <p class="note">European wheel with one zero. A single number pays 35 to 1. Red or black, odd or even, 1–18 or 19–36 pay 1 to 1. A dozen (1st, 2nd, 3rd 12) or a column (2:1 under the numbers) pays 2 to 1. Zero loses every outside bet. Pick a chip, tap the table to place it, tap again to add more.</p>
+      </details>
+    </section>
+
+    <section class="pk" id="pk" aria-label="Poker table">
+      <div class="pk-top">
+        <div class="pk-views" role="tablist" aria-label="Poker table">
+          <button class="gm pkv" role="tab" data-pkv="solo" aria-selected="true">Solo vs bots</button>
+          <button class="gm pkv" role="tab" data-pkv="online" aria-selected="false">Online table</button>
+        </div>
+        <span class="pk-info" id="pkInfo">No-limit Hold'em · blinds 10/20</span>
+      </div>
+      <div class="pk-table" id="pkTable">
+        <div class="pk-felt"></div>
+        <div class="pk-center"><div class="pk-board" id="pkBoard"></div><div class="pk-pot" id="pkPot"></div><div class="pk-result" id="pkResult"></div></div>
+        <div id="pkLayer"></div>
+      </div>
+      <p class="message" id="pkMsg" role="status" aria-live="polite"></p>
+      <div class="pk-controls" id="pkControls" hidden>
+        <div class="pk-acts">
+          <button id="pkFold">Fold<small>F</small></button>
+          <button id="pkCall">Check<small>C</small></button>
+          <button id="pkRaise">Raise<small>R</small></button>
+        </div>
+        <div class="pk-raise" id="pkRaiseRow">
+          <button class="chip-btn" data-pkr="min">Min</button>
+          <button class="chip-btn" data-pkr="half">½ pot</button>
+          <button class="chip-btn" data-pkr="pot">Pot</button>
+          <button class="chip-btn" data-pkr="all">All-in</button>
+          <input type="range" id="pkSlider" min="0" max="0" step="10" aria-label="Raise to">
+        </div>
+      </div>
+      <div class="pk-join" id="pkJoin">
+        <label for="pkBuyIn">Buy-in</label>
+        <input id="pkBuyIn" type="number" min="200" step="10" inputmode="numeric" value="2000">
+        <button class="spin" id="pkSit">Sit down</button>
+        <button class="chip-btn" id="pkLeave" hidden>Leave table</button>
+      </div>
+      <details class="bj-rules">
+        <summary>Poker rules</summary>
+        <p class="note">No-limit Texas Hold'em, blinds 10/20. Everyone gets two cards; five shared cards come in three rounds (flop, turn, river). Make the best five-card hand from your two cards and the board, or make everyone else fold. Each betting round you can fold, check or call, or raise (at least the last raise). Hands, best first: royal flush, straight flush, four of a kind, full house, flush, straight, three of a kind, two pair, pair, high card. Your buy-in comes from your credits; leaving the table puts your chips back. Online: up to 8 players share one table and one dealer, and you have 25 seconds per move; missing two moves in a row sits you out. Keys: F fold, C check/call, R raise.</p>
+      </details>
+    </section>
 
     <section class="bj" id="bj" aria-label="Blackjack table">
       <div class="felt" id="felt">
@@ -1541,6 +1860,9 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     { id: 'nudger', name: 'Nudge Master', desc: 'Win with a nudge.', reward: 300, test: c => c?.nudgeWin },
     { id: 'gambler', name: 'Double Trouble', desc: `Win all ${GAMBLE_MAX} gamble rounds.`, reward: 2000, test: c => c?.gambleFull },
     { id: 'tasks', name: 'Taskmaster', desc: 'Complete 10 missions.', reward: 3000, test: () => state.missionsDone >= 10 },
+    { id: 'shark', name: 'Card Shark', desc: 'Win a poker pot.', reward: 300, test: c => c?.pokerWin },
+    { id: 'royalty', name: 'Royalty', desc: 'Win a poker pot with a straight flush.', reward: 2000, test: c => c?.pokerSF },
+    { id: 'bullseye', name: 'Bullseye', desc: 'Hit a single number in roulette.', reward: 500, test: c => c?.bullseye },
     { id: 'natural', name: 'Natural', desc: 'Get a blackjack.', reward: 300, test: c => c?.natural },
     { id: 'splitter', name: 'Splitter', desc: 'Win both hands after a split.', reward: 500, test: c => c?.splitBoth },
     { id: 'collector', name: 'Collector', desc: 'Own every goodie, horseshoe maxed.', reward: 5000, test: () => state.owned.horseshoe >= 3 && state.owned.goldCherry && state.owned.piggy && state.owned.autospin && state.owned.gold },
@@ -1559,6 +1881,8 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     xp: 0, level: 1, ach: {}, adminRev: 0,
     nudges: 0, missions: [], missionsDone: 0,
     mode: 'slots', bj: { shoe: [], round: null, bet: 0, lastBet: 0, hands: 0 },
+    rl: { bets: {}, last: {}, history: [], spins: 0 },
+    pk: { view: 'solo', solo: null, hands: 0, buyIn: 2000 },
   });
   const state = fresh();
 
@@ -2730,11 +3054,22 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     } else bjSay(`You have ${bjLabel(r.hands[r.active].cards)}. Hit or stand?`);
   }
 
+  const MODE_SUBS = {
+    slots: 'Three reels · one payline · play credits',
+    bj: 'Blackjack · pays 3 to 2 · play credits',
+    rl: 'Roulette · single zero · play credits',
+    pk: "Texas Hold'em · solo or online · play credits",
+  };
+  const gameBusy = () => busy || bjBusy || rlBusy || (typeof pkBusy === 'function' && pkBusy());
   function applyGameMode() {
     const bj = state.mode === 'bj';
+    cabinet.dataset.mode = state.mode;
     cabinet.classList.toggle('mode-bj', bj);
-    document.querySelectorAll('.gm').forEach(b => b.setAttribute('aria-selected', String((b.dataset.mode === 'bj') === bj)));
-    $('marqueeSub').textContent = bj ? 'Blackjack · pays 3 to 2 · play credits' : 'Three reels · one payline · play credits';
+    document.body.classList.toggle('wide', state.mode === 'pk');
+    document.querySelectorAll('.gm:not(.pkv)').forEach(b => b.setAttribute('aria-selected', String(b.dataset.mode === state.mode)));
+    $('marqueeSub').textContent = MODE_SUBS[state.mode];
+    if (state.mode === 'rl') rlEnter();
+    if (state.mode === 'pk' && typeof pkEnter === 'function') pkEnter();
     if (bj) {
       renderBJTable(false);
       if (!bjActive()) bjSay(state.bj.bet ? 'Deal when you are ready.' : 'Tap the chips to bet, then deal.');
@@ -2746,7 +3081,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     $('lobbyCredits').textContent = fmt(state.credits);
     document.querySelectorAll('.game-pick').forEach(b => {
       b.querySelector('.gp-last')?.remove();
-      if (b.dataset.mode === state.mode && state.spins + state.bj.hands > 0) b.insertAdjacentHTML('afterbegin', '<span class="gp-last">Last played</span>');
+      if (b.dataset.mode === state.mode && state.spins + state.bj.hands + state.rl.spins + state.pk.hands > 0) b.insertAdjacentHTML('afterbegin', '<span class="gp-last">Last played</span>');
     });
     $('lobby').hidden = false;
     document.querySelector(`.game-pick[data-mode="${state.mode}"]`)?.focus();
@@ -2757,15 +3092,938 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     $('lobby').hidden = true;
     sound.chime();
     render();
-    (state.mode === 'bj' ? $('bjDeal') : $('spin')).focus({ preventScroll: true });
+    ({ bj: $('bjDeal'), rl: $('rlSpin'), slots: $('spin'), pk: $('pkSit') }[state.mode])?.focus({ preventScroll: true });
   }));
 
-  document.querySelectorAll('.gm').forEach(b => b.addEventListener('click', () => {
-    if (busy || bjBusy || state.mode === b.dataset.mode) return;
+  document.querySelectorAll('.gm:not(.pkv)').forEach(b => b.addEventListener('click', () => {
+    if (gameBusy() || state.mode === b.dataset.mode) return;
     state.mode = b.dataset.mode;
     applyGameMode();
     render();
   }));
+
+  // ---------- Roulette ----------
+  // European wheel in pocket order, clockwise from zero.
+  const RL_ORDER = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
+  const RL_RED = new Set([1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]);
+  const rlColor = n => n === 0 ? 'green' : RL_RED.has(n) ? 'red' : 'black';
+  const RL_OUTSIDE = {
+    red: { pays: 1, hit: n => RL_RED.has(n) }, black: { pays: 1, hit: n => n > 0 && !RL_RED.has(n) },
+    odd: { pays: 1, hit: n => n > 0 && n % 2 === 1 }, even: { pays: 1, hit: n => n > 0 && n % 2 === 0 },
+    low: { pays: 1, hit: n => n >= 1 && n <= 18 }, high: { pays: 1, hit: n => n >= 19 },
+    d1: { pays: 2, hit: n => n >= 1 && n <= 12 }, d2: { pays: 2, hit: n => n >= 13 && n <= 24 }, d3: { pays: 2, hit: n => n >= 25 },
+    c1: { pays: 2, hit: n => n > 0 && n % 3 === 1 }, c2: { pays: 2, hit: n => n > 0 && n % 3 === 2 }, c3: { pays: 2, hit: n => n > 0 && n % 3 === 0 },
+  };
+  const rlPays = key => key[0] === 'n' ? 35 : RL_OUTSIDE[key].pays;
+  const rlHit = (key, n) => key[0] === 'n' ? Number(key.slice(1)) === n : RL_OUTSIDE[key].hit(n);
+  const rlTotal = () => Object.values(state.rl.bets).reduce((a, v) => a + v, 0);
+  let rlBusy = false, rlChip = 10, rlUndoStack = [], rlAngle = 0, rlBallPos = null;
+  function rlSay(text, kind = '') { showMessage($('rlMsg'), text, kind); }
+
+  // Board: zero on top, the numbers in 12 rows of three, dozens on the left, even-money bets on the right.
+  (function buildRLBoard() {
+    const cells = [];
+    const cell = (key, label, cls, col, row, colSpan = 1, rowSpan = 1) => cells.push(
+      `<button class="rl-cell ${cls}" data-key="${key}" style="grid-column:${col} / span ${colSpan};grid-row:${row} / span ${rowSpan}" aria-label="${label}"><span>${label}</span></button>`);
+    cell('n0', '0', 'green', 2, 1, 3);
+    for (let n = 1; n <= 36; n++) cell('n' + n, String(n), rlColor(n), ((n - 1) % 3) + 2, Math.ceil(n / 3) + 1);
+    cell('c1', '2:1', 'side', 2, 14); cell('c2', '2:1', 'side', 3, 14); cell('c3', '2:1', 'side', 4, 14);
+    cell('d1', '1st 12', 'side vert', 1, 2, 1, 4); cell('d2', '2nd 12', 'side vert', 1, 6, 1, 4); cell('d3', '3rd 12', 'side vert', 1, 10, 1, 4);
+    cell('low', '1–18', 'side vert', 5, 2, 1, 2); cell('even', 'Even', 'side vert', 5, 4, 1, 2);
+    cells.push('<button class="rl-cell side" data-key="red" style="grid-column:5;grid-row:6 / span 2" aria-label="Red"><i class="diamond" style="background:#c8323a"></i></button>');
+    cells.push('<button class="rl-cell side" data-key="black" style="grid-column:5;grid-row:8 / span 2" aria-label="Black"><i class="diamond" style="background:#1d1714;border:1px solid #fff6"></i></button>');
+    cell('odd', 'Odd', 'side vert', 5, 10, 1, 2); cell('high', '19–36', 'side vert', 5, 12, 1, 2);
+    $('rlBoard').innerHTML = cells.join('');
+    $('rlChips').innerHTML = BJ_CHIPS.map(([v, color, ink]) =>
+      `<button class="bj-chipbtn" data-v="${v}" style="--chip:${color}${ink ? `;--chip-ink:${ink}` : ''}" aria-pressed="${v === 10}" aria-label="Use ${fmt(v)} chips">${v >= 1000 ? v / 1000 + 'K' : v}</button>`).join('');
+  })();
+  const chipColor = v => [...BJ_CHIPS].reverse().find(([cv]) => v >= cv)?.[1] || BJ_CHIPS[0][1];
+  const shortAmt = v => v >= 1e6 ? (v / 1e6).toFixed(v >= 1e7 ? 0 : 1).replace(/\.0$/, '') + 'M' : v >= 1000 ? (v / 1000).toFixed(v >= 1e4 ? 0 : 1).replace(/\.0$/, '') + 'K' : String(v);
+
+  function renderRLBets() {
+    document.querySelectorAll('.rl-cell').forEach(c => {
+      const amt = state.rl.bets[c.dataset.key] || 0;
+      let chip = c.querySelector('.rl-chip');
+      if (!amt) { chip?.remove(); return; }
+      if (!chip) { chip = document.createElement('i'); chip.className = 'rl-chip'; c.append(chip); }
+      chip.textContent = shortAmt(amt);
+      chip.style.setProperty('--chip', chipColor(amt));
+    });
+  }
+  function renderRLControls() {
+    const total = rlTotal();
+    const paused = settings.maintenance && !account?.isAdmin;
+    $('rlTotal').textContent = fmt(total);
+    $('rlSpin').disabled = rlBusy || paused || !total || total > state.credits || !account;
+    $('rlSpin').innerHTML = paused ? 'Paused<small>an admin paused the game</small>' : total ? `Spin<small>bet ${fmt(total)}</small>` : 'Spin<small>place a chip first</small>';
+    for (const id of ['rlUndo', 'rlClear', 'rlRebet', 'rlX2']) $(id).disabled = rlBusy;
+    $('rlUndo').disabled ||= !rlUndoStack.length;
+    $('rlClear').disabled ||= !total;
+    $('rlRebet').disabled ||= !Object.keys(state.rl.last).length;
+    document.querySelectorAll('.rl-cell').forEach(c => { c.disabled = rlBusy; });
+    $('rlHistory').innerHTML = state.rl.history.slice(0, 14).map(n => `<span class="${rlColor(n)}">${n}</span>`).join('');
+  }
+  function rlEnter() {
+    renderRLBets();
+    drawRoulette(rlAngle, rlBallPos);
+    if (!rlBusy) rlSay(rlTotal() ? 'Spin when you are ready.' : 'Pick a chip, place it on the table, then spin.');
+  }
+  const rlRoom = () => Math.min(state.credits, settings.maxBet || MAX) - rlTotal();
+  $('rlChips').addEventListener('click', e => {
+    const b = e.target.closest('.bj-chipbtn');
+    if (!b) return;
+    rlChip = Number(b.dataset.v);
+    document.querySelectorAll('#rlChips .bj-chipbtn').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    sound.chip();
+  });
+  $('rlBoard').addEventListener('click', e => {
+    const c = e.target.closest('.rl-cell');
+    if (!c || rlBusy) return;
+    const add = Math.min(rlChip, rlRoom());
+    if (add <= 0) { rlSay(settings.maxBet && rlTotal() >= settings.maxBet ? `The highest bet is ${fmt(settings.maxBet)}.` : 'Not enough credits for another chip.', 'lose'); return; }
+    state.rl.bets[c.dataset.key] = (state.rl.bets[c.dataset.key] || 0) + add;
+    rlUndoStack.push([c.dataset.key, add]);
+    sound.chip();
+    $('rlResult').hidden = true;
+    document.querySelectorAll('.rl-cell.hit, .rl-cell.won').forEach(x => x.classList.remove('hit', 'won'));
+    renderRLBets();
+    render();
+  });
+  $('rlUndo').addEventListener('click', () => {
+    const last = rlUndoStack.pop();
+    if (!last) return;
+    const [key, amt] = last;
+    state.rl.bets[key] -= amt;
+    if (state.rl.bets[key] <= 0) delete state.rl.bets[key];
+    sound.chip(); renderRLBets(); render();
+  });
+  $('rlClear').addEventListener('click', () => { state.rl.bets = {}; rlUndoStack = []; sound.chip(); renderRLBets(); render(); });
+  $('rlRebet').addEventListener('click', () => {
+    const total = Object.values(state.rl.last).reduce((a, v) => a + v, 0);
+    if (total > Math.min(state.credits, settings.maxBet || MAX)) { rlSay('Not enough credits to repeat the last bet.', 'lose'); return; }
+    state.rl.bets = { ...state.rl.last };
+    rlUndoStack = [];
+    sound.chip(); renderRLBets(); render();
+  });
+  $('rlX2').addEventListener('click', () => {
+    const total = rlTotal();
+    if (!total) return;
+    if (total * 2 > Math.min(state.credits, settings.maxBet || MAX)) { rlSay('Not enough credits to double the bets.', 'lose'); return; }
+    for (const k of Object.keys(state.rl.bets)) state.rl.bets[k] *= 2;
+    rlUndoStack = [];
+    sound.chip(); renderRLBets(); render();
+  });
+
+  // Wheel drawing: angles run clockwise from 12 o'clock; pocket i sits at i × 2π/37 in the wheel's own frame.
+  function drawRoulette(wheel, ball) {
+    const cv = $('rlWheel');
+    const ctx = cv.getContext('2d');
+    const S = cv.width, c = S / 2, R = c - 6;
+    const seg = (Math.PI * 2) / 37;
+    const polar = (a, r) => [c + Math.sin(a) * r, c - Math.cos(a) * r];
+    ctx.clearRect(0, 0, S, S);
+    // Wooden rim and ball track
+    let g = ctx.createRadialGradient(c, c, R * 0.8, c, c, R);
+    g.addColorStop(0, '#3a2418'); g.addColorStop(0.6, '#6b4428'); g.addColorStop(1, '#2a1a10');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(c, c, R, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#e9a23b'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(c, c, R - 3, 0, Math.PI * 2); ctx.stroke();
+    g = ctx.createRadialGradient(c, c, R * 0.78, c, c, R * 0.92);
+    g.addColorStop(0, '#120c09'); g.addColorStop(1, '#3b2a20');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(c, c, R * 0.92, 0, Math.PI * 2); ctx.fill();
+    // Number ring
+    const r1 = R * 0.80, r0 = R * 0.62;
+    RL_ORDER.forEach((n, i) => {
+      const a0 = wheel + i * seg - seg / 2 - Math.PI / 2;
+      ctx.beginPath(); ctx.arc(c, c, r1, a0, a0 + seg); ctx.arc(c, c, r0, a0 + seg, a0, true); ctx.closePath();
+      ctx.fillStyle = n === 0 ? '#2f9e6a' : RL_RED.has(n) ? '#c8323a' : '#1d1714'; ctx.fill();
+      ctx.strokeStyle = '#e9a23b'; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.save();
+      const [tx, ty] = polar(wheel + i * seg, R * 0.72);
+      ctx.translate(tx, ty); ctx.rotate(wheel + i * seg);
+      ctx.fillStyle = '#fff'; ctx.font = `600 ${Math.round(S * 0.034)}px Chivo Mono, monospace`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(String(n), 0, 0);
+      ctx.restore();
+    });
+    // Pockets where the ball rests, then the cone
+    const p1 = r0, p0 = R * 0.50;
+    RL_ORDER.forEach((n, i) => {
+      const a0 = wheel + i * seg - seg / 2 - Math.PI / 2;
+      ctx.beginPath(); ctx.arc(c, c, p1, a0, a0 + seg); ctx.arc(c, c, p0, a0 + seg, a0, true); ctx.closePath();
+      ctx.fillStyle = n === 0 ? '#1f6b47' : RL_RED.has(n) ? '#8c222a' : '#120e0c'; ctx.fill();
+      ctx.strokeStyle = '#d9cbb8'; ctx.lineWidth = 2; ctx.stroke();
+    });
+    g = ctx.createRadialGradient(c - R * 0.12, c - R * 0.12, R * 0.05, c, c, p0);
+    g.addColorStop(0, '#e9b86a'); g.addColorStop(0.5, '#8a5a2b'); g.addColorStop(1, '#4a2f1a');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(c, c, p0, 0, Math.PI * 2); ctx.fill();
+    // Turret
+    ctx.save(); ctx.translate(c, c); ctx.rotate(wheel);
+    ctx.strokeStyle = '#fff2c4'; ctx.lineWidth = S * 0.018; ctx.lineCap = 'round';
+    for (let k = 0; k < 4; k++) { ctx.rotate(Math.PI / 2); ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -R * 0.2); ctx.stroke(); ctx.beginPath(); ctx.arc(0, -R * 0.2, S * 0.016, 0, Math.PI * 2); ctx.fillStyle = '#fff2c4'; ctx.fill(); }
+    ctx.restore();
+    ctx.beginPath(); ctx.arc(c, c, S * 0.04, 0, Math.PI * 2); ctx.fillStyle = '#e9a23b'; ctx.fill();
+    // Ball
+    if (ball) {
+      const [bx, by] = polar(ball.angle, ball.r * R);
+      const bg = ctx.createRadialGradient(bx - S * 0.006, by - S * 0.006, 1, bx, by, S * 0.02);
+      bg.addColorStop(0, '#fff'); bg.addColorStop(1, '#bdb6ad');
+      ctx.beginPath(); ctx.arc(bx, by, S * 0.019, 0, Math.PI * 2); ctx.fillStyle = bg; ctx.fill();
+    }
+  }
+
+  // The wheel turns clockwise and slows; the ball runs the other way on the track,
+  // drops into the pockets with a few bounces and then rides the wheel into its pocket.
+  function rlAnimate(result) {
+    return new Promise(resolve => {
+      const seg = (Math.PI * 2) / 37;
+      const pocket = RL_ORDER.indexOf(result) * seg;
+      const w0 = rlAngle % (Math.PI * 2);
+      const wTurn = Math.PI * 2 * (3 + Math.random());
+      const wheelAt = t => w0 + wTurn * (1 - Math.pow(1 - t, 3));
+      const D = reduceMotion ? 400 : 7000, T1 = 0.72;
+      const land = wheelAt(T1) + pocket + 0.9;
+      const start = land + Math.PI * 2 * 9 + Math.random() * Math.PI * 2;
+      const t0 = performance.now();
+      let lastPocket = -1, lastTick = 0;
+      (function frame(now) {
+        const t = Math.min(1, (now - t0) / D);
+        const wa = wheelAt(t);
+        let ba, br;
+        if (t < T1) {
+          const u = t / T1;
+          ba = start + (land - start) * (1 - Math.pow(1 - u, 2.4));
+          // On the track, then a fall towards the pockets with bounces near the end of the run.
+          br = u < 0.78 ? 0.86 : 0.86 - (0.86 - 0.56) * Math.min(1, (u - 0.78) / 0.22) + Math.abs(Math.sin(u * 40)) * 0.05 * (1 - u);
+        } else {
+          const v = (t - T1) / (1 - T1);
+          ba = wa + pocket + 0.9 * Math.pow(1 - v, 3) * Math.cos(v * 9);
+          br = 0.56 + Math.abs(Math.sin(v * 18)) * 0.035 * Math.pow(1 - v, 2);
+        }
+        drawRoulette(wa, { angle: ba, r: br });
+        const pk = Math.floor((((ba - wa) % (Math.PI * 2)) + Math.PI * 2) / seg);
+        if (pk !== lastPocket && now - lastTick > 45) { lastPocket = pk; lastTick = now; if (br < 0.7) sound.tick(); }
+        if (t < 1) requestAnimationFrame(frame);
+        else { rlAngle = wa; rlBallPos = { angle: wa + pocket, r: 0.56 }; resolve(); }
+      })(t0);
+    });
+  }
+
+  async function rlSpin() {
+    if (rlBusy || !account || gameBusy()) return;
+    if (settings.maintenance && !account.isAdmin) { rlSay('The game is paused by an admin. Try again later.', 'lose'); return; }
+    const total = rlTotal();
+    if (!total) { rlSay('Place a chip on the table first.', 'lose'); return; }
+    if (total > state.credits) { rlSay(`Not enough credits for ${fmt(total)}.`, 'lose'); return; }
+    rlBusy = true;
+    state.credits -= total;
+    state.rl.last = { ...state.rl.bets };
+    $('rlResult').hidden = true;
+    document.querySelectorAll('.rl-cell.hit, .rl-cell.won').forEach(x => x.classList.remove('hit', 'won'));
+    rlSay('No more bets!', 'hot');
+    render();
+    const result = randInt(37);
+    await rlAnimate(result);
+
+    let back = 0, straight = false;
+    const won = [];
+    for (const [key, amt] of Object.entries(state.rl.bets)) {
+      if (!rlHit(key, result)) continue;
+      const profit = amt * rlPays(key) * settings.winMultiplier;
+      back += Math.floor(amt + profit);
+      won.push(key);
+      if (key[0] === 'n') straight = true;
+    }
+    state.credits = Math.min(MAX, state.credits + back);
+    const net = back - total;
+    state.lastWin = Math.max(0, net);
+    state.best = Math.max(state.best, net);
+    state.rl.history.unshift(result);
+    state.rl.history.length = Math.min(state.rl.history.length, 20);
+    state.rl.spins++;
+
+    const res = $('rlResult');
+    res.textContent = String(result);
+    res.className = 'rl-result ' + rlColor(result);
+    res.hidden = false;
+    document.querySelector(`.rl-cell[data-key="n${result}"]`)?.classList.add('hit');
+    document.querySelectorAll('.rl-cell').forEach(c => {
+      const chip = c.querySelector('.rl-chip');
+      if (!chip) return;
+      if (won.includes(c.dataset.key)) { c.classList.add('won'); chip.classList.add('paid'); }
+      else chip.classList.add('lost');
+    });
+    const name = `${result} ${result === 0 ? 'green' : rlColor(result)}`;
+    if (net > 0) {
+      rlSay(`${name}! You win +${fmt(net)}.`, 'win');
+      const b = $('rlWheel').getBoundingClientRect();
+      fxTop.coinBurst(b.left + b.width / 2, b.top + b.height / 2, straight ? 50 : 22, straight ? 12 : 8);
+      if (straight) { fxTop.burst(b.left + b.width / 2, b.top + b.height / 2, 120, 42, 9, false); sound.bigWin(); } else sound.win();
+    } else if (back > 0) rlSay(`${name}. Some bets won; you are down ${fmt(-net)}.`, '');
+    else { rlSay(`${name}. No luck this time.`, 'lose'); sound.lose(); }
+    gainXp(6 + won.length * 3);
+    checkAch({ bullseye: straight, win: Math.max(0, net), bet: total });
+    render();
+    await sleep(reduceMotion ? 0 : 1600);
+    state.rl.bets = {};
+    rlUndoStack = [];
+    renderRLBets();
+    rlBusy = false;
+    render();
+    while (pendingLevels.length) await prizeWheel(pendingLevels.shift());
+  }
+  $('rlSpin').addEventListener('click', rlSpin);
+  document.addEventListener('keydown', e => {
+    if (state.mode !== 'rl' || !account || !$('lobby').hidden || e.code !== 'Space') return;
+    if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'SUMMARY'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal')) return;
+    e.preventDefault();
+    rlSpin();
+  });
+
+  // ---------- Poker ----------
+  // Cards are 0-51: rank = code >> 2 (0 = two … 12 = ace), suit = code & 3.
+  const PK_SB = 10, PK_BB = 20, PK_MIN_BUYIN = 200, PK_TURN_MS = 25000;
+  const PK_HANDS = ['High card', 'Pair', 'Two pair', 'Three of a kind', 'Straight', 'Flush', 'Full house', 'Four of a kind', 'Straight flush'];
+  const pkR = c => c >> 2, pkS = c => c & 3;
+  const pkToBj = c => ((pkR(c) + 1) % 13) * 4 + pkS(c);
+  function pkScore5(cs) {
+    const r = cs.map(pkR).sort((a, b) => b - a);
+    const flush = cs.every(c => pkS(c) === pkS(cs[0]));
+    let high = -1;
+    if (new Set(r).size === 5) { if (r[0] - r[4] === 4) high = r[0]; else if (r[0] === 12 && r[1] === 3) high = 3; }
+    const count = {};
+    r.forEach(x => { count[x] = (count[x] || 0) + 1; });
+    const groups = Object.entries(count).map(([k, v]) => [v, +k]).sort((a, b) => b[0] - a[0] || b[1] - a[1]);
+    const g = groups.map(x => x[1]);
+    let cat, kick;
+    if (high >= 0 && flush) { cat = 8; kick = [high]; }
+    else if (groups[0][0] === 4) { cat = 7; kick = g; }
+    else if (groups[0][0] === 3 && groups[1][0] === 2) { cat = 6; kick = g; }
+    else if (flush) { cat = 5; kick = r; }
+    else if (high >= 0) { cat = 4; kick = [high]; }
+    else if (groups[0][0] === 3) { cat = 3; kick = g; }
+    else if (groups[0][0] === 2 && groups[1][0] === 2) { cat = 2; kick = g; }
+    else if (groups[0][0] === 2) { cat = 1; kick = g; }
+    else { cat = 0; kick = r; }
+    let sc = cat;
+    for (let i = 0; i < 5; i++) sc = sc * 13 + (kick[i] ?? 0);
+    return sc;
+  }
+  function pkBest(cards) {
+    let best = -1, pick = null;
+    const n = cards.length;
+    for (let a = 0; a < n; a++) for (let b = a + 1; b < n; b++) for (let c = b + 1; c < n; c++) for (let d = c + 1; d < n; d++) for (let e = d + 1; e < n; e++) {
+      const five = [cards[a], cards[b], cards[c], cards[d], cards[e]];
+      const sc = pkScore5(five);
+      if (sc > best) { best = sc; pick = five; }
+    }
+    return { score: best, cards: pick };
+  }
+  const pkCat = sc => Math.floor(sc / 13 ** 5);
+  const pkHandName = sc => pkCat(sc) === 8 && Math.floor(sc / 13 ** 4) % 13 === 12 ? 'Royal flush' : PK_HANDS[pkCat(sc)];
+
+  const PK_BOTS = [
+    { name: 'Ace Bot', tight: 0.6, aggr: 0.5, bluff: 0.05, av: '#3d7bd9' },
+    { name: 'Bluffy', tight: 0.3, aggr: 0.7, bluff: 0.14, av: '#e0715b' },
+    { name: 'Duchess', tight: 0.7, aggr: 0.4, bluff: 0.04, av: '#a77bff' },
+    { name: 'Rusty', tight: 0.45, aggr: 0.3, bluff: 0.06, av: '#e9a23b' },
+    { name: 'Lucky Lou', tight: 0.4, aggr: 0.55, bluff: 0.09, av: '#7fd18b' },
+  ];
+  const pkBotByName = name => PK_BOTS.find(b => b.name === name) || PK_BOTS[0];
+  const pkSeat = (pid, name, stack, bot = null) => ({ pid, name, stack, bet: 0, committed: 0, in_hand: false, folded: false, allin: false, acted: false, last: null, leaving: false, won: 0, hand_name: null, cards: [], revealed: false, bot });
+  const pkPotOf = st => st.seats.reduce((a, s) => a + (s ? s.committed : 0), 0);
+
+  // ----- solo engine (same rules as the online dealer in the database) -----
+  function pkNextSeat(st, from, test) {
+    for (let k = 1; k <= 8; k++) { const i = (((from + k) % 8) + 8) % 8; const s = st.seats[i]; if (s && test(s)) return i; }
+    return -1;
+  }
+  const pkCanAct = s => s.in_hand && !s.folded && !s.allin;
+  function pkPut(st, i, amt) {
+    const s = st.seats[i];
+    amt = Math.max(0, Math.min(amt, s.stack));
+    s.stack -= amt; s.bet += amt; s.committed += amt;
+    if (s.stack === 0 && s.in_hand) s.allin = true;
+  }
+  function pkStartHand(st) {
+    st.seats.forEach((s, i) => {
+      if (!s) return;
+      if (s.bot && s.stack <= 0) st.seats[i] = pkSeat('bot:' + s.bot + st.hand, s.bot, 2000, s.bot);
+      else if (!s.bot && (s.stack <= 0 || s.leaving)) st.seats[i] = null;
+    });
+    for (const s of st.seats) if (s) Object.assign(s, { in_hand: false, folded: false, allin: false, acted: false, bet: 0, committed: 0, cards: [], last: null, won: 0, hand_name: null, revealed: false });
+    const live = st.seats.map((s, i) => s && s.stack > 0 ? i : -1).filter(i => i >= 0);
+    st.board = []; st.result = null; st.winners = [];
+    if (live.length < 2 || !st.seats.some(s => s && !s.bot)) { st.phase = 'waiting'; st.to_act = -1; st.deadline = null; return; }
+    st.button = pkNextSeat(st, st.button, s => s.stack > 0);
+    const deck = [...Array(52).keys()];
+    for (let i = deck.length - 1; i > 0; i--) { const j = randInt(i + 1); [deck[i], deck[j]] = [deck[j], deck[i]]; }
+    live.forEach(i => { st.seats[i].in_hand = true; });
+    for (let round = 0; round < 2; round++) {
+      let i = st.button;
+      for (let k = 0; k < live.length; k++) { i = pkNextSeat(st, i, s => s.in_hand); st.seats[i].cards.push(deck.pop()); }
+    }
+    st.deck = deck;
+    const sbSeat = live.length === 2 ? st.button : pkNextSeat(st, st.button, s => s.in_hand);
+    const bbSeat = pkNextSeat(st, sbSeat, s => s.in_hand);
+    pkPut(st, sbSeat, st.sb); st.seats[sbSeat].last = 'Small blind';
+    pkPut(st, bbSeat, st.bb); st.seats[bbSeat].last = 'Big blind';
+    st.current_bet = st.bb; st.min_raise = st.bb; st.phase = 'preflop'; st.hand++;
+    st.to_act = pkNextSeat(st, bbSeat, pkCanAct);
+    st.deadline = null;
+    if (st.to_act < 0) pkAdvance(st);
+  }
+  function pkAct(st, i, act, amount = 0) {
+    const s = st.seats[i];
+    if (!s || st.to_act !== i || !['preflop', 'flop', 'turn', 'river'].includes(st.phase)) return 'Not your turn.';
+    const need = st.current_bet - s.bet;
+    if (act === 'fold') { s.folded = true; s.last = 'Fold'; }
+    else if (act === 'check') { if (need > 0) return 'You cannot check.'; s.last = 'Check'; }
+    else if (act === 'call') { pkPut(st, i, need); s.last = s.allin ? 'All-in' : need ? 'Call' : 'Check'; }
+    else if (act === 'raise') {
+      const cap = s.bet + s.stack;
+      const target = Math.min(Math.floor(amount), cap);
+      if (target <= st.current_bet) return 'Raise more than the current bet.';
+      if (target - st.current_bet < st.min_raise && target < cap) return `The smallest raise is to ${fmt(st.current_bet + st.min_raise)}.`;
+      const by = target - st.current_bet;
+      const was = st.current_bet;
+      pkPut(st, i, target - s.bet);
+      if (by >= st.min_raise) {
+        st.min_raise = by;
+        st.seats.forEach((o, j) => { if (o && j !== i && pkCanAct(o)) o.acted = false; });
+      }
+      st.current_bet = target;
+      s.last = s.allin ? 'All-in' : was ? `Raise ${shortAmt(target)}` : `Bet ${shortAmt(target)}`;
+    } else return 'Unknown move.';
+    s.acted = true;
+    pkAdvance(st);
+    return null;
+  }
+  function pkAdvance(st) {
+    const alive = st.seats.filter(s => s && s.in_hand && !s.folded);
+    if (alive.length === 1) { pkFinish(st, false); return; }
+    const canAct = alive.filter(s => !s.allin);
+    const facing = canAct.some(s => s.bet < st.current_bet);
+    if (canAct.length >= 2 || facing) {
+      const from = st.to_act >= 0 ? st.to_act : st.button;
+      const nxt = pkNextSeat(st, from, s => pkCanAct(s) && (!s.acted || s.bet < st.current_bet));
+      if (nxt >= 0) { st.to_act = nxt; st.deadline = st.solo ? null : Date.now() + PK_TURN_MS; return; }
+    }
+    for (const s of st.seats) if (s) { s.bet = 0; s.acted = false; if (s.in_hand && !s.folded && !s.allin) s.last = null; }
+    st.current_bet = 0; st.min_raise = st.bb;
+    if (st.phase === 'river') { pkFinish(st, true); return; }
+    const deal = st.phase === 'preflop' ? 3 : 1;
+    for (let k = 0; k < deal; k++) st.board.push(st.deck.pop());
+    st.phase = { preflop: 'flop', flop: 'turn', turn: 'river' }[st.phase];
+    if (canAct.length < 2) { st.to_act = -1; st.deadline = Date.now() + 1300; return; }
+    st.to_act = pkNextSeat(st, st.button, pkCanAct);
+    st.deadline = st.solo ? null : Date.now() + PK_TURN_MS;
+  }
+  function pkFinish(st, showdown) {
+    const contenders = st.seats.map((s, i) => s && s.in_hand && !s.folded ? i : -1).filter(i => i >= 0);
+    const pot = pkPotOf(st);
+    st.winners = [];
+    if (!showdown) {
+      const w = st.seats[contenders[0]];
+      w.stack += pot; w.won = pot;
+      st.winners = [contenders[0]];
+      st.result = `${w.name} wins ${fmt(pot)}`;
+    } else {
+      const score = {};
+      for (const i of contenders) {
+        const s = st.seats[i];
+        const best = pkBest([...s.cards, ...st.board]);
+        score[i] = best.score; s.hand_name = pkHandName(best.score); s.revealed = true; s.bestCards = best.cards;
+      }
+      const levels = [...new Set(contenders.map(i => st.seats[i].committed))].sort((a, b) => a - b);
+      let prev = 0, paid = 0, lastWinners = [];
+      for (const lvl of levels) {
+        const part = st.seats.reduce((a, s) => a + (s ? Math.min(s.committed, lvl) - Math.min(s.committed, prev) : 0), 0);
+        const elig = contenders.filter(i => st.seats[i].committed >= lvl);
+        const top = Math.max(...elig.map(i => score[i]));
+        const winners = elig.filter(i => score[i] === top);
+        const share = Math.floor(part / winners.length);
+        winners.forEach(i => { st.seats[i].stack += share; st.seats[i].won += share; });
+        const odd = part - share * winners.length;
+        if (odd) { const first = pkNextSeat(st, st.button, s => winners.includes(st.seats.indexOf(s))); st.seats[first >= 0 ? first : winners[0]].stack += odd; st.seats[first >= 0 ? first : winners[0]].won += odd; }
+        paid += part; prev = lvl; lastWinners = winners;
+      }
+      if (pot > paid && lastWinners.length) { st.seats[lastWinners[0]].stack += pot - paid; st.seats[lastWinners[0]].won += pot - paid; }
+      st.winners = contenders.filter(i => st.seats[i].won > 0);
+      const top = [...st.winners].sort((a, b) => st.seats[b].won - st.seats[a].won);
+      st.result = top.length > 1
+        ? `Split pot: ${top.map(i => st.seats[i].name).join(' & ')} · ${st.seats[top[0]].hand_name}`
+        : `${st.seats[top[0]].name} wins ${fmt(st.seats[top[0]].won)} with ${st.seats[top[0]].hand_name.toLowerCase()}`;
+    }
+    st.phase = 'showdown'; st.to_act = -1;
+    st.deadline = Date.now() + (showdown ? 5200 : 3200);
+  }
+
+  // ----- bots -----
+  function pkStrength(hole, board) {
+    if (!board.length) {
+      const [a, b] = hole.map(pkR).sort((x, y) => y - x);
+      let v = (a + b) / 24 * 0.55;
+      if (a === b) v = 0.5 + a / 24;
+      if (pkS(hole[0]) === pkS(hole[1])) v += 0.06;
+      if (a - b === 1) v += 0.04;
+      if (a >= 10) v += 0.05;
+      return Math.min(1, v);
+    }
+    const sc = pkBest([...hole, ...board]).score;
+    const cat = pkCat(sc);
+    let v = [0.12, 0.42, 0.66, 0.78, 0.84, 0.88, 0.93, 0.98, 1][cat];
+    const holeRanks = hole.map(pkR), boardRanks = board.map(pkR);
+    if (cat === 0) v += Math.max(...holeRanks) / 60;
+    if (cat === 1) {
+      const pairRank = Math.floor(sc / 13 ** 4) % 13;
+      if (!holeRanks.includes(pairRank)) v = 0.2;
+      else if (pairRank >= Math.max(...boardRanks)) v += 0.12;
+    }
+    if (board.length < 5) {
+      const suits = [0, 0, 0, 0];
+      [...hole, ...board].forEach(c => suits[pkS(c)]++);
+      if (Math.max(...suits) === 4) v += 0.12;
+    }
+    return Math.min(1, v);
+  }
+  function pkBotMove(st, i) {
+    const s = st.seats[i], bot = pkBotByName(s.bot);
+    const need = st.current_bet - s.bet, pot = pkPotOf(st);
+    const str = pkStrength(s.cards, st.board);
+    const r = Math.random();
+    const raiseTo = f => Math.min(s.bet + s.stack, Math.max(st.current_bet + st.min_raise, st.current_bet + Math.round(((pot + need) * f) / st.bb) * st.bb));
+    if (need === 0) {
+      if (str > 0.6 + bot.tight * 0.2 && r < 0.35 + bot.aggr * 0.5) return ['raise', raiseTo(0.45 + Math.random() * 0.5)];
+      if (r < bot.bluff) return ['raise', raiseTo(0.5)];
+      return ['check'];
+    }
+    const odds = need / (pot + need);
+    if (str > 0.8 && r < 0.25 + bot.aggr * 0.5) return ['raise', raiseTo(0.6 + Math.random() * 0.6)];
+    if (str >= odds + 0.1 * bot.tight || (need <= st.bb && str > 0.25)) return ['call'];
+    if (r < bot.bluff * 0.5) return ['raise', raiseTo(0.7)];
+    return ['fold'];
+  }
+
+  // ----- views -----
+  let pkTimer = null, pkShown = new Set(), pkLastHand = -1, pkLastResultHand = -1, pkWorking = false, pkRaiseTo = 0;
+  const pkOnline = { st: null, watching: false, poll: null, ticker: null, lastTick: 0, jitter: Math.random() * 900 };
+  const pkView = () => state.pk.view === 'online' ? 'online' : 'solo';
+  const pkCurrent = () => pkView() === 'online' ? pkOnline.st : state.pk.solo;
+  function pkBusy() { return pkWorking; }
+  function pkSay(text, kind = '') { showMessage($('pkMsg'), text, kind); }
+  const pkMySeat = st => st ? (typeof st.me === 'number' && st.me >= 0 ? st.me : st.seats.findIndex(s => s && s.pid === account?.id)) : -1;
+
+  function pkEnter() {
+    document.querySelectorAll('[data-pkv]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.pkv === pkView())));
+    if (pkView() === 'online') pkStartOnline(); else pkStopOnlinePolling();
+    pkShown = new Set();
+    pkLastHand = -1;
+    renderPK(false);
+    pkSchedule();
+  }
+  document.querySelectorAll('[data-pkv]').forEach(b => b.addEventListener('click', () => {
+    if (pkWorking || state.pk.view === b.dataset.pkv) return;
+    state.pk.view = b.dataset.pkv;
+    pkEnter();
+    render();
+  }));
+
+  // Seat spots around the oval, as % of the table; your own seat is always at the bottom.
+  const PK_SPOTS_WIDE = [[50, 93], [17, 82], [5, 48], [19, 11], [50, 5], [81, 11], [95, 48], [83, 82]];
+  const PK_SPOTS_TALL = [[50, 93], [13, 76], [10, 46], [16, 15], [50, 6], [84, 15], [90, 46], [87, 76]];
+  function renderPK(animate = true) {
+    const st = pkCurrent();
+    const layer = $('pkLayer');
+    const tall = $('pkTable').clientWidth < 560;
+    const spots = tall ? PK_SPOTS_TALL : PK_SPOTS_WIDE;
+    const me = pkMySeat(st);
+    const rot = me >= 0 ? me : 0;
+    const spot = i => spots[(i - rot + 8) % 8];
+    const toward = ([x, y], f) => [50 + (x - 50) * f, 47 + (y - 47) * f];
+    const freshCards = [], freshBets = [];
+    const hand = st?.hand ?? 0;
+    if (hand !== pkLastHand) { pkShown = new Set(); pkLastHand = hand; }
+    const seen = key => { if (pkShown.has(key)) return true; pkShown.add(key); return false; };
+
+    // Board
+    const board = st?.board || [];
+    $('pkBoard').replaceChildren(...[0, 1, 2, 3, 4].map(k => {
+      if (k >= board.length) { const d = document.createElement('div'); d.className = 'slot'; return d; }
+      const el = bjCard(pkToBj(board[k]), false);
+      if (!seen(`b${k}`) && animate) el.classList.add('flipin');
+      if (st.phase === 'showdown' && st.winners?.some(w => st.seats[w]?.bestCards?.includes(board[k]))) el.classList.add('win-card');
+      return el;
+    }));
+    const pot = st ? pkPotOf(st) - (st.phase === 'showdown' ? 0 : st.seats.reduce((a, s) => a + (s ? s.bet : 0), 0)) : 0;
+    $('pkPot').innerHTML = st && (pot > 0 || st.phase !== 'waiting') && st.phase !== 'showdown' && pot > 0 ? `<i style="--chip:#e9a23b"></i>Pot ${fmt(pot)}` : '';
+    const res = $('pkResult');
+    const resText = st?.phase === 'showdown' ? st.result || '' : st?.phase === 'waiting' ? (st.result || '') : '';
+    if (res.textContent !== resText) { res.textContent = resText; res.classList.remove('pop'); void res.offsetWidth; if (resText) res.classList.add('pop'); }
+
+    // Seats, bets and the dealer button
+    const parts = [];
+    const nodes = [];
+    (st?.seats || Array(8).fill(null)).forEach((s, i) => {
+      const [x, y] = spot(i);
+      if (!s) {
+        if (pkView() === 'online') { const e = document.createElement('div'); e.className = 'pk-empty'; e.style.left = x + '%'; e.style.top = y + '%'; e.textContent = 'Open seat'; nodes.push(e); }
+        return;
+      }
+      const seat = document.createElement('div');
+      const winner = st.phase === 'showdown' && s.won > 0;
+      seat.className = 'pk-seat' + (i === me ? ' me' : '') + (st.to_act === i ? ' active' : '') + (s.folded ? ' folded' : '') + (!s.in_hand && st.phase !== 'waiting' ? ' out' : '') + (winner ? ' winner' : '');
+      seat.style.left = x + '%'; seat.style.top = y + '%';
+      seat.dataset.seat = i;
+      const cardsBox = document.createElement('div');
+      cardsBox.className = 'pk-cards';
+      const showFaces = (i === me || s.revealed) && s.cards?.length === 2;
+      const hasCards = s.in_hand && !s.folded && (s.cards?.length === 2 || s.has_cards);
+      if (hasCards || (showFaces && s.in_hand)) {
+        for (let k = 0; k < 2; k++) {
+          const el = showFaces ? bjCard(pkToBj(s.cards[k]), false) : bjCard(0, true);
+          const key = `c${i}-${k}`;
+          if (!seen(key) && animate) freshCards.push(el);
+          if (showFaces && s.revealed && i !== me && !seen(`r${i}-${k}`) && animate) el.classList.add('flipin');
+          if (winner && s.bestCards?.includes(s.cards[k])) el.classList.add('win-card');
+          cardsBox.append(el);
+        }
+      }
+      const av = s.bot ? pkBotByName(s.bot).av : `hsl(${hueFor(s.name)} 70% 70%)`;
+      const plate = document.createElement('div');
+      plate.className = 'pk-plate';
+      plate.innerHTML = `<span class="pk-avatar" style="--av:${av}">${esc((s.name || '?')[0].toUpperCase())}</span><span class="pk-who"><b>${nameHtml(s.pid, s.name)}</b><span>${s.leaving ? 'left' : fmt(s.stack)}</span></span>`;
+      seat.append(cardsBox, plate);
+      let tag = null;
+      if (winner) tag = [`+${fmt(s.won)}`, 'won', `w${i}`];
+      else if (s.revealed && s.hand_name) tag = [s.hand_name, 'hand', `h${i}`];
+      else if (s.last) tag = [s.last, '', `l${i}-${s.last}`];
+      if (tag) {
+        const t = document.createElement('span');
+        t.className = 'pk-tag ' + tag[1];
+        t.textContent = tag[0];
+        if (!seen(tag[2]) && animate) t.classList.add('pop');
+        seat.append(t);
+      }
+      nodes.push(seat);
+      if (s.bet > 0 && st.phase !== 'showdown') {
+        const [bx, by] = toward([x, y], tall ? 0.5 : 0.58);
+        const b = document.createElement('div');
+        b.className = 'pk-bet';
+        b.style.left = bx + '%'; b.style.top = by + '%';
+        b.innerHTML = `<i style="--chip:${chipColor(s.bet)}"></i>${fmt(s.bet)}`;
+        if (!seen(`bet${st.phase}${i}-${s.bet}`) && animate) freshBets.push([b, x - bx, y - by]);
+        nodes.push(b);
+      }
+      if (st.button === i && st.phase !== 'waiting') {
+        const [dx, dy] = toward([x, y], 0.72);
+        const d = document.createElement('div');
+        d.className = 'pk-dealer';
+        d.style.left = (dx + (x < 50 ? 4 : -4)) + '%'; d.style.top = dy + '%';
+        d.textContent = 'D';
+        nodes.push(d);
+      }
+    });
+    layer.replaceChildren(...nodes);
+    const tb = $('pkTable').getBoundingClientRect();
+    for (const el of freshCards) {
+      const b = el.getBoundingClientRect();
+      el.style.setProperty('--dx', `${tb.left + tb.width / 2 - b.left}px`);
+      el.style.setProperty('--dy', `${tb.top + tb.height * 0.47 - b.top}px`);
+      el.classList.add('dealt');
+    }
+    for (const [b, fx, fy] of freshBets) {
+      b.style.setProperty('--fx', `${(fx / 100) * tb.width}px`);
+      b.style.setProperty('--fy', `${(fy / 100) * tb.height}px`);
+      b.classList.add('slide');
+    }
+    // Showdown: chips fly from the pot to each winner.
+    if (st?.phase === 'showdown' && pkLastResultHand !== st.hand && animate) {
+      pkLastResultHand = st.hand;
+      const potRect = $('pkBoard').getBoundingClientRect();
+      for (const w of st.winners || []) {
+        const seatEl = layer.querySelector(`.pk-seat[data-seat="${w}"]`);
+        if (!seatEl) continue;
+        const r = seatEl.getBoundingClientRect();
+        for (let k = 0; k < 10; k++) {
+          const chip = document.createElement('div');
+          chip.className = 'pk-fly';
+          chip.style.cssText = `left:${potRect.left + potRect.width / 2}px;top:${potRect.top + potRect.height / 2}px;--chip:${BJ_CHIPS[k % BJ_CHIPS.length][1]}`;
+          document.body.append(chip);
+          chip.animate([{ transform: 'none' }, { transform: `translate(${r.left + r.width / 2 - potRect.left - potRect.width / 2}px, ${r.top + r.height / 2 - potRect.top - potRect.height / 2}px)` }],
+            { duration: 520, delay: k * 45, easing: 'cubic-bezier(.3,.7,.4,1)', fill: 'backwards' }).onfinish = () => chip.remove();
+        }
+        if (w === me) {
+          fxTop.coinBurst(r.left + r.width / 2, r.top, 30, 9);
+          sound.bigWin();
+        }
+      }
+      if (!(st.winners || []).includes(me)) sound.win();
+    }
+    renderPKControls();
+    pkUpdateTimer();
+  }
+
+  function pkUpdateTimer() {
+    const st = pkCurrent();
+    const el = $('pkLayer').querySelector('.pk-seat.active .pk-avatar');
+    if (!el || !st?.deadline || st.solo) { if (el) el.style.setProperty('--t', 1); return; }
+    const left = Math.max(0, st.deadline - Date.now());
+    el.style.setProperty('--t', (left / PK_TURN_MS).toFixed(3));
+    el.closest('.pk-seat').classList.toggle('urgent', left < 7000);
+  }
+  setInterval(() => { if (state.mode === 'pk' && pkView() === 'online') pkUpdateTimer(); }, 200);
+
+  function pkLimits(st, me) {
+    const s = st.seats[me];
+    const need = Math.max(0, st.current_bet - s.bet);
+    const cap = s.bet + s.stack;
+    const minTo = Math.min(cap, st.current_bet + Math.max(st.min_raise, st.bb));
+    const pot = pkPotOf(st);
+    return { s, need, cap, minTo, pot, canRaise: cap > st.current_bet && s.stack > need };
+  }
+  function renderPKControls() {
+    const st = pkCurrent();
+    const online = pkView() === 'online';
+    const me = pkMySeat(st);
+    const seated = me >= 0 && st?.seats[me] && !st.seats[me].leaving;
+    const myTurn = seated && st.to_act === me && ['preflop', 'flop', 'turn', 'river'].includes(st.phase);
+    const offline = online && !backend?.poker;
+    $('pkInfo').textContent = online ? `Online · ${st ? st.seats.filter(Boolean).length : 0} / 8 seated · blinds ${PK_SB}/${PK_BB}` : `Solo vs bots · blinds ${PK_SB}/${PK_BB}`;
+    $('pkControls').hidden = !seated;
+    $('pkSit').hidden = seated || offline;
+    $('pkBuyIn').hidden = $('pkSit').hidden;
+    document.querySelector('.pk-join label').hidden = $('pkSit').hidden;
+    $('pkLeave').hidden = !seated;
+    $('pkSit').textContent = online ? 'Sit down' : 'Start table';
+    $('pkSit').disabled = pkWorking || !account || state.credits < PK_MIN_BUYIN || (settings.maintenance && !account?.isAdmin);
+    if (offline) { pkSay('Online poker runs on the public site with its database. Play solo here.', 'lose'); }
+    for (const id of ['pkFold', 'pkCall', 'pkRaise']) $(id).disabled = !myTurn || pkWorking;
+    document.querySelectorAll('[data-pkr], #pkSlider').forEach(b => { b.disabled = !myTurn || pkWorking; });
+    if (!seated || !st) return;
+    const L = pkLimits(st, me);
+    $('pkCall').innerHTML = L.need ? `Call<small>${fmt(Math.min(L.need, L.s.stack))}</small>` : 'Check<small>C</small>';
+    const slider = $('pkSlider');
+    slider.min = L.minTo; slider.max = L.cap; slider.step = st.bb / 2;
+    if (!myTurn || pkRaiseTo < L.minTo || pkRaiseTo > L.cap) pkRaiseTo = L.minTo;
+    slider.value = pkRaiseTo;
+    $('pkRaise').innerHTML = !L.canRaise ? 'Raise<small>—</small>' : pkRaiseTo >= L.cap ? `All-in<small>${fmt(L.cap)}</small>` : `${st.current_bet ? 'Raise' : 'Bet'}<small>to ${fmt(pkRaiseTo)}</small>`;
+    if (!L.canRaise) { $('pkRaise').disabled = true; document.querySelectorAll('[data-pkr], #pkSlider').forEach(b => { b.disabled = true; }); }
+    if (!pkWorking) {
+      if (myTurn) pkSay(L.need ? `Your turn: ${fmt(Math.min(L.need, L.s.stack))} to call.` : 'Your turn: check or bet.', 'hot');
+      else if (st.phase === 'showdown') pkSay(st.result || '', (st.winners || []).includes(me) ? 'win' : '');
+      else if (st.phase === 'waiting') pkSay(online ? 'Waiting for more players to sit down…' : 'Waiting…');
+      else if (st.to_act >= 0 && st.seats[st.to_act]) pkSay(`${st.seats[st.to_act].name} is thinking…`);
+      else pkSay('Dealing…');
+    }
+  }
+  $('pkSlider').addEventListener('input', e => { pkRaiseTo = Number(e.target.value); renderPKControls(); });
+  document.querySelectorAll('[data-pkr]').forEach(b => b.addEventListener('click', () => {
+    const st = pkCurrent(), me = pkMySeat(st);
+    if (!st || me < 0) return;
+    const L = pkLimits(st, me);
+    const potTo = st.current_bet + L.pot + L.need;
+    pkRaiseTo = { min: L.minTo, half: st.current_bet + Math.round((L.pot + L.need) / 2), pot: potTo, all: L.cap }[b.dataset.pkr];
+    pkRaiseTo = Math.max(L.minTo, Math.min(L.cap, Math.round(pkRaiseTo / (st.bb / 2)) * (st.bb / 2)));
+    if (b.dataset.pkr === 'all') pkRaiseTo = L.cap;
+    sound.chip();
+    renderPKControls();
+  }));
+
+  async function pkMove(act) {
+    const st = pkCurrent(), me = pkMySeat(st);
+    if (!st || me < 0 || pkWorking) return;
+    const L = pkLimits(st, me);
+    if (act === 'call' && !L.need) act = 'check';
+    const amount = act === 'raise' ? pkRaiseTo : 0;
+    if (act === 'raise' && !L.canRaise) return;
+    sound.chip();
+    if (pkView() === 'solo') {
+      const err = pkAct(st, me, act, amount);
+      if (err) { pkSay(err, 'lose'); return; }
+      pkAfterSolo();
+    } else {
+      pkWorking = true; renderPKControls();
+      try { await backend.poker.act(act, amount); }
+      catch (e) { pkSay(/not your turn/i.test(e?.message || '') ? 'Too late: the turn moved on.' : /small/i.test(e?.message || '') ? 'That raise is too small.' : 'The move did not go through. Try again.', 'lose'); }
+      pkWorking = false;
+      await pkOnlineRefresh();
+    }
+  }
+  $('pkFold').addEventListener('click', () => pkMove('fold'));
+  $('pkCall').addEventListener('click', () => pkMove('call'));
+  $('pkRaise').addEventListener('click', () => pkMove('raise'));
+  document.addEventListener('keydown', e => {
+    if (state.mode !== 'pk' || !account || !$('lobby').hidden || e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal')) return;
+    const map = { f: 'fold', c: 'call', r: 'raise' };
+    const act = map[e.key.toLowerCase()];
+    if (act && !$('pkFold').disabled) { e.preventDefault(); pkMove(act); }
+  });
+
+  // ----- solo flow -----
+  function pkAfterSolo() {
+    const st = state.pk.solo;
+    if (st?.phase === 'showdown' && !st.counted) {
+      st.counted = true;
+      const me = pkMySeat(st);
+      if (me >= 0 && st.seats[me].in_hand) {
+        state.pk.hands++;
+        const won = st.seats[me].won > 0;
+        gainXp(6 + (won ? 8 : 0));
+        checkAch({ pokerWin: won, pokerSF: won && st.seats[me].hand_name && /straight flush|royal/i.test(st.seats[me].hand_name) });
+      }
+    }
+    renderPK();
+    render();
+    pkSchedule();
+  }
+  function pkSchedule() {
+    clearTimeout(pkTimer);
+    const st = state.pk.solo;
+    if (!st || state.mode !== 'pk' || pkView() !== 'solo' || !account) return;
+    if (!$('wheelModal').hidden) { pkTimer = setTimeout(pkSchedule, 800); return; }
+    if (st.phase === 'showdown') {
+      pkTimer = setTimeout(async () => {
+        while (pendingLevels.length) await prizeWheel(pendingLevels.shift());
+        const me = st.seats.findIndex(s => s && !s.bot);
+        if (me < 0 || st.seats[me].stack <= 0) { state.pk.solo = null; pkSay('You are out of chips. Buy in again to keep playing.', 'lose'); renderPK(false); render(); return; }
+        pkStartHand(st);
+        pkAfterSolo();
+      }, Math.max(600, st.deadline - Date.now()));
+      return;
+    }
+    if (st.phase === 'waiting') return;
+    if (st.to_act < 0) { pkTimer = setTimeout(() => { pkAdvance(st); pkAfterSolo(); }, 1200); return; }
+    const s = st.seats[st.to_act];
+    if (s?.bot) {
+      pkTimer = setTimeout(() => {
+        const [act, amt] = pkBotMove(st, st.to_act);
+        if (pkAct(st, st.to_act, act, amt)) pkAct(st, st.to_act, st.current_bet > s.bet ? 'call' : 'check');
+        pkAfterSolo();
+      }, 650 + Math.random() * 900);
+    }
+  }
+
+  $('pkSit').addEventListener('click', async () => {
+    if (!account || pkWorking) return;
+    const buyIn = Math.floor(Number($('pkBuyIn').value));
+    if (!(buyIn >= PK_MIN_BUYIN)) { pkSay(`The smallest buy-in is ${fmt(PK_MIN_BUYIN)}.`, 'lose'); return; }
+    if (buyIn > state.credits) { pkSay(`You only have ${fmt(state.credits)} credits.`, 'lose'); return; }
+    state.pk.buyIn = buyIn;
+    sound.chip();
+    if (pkView() === 'solo') {
+      state.credits -= buyIn;
+      const seats = Array(8).fill(null);
+      seats[0] = pkSeat(account.id, account.name, buyIn);
+      [1, 3, 4, 5, 7].forEach((at, k) => { seats[at] = pkSeat('bot:' + PK_BOTS[k].name, PK_BOTS[k].name, 2000, PK_BOTS[k].name); });
+      state.pk.solo = { solo: true, phase: 'waiting', hand: 0, button: -1, sb: PK_SB, bb: PK_BB, board: [], deck: [], current_bet: 0, min_raise: PK_BB, to_act: -1, deadline: null, result: null, seats, winners: [] };
+      pkStartHand(state.pk.solo);
+      pkAfterSolo();
+      return;
+    }
+    pkWorking = true; renderPKControls();
+    try {
+      await flush();
+      quietCreditsUntil = Date.now() + 8000;
+      await backend.poker.sit(buyIn);
+      await refreshOwn();
+      pkSay('You sat down. The next hand deals you in.', 'win');
+    } catch (e) {
+      pkSay(/full/i.test(e?.message || '') ? 'The table is full (8 players).' : /credits/i.test(e?.message || '') ? 'Not enough credits for that buy-in.' : /already/i.test(e?.message || '') ? 'You are already at the table.' : 'Could not sit down. Try again.', 'lose');
+    }
+    pkWorking = false;
+    await pkOnlineRefresh();
+  });
+  $('pkLeave').addEventListener('click', async () => {
+    if (pkWorking) return;
+    if (pkView() === 'solo') {
+      const st = state.pk.solo;
+      const me = pkMySeat(st);
+      if (me < 0) return;
+      // Chips in the current pot stay there; the rest goes back to your credits.
+      if (['preflop', 'flop', 'turn', 'river'].includes(st.phase) && st.seats[me].in_hand && !st.seats[me].folded) {
+        if (st.to_act === me) pkAct(st, me, 'fold'); else st.seats[me].folded = true;
+      }
+      state.credits = Math.min(MAX, state.credits + st.seats[me].stack);
+      toast('Left the table', `${fmt(st.seats[me].stack)} chips went back to your credits.`);
+      state.pk.solo = null;
+      clearTimeout(pkTimer);
+      renderPK(false);
+      render();
+      return;
+    }
+    pkWorking = true; renderPKControls();
+    try {
+      quietCreditsUntil = Date.now() + 8000;
+      await backend.poker.leave();
+      await refreshOwn();
+      toast('Left the table', 'Your chips went back to your credits.');
+    } catch { pkSay('Could not leave the table. Try again.', 'lose'); }
+    pkWorking = false;
+    await pkOnlineRefresh();
+  });
+
+  // ----- online flow -----
+  function pkNormalize(raw) {
+    const offset = Date.now() - Date.parse(raw.now);
+    const seats = Array(8).fill(null);
+    for (const s of raw.seats || []) seats[s.seat] = { ...s, cards: s.cards || [], revealed: !!s.revealed, bot: null };
+    for (const s of seats) if (s && s.revealed && s.cards.length === 2) s.bestCards = pkBest([...s.cards, ...(raw.board || [])]).cards;
+    return {
+      ...raw, seats, solo: false,
+      board: raw.board || [],
+      deadline: raw.deadline ? Date.parse(raw.deadline) + offset : null,
+      winners: seats.map((s, i) => s && s.won > 0 ? i : -1).filter(i => i >= 0),
+      me: typeof raw.me === 'number' ? raw.me : -1,
+    };
+  }
+  async function pkOnlineRefresh() {
+    if (!backend?.poker) return;
+    try {
+      const prev = pkOnline.st;
+      const st = pkNormalize(await backend.poker.state());
+      pkOnline.st = st;
+      // Count a finished hand once for XP and achievements.
+      if (st.phase === 'showdown' && st.me >= 0 && st.seats[st.me]?.in_hand && state.pk.lastOnlineHand !== st.hand) {
+        state.pk.lastOnlineHand = st.hand;
+        state.pk.hands++;
+        const won = st.seats[st.me].won > 0;
+        gainXp(6 + (won ? 8 : 0));
+        checkAch({ pokerWin: won, pokerSF: won && /straight flush|royal/i.test(st.seats[st.me].hand_name || '') });
+        render();
+      }
+      if (state.mode === 'pk' && pkView() === 'online') {
+        if (prev && prev.to_act !== st.to_act && st.to_act === st.me && st.me >= 0) sound.chime();
+        renderPK();
+      }
+    } catch {}
+  }
+  function pkStartOnline() {
+    if (!backend?.poker) { pkOnline.st = null; renderPK(false); return; }
+    if (!pkOnline.watching) { pkOnline.watching = true; backend.poker.watch(() => pkOnlineRefresh()); }
+    clearInterval(pkOnline.poll);
+    pkOnline.poll = setInterval(pkOnlineRefresh, 4000);
+    clearInterval(pkOnline.ticker);
+    // Anyone at the page nudges the dealer when a deadline passes (a timed-out move, the next hand).
+    pkOnline.ticker = setInterval(async () => {
+      const st = pkOnline.st;
+      if (!st || Date.now() - pkOnline.lastTick < 1500) return;
+      const seated = st.seats.filter(Boolean).length;
+      const due = (st.deadline && Date.now() > st.deadline + 400 + pkOnline.jitter) || (st.phase === 'waiting' && seated >= 2 && !st.deadline);
+      if (!due) return;
+      pkOnline.lastTick = Date.now();
+      await backend.poker.tick();
+      await pkOnlineRefresh();
+    }, 500);
+    pkOnlineRefresh();
+  }
+  function pkStopOnlinePolling() { clearInterval(pkOnline.poll); clearInterval(pkOnline.ticker); pkOnline.poll = pkOnline.ticker = null; }
+  function pkStopOnline() { pkStopOnlinePolling(); pkOnline.st = null; }
+  // Keep ticking and refreshing while seated online, even from another game.
+  setInterval(() => {
+    if (!account || !backend?.poker || !pkOnline.st) return;
+    if (state.mode !== 'pk' || pkView() !== 'online') pkOnlineRefresh();
+  }, 6000);
+  addEventListener('resize', () => { if (state.mode === 'pk') renderPK(false); });
 
   // ---------- Missions ----------
   function newMission(exclude) {
@@ -3247,6 +4505,8 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     renderMissions();
     renderBoards();
     renderBJControls();
+    renderRLControls();
+    if (state.mode === 'pk') renderPKControls();
     persist();
   }
 
@@ -3292,7 +4552,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     render();
   });
   document.addEventListener('keydown', e => {
-    if (e.code === 'Space' && account && $('lobby').hidden && state.mode !== 'bj' && !['BUTTON', 'SUMMARY', 'INPUT'].includes(e.target.tagName) && $('wheelModal').hidden && $('gambleModal').hidden && $('adminModal').hidden) { e.preventDefault(); play(); }
+    if (e.code === 'Space' && account && $('lobby').hidden && state.mode === 'slots' && !['BUTTON', 'SUMMARY', 'INPUT'].includes(e.target.tagName) && $('wheelModal').hidden && $('gambleModal').hidden && $('adminModal').hidden) { e.preventDefault(); play(); }
   });
 
   // ---------- Accounts ----------
@@ -3411,6 +4671,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
       watch: cb => store.watch(cb),
       chatWatch: cb => store.chatWatch(cb),
       chatSend: text => store.chatSend(text),
+      poker: null,
       presence: cb => store.presence(cb),
       setOnline: me => store.setOnline(me),
       dmWatch: cb => store.dmWatch(cb),
@@ -3608,6 +4869,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     });
     const email = name => `${idFor(name)}@${EMAIL_DOMAIN}`;
     let hasJackpots = true;
+    const pokerReady = !(await sb.rpc('poker_state')).error;
     let onlineCh = null, onlineReady = false, onlineMe = null, dmPull = null;
     // Admin columns exist once the admin part of supabase-setup.sql has run.
     const adminSchema = !(await sb.from('players').select('admin_rev').limit(1)).error;
@@ -3779,6 +5041,15 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
         if (error) throw error;
         dmPull?.();
       },
+      // Online poker: the database deals and checks every move; the page only sends moves and shows the state.
+      poker: pokerReady ? {
+        async state() { const { data, error } = await sb.rpc('poker_state'); if (error) throw error; return data; },
+        async sit(buyIn) { const { error } = await sb.rpc('poker_sit', { buy_in: buyIn }); if (error) throw error; },
+        async leave() { const { error } = await sb.rpc('poker_leave'); if (error) throw error; },
+        async act(act, amount) { const { error } = await sb.rpc('poker_act', { act, amount: Math.floor(amount || 0) }); if (error) throw error; },
+        async tick() { await sb.rpc('poker_tick'); },
+        watch(cb) { sb.channel('poker-pulse').on('postgres_changes', { event: '*', schema: 'public', table: 'poker_pulse' }, cb).subscribe(); },
+      } : null,
       async chatWatch(cb) {
         let list = [];
         const pull = async () => {
@@ -3950,9 +5221,13 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     state.ach = Object.assign({}, saved.ach);
     state.missions = (Array.isArray(saved.missions) ? saved.missions : []).filter(m => MISSIONS[m?.t]);
     state.bj = Object.assign(fresh().bj, saved.bj);
+    state.rl = Object.assign(fresh().rl, saved.rl);
+    state.pk = Object.assign(fresh().pk, saved.pk);
+    if (state.pk.solo && !Array.isArray(state.pk.solo.seats)) state.pk.solo = null;
+    if (typeof state.rl.bets !== 'object' || !state.rl.bets) state.rl.bets = {};
     if (!Array.isArray(state.bj.shoe)) state.bj.shoe = [];
     if (state.bj.round && !Array.isArray(state.bj.round.hands)) state.bj.round = null;
-    if (state.mode !== 'bj') state.mode = 'slots';
+    if (!['bj', 'rl', 'pk'].includes(state.mode)) state.mode = 'slots';
     autoLeft = 0;
     pendingLevels.length = 0;
     held = [false, false, false];
@@ -4007,6 +5282,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
     $('accountBar').hidden = true;
     setChat(false);
     stopDms();
+    pkStopOnline();
     $('pwForm').hidden = true;
     $('login').hidden = false;
     $('lobby').hidden = true;
@@ -4267,6 +5543,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
   });
 
   // Pick up credits or a reset an admin made to this account.
+  let quietCreditsUntil = 0;
   async function refreshOwn() {
     if (refreshing || !account) return;
     if (busy) { setTimeout(refreshOwn, 1000); return; }
@@ -4281,7 +5558,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
         } else {
           state.credits = Number(doc.credits) || 0;
           state.adminRev = rev;
-          toast('Credits changed', `An admin set your credits to ${fmt(state.credits)}.`);
+          if (Date.now() > quietCreditsUntil) toast('Credits updated', `Your balance is now ${fmt(state.credits)}.`);
         }
         lastSaved = '';
         render();
