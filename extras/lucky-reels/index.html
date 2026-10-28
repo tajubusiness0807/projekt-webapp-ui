@@ -116,6 +116,31 @@ body {
 .cell { height: 66px; display: grid; place-items: center; }
 .cell svg { width: 46px; height: 46px; }
 .reel.win { box-shadow: inset 0 0 0 3px var(--win); }
+.reel.wild { animation: wildGlow 1.2s linear infinite; }
+@keyframes wildGlow {
+  0%, 100% { box-shadow: inset 0 0 0 3px #c8323a; }
+  25% { box-shadow: inset 0 0 0 3px #e9a23b; }
+  50% { box-shadow: inset 0 0 0 3px #7fd18b; }
+  75% { box-shadow: inset 0 0 0 3px #a77bff; }
+}
+.reel.held { box-shadow: inset 0 0 0 3px var(--lose); }
+.reel.held::after {
+  content: "HELD";
+  position: absolute; left: 0; right: 0; bottom: 0;
+  padding-block: 2px;
+  text-align: center;
+  font: 600 10px var(--font-mono);
+  letter-spacing: 0.2em;
+  color: var(--fg);
+  background: var(--lose);
+}
+.reel.spinning .strip { filter: blur(1.2px); }
+.reel-ctl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.reel-ctl .ctl-note { grid-column: 1 / -1; text-align: center; font-size: 12px; color: var(--muted); }
+.reel-ctl .col { display: grid; gap: 4px; }
+.reel-ctl button { padding: 7px 4px; background: var(--chrome); font-size: 12px; font-weight: 600; }
+.reel-ctl .hold.on { background: var(--lose); color: var(--fg); }
+.reel-ctl .nudge { background: var(--accent); }
 .reel.star { box-shadow: inset 0 0 0 3px var(--bonus); }
 .cabinet.tease .reel:last-child { animation: tease 0.35s infinite alternate; }
 @keyframes tease {
@@ -133,6 +158,7 @@ body {
   pointer-events: none;
   animation: floatUp 1.3s ease-out forwards;
 }
+.float.nudge { color: var(--lose); text-shadow: 0 2px 0 #1d1714, 0 0 16px var(--lose); top: 62%; font-size: 22px; }
 .float.star { color: var(--bonus); text-shadow: 0 2px 0 #1d1714, 0 0 16px var(--bonus); top: 62%; font-size: 22px; }
 @keyframes floatUp {
   0% { transform: translateY(10px) scale(0.6); opacity: 0; }
@@ -213,8 +239,16 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   -moz-appearance: textfield; appearance: textfield;
 }
 #betInput::-webkit-inner-spin-button, #betInput::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-.spin-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; }
-.spin-row:has(#auto[hidden]) { grid-template-columns: 1fr; }
+.spin-row { display: flex; gap: 10px; }
+.spin-row .spin { flex: 1; min-width: 0; }
+.gamble {
+  padding: 0 14px;
+  background: linear-gradient(#e0715b, #a83a2a);
+  color: var(--fg);
+  font-weight: 600;
+  box-shadow: 0 5px 0 #6b2219;
+}
+.gamble small { display: block; font-family: var(--font-mono); font-size: 12px; }
 .spin {
   font-family: var(--font-display);
   font-size: 24px;
@@ -281,6 +315,15 @@ details summary { cursor: pointer; font-size: 11px; letter-spacing: 0.16em; text
 .buy { padding: 8px 12px; background: var(--chrome); font-family: var(--font-mono); font-size: 13px; font-weight: 600; white-space: nowrap; }
 .buy.armed { background: var(--win); }
 details.ach { margin-top: 10px; }
+.missions { display: grid; gap: 8px; margin-top: 10px; padding-top: 12px; border-top: 1px solid #ffffff12; }
+.missions h3 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 16px; color: var(--accent); }
+.mission { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; background: var(--panel); border-radius: 10px; padding: 10px 12px; }
+.mission .m-text { font-weight: 600; font-size: 14px; }
+.mission .m-reward { font-family: var(--font-mono); font-size: 12px; color: var(--accent); text-align: right; }
+.mission .bar { grid-column: 1 / -1; }
+.mission .m-prog { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.mission .m-swap { background: none; color: var(--muted); text-decoration: underline; font-size: 12px; padding: 0; justify-self: end; }
+.mission .m-swap:hover { color: var(--fg); }
 .ach ul { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 2px; }
 .ach li { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 10px; align-items: baseline; padding: 6px 0; border-bottom: 1px solid #ffffff10; font-size: 13px; color: var(--muted); }
 .ach li b { color: var(--fg); font-weight: 600; }
@@ -348,6 +391,28 @@ details.ach { margin-top: 10px; }
 }
 .wheel-result { margin: 0; min-height: 22px; font-weight: 600; }
 .modal-card .spin { width: 100%; }
+.cards { display: flex; gap: 14px; justify-content: center; perspective: 600px; }
+.card {
+  width: 88px; height: 124px;
+  border-radius: 10px;
+  background: var(--glass);
+  color: var(--ink);
+  display: grid; place-content: center; justify-items: center;
+  font-family: var(--font-display); font-size: 36px; line-height: 1;
+  box-shadow: 0 8px 18px -6px #000;
+}
+.card .suit { font-family: var(--font-body); font-size: 30px; }
+.card.red { color: #c8323a; }
+.card.back { background: repeating-linear-gradient(45deg, #c8323a 0 6px, #a3262d 6px 12px); border: 4px solid var(--glass); }
+.card.flip { animation: flip 0.4s ease-out; }
+@keyframes flip { from { transform: rotateY(90deg); } }
+.stake { display: grid; gap: 2px; }
+.stake output { font-family: var(--font-mono); font-size: 26px; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; }
+.ladder { display: flex; gap: 6px; }
+.ladder span { width: 30px; height: 8px; border-radius: 4px; background: var(--track); }
+.ladder span.on { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+.gamble-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+.gamble-btns button { padding: 12px; font-size: 15px; }
 
 /* Jackpot show */
 .cabinet.jackpot { animation: shake 0.45s 3; }
@@ -418,7 +483,7 @@ details.ach { margin-top: 10px; }
 
 @media (prefers-reduced-motion: reduce) {
   .bulbs span, .cabinet.jackpot, .cabinet.tease .reel:last-child, .jp, .jp-rays, .jp-flash, .jp-title span, .jp-amount.pop,
-  .float, .tier, .tier-title, .toast, .modal, .modal-card { animation: none; }
+  .float, .tier, .tier-title, .toast, .modal, .modal-card, .reel.wild, .card.flip { animation: none; }
   .jp-flash, .float { opacity: 0; }
 }
 </style>
@@ -437,6 +502,12 @@ details.ach { margin-top: 10px; }
         <div class="reel"><div class="strip"></div></div>
         <div class="reel"><div class="strip"></div></div>
       </div>
+    </div>
+    <div class="reel-ctl" id="reelCtl" hidden>
+      <div class="ctl-note" id="ctlNote"></div>
+      <div class="col"><button class="hold" data-i="0">Hold</button><button class="nudge" data-i="0">▼ Nudge</button></div>
+      <div class="col"><button class="hold" data-i="1">Hold</button><button class="nudge" data-i="1">▼ Nudge</button></div>
+      <div class="col"><button class="hold" data-i="2">Hold</button><button class="nudge" data-i="2">▼ Nudge</button></div>
     </div>
     <div class="tier" id="tier" role="status" hidden><div class="tier-title" id="tierTitle"></div><div class="tier-sub" id="tierSub"></div></div>
 
@@ -465,6 +536,7 @@ details.ach { margin-top: 10px; }
 
     <div class="spin-row">
       <button class="spin" id="spin">Spin</button>
+      <button class="gamble" id="gamble" hidden>Gamble</button>
       <button class="auto" id="auto" hidden>Auto ×10</button>
     </div>
     <div class="boosts" id="boosts"></div>
@@ -488,6 +560,10 @@ details.ach { margin-top: 10px; }
     <h2 id="shopTitle">Goodie Shop</h2>
     <p class="rate">Base payout rate with your goodies: <strong id="shopRate">0%</strong></p>
     <div id="goodies"></div>
+    <section class="missions" aria-labelledby="missionsTitle">
+      <h3 id="missionsTitle">Missions</h3>
+      <div id="missionList"></div>
+    </section>
     <details class="ach" open>
       <summary>Achievements <span id="achCount"></span></summary>
       <ul id="achList"></ul>
@@ -502,6 +578,19 @@ details.ach { margin-top: 10px; }
     <div class="wheel-wrap"><canvas id="wheel" width="600" height="600"></canvas><div class="pointer"></div></div>
     <p class="wheel-result" id="wheelResult">Spin for your level reward.</p>
     <button class="spin" id="wheelBtn">Spin the wheel</button>
+  </div>
+</div>
+
+<div class="modal" id="gambleModal" role="dialog" aria-modal="true" aria-labelledby="gambleTitle" hidden>
+  <div class="modal-card">
+    <div class="eyebrow">Double or nothing</div>
+    <h2 id="gambleTitle">Gamble</h2>
+    <div class="cards"><div class="card" id="cardNow"></div><div class="card back" id="cardNext"></div></div>
+    <p class="wheel-result" id="gambleMsg">Is the next card higher or lower?</p>
+    <div class="stake"><span class="label">At stake</span><output id="gambleStake">0</output></div>
+    <div class="ladder" id="ladder"><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="gamble-btns"><button class="chip-btn" id="gHi">Higher ▲</button><button class="chip-btn" id="gLo">Lower ▼</button></div>
+    <button class="spin" id="gCollect">Collect</button>
   </div>
 </div>
 
@@ -530,6 +619,7 @@ details.ach { margin-top: 10px; }
     bell: '<svg viewBox="0 0 48 48"><path d="M24 6c-9 0-13 8-13 17 0 6-3 9-5 11h36c-2-2-5-5-5-11 0-9-4-17-13-17z" fill="#e9a23b"/><rect x="6" y="33" width="36" height="4" rx="2" fill="#b87618"/><circle cx="24" cy="41" r="4" fill="#b87618"/><path d="M17 16c1-3 3-5 6-5" stroke="#fff8" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>',
     bar: '<svg viewBox="0 0 48 48"><rect x="3" y="14" width="42" height="20" rx="3" fill="#1d1714"/><text x="24" y="30" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="15" fill="#efe4d4">BAR</text></svg>',
     seven: '<svg viewBox="0 0 48 48"><text x="24" y="40" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="40" fill="#c8323a" stroke="#7a1a20" stroke-width="1.5">7</text></svg>',
+    wild: '<svg viewBox="0 0 48 48"><defs><linearGradient id="wildGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c8323a"/><stop offset=".35" stop-color="#e9a23b"/><stop offset=".65" stop-color="#7fd18b"/><stop offset="1" stop-color="#a77bff"/></linearGradient></defs><rect x="5" y="5" width="38" height="38" rx="9" fill="url(#wildGrad)" stroke="#1d1714" stroke-width="2.5"/><text x="24" y="33" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="22" fill="#fff" stroke="#1d1714" stroke-width="1.2">W</text></svg>',
     star: '<svg viewBox="0 0 48 48"><path d="M24 4l6 13 14 1.5-10.5 9.5 3 14L24 35l-12.5 7 3-14L4 18.5 18 17z" fill="#a77bff" stroke="#4b2c94" stroke-width="2.5" stroke-linejoin="round"/><path d="M19 19l4-2" stroke="#fff8" stroke-width="2.5" stroke-linecap="round"/></svg>',
   };
   const SHOP_ICONS = {
@@ -541,10 +631,10 @@ details.ach { margin-top: 10px; }
     magnet: '<svg viewBox="0 0 48 48"><path d="M12 10v14a12 12 0 0 0 24 0V10" stroke="#c8323a" stroke-width="9" fill="none"/><rect x="7.5" y="5" width="9" height="8" fill="#d9cbb8"/><rect x="31.5" y="5" width="9" height="8" fill="#d9cbb8"/></svg>',
     gold: '<svg viewBox="0 0 48 48"><rect x="9" y="4" width="30" height="40" rx="6" fill="#e9a23b" stroke="#b87618" stroke-width="2"/><rect x="13" y="14" width="22" height="13" rx="2" fill="#f6efe3"/><text x="24" y="25" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="11" fill="#c8323a">777</text><circle cx="24" cy="36" r="3" fill="#fff2c4"/></svg>',
   };
-  const BASE_WEIGHTS = { cherry: 7, lemon: 6, plum: 5, bell: 3, bar: 2, seven: 1, star: 2 };
+  const BASE_WEIGHTS = { cherry: 7, lemon: 6, plum: 5, bell: 3, bar: 2, seven: 1, star: 2, wild: 1 };
   const SYMS = Object.keys(BASE_WEIGHTS);
-  const PAY3 = { seven: 250, bar: 75, star: 50, bell: 30, plum: 15, lemon: 10, cherry: 8 };
-  const NAMES = { seven: 'Sevens', bar: 'Bars', star: 'Stars', bell: 'Bells', plum: 'Plums', lemon: 'Lemons', cherry: 'Cherries' };
+  const PAY3 = { seven: 200, wild: 100, star: 50, bar: 40, bell: 15, plum: 8, lemon: 6, cherry: 4 };
+  const NAMES = { seven: 'Sevens', wild: 'Wilds', bar: 'Bars', star: 'Stars', bell: 'Bells', plum: 'Plums', lemon: 'Lemons', cherry: 'Cherries' };
   const START = 500;
   const CELL = 66;
   const LOOPS = 6;
@@ -557,6 +647,22 @@ details.ach { margin-top: 10px; }
   // Wheel prizes are multiples of 100 × level; 'free' awards free spins instead.
   const WHEEL = [2, 10, 3, 25, 5, 'free', 4, 50];
   const xpNeed = level => Math.floor(120 * level ** 1.4);
+  const GAMBLE_MAX = 5;
+  const NUDGE_CHANCE = 22;
+  const HOLD_CHANCE = 30;
+  // Missions: `goals` are the three difficulty tiers; `max` tracks a best value instead of a running total.
+  const MISSIONS = {
+    spins: { text: g => `Spin ${g} times`, goals: [15, 25, 40] },
+    wins: { text: g => `Win ${g} spins`, goals: [5, 8, 12] },
+    earn: { text: g => `Win ${g}× your bet in total`, goals: [20, 40, 80] },
+    stars: { text: g => `Land ${g} bonus stars`, goals: [3, 5, 8] },
+    three: { text: g => `Land ${g} line${g > 1 ? 's' : ''} of three`, goals: [1, 2, 3] },
+    streak: { text: g => `Reach a win streak of ${g}`, goals: [3, 4, 5], max: true },
+    wilds: { text: g => `Land ${g} wilds`, goals: [2, 4, 6] },
+    nudge: { text: g => g === 1 ? 'Win with a nudge' : `Win with a nudge ${g} times`, goals: [1, 2, 3] },
+    gamble: { text: g => `Win ${g} gamble rounds`, goals: [2, 3, 5] },
+    hold: { text: g => g === 1 ? 'Win a spin after holding reels' : `Win ${g} spins after holding reels`, goals: [1, 2, 3] },
+  };
 
   // Boosts are armed for the next spin and charged as a multiple of the bet when it starts.
   const GOODIES = [
@@ -584,6 +690,10 @@ details.ach { margin-top: 10px; }
     { id: 'allin', name: 'All In', desc: 'Bet 10,000 or more on one spin.', reward: 1000, test: c => c?.bet >= 10000 },
     { id: 'marathon', name: 'Marathon', desc: 'Play 100 spins.', reward: 1000, test: () => state.spins >= 100 },
     { id: 'million', name: 'Millionaire', desc: 'Hold 1,000,000 credits.', reward: 10000, test: () => state.credits >= 1e6 },
+    { id: 'wild', name: 'Wild Thing', desc: 'Win a line with a wild in it.', reward: 300, test: c => c?.wildLine },
+    { id: 'nudger', name: 'Nudge Master', desc: 'Win with a nudge.', reward: 300, test: c => c?.nudgeWin },
+    { id: 'gambler', name: 'Double Trouble', desc: `Win all ${GAMBLE_MAX} gamble rounds.`, reward: 2000, test: c => c?.gambleFull },
+    { id: 'tasks', name: 'Taskmaster', desc: 'Complete 10 missions.', reward: 3000, test: () => state.missionsDone >= 10 },
     { id: 'collector', name: 'Collector', desc: 'Own every goodie, horseshoe maxed.', reward: 5000, test: () => state.owned.horseshoe >= 3 && state.owned.goldCherry && state.owned.piggy && state.owned.autospin && state.owned.gold },
   ];
 
@@ -602,12 +712,14 @@ details.ach { margin-top: 10px; }
     boost: { double: false, magnet: false },
     streak: 0, stars: 0, freeSpins: 0, freeBet: 0, freeTotal: 0,
     xp: 0, level: 1, ach: {},
+    nudges: 0, missions: [], missionsDone: 0,
   });
   const saved = store.get() || window.claude?.hot?.data || {};
   const state = Object.assign(fresh(), saved);
   state.owned = Object.assign(fresh().owned, saved.owned);
   state.boost = Object.assign(fresh().boost, saved.boost);
   state.ach = Object.assign({}, saved.ach);
+  state.missions = (Array.isArray(saved.missions) ? saved.missions : []).filter(m => MISSIONS[m?.t]);
   if (!saved.bet && saved.betIdx != null) state.bet = [1, 2, 5, 10, 25, 50, 100][saved.betIdx] || 5;
 
   const $ = id => document.getElementById(id);
@@ -623,6 +735,11 @@ details.ach { margin-top: 10px; }
   let freeDone = 0;
   let autoLeft = 0;
   const pendingLevels = [];
+  let held = [false, false, false];
+  let holdOffer = false;
+  let nudgeOpen = false;
+  let gambleOffer = 0;
+  let lastBet = 1;
   let STRIP = [];
   let pos = [0, 0, 0];
 
@@ -652,10 +769,19 @@ details.ach { margin-top: 10px; }
     strips[i].style.transform = `translateY(${-((loop * STRIP.length + index) * CELL - CELL / 2)}px)`;
   }
 
+  // The symbol a line counts as. Wilds stand in for anything except stars, which need three of their own.
+  function lineSymbol(a, b, c) {
+    const real = [a, b, c].filter(s => s !== 'wild');
+    if (!real.length) return 'wild';
+    if (real.every(s => s === real[0]) && (real[0] !== 'star' || real.length === 3)) return real[0];
+    return null;
+  }
+
   function payout(a, b, c) {
     let m = 0;
     const cherries = [a, b, c].filter(s => s === 'cherry').length;
-    if (a === b && b === c) m = PAY3[a];
+    const line = lineSymbol(a, b, c);
+    if (line) m = PAY3[line];
     else if (cherries === 2) m = 2;
     else if (a === 'cherry') m = 1;
     if (state.owned.goldCherry && cherries && m) m *= 2;
@@ -710,6 +836,7 @@ details.ach { margin-top: 10px; }
     star() { [1319, 1760, 2093].forEach((f, i) => this.tone(f, i * 0.05, 0.2, 'sine', 0.05)); },
     tease() { this.tone(330, 0, 0.12, 'square', 0.04); },
     tick() { this.tone(1100, 0, 0.025, 'square', 0.03); },
+    lose() { this.tone(220, 0, 0.3, 'sawtooth', 0.05); this.tone(150, 0.18, 0.4, 'sawtooth', 0.05); },
     chime() { [1047, 1568, 2093].forEach((f, i) => this.tone(f, i * 0.07, 0.3, 'triangle', 0.06)); },
     levelUp() { [392, 523, 659, 784, 1047].forEach((f, i) => this.tone(f, i * 0.07, 0.25, 'square', 0.05)); },
     fanfare() {
@@ -902,8 +1029,9 @@ details.ach { margin-top: 10px; }
       const el = strips[i];
       const startY = -((STRIP.length + pos[i]) * CELL - CELL / 2);
       const endY = -(((LOOPS - 1) * STRIP.length + target) * CELL - CELL / 2);
-      const done = () => { place(i, target); sound.clunk(); resolve(); };
+      const done = () => { reels[i].classList.remove('spinning'); place(i, target); sound.clunk(); resolve(); };
       if (reduceMotion) return done();
+      reels[i].classList.add('spinning');
       const t0 = performance.now();
       const ease = t => 1 - Math.pow(1 - t, 3) + Math.sin(t * Math.PI) * 0.02;
       (function frame(now) {
@@ -912,6 +1040,26 @@ details.ach { margin-top: 10px; }
         if (t < 1) requestAnimationFrame(frame); else done();
       })(t0);
     });
+  }
+
+  // Move a reel between two absolute strip offsets (in cells), used for nudges.
+  function slide(i, from, to, ms) {
+    return new Promise(resolve => {
+      const y = v => -(v * CELL - CELL / 2);
+      if (reduceMotion) return resolve();
+      const t0 = performance.now();
+      (function frame(now) {
+        const t = Math.min(1, (now - t0) / ms);
+        const e = 1 - Math.pow(1 - t, 2) + Math.sin(t * Math.PI) * 0.08;
+        strips[i].style.transform = `translateY(${y(from + (to - from) * e)}px)`;
+        if (t < 1) requestAnimationFrame(frame); else resolve();
+      })(t0);
+    });
+  }
+
+  function markWin(syms, line) {
+    if (line) reels.forEach(r => r.classList.add('win'));
+    else syms.forEach((s, i) => s === 'cherry' && reels[i].classList.add('win'));
   }
 
   function say(text, kind = '') {
@@ -933,28 +1081,39 @@ details.ach { margin-top: 10px; }
     const cost = free ? 0 : spinCost();
     if (state.credits < cost) return null;
     const { double, magnet } = free ? { double: false, magnet: false } : state.boost;
+    const holds = free || rigged || magnet ? [false, false, false] : held.slice();
+    held = [false, false, false];
+    holdOffer = false;
+    nudgeOpen = false;
+    gambleOffer = 0;
     state.credits -= cost;
     state.spins++;
     if (!free) state.boost = { double: false, magnet: false };
-    reels.forEach(r => r.classList.remove('win', 'star'));
-    say(free ? `Free spin ${freeDone} · wins ×${FREE_MULT}` : 'Spinning…', free ? 'bonus' : '');
+    reels.forEach(r => r.classList.remove('win', 'star', 'wild'));
+    say(free ? `Free spin ${freeDone} · wins ×${FREE_MULT}` : holds.some(Boolean) ? 'Spinning the reels you did not hold…' : 'Spinning…', free ? 'bonus' : '');
     render();
+    holds.forEach((h, i) => reels[i].classList.toggle('held', h));
 
     let targets;
     if (rigged || magnet) {
       const sym = rigged ? 'seven' : SYMS[randInt(SYMS.length)];
       targets = [0, 1, 2].map(() => STRIP.indexOf(sym));
     } else {
-      targets = [0, 1, 2].map(() => randInt(STRIP.length));
+      targets = [0, 1, 2].map(i => holds[i] ? pos[i] : randInt(STRIP.length));
     }
     rigged = false;
     cabinet.classList.remove('armed');
 
-    const tease = STRIP[targets[0]] === 'seven' && STRIP[targets[1]] === 'seven';
+    const sevenish = s => s === 'seven' || s === 'wild';
+    const [s0, s1] = [STRIP[targets[0]], STRIP[targets[1]]];
+    const tease = sevenish(s0) && sevenish(s1) && (s0 === 'seven' || s1 === 'seven');
     const durations = free ? [700, 1000, tease ? 3200 : 1300] : [1100, 1550, tease ? 4200 : 2000];
-    const stops = targets.map((t, i) => animateReel(i, t, reduceMotion ? 0 : durations[i]));
+    const stops = targets.map((t, i) => holds[i] ? Promise.resolve() : animateReel(i, t, reduceMotion ? 0 : durations[i]));
     stops.forEach((p, i) => p.then(() => {
-      if (STRIP[targets[i]] === 'star') { reels[i].classList.add('star'); sound.star(); }
+      if (holds[i]) return;
+      const sym = STRIP[targets[i]];
+      if (sym === 'star') { reels[i].classList.add('star'); sound.star(); }
+      if (sym === 'wild') { reels[i].classList.add('wild'); sound.star(); }
     }));
     if (tease) stops[1].then(() => {
       cabinet.classList.add('tease');
@@ -963,10 +1122,11 @@ details.ach { margin-top: 10px; }
     });
     await Promise.all(stops);
     cabinet.classList.remove('tease');
+    reels.forEach(r => r.classList.remove('held'));
     pos = targets;
 
     const syms = targets.map(t => STRIP[t]);
-    const three = syms[0] === syms[1] && syms[1] === syms[2];
+    const line = lineSymbol(...syms);
     const base = payout(...syms);
     const sMult = base ? streakMult() : 1;
     const mult = base * (double ? 2 : 1) * (free ? FREE_MULT : 1) * sMult;
@@ -979,7 +1139,10 @@ details.ach { margin-top: 10px; }
     if (free) state.freeTotal += win;
     state.streak = base ? state.streak + 1 : 0;
 
-    const starCount = syms.filter(s => s === 'star').length;
+    // Held reels don't count their star or wild again.
+    const landed = syms.filter((_, i) => !holds[i]);
+    const starCount = landed.filter(x => x === 'star').length;
+    const wildCount = landed.filter(x => x === 'wild').length;
     let triggered = false;
     if (starCount) {
       state.stars += starCount;
@@ -991,21 +1154,29 @@ details.ach { margin-top: 10px; }
         triggered = true;
       }
     }
-    gainXp(10 + Math.floor(Math.log10(bet) * 8) + (base ? 8 : 0) + (three ? 30 : 0));
+    gainXp(10 + Math.floor(Math.log10(bet) * 8) + (base ? 8 : 0) + (line ? 30 : 0));
+
+    mission('spins');
+    if (win) { mission('wins'); mission('earn', ratio); }
+    if (line) mission('three');
+    if (starCount) mission('stars', starCount);
+    if (wildCount) mission('wilds', wildCount);
+    mission('streak', state.streak);
+    if (win && holds.some(Boolean)) mission('hold');
 
     const extras = [];
+    if (line && syms.includes('wild')) extras.push('wild');
     if (base && sMult > 1) extras.push(`streak ×${sMult.toFixed(2)}`);
     if (double && base) extras.push('doubled');
     if (free && base) extras.push(`bonus ×${FREE_MULT}`);
     const tail = extras.length ? ` (${extras.join(', ')})` : '';
-    const jackpot = three && syms[0] === 'seven';
+    const jackpot = line === 'seven';
     let result = win ? 'win' : 'lose';
+    if (base) markWin(syms, line);
 
-    if (three) {
-      reels.forEach(r => r.classList.add('win'));
-      say(`Three ${NAMES[syms[0]]}! +${fmt(win)}${tail}`, 'win');
+    if (line) {
+      say(`Three ${NAMES[line]}! +${fmt(win)}${tail}`, 'win');
     } else if (win) {
-      syms.forEach((s, i) => s === 'cherry' && reels[i].classList.add('win'));
       say(`Cherries pay ${fmt(win)}${tail}`, 'win');
     } else if (state.credits < 1 && !state.freeSpins) {
       say('Out of credits. Start over to play again.', 'lose');
@@ -1013,6 +1184,26 @@ details.ach { margin-top: 10px; }
       say(`No win, but +${starCount} bonus star${starCount > 1 ? 's' : ''}.`, 'bonus');
     } else {
       say(refund ? `No win. Piggy Bank returns ${fmt(refund)}.` : 'No win. Try again.', 'lose');
+    }
+
+    // Fruit-machine features after a paid spin: gamble a win, or hold and nudge after a loss.
+    lastBet = bet;
+    if (!free && !autoLeft) {
+      if (win) gambleOffer = win;
+      else {
+        if (randInt(100) < NUDGE_CHANCE) {
+          const n = 1 + randInt(3);
+          state.nudges += n;
+          floatText(`+${n} nudge${n > 1 ? 's' : ''}`, 'nudge');
+          sound.chime();
+        }
+        nudgeOpen = state.nudges > 0;
+        holdOffer = randInt(100) < HOLD_CHANCE;
+        if (holdOffer || nudgeOpen) say(
+          holdOffer && nudgeOpen ? 'No win. Nudge a reel now, or hold reels for the next spin.'
+            : holdOffer ? 'No win. Hold up to two reels for the next spin.'
+            : `No win. Nudge a reel down? ${state.nudges} nudge${state.nudges > 1 ? 's' : ''} left.`, 'hot');
+      }
     }
     if (win) floatText('+' + fmt(win));
     render();
@@ -1028,10 +1219,194 @@ details.ach { margin-top: 10px; }
       for (let k = 0; k < 40; k++) fxTop.confetti(BONUS_CONFETTI);
       await banner('FREE SPINS', 'bonus', 2600, null, `${FREE_SPINS} spins · every win ×${FREE_MULT}`);
     }
-    checkAch({ win, three, ratio, jackpot, triggered, bet });
+    checkAch({ win, three: !!line, ratio, jackpot, triggered, bet, wildLine: !!line && syms.includes('wild') });
     render();
     return result;
   }
+
+  async function nudge(i) {
+    if (busy || !nudgeOpen || state.nudges < 1) return;
+    busy = true;
+    state.nudges--;
+    holdOffer = false;
+    held = [false, false, false];
+    render();
+    const len = STRIP.length, from = pos[i], to = (from - 1 + len) % len;
+    await slide(i, len + from, len + from - 1, 260);
+    place(i, to);
+    pos[i] = to;
+    sound.clunk();
+
+    const syms = pos.map(p => STRIP[p]);
+    const line = lineSymbol(...syms);
+    const base = payout(...syms);
+    if (base) {
+      const bet = lastBet;
+      const sMult = streakMult();
+      const win = Math.min(MAX, Math.floor(base * bet * sMult));
+      state.credits = Math.min(MAX, state.credits + win);
+      state.lastWin = win;
+      state.best = Math.max(state.best, win);
+      state.streak++;
+      nudgeOpen = false;
+      markWin(syms, line);
+      say(`Nudge win! ${line ? `Three ${NAMES[line]}` : 'Cherries'} pay ${fmt(win)}.`, 'win');
+      floatText('+' + fmt(win));
+      mission('nudge'); mission('wins'); mission('earn', win / bet); mission('streak', state.streak);
+      if (line) mission('three');
+      gainXp(8 + (line ? 30 : 0));
+      render();
+      if (line === 'seven') await celebrate(win, Math.round(base * sMult * 100) / 100);
+      else await celebrateTier(win, win / bet);
+      gambleOffer = win;
+      checkAch({ win, three: !!line, ratio: win / bet, jackpot: line === 'seven', bet, nudgeWin: true, wildLine: !!line && syms.includes('wild') });
+      while (pendingLevels.length) await prizeWheel(pendingLevels.shift());
+    } else {
+      nudgeOpen = state.nudges > 0;
+      say(state.nudges ? `Still nothing. ${state.nudges} nudge${state.nudges > 1 ? 's' : ''} left.` : 'Out of nudges.', 'lose');
+    }
+    busy = false;
+    render();
+  }
+
+  // ---------- Gamble ----------
+  const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+  const SUITS = [['♠', false], ['♥', true], ['♦', true], ['♣', false]];
+  const drawCard = () => ({ rank: randInt(13), suit: SUITS[randInt(4)] });
+  function showCard(el, c) {
+    el.className = 'card' + (c.suit[1] ? ' red' : '');
+    el.innerHTML = `<span>${RANKS[c.rank]}</span><span class="suit">${c.suit[0]}</span>`;
+    void el.offsetWidth;
+    el.classList.add('flip');
+  }
+  function hideCard(el) { el.className = 'card back'; el.innerHTML = ''; }
+
+  function openGamble() {
+    if (busy || !gambleOffer) return;
+    busy = true;
+    let stake = gambleOffer, rounds = 0, over = false, revealing = false;
+    let card = drawCard();
+    gambleOffer = 0;
+    state.credits -= stake;
+    render();
+    const modal = $('gambleModal'), hi = $('gHi'), lo = $('gLo'), collect = $('gCollect');
+    const ladder = [...$('ladder').children];
+    showCard($('cardNow'), card);
+    hideCard($('cardNext'));
+    modal.hidden = false;
+    hi.focus();
+    update('Is the next card higher or lower? Aces are low.');
+
+    function update(msg) {
+      $('gambleStake').textContent = fmt(stake);
+      ladder.forEach((el, i) => el.classList.toggle('on', i < rounds));
+      if (msg) $('gambleMsg').textContent = msg;
+      hi.disabled = lo.disabled = revealing || over || rounds >= GAMBLE_MAX;
+      collect.disabled = revealing;
+      collect.textContent = stake ? `Collect ${fmt(stake)}` : 'Close';
+    }
+    function guess(higher) {
+      if (revealing || over) return;
+      revealing = true;
+      const next = drawCard();
+      showCard($('cardNext'), next);
+      sound.tick();
+      update();
+      setTimeout(() => {
+        if (next.rank === card.rank) {
+          update('Same rank. Your stake stays, go again.');
+        } else if ((next.rank > card.rank) === higher) {
+          stake = Math.min(MAX, stake * 2);
+          rounds++;
+          sound.bigWin();
+          const b = $('cardNext').getBoundingClientRect();
+          fxTop.coinBurst(b.left + b.width / 2, b.top + b.height / 2, 24, 8);
+          mission('gamble');
+          if (rounds >= GAMBLE_MAX) checkAch({ gambleFull: true });
+          update(rounds >= GAMBLE_MAX ? `Five in a row! Take your ${fmt(stake)}.` : `Correct! Stake doubled to ${fmt(stake)}.`);
+        } else {
+          stake = 0;
+          over = true;
+          sound.lose();
+          update('Wrong card. The stake is gone.');
+        }
+        setTimeout(() => {
+          card = next;
+          if (!over) { showCard($('cardNow'), card); hideCard($('cardNext')); }
+          revealing = false;
+          update();
+        }, 800);
+      }, 450);
+    }
+    hi.onclick = () => guess(true);
+    lo.onclick = () => guess(false);
+    collect.onclick = () => {
+      if (revealing) return;
+      if (stake) {
+        state.credits = Math.min(MAX, state.credits + stake);
+        state.lastWin = stake;
+        state.best = Math.max(state.best, stake);
+        sound.chime();
+        say(`Gamble collected: ${fmt(stake)}.`, 'win');
+        floatText('+' + fmt(stake));
+      } else {
+        say('Gamble lost.', 'lose');
+      }
+      modal.hidden = true;
+      busy = false;
+      checkAch();
+      render();
+    };
+  }
+
+  // ---------- Missions ----------
+  function newMission(exclude) {
+    const types = Object.keys(MISSIONS).filter(t => !exclude.includes(t));
+    const t = types[randInt(types.length)];
+    const tier = randInt(MISSIONS[t].goals.length);
+    return { t, goal: MISSIONS[t].goals[tier], prog: 0, reward: 150 * state.level * (tier + 1) };
+  }
+  function fillMissions() {
+    while (state.missions.length < 3) state.missions.push(newMission(state.missions.map(m => m.t)));
+  }
+  function mission(type, amount = 1) {
+    let changed = false;
+    state.missions.forEach((m, i) => {
+      if (m.t !== type) return;
+      changed = true;
+      m.prog = MISSIONS[type].max ? Math.max(m.prog, amount) : m.prog + amount;
+      if (m.prog < m.goal) return;
+      state.credits = Math.min(MAX, state.credits + m.reward);
+      state.nudges++;
+      state.missionsDone++;
+      toast('Mission complete', `${MISSIONS[m.t].text(m.goal)} · +${fmt(m.reward)} credits, +1 nudge`);
+      sound.chime();
+      state.missions[i] = newMission(state.missions.map(x => x.t));
+      checkAch();
+    });
+    if (changed) renderMissions();
+  }
+  const swapCost = () => 25 * state.level;
+  function renderMissions() {
+    $('missionList').innerHTML = state.missions.map((m, i) => `
+      <div class="mission">
+        <span class="m-text">${MISSIONS[m.t].text(m.goal)}</span>
+        <span class="m-reward">+${fmt(m.reward)} · +1 nudge</span>
+        <div class="bar"><i style="width:${Math.min(100, (m.prog / m.goal) * 100)}%"></i></div>
+        <span class="m-prog">${fmt(Math.min(m.prog, m.goal))} / ${fmt(m.goal)}</span>
+        <button class="m-swap" data-swap="${i}"${busy || state.credits < swapCost() ? ' disabled' : ''}>Swap · ${fmt(swapCost())}</button>
+      </div>`).join('');
+  }
+  $('missionList').addEventListener('click', e => {
+    const btn = e.target.closest('[data-swap]');
+    if (!btn || busy || state.credits < swapCost()) return;
+    const i = Number(btn.dataset.swap);
+    state.credits -= swapCost();
+    state.missions[i] = newMission(state.missions.map(m => m.t));
+    sound.tick();
+    renderMissions();
+    render();
+  });
 
   async function runBonus() {
     inBonus = true;
@@ -1380,9 +1755,11 @@ details.ach { margin-top: 10px; }
     const rtp = computeRtp() * 100;
     $('shopRate').textContent = rtp.toFixed(1) + '%';
     $('rtp').textContent =
-      `Wins are multiples of your bet. Every star on the payline fills the bonus meter; ${STAR_GOAL} stars start ${FREE_SPINS} free spins where every win pays ×${FREE_MULT}. ` +
+      `Wins are multiples of your bet. Wilds stand in for any symbol except stars, and three wilds pay ${PAY3.wild}×. ` +
+      `After a losing spin you may get nudges (move one reel down a stop) or the chance to hold up to two reels for the next spin. After a win you can gamble it on higher or lower, up to ${GAMBLE_MAX} rounds. ` +
+      `Every star on the payline fills the bonus meter; ${STAR_GOAL} stars start ${FREE_SPINS} free spins where every win pays ×${FREE_MULT}. ` +
       `Each win in a row adds ×${STREAK_STEP} to the next win, up to ×${1 + STREAK_STEP * STREAK_MAX}; a losing spin resets it. Levels come from XP and each one spins the prize wheel. ` +
-      `Each reel has ${STRIP.length} stops. Before streaks, free spins and rewards, this table returns ${rtp.toFixed(1)}% of bets over the long run.`;
+      `Each reel has ${STRIP.length} stops. Before streaks, free spins, holds, nudges and rewards, this table returns ${rtp.toFixed(1)}% of bets over the long run.`;
   }
 
   // ---------- Render ----------
@@ -1439,9 +1816,28 @@ details.ach { margin-top: 10px; }
 
     const chips = GOODIES.filter(g => g.kind === 'boost' && state.boost[g.id]).map(g => `<span class="boost-chip">${g.name} armed</span>`);
     if (inBonus) chips.unshift(`<span class="boost-chip bonus">Free spin ${freeDone} · bonus +${fmt(state.freeTotal)}</span>`);
-    $('boosts').innerHTML = chips.join('');
     $('sound').textContent = `Sound: ${state.sound ? 'on' : 'off'}`;
+
+    const canNudge = nudgeOpen && state.nudges > 0;
+    $('reelCtl').hidden = busy || !(holdOffer || canNudge);
+    const heldCount = held.filter(Boolean).length;
+    document.querySelectorAll('.reel-ctl .hold').forEach(b => {
+      const i = Number(b.dataset.i);
+      b.hidden = !holdOffer;
+      b.classList.toggle('on', held[i]);
+      b.textContent = held[i] ? 'Held' : 'Hold';
+      b.disabled = !held[i] && heldCount >= 2;
+    });
+    document.querySelectorAll('.reel-ctl .nudge').forEach(b => { b.hidden = !canNudge; });
+    $('ctlNote').textContent = [holdOffer && 'Hold up to two reels for the next spin', canNudge && `${state.nudges} nudge${state.nudges > 1 ? 's' : ''} left`].filter(Boolean).join(' · ');
+    if (!busy) reels.forEach((r, i) => r.classList.toggle('held', held[i]));
+    const g = $('gamble');
+    g.hidden = !gambleOffer || busy;
+    g.innerHTML = `Gamble<small>${fmt(gambleOffer)}</small>`;
+    if (state.nudges && !canNudge) chips.push(`<span class="boost-chip">${state.nudges} nudge${state.nudges > 1 ? 's' : ''} saved</span>`);
+    $('boosts').innerHTML = chips.join('');
     renderShop();
+    renderMissions();
     store.set(state);
   }
 
@@ -1449,6 +1845,16 @@ details.ach { margin-top: 10px; }
   const setBet = v => { state.bet = Math.max(1, Math.min(MAX, Math.floor(v) || 1)); render(); };
   $('spin').addEventListener('click', play);
   $('auto').addEventListener('click', autoSpin);
+  $('gamble').addEventListener('click', openGamble);
+  document.querySelectorAll('.reel-ctl .hold').forEach(b => b.addEventListener('click', () => {
+    const i = Number(b.dataset.i);
+    if (busy || !holdOffer) return;
+    if (!held[i] && held.filter(Boolean).length >= 2) return;
+    held[i] = !held[i];
+    sound.tick();
+    render();
+  }));
+  document.querySelectorAll('.reel-ctl .nudge').forEach(b => b.addEventListener('click', () => nudge(Number(b.dataset.i))));
   $('betHalf').addEventListener('click', () => setBet(state.bet / 2));
   $('betDouble').addEventListener('click', () => setBet(state.bet * 2));
   $('betMax').addEventListener('click', () => setBet(state.credits / costFactor()));
@@ -1463,6 +1869,10 @@ details.ach { margin-top: 10px; }
     Object.assign(state, fresh(), { sound: state.sound });
     rigged = false;
     pendingLevels.length = 0;
+    held = [false, false, false];
+    holdOffer = nudgeOpen = false;
+    gambleOffer = 0;
+    fillMissions();
     cabinet.classList.remove('armed');
     reels.forEach(r => r.classList.remove('win', 'star'));
     buildReels();
@@ -1480,10 +1890,11 @@ details.ach { margin-top: 10px; }
     }
   });
   document.addEventListener('keydown', e => {
-    if (e.code === 'Space' && !['BUTTON', 'SUMMARY', 'INPUT'].includes(e.target.tagName) && $('wheelModal').hidden) { e.preventDefault(); play(); }
+    if (e.code === 'Space' && !['BUTTON', 'SUMMARY', 'INPUT'].includes(e.target.tagName) && $('wheelModal').hidden && $('gambleModal').hidden) { e.preventDefault(); play(); }
   });
 
   buildReels();
+  fillMissions();
   renderPaytable();
   renderAch();
   window.claude?.hot?.snapshot?.(() => state);
