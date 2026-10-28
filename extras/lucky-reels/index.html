@@ -333,6 +333,76 @@ details.ach { margin-top: 10px; }
 .ach li:not(.done) b { color: var(--muted); }
 .disclaimer { text-align: center; font-size: 12px; color: var(--muted); margin: 18px auto 0; max-width: 52ch; line-height: 1.5; }
 
+/* Login, account bar, highscores */
+.login {
+  position: fixed; inset: 0; z-index: 40;
+  overflow-y: auto;
+  display: grid; place-items: center;
+  padding-block: 24px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background: radial-gradient(ellipse at top, #2e2019 0%, var(--bg) 65%), var(--bg);
+}
+.login-card {
+  width: 100%; max-width: 380px;
+  background: var(--cabinet);
+  border: 3px solid var(--cabinet-edge);
+  border-radius: 28px 28px 14px 14px;
+  padding: 26px 20px 22px;
+  display: grid; gap: 14px;
+  box-shadow: 0 30px 60px -20px #000, inset 0 2px 0 #ffffff14;
+}
+.login-logo {
+  margin: 0; text-align: center;
+  font-family: var(--font-display); font-weight: 400;
+  font-size: clamp(32px, 10vw, 44px); line-height: 1;
+  color: var(--accent);
+  text-shadow: 0 0 18px #e9a23b55, 0 3px 0 #7a4a12;
+}
+.login-sub { margin: -6px 0 0; text-align: center; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+.pick { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pick-btn { padding: 10px; background: var(--panel); color: var(--fg); border: 2px solid var(--cabinet-edge); font-weight: 600; }
+.pick-btn.on { border-color: var(--accent); color: var(--accent); }
+.field { display: grid; gap: 6px; }
+.field input, .pw-form input {
+  width: 100%; min-width: 0;
+  background: var(--panel);
+  color: var(--fg);
+  border: 2px solid var(--cabinet-edge);
+  border-radius: 10px;
+  padding: 11px 12px;
+  font: inherit;
+  font-size: 16px;
+}
+.field input:focus-visible, .pw-form input:focus-visible { border-color: var(--accent); outline: none; }
+.login-error, .pw-msg { margin: 0; min-height: 20px; font-size: 13px; font-weight: 600; color: var(--lose); text-align: center; }
+.pw-msg.ok { color: var(--win); }
+.login-note { margin: 0; font-size: 12px; color: var(--muted); text-align: center; line-height: 1.5; }
+.account-bar {
+  max-width: 460px; margin: 0 auto 14px;
+  display: flex; flex-wrap: wrap; gap: 6px 14px; justify-content: space-between; align-items: center;
+  font-size: 13px; color: var(--muted);
+}
+@media (min-width: 900px) { .account-bar { max-width: 960px; } }
+.account-bar b { color: var(--accent); }
+.account-bar .links { display: flex; gap: 14px; }
+.pw-form { flex-basis: 100%; display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: center; }
+.pw-form button { padding: 10px 14px; background: var(--chrome); font-weight: 600; }
+.pw-form .pw-msg { grid-column: 1 / -1; text-align: left; }
+@media (max-width: 520px) { .pw-form { grid-template-columns: 1fr; } }
+.board-wrap { display: grid; gap: 8px; }
+.board-title { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 16px; color: var(--accent); }
+.board { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 13px; }
+.board th { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 600; text-align: right; padding: 0 0 6px; }
+.board th:first-child, .board td:first-child { text-align: left; }
+.board td { padding: 8px 0; border-top: 1px solid #ffffff12; text-align: right; font-family: var(--font-mono); }
+.board td:first-child { font-family: var(--font-body); font-weight: 600; }
+.board tr.me td { color: var(--accent); }
+.board .rank { display: inline-block; width: 18px; color: var(--muted); font-family: var(--font-mono); font-weight: 400; }
+.board .you { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-left: 4px; }
+.board .empty { color: var(--muted); font-family: var(--font-body); text-align: left; }
+.shop .board-wrap { padding-bottom: 14px; margin-bottom: 6px; border-bottom: 1px solid #ffffff12; }
+
 /* Toasts */
 .toasts {
   position: fixed; z-index: 30;
@@ -488,6 +558,31 @@ details.ach { margin-top: 10px; }
 }
 </style>
 
+<div class="login" id="login">
+  <form class="login-card" id="loginForm" novalidate>
+    <h1 class="login-logo">Lucky Reels</h1>
+    <p class="login-sub">Sign in to play</p>
+    <div class="pick"><button type="button" class="pick-btn" data-user="Lukas">Lukas</button><button type="button" class="pick-btn" data-user="Julius">Julius</button></div>
+    <label class="field"><span class="label">Username</span><input id="loginUser" name="username" autocomplete="username" autocapitalize="none" spellcheck="false"></label>
+    <label class="field"><span class="label">Password</span><input id="loginPass" name="password" type="password" autocomplete="current-password"></label>
+    <p class="login-error" id="loginError" role="alert"></p>
+    <button class="spin" id="loginBtn" type="submit" disabled>Connecting…</button>
+    <div class="board-wrap"><h2 class="board-title">Highscores</h2><table class="board" id="boardLogin"></table></div>
+    <p class="login-note" id="loginNote"></p>
+  </form>
+</div>
+
+<div class="account-bar" id="accountBar" hidden>
+  <span>Signed in as <b id="whoami"></b></span>
+  <span class="links"><button class="link-btn" id="pwToggle" type="button">Change password</button><button class="link-btn" id="logout" type="button">Sign out</button></span>
+  <form class="pw-form" id="pwForm" hidden>
+    <input id="pwOld" type="password" autocomplete="current-password" placeholder="Current password" aria-label="Current password">
+    <input id="pwNew" type="password" autocomplete="new-password" placeholder="New password (4+ characters)" aria-label="New password">
+    <button type="submit">Save</button>
+    <p class="pw-msg" id="pwMsg" role="status"></p>
+  </form>
+</div>
+
 <div class="layout">
   <main class="cabinet" id="cabinet">
     <header class="marquee">
@@ -557,6 +652,7 @@ details.ach { margin-top: 10px; }
   </main>
 
   <aside class="shop" aria-labelledby="shopTitle">
+    <section class="board-wrap" aria-labelledby="boardTitle"><h2 class="board-title" id="boardTitle">Highscores</h2><table class="board" id="boardGame"></table></section>
     <h2 id="shopTitle">Goodie Shop</h2>
     <p class="rate">Base payout rate with your goodies: <strong id="shopRate">0%</strong></p>
     <div id="goodies"></div>
@@ -702,10 +798,6 @@ details.ach { margin-top: 10px; }
     : Math.floor(n).toLocaleString('en');
   const sleep = ms => new Promise(res => setTimeout(res, ms));
 
-  const store = {
-    get() { try { return JSON.parse(localStorage.getItem('lucky-reels') || 'null'); } catch { return null; } },
-    set(v) { try { localStorage.setItem('lucky-reels', JSON.stringify(v)); } catch {} },
-  };
   const fresh = () => ({
     credits: START, bet: 5, lastWin: 0, spins: 0, best: 0, sound: true,
     owned: { horseshoe: 0, goldCherry: false, piggy: false, autospin: false, gold: false },
@@ -714,13 +806,7 @@ details.ach { margin-top: 10px; }
     xp: 0, level: 1, ach: {},
     nudges: 0, missions: [], missionsDone: 0,
   });
-  const saved = store.get() || window.claude?.hot?.data || {};
-  const state = Object.assign(fresh(), saved);
-  state.owned = Object.assign(fresh().owned, saved.owned);
-  state.boost = Object.assign(fresh().boost, saved.boost);
-  state.ach = Object.assign({}, saved.ach);
-  state.missions = (Array.isArray(saved.missions) ? saved.missions : []).filter(m => MISSIONS[m?.t]);
-  if (!saved.bet && saved.betIdx != null) state.bet = [1, 2, 5, 10, 25, 50, 100][saved.betIdx] || 5;
+  const state = fresh();
 
   const $ = id => document.getElementById(id);
   const cabinet = $('cabinet');
@@ -1430,7 +1516,7 @@ details.ach { margin-top: 10px; }
   }
 
   async function play() {
-    if (busy) return null;
+    if (busy || !account) return null;
     busy = true;
     render();
     let result;
@@ -1788,7 +1874,7 @@ details.ach { margin-top: 10px; }
     $('lastWin').textContent = fmt(state.lastWin);
     $('stats').textContent = `Spins: ${state.spins.toLocaleString('en')} · Biggest win: ${fmt(state.best)}`;
     if (document.activeElement !== $('betInput')) $('betInput').value = state.bet;
-    ['betHalf', 'betDouble', 'betMax', 'betInput', 'refill'].forEach(id => ($(id).disabled = busy));
+    ['betHalf', 'betDouble', 'betMax', 'betInput', 'refill', 'logout'].forEach(id => ($(id).disabled = busy));
 
     const spinBtn = $('spin');
     spinBtn.disabled = busy || (!free && state.credits < cost);
@@ -1838,7 +1924,8 @@ details.ach { margin-top: 10px; }
     $('boosts').innerHTML = chips.join('');
     renderShop();
     renderMissions();
-    store.set(state);
+    renderBoards();
+    persist();
   }
 
   // ---------- Controls ----------
@@ -1882,6 +1969,7 @@ details.ach { margin-top: 10px; }
     render();
   });
   document.addEventListener('keydown', e => {
+    if (!account) return;
     typed = [...typed, e.key.length === 1 ? e.key.toLowerCase() : e.key].slice(-SECRET.length);
     if (typed.join() === SECRET.join() && !rigged) {
       rigged = true;
@@ -1890,14 +1978,230 @@ details.ach { margin-top: 10px; }
     }
   });
   document.addEventListener('keydown', e => {
-    if (e.code === 'Space' && !['BUTTON', 'SUMMARY', 'INPUT'].includes(e.target.tagName) && $('wheelModal').hidden && $('gambleModal').hidden) { e.preventDefault(); play(); }
+    if (e.code === 'Space' && account && !['BUTTON', 'SUMMARY', 'INPUT'].includes(e.target.tagName) && $('wheelModal').hidden && $('gambleModal').hidden) { e.preventDefault(); play(); }
   });
+
+  // ---------- Accounts ----------
+  // Accounts live in the artifact's shared store at players/<id>; opened as a plain file, the page
+  // falls back to this browser's storage with the two default accounts.
+  const LOCAL_ACCOUNTS = {"lukas": {"name": "Lukas", "salt": "609251a2290fc994", "hash": "2d0b6e200d1e84675de054182f28e9388d72143fe58397f9d0465248f99b4c6a", "credits": 1000, "best": 0, "level": 1, "spins": 0}, "julius": {"name": "Julius", "salt": "ed552e28ed575e75", "hash": "6607c8490c975680b5e546b46c515b6a2a794d0f853833f1a3f85d50479b8e3f", "credits": 750, "best": 0, "level": 1, "spins": 0}};
+  let backend = null;
+  let account = null;
+  let players = [];
+  let saveTimer = null, saving = false, saveAgain = false, lastSaved = '';
+
+  const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+  const idFor = name => String(name).trim().toLowerCase();
+  async function hashPw(salt, pw) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${salt}:${pw}`));
+    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+  const newSalt = () => [...crypto.getRandomValues(new Uint8Array(8))].map(b => b.toString(16).padStart(2, '0')).join('');
+  const toPlayers = list => list.map(p => ({ id: p.id, name: p.name || p.id, credits: Number(p.credits) || 0, best: Number(p.best) || 0, level: Number(p.level) || 1 }));
+
+  function localBackend() {
+    const KEY = 'lucky-reels-players';
+    const read = () => { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { return null; } };
+    const write = () => { try { localStorage.setItem(KEY, JSON.stringify(all)); } catch {} };
+    let all = read();
+    if (!all) { all = JSON.parse(JSON.stringify(LOCAL_ACCOUNTS)); write(); }
+    const listeners = new Set();
+    const emit = () => listeners.forEach(cb => cb(toPlayers(Object.entries(all).map(([id, d]) => ({ id, ...d })))));
+    addEventListener('storage', e => { if (e.key === KEY) { all = read() || all; emit(); } });
+    return {
+      kind: 'local',
+      async load(id) { return all[id] ? { ...all[id] } : null; },
+      async save(id, body) { all[id] = { ...all[id], ...body }; write(); emit(); },
+      watch(cb) { listeners.add(cb); emit(); return () => listeners.delete(cb); },
+    };
+  }
+
+  async function connect() {
+    let db = null;
+    try { db = window.claude?.use ? await window.claude.use('db') : null; } catch { db = null; }
+    if (!db) return localBackend();
+    return {
+      kind: 'db',
+      async load(id) { const snap = await db.doc(`players/${id}`).get(); return snap.exists ? snap.data() : null; },
+      save(id, body) { return db.doc(`players/${id}`).update(body); },
+      watch(cb) {
+        return db.collection('players').onSnapshot(
+          snap => cb(toPlayers(snap.docs.map(d => ({ id: d.id, ...d.data() })))),
+          () => { $('loginNote').textContent = 'Highscores stopped updating. Reload the page to reconnect.'; });
+      },
+    };
+  }
+
+  function renderBoards() {
+    const rows = players
+      .map(p => p.id === account?.id ? { ...p, credits: state.credits, best: state.best, level: state.level } : p)
+      .sort((a, b) => b.credits - a.credits);
+    const html = rows.length
+      ? '<thead><tr><th>Player</th><th>Credits</th><th>Best win</th><th>Level</th></tr></thead><tbody>' +
+        rows.map((p, i) => {
+          const me = p.id === account?.id;
+          return `<tr class="${me ? 'me' : ''}"><td><span class="rank">${i + 1}</span>${esc(p.name)}${me ? '<span class="you">you</span>' : ''}</td>` +
+            `<td>${fmt(p.credits)}</td><td>${fmt(p.best)}</td><td>${p.level}</td></tr>`;
+        }).join('') + '</tbody>'
+      : '<tbody><tr><td class="empty" colspan="4">No players yet.</td></tr></tbody>';
+    $('boardGame').innerHTML = html;
+    $('boardLogin').innerHTML = html;
+  }
+
+  // Coalesce the many renders of a spin into one write per pause.
+  function persist() {
+    if (!account) return;
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(flush, 900);
+  }
+  async function flush() {
+    clearTimeout(saveTimer);
+    if (!account || !backend) return;
+    if (saving) { saveAgain = true; return; }
+    const id = account.id;
+    const body = { credits: state.credits, best: state.best, level: state.level, spins: state.spins, game: JSON.stringify(state) };
+    const json = JSON.stringify(body);
+    if (json === lastSaved) return;
+    saving = true;
+    try {
+      await backend.save(id, { ...body, updatedAt: Date.now() });
+      lastSaved = json;
+    } catch (e) {
+      toast('Not saved', e?.code === 'invalid_argument'
+        ? 'This link is view-only. Ask the owner for Contributor access to save progress.'
+        : 'Saving failed. Your progress stays on this page; it will retry.');
+    } finally {
+      saving = false;
+      if (saveAgain) { saveAgain = false; flush(); }
+    }
+  }
+
+  function loadState(saved) {
+    for (const k of Object.keys(state)) delete state[k];
+    Object.assign(state, fresh(), saved);
+    state.owned = Object.assign(fresh().owned, saved.owned);
+    state.boost = Object.assign(fresh().boost, saved.boost);
+    state.ach = Object.assign({}, saved.ach);
+    state.missions = (Array.isArray(saved.missions) ? saved.missions : []).filter(m => MISSIONS[m?.t]);
+    rigged = false;
+    autoLeft = 0;
+    pendingLevels.length = 0;
+    held = [false, false, false];
+    holdOffer = nudgeOpen = false;
+    gambleOffer = 0;
+    cabinet.classList.remove('armed', 'bonus', 'tease');
+    reels.forEach(r => r.classList.remove('win', 'star', 'wild', 'held'));
+    buildReels();
+    fillMissions();
+    renderPaytable();
+    renderAch();
+    shownCredits = state.credits;
+    say('Pick a bet and pull.');
+  }
+
+  async function signIn(id, doc) {
+    let saved = {};
+    try { saved = doc.game ? JSON.parse(doc.game) : {}; } catch { saved = {}; }
+    if (!doc.game) saved = { credits: Number(doc.credits) || START };
+    account = { id, name: doc.name || id };
+    lastSaved = '';
+    loadState(saved);
+    try { sessionStorage.setItem('lucky-reels-session', id); } catch {}
+    $('whoami').textContent = account.name;
+    $('accountBar').hidden = false;
+    $('login').hidden = true;
+    $('loginPass').value = '';
+    $('loginError').textContent = '';
+    render();
+    say(`Welcome, ${account.name}. Pick a bet and pull.`, 'win');
+  }
+
+  async function signOut() {
+    if (busy || !account) return;
+    await flush();
+    account = null;
+    try { sessionStorage.removeItem('lucky-reels-session'); } catch {}
+    $('accountBar').hidden = true;
+    $('pwForm').hidden = true;
+    $('login').hidden = false;
+    loadState({});
+    renderBoards();
+    $('loginUser').focus();
+  }
+
+  $('loginForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    if (!backend) return;
+    const id = idFor($('loginUser').value);
+    const pw = $('loginPass').value;
+    const err = $('loginError');
+    if (!id || !pw) { err.textContent = 'Enter your username and password.'; return; }
+    $('loginBtn').disabled = true;
+    err.textContent = '';
+    try {
+      const doc = /^[a-z0-9_-]{1,40}$/.test(id) ? await backend.load(id) : null;
+      if (doc && doc.salt && (await hashPw(doc.salt, pw)) === doc.hash) await signIn(id, doc);
+      else err.textContent = 'Wrong username or password.';
+    } catch {
+      err.textContent = 'Could not reach the account store. Try again in a moment.';
+    }
+    $('loginBtn').disabled = false;
+  });
+  document.querySelectorAll('.pick-btn').forEach(b => b.addEventListener('click', () => {
+    $('loginUser').value = b.dataset.user;
+    document.querySelectorAll('.pick-btn').forEach(x => x.classList.toggle('on', x === b));
+    $('loginPass').focus();
+  }));
+  $('loginUser').addEventListener('input', () => {
+    document.querySelectorAll('.pick-btn').forEach(x => x.classList.toggle('on', idFor(x.dataset.user) === idFor($('loginUser').value)));
+  });
+  $('logout').addEventListener('click', signOut);
+  $('pwToggle').addEventListener('click', () => {
+    $('pwForm').hidden = !$('pwForm').hidden;
+    $('pwMsg').textContent = '';
+    if (!$('pwForm').hidden) $('pwOld').focus();
+  });
+  $('pwForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const msg = $('pwMsg');
+    msg.className = 'pw-msg';
+    const oldPw = $('pwOld').value, newPw = $('pwNew').value;
+    if (newPw.length < 4) { msg.textContent = 'The new password needs at least 4 characters.'; return; }
+    try {
+      const doc = await backend.load(account.id);
+      if (!doc || (await hashPw(doc.salt, oldPw)) !== doc.hash) { msg.textContent = 'The current password is wrong.'; return; }
+      const salt = newSalt();
+      await backend.save(account.id, { salt, hash: await hashPw(salt, newPw) });
+      $('pwOld').value = $('pwNew').value = '';
+      msg.className = 'pw-msg ok';
+      msg.textContent = 'Password changed.';
+    } catch {
+      msg.textContent = 'Could not change the password. Try again.';
+    }
+  });
+  addEventListener('pagehide', () => { flush(); });
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(); });
 
   buildReels();
   fillMissions();
   renderPaytable();
   renderAch();
-  window.claude?.hot?.snapshot?.(() => state);
   render();
+  renderBoards();
+  $('loginUser').focus();
+
+  (async () => {
+    backend = await connect();
+    backend.watch(list => { players = list; renderBoards(); });
+    $('loginBtn').disabled = false;
+    $('loginBtn').textContent = 'Sign in';
+    if (backend.kind === 'local') $('loginNote').textContent = 'Offline copy: accounts and scores are kept in this browser only.';
+    let remembered = null;
+    try { remembered = sessionStorage.getItem('lucky-reels-session'); } catch {}
+    if (remembered) {
+      const doc = await backend.load(remembered).catch(() => null);
+      if (doc) await signIn(remembered, doc);
+    }
+  })();
 })();
 </script>
