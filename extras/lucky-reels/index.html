@@ -25,6 +25,35 @@
   --font-mono: "Chivo Mono", ui-monospace, "SF Mono", Menlo, monospace;
   color-scheme: dark;
 }
+/* Night mode: cooler, deeper, quieter colours. */
+html[data-theme="night"] {
+  --bg: #05060a;
+  --cabinet: #10131b;
+  --cabinet-edge: #222837;
+  --panel: #07090e;
+  --chrome: #8e97aa;
+  --glass: #e4e0d8;
+  --fg: #d6dae4;
+  --muted: #7a8396;
+  --track: #ffffff0f;
+}
+html[data-theme="night"] body { background: radial-gradient(ellipse at top, #10141f 0%, var(--bg) 60%) fixed, var(--bg); }
+html[data-theme="night"] .pk-plate { background: linear-gradient(#1a1f2b, #0c0f16); }
+html[data-theme="night"] .lang-toggle, html[data-theme="night"] .theme-toggle.floating { background: #0b0e15e6; }
+html[data-theme="night"] .auto { box-shadow: 0 5px 0 #5a6172; }
+html[data-theme="night"] .mine-card { background: linear-gradient(#141824, #090b11); }
+html[data-theme="night"] .broke-bar { background: linear-gradient(90deg, #2a2312, #141824); }
+/* The Midnight Cabinet stays the bluest, brightest machine at night. */
+html[data-theme="night"] .cabinet.midnight {
+  background: linear-gradient(160deg, #1b2f5c, #0d1730 60%, #213a6e);
+  box-shadow: 0 30px 60px -20px #000, 0 0 55px -6px #4fe3ffaa, inset 0 2px 0 #bff3ff44;
+}
+.theme-toggle { display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border-radius: 50%; background: transparent; color: var(--muted); border: 2px solid var(--cabinet-edge); }
+.theme-toggle svg { width: 16px; height: 16px; }
+.theme-toggle:hover { color: var(--accent); border-color: var(--accent); }
+html[data-theme="night"] .theme-toggle { color: #bff3ff; border-color: #4fe3ff88; box-shadow: 0 0 10px #4fe3ff44; }
+.theme-toggle.floating { position: fixed; z-index: 41; left: calc(max(12px, env(safe-area-inset-left, 0px)) + 92px); bottom: calc(14px + env(safe-area-inset-bottom, 0px)); width: 34px; height: 34px; background: #150f0ce6; }
+body.signed-in .theme-toggle.floating { display: none; }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html, body { min-height: 100%; }
@@ -1167,19 +1196,51 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
 .abtn.warn { background: var(--lose); color: var(--fg); }
 .abtn.armed-confirm { background: #c8323a; color: #fff; }
 .abtn.ok { background: var(--win); }
-.admin-table-wrap { overflow-x: auto; }
-.admin-table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
-.admin-table th { text-align: left; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 0 8px 6px 0; }
-.admin-table td { padding: 8px 8px 8px 0; border-top: 1px solid #ffffff12; vertical-align: middle; }
-.admin-table .pname { font-weight: 600; white-space: nowrap; }
+.admin-tools { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; align-items: center; }
+.admin-tools input, .admin-tools select { min-width: 0; background: var(--panel); color: var(--fg); border: 2px solid var(--cabinet-edge); border-radius: 10px; padding: 8px 10px; font: inherit; font-size: 13px; }
+.admin-count { font: 600 12px var(--font-mono); color: var(--muted); white-space: nowrap; }
+@media (max-width: 600px) { .admin-tools { grid-template-columns: minmax(0, 1fr) auto; } .admin-tools input { grid-column: 1 / -1; } }
+.admin-table, .admin-table tbody { display: grid; gap: 10px; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+.admin-table thead { display: none; }
+.admin-table tr {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas: "head head" "cred lvl" "acts acts";
+  gap: 10px 12px; align-items: end;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--panel);
+  border: 1px solid #ffffff12;
+  border-left: 4px solid var(--cabinet-edge);
+}
+.admin-table tr.is-admin { border-left-color: var(--accent); }
+.admin-table tr.is-banned { border-left-color: var(--lose); opacity: 0.8; }
+.admin-table tr.is-me { box-shadow: inset 0 0 0 1px #e9a23b44; }
+.admin-table td { display: block; padding: 0; border: 0; min-width: 0; }
+.admin-table .pname { grid-area: head; }
+.admin-table .p-credits { grid-area: cred; }
+.admin-table .lvl { grid-area: lvl; }
+.admin-table .p-acts { grid-area: acts; padding-top: 10px; border-top: 1px dashed #ffffff14; }
+@media (min-width: 700px) {
+  .admin-table tr { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1.1fr) minmax(0, 0.8fr); grid-template-areas: "head cred lvl" "acts acts acts"; }
+}
+.p-head { display: flex; gap: 10px; align-items: center; min-width: 0; }
+.p-head .av { margin: 0; }
+.p-id { display: grid; gap: 2px; min-width: 0; }
+.p-id > b { font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.p-meta { display: flex; flex-wrap: wrap; gap: 2px 10px; color: var(--muted); font-size: 11px; }
+.p-meta .dot { margin-right: 4px; }
+.p-meta .off { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ffffff22; margin-right: 4px; vertical-align: 0; }
+.p-field-label { display: block; margin-bottom: 4px; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.admin-table .credit-edit { display: flex; gap: 6px; min-width: 0; }
+.admin-table .credit-edit input { flex: 1; min-width: 0; width: auto; padding: 7px 8px; font-size: 13px; }
+.admin-table .acts { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.admin-table .acts .abtn { padding: 6px 10px; font-size: 12px; }
+.admin-table .acts .gap { flex: 1; }
+.admin-table tr[hidden] { display: none; }
 .admin-table .tag { display: inline-block; margin-left: 4px; padding: 1px 6px; border-radius: 999px; font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
 .tag.admin { background: #e9a23b33; color: var(--accent); }
 .tag.banned { background: #e0715b33; color: var(--lose); }
-.admin-table .credit-edit { display: flex; gap: 6px; min-width: 190px; }
-.admin-table .credit-edit input { width: 110px; padding: 6px 8px; font-size: 13px; }
-.admin-table .level-edit { min-width: 0; }
-.admin-table .level-edit input { width: 54px; }
-.admin-table .acts { display: flex; gap: 6px; flex-wrap: wrap; }
 .settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
 .setting { display: grid; gap: 4px; }
 .setting small { color: var(--muted); font-size: 12px; line-height: 1.4; }
@@ -1584,8 +1645,8 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
 }
 /* Phones */
 .account-bar .lang-toggle { position: static; z-index: auto; box-shadow: none; }
-.lang-toggle.float { display: none; }
-body:not(.signed-in) .lang-toggle.float { display: flex; }
+.lang-toggle.floating { display: none; }
+body:not(.signed-in) .lang-toggle.floating { display: flex; }
 @media (max-width: 600px) {
   .ach-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
   .ach-grid li { padding: 8px; gap: 2px; }
@@ -1605,18 +1666,6 @@ body:not(.signed-in) .lang-toggle.float { display: flex; }
   .marquee p { letter-spacing: 0.1em; }
   .rl-wheel-wrap { width: min(250px, 64vw); }
   .board th:nth-child(3), .board td:nth-child(3) { display: none; }
-  .admin-table thead { display: none; }
-  .admin-table, .admin-table tbody, .admin-table tr, .admin-table td { display: block; }
-  .admin-table tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 10px; align-items: center; padding: 10px 0; border-top: 1px solid #ffffff12; }
-  .admin-table td { padding: 0; border: 0; }
-  .admin-table .pname { white-space: normal; }
-  .admin-table .lvl::before { content: "Lvl"; color: var(--muted); align-self: center; margin-right: 6px; }
-  .admin-table .lvl { display: flex; }
-  .admin-table td:nth-child(2), .admin-table td:nth-child(4) { grid-column: 1 / -1; }
-  .admin-table .lvl { grid-row: 1; grid-column: 2; }
-  .admin-table .credit-edit { min-width: 0; }
-  .admin-table .credit-edit input { flex: 1; width: auto; }
-  .admin-table .acts .abtn { flex: 1 1 auto; }
   .shop { padding: 14px; }
 }
 button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
@@ -1746,7 +1795,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 <p class="help-line"><a href="https://i.ytimg.com/vi/nTBifNknZ2I/sddefault.jpg" target="_blank" rel="noopener noreferrer">Help with gambling behaviour disorders</a></p>
 <div class="account-bar" id="accountBar" hidden>
   <span><span class="who-label">Signed in as </span><span id="myAv"></span><b id="whoami"></b></span>
-  <span class="links"><button class="lang-toggle" type="button" aria-label="Sprache wechseln"><span data-l="de">DE</span><span data-l="en">EN</span></button><button class="link-btn" id="profileBtn" type="button">Profile</button><button class="link-btn" id="pwToggle" type="button">Change password</button><button class="link-btn" id="logout" type="button">Sign out</button></span>
+  <span class="links"><button class="theme-toggle" type="button" aria-label="Night mode" title="Night mode"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="currentColor"/></svg></button><button class="lang-toggle" type="button" aria-label="Sprache wechseln"><span data-l="de">DE</span><span data-l="en">EN</span></button><button class="link-btn" id="profileBtn" type="button">Profile</button><button class="link-btn" id="pwToggle" type="button">Change password</button><button class="link-btn" id="logout" type="button">Sign out</button></span>
   <form class="pw-form" id="pwForm" hidden>
     <input id="pwOld" type="password" autocomplete="current-password" placeholder="Current password" aria-label="Current password">
     <input id="pwNew" type="password" autocomplete="new-password" placeholder="New password (4+ characters)" aria-label="New password">
@@ -2078,6 +2127,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           <input id="giveAllAmount" type="number" inputmode="numeric" placeholder="Credits for everyone, e.g. 1000 or -500" aria-label="Credits for everyone">
           <button class="abtn ok" id="giveAll" type="button">Give to everyone</button>
         </div>
+        <div class="admin-tools">
+          <input id="adminSearch" type="search" placeholder="Search players…" aria-label="Search players" autocomplete="off">
+          <select id="adminSort" aria-label="Sort players"><option value="name">A–Z</option><option value="credits">Credits</option><option value="level">Level</option><option value="online">Online first</option></select>
+          <span class="admin-count" id="adminCount"></span>
+        </div>
         <div class="admin-table-wrap"><table class="admin-table" id="adminPlayers"></table></div>
         <div class="danger-zone">
           <div><b>Hard reset</b><small>Every account, admins included, goes back to 500 credits and level 1: goodies, achievements, missions and best wins are wiped, and the online poker table is cleared. Pictures and medals stay. This can't be undone.</small></div>
@@ -2134,7 +2188,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   </div>
 </div>
 
-<button class="lang-toggle float" type="button" aria-label="Sprache wechseln"><span data-l="de">DE</span><span data-l="en">EN</span></button>
+<button class="theme-toggle floating" type="button" aria-label="Night mode" title="Night mode"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="currentColor"/></svg></button>
+<button class="lang-toggle floating" type="button" aria-label="Sprache wechseln"><span data-l="de">DE</span><span data-l="en">EN</span></button>
 <div class="chat-pops" id="chatPops" aria-live="polite"></div>
 <button class="chat-fab" id="chatFab" type="button" hidden>Chat <span class="badge" id="chatBadge" hidden>0</span></button>
 <section class="chat-panel" id="chatPanel" aria-labelledby="chatTitle" hidden>
@@ -2153,6 +2208,16 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
 <script>
 (() => {
+  // ---------- Night mode ----------
+  const THEME_KEY = 'lucky-reels-theme';
+  function setTheme(night) {
+    document.documentElement.dataset.theme = night ? 'night' : '';
+    document.querySelectorAll('.theme-toggle').forEach(b => b.setAttribute('aria-pressed', String(night)));
+    try { localStorage.setItem(THEME_KEY, night ? 'night' : 'day'); } catch {}
+  }
+  setTheme((() => { try { return localStorage.getItem(THEME_KEY) === 'night'; } catch { return false; } })());
+  document.querySelectorAll('.theme-toggle').forEach(b => b.addEventListener('click', () => setTheme(document.documentElement.dataset.theme !== 'night')));
+
   // ---------- Language ----------
   // The page is written in English. In German every text the page shows (static or rendered later) is
   // swapped through this table: exact texts first, then patterns whose {placeholders} carry numbers and names.
@@ -2305,7 +2370,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'The chat is not set up yet. Ask the person who runs the game to run the chat setup.': 'Der Chat ist noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, die Chat-Einrichtung auszuführen.',
     'Private chats are not set up yet. Ask the person who runs the game to run the private-chat setup.': 'Private Chats sind noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, sie einzurichten.',
     'The message did not go through. Try again.': 'Die Nachricht ging nicht durch. Versuch es nochmal.', 'Chat is switched off for players': 'Der Chat ist für Spieler abgeschaltet',
-    'Someone': 'Jemand', 'Actions': 'Aktionen', 'Help with gambling behaviour disorders': 'Hilfe bei Verhaltensstörungen bei Glücksspiel', 'Level changed': 'Level geändert',
+    'Someone': 'Jemand', 'Actions': 'Aktionen', 'Night mode': 'Nachtmodus', 'Search players…': 'Spieler suchen…', 'Search players': 'Spieler suchen',
+    'Sort players': 'Spieler sortieren', 'A–Z': 'A–Z', 'Online first': 'Online zuerst', 'Offline': 'Offline', 'Help with gambling behaviour disorders': 'Hilfe bei Verhaltensstörungen bei Glücksspiel', 'Level changed': 'Level geändert',
     '★ Max level reached – go Prestige': '★ Max-Level erreicht – Prestige starten', 'Max level!': 'Max-Level!', 'You can go Prestige now: open your profile.': 'Du kannst jetzt Prestige machen: Öffne dein Profil.',
     'Prestige': 'Prestige', 'Go Prestige?': 'Prestige starten?', 'Not yet': 'Noch nicht', 'Prestige!': 'Prestige!', 'Back to the game': 'Zurück zum Spiel',
     'Back to level 1, with a shiny new badge. Everyone can see it next to your name.': 'Zurück auf Level 1, mit einem glänzenden neuen Abzeichen. Alle sehen es neben deinem Namen.',
@@ -2401,6 +2467,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
+    ['{a} players', '{a} Spieler'], ['Best win {a}', 'Bester Gewinn {a}'], ['{a} × jackpot', '{a} × Jackpot'],
     ['Level for {a}', 'Level für {a}'], ['Enter a level from 1 to {a}.', 'Gib ein Level von 1 bis {a} ein.'], ['{a} is now level {b}.', '{a} ist jetzt Level {b}.'], ['An admin set you to level {a}.', 'Ein Admin hat dich auf Level {a} gesetzt.'],
     ['Go Prestige {a}?', 'Prestige {a} starten?'], ['Prestige {a}!', 'Prestige {a}!'],
     ['You go back to level 1 and earn the Prestige {a} badge next to your name, for everyone to see. Your credits, goodies and achievements stay.', 'Du gehst zurück auf Level 1 und bekommst das Prestige-{a}-Abzeichen neben deinem Namen, für alle sichtbar. Deine Credits, Goodies und Erfolge bleiben.'],
@@ -6981,6 +7048,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       online = next;
       renderChat();
       renderBoards();
+      renderAdminPlayers();
     });
   }
   function startDms() {
@@ -7303,10 +7371,15 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   function renderAdminPlayers(force = false) {
     if (!adminUnlocked || $('adminModal').hidden) return;
     const table = $('adminPlayers');
-    const rows = [...players].sort((a, b) => a.name.localeCompare(b.name));
+    const sortBy = $('adminSort').value;
+    const rows = [...players].sort((a, b) =>
+      sortBy === 'credits' ? b.credits - a.credits || a.name.localeCompare(b.name)
+      : sortBy === 'level' ? (b.prestige || 0) - (a.prestige || 0) || b.level - a.level || a.name.localeCompare(b.name)
+      : sortBy === 'online' ? online.has(b.id) - online.has(a.id) || a.name.localeCompare(b.name)
+      : a.name.localeCompare(b.name));
     // Rebuilding swaps out the buttons and inputs, which would swallow a click or a half-typed amount,
     // so only rebuild when players or their flags change and otherwise refresh the numbers in place.
-    const sig = rows.map(p => `${p.id}:${p.name}:${p.admin}:${p.banned}:${p.medals.join(',')}`).join('|') + '|' + account?.id;
+    const sig = rows.map(p => `${p.id}:${p.name}:${p.admin}:${p.banned}:${p.medals.join(',')}:${p.prestige}:${p.avatar}:${online.has(p.id)}`).join('|') + '|' + account?.id + '|' + sortBy;
     if (!force && table.dataset.sig === sig) {
       for (const p of rows) {
         const tr = table.querySelector(`tr[data-pid="${CSS.escape(p.id)}"]`);
@@ -7315,24 +7388,44 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         if (document.activeElement !== input && !input.dataset.dirty) input.value = p.credits;
         const lv = tr.querySelector('.level-in');
         if (document.activeElement !== lv && !lv.dataset.dirty) lv.value = p.level;
+        const best = tr.querySelector('.p-best');
+        if (best) best.textContent = `Best win ${fmt(p.best)}`;
       }
+      adminFilter();
       return;
     }
     table.dataset.sig = sig;
-    table.innerHTML = '<thead><tr><th>Player</th><th>Credits</th><th>Level</th><th>Actions</th></tr></thead><tbody>' + rows.map(p => `
-      <tr data-pid="${esc(p.id)}">
-        <td class="pname">${esc(p.name)}${medalsHtml(p.id, 10)}${p.admin ? '<span class="tag admin">admin</span>' : ''}${p.banned ? '<span class="tag banned">blocked</span>' : ''}${p.id === account?.id ? ' <span class="tag">you</span>' : ''}</td>
-        <td><div class="credit-edit"><input class="credit-in" type="number" inputmode="numeric" value="${p.credits}" aria-label="Credits for ${esc(p.name)}"><button class="abtn" data-act="credits">Set</button></div></td>
-        <td class="lvl"><div class="credit-edit level-edit"><input class="level-in" type="number" inputmode="numeric" min="1" max="${MAX_LEVEL}" value="${p.level}" aria-label="Level for ${esc(p.name)}"><button class="abtn" data-act="level">Set</button></div></td>
-        <td><div class="acts">
+    table.innerHTML = '<tbody>' + rows.map(p => {
+      const me = p.id === account?.id, on = online.has(p.id);
+      return `
+      <tr data-pid="${esc(p.id)}" data-name="${esc(p.name.toLowerCase())}" class="${p.admin ? 'is-admin' : ''}${p.banned ? ' is-banned' : ''}${me ? ' is-me' : ''}">
+        <td class="pname"><div class="p-head">${avatarHtml(p.id, p.name, 'md')}<div class="p-id">
+          <b>${nameHtml(p.id, p.name)}${p.admin ? '<span class="tag admin">admin</span>' : ''}${p.banned ? '<span class="tag banned">blocked</span>' : ''}${me ? '<span class="tag">you</span>' : ''}</b>
+          <span class="p-meta"><span>${on ? '<i class="dot"></i>Online' : '<i class="off"></i>Offline'}</span><span class="p-best">Best win ${fmt(p.best)}</span>${p.jackpots ? `<span>${p.jackpots} × jackpot</span>` : ''}${medalsHtml(p.id, 10)}</span>
+        </div></div></td>
+        <td class="p-credits"><span class="p-field-label">Credits</span><div class="credit-edit"><input class="credit-in" type="number" inputmode="numeric" value="${p.credits}" aria-label="Credits for ${esc(p.name)}"><button class="abtn" data-act="credits">Set</button></div></td>
+        <td class="lvl"><span class="p-field-label">Level</span><div class="credit-edit level-edit"><input class="level-in" type="number" inputmode="numeric" min="1" max="${MAX_LEVEL}" value="${p.level}" aria-label="Level for ${esc(p.name)}"><button class="abtn" data-act="level">Set</button></div></td>
+        <td class="p-acts"><div class="acts">
           <button class="abtn" data-act="medals">Medals</button>
+          <button class="abtn" data-act="admin"${me ? ' disabled' : ''}>${p.admin ? 'Remove admin' : 'Make admin'}</button>
+          <span class="gap"></span>
           <button class="abtn warn" data-act="reset">Reset</button>
-          <button class="abtn${p.banned ? ' ok' : ' warn'}" data-act="ban"${p.id === account?.id ? ' disabled' : ''}>${p.banned ? 'Unblock' : 'Block'}</button>
-          <button class="abtn" data-act="admin"${p.id === account?.id ? ' disabled' : ''}>${p.admin ? 'Remove admin' : 'Make admin'}</button>
-          <button class="abtn warn" data-act="delete"${p.id === account?.id || p.admin ? ' disabled' : ''} title="${p.admin ? 'Remove admin rights first' : 'Delete this account for good'}">Delete</button>
+          <button class="abtn${p.banned ? ' ok' : ' warn'}" data-act="ban"${me ? ' disabled' : ''}>${p.banned ? 'Unblock' : 'Block'}</button>
+          <button class="abtn warn" data-act="delete"${me || p.admin ? ' disabled' : ''} title="${p.admin ? 'Remove admin rights first' : 'Delete this account for good'}">Delete</button>
         </div></td>
-      </tr>`).join('') + '</tbody>';
+      </tr>`;
+    }).join('') + '</tbody>';
+    adminFilter();
   }
+  // Search and count over the player cards.
+  function adminFilter() {
+    const q = $('adminSearch').value.trim().toLowerCase();
+    let shown = 0;
+    $('adminPlayers').querySelectorAll('tr[data-pid]').forEach(tr => { const hit = !q || tr.dataset.name.includes(q); tr.hidden = !hit; shown += hit; });
+    $('adminCount').textContent = q ? `${shown} / ${players.length}` : `${players.length} players`;
+  }
+  $('adminSearch').addEventListener('input', adminFilter);
+  $('adminSort').addEventListener('change', () => renderAdminPlayers(true));
   $('adminPlayers').addEventListener('click', e => {
     const medal = e.target.closest('[data-medal]');
     if (medal) { medal.setAttribute('aria-pressed', String(medal.getAttribute('aria-pressed') !== 'true')); return; }
