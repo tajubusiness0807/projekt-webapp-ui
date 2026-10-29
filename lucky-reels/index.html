@@ -2118,6 +2118,15 @@ body.has-reset .profile-card { max-height: calc(100dvh - 76px); }
 .profile-settings .pw-msg { grid-column: 1 / -1; margin: 0; }
 /* A full-screen menu (lobby, shop, sign-in, lotto show) scrolls on its own: the page behind it does not, so there is only one scrollbar. */
 html:has(#lobby:not([hidden])), html:has(#shopPage:not([hidden])), html:has(#login:not([hidden])), html:has(#ltShow:not([hidden])) { overflow: hidden; }
+/* The support button: a ticket stub with a perforated edge */
+.ticket-pill { position: relative; display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px 5px 9px; border-radius: 8px; font-weight: 700; font-size: 13px; color: #12304a;
+  background: radial-gradient(circle at 0 50%, transparent 0 4px, #8fd0ff 4.5px) left / 51% 100% no-repeat, radial-gradient(circle at 100% 50%, transparent 0 4px, #8fd0ff 4.5px) right / 51% 100% no-repeat;
+  filter: drop-shadow(0 2px 0 #2a6d9a); transition: transform 0.15s, filter 0.15s; }
+.ticket-pill:hover { transform: translateY(-1px) rotate(-1.5deg); filter: drop-shadow(0 3px 0 #2a6d9a) brightness(1.06); }
+.ticket-pill .tp-ico { padding-right: 6px; border-right: 1.5px dashed #2a6d9a88; }
+.ticket-pill .dot-badge { position: absolute; top: -4px; right: -4px; }
+.ticket-pill .tp-short { display: none; }
+@media (max-width: 520px) { .ticket-pill .tp-long { display: none; } .ticket-pill .tp-short { display: inline; } .ticket-pill { padding: 4px 9px 4px 7px; font-size: 12px; } }
 #fx, #fxTop { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 #fxTop { z-index: 18; }
 .jp {
@@ -2754,7 +2763,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
 <div class="account-bar" id="accountBar" hidden>
   <span><span class="who-label">Signed in as </span><span id="myAv"></span><b id="whoami"></b></span>
-  <span class="links"><button class="lang-toggle" type="button" aria-label="Sprache wechseln"><span data-l="de">DE</span><span data-l="en">EN</span></button><button class="link-btn" id="supportBtn" type="button">Support<i class="dot-badge" id="supportBadge" hidden></i></button><button class="profile-pill" id="profileBtn" type="button" title="Your profile and settings"><span aria-hidden="true">⚙</span> My profile</button><button class="link-btn" id="logout" type="button">Sign out</button></span>
+  <span class="links"><button class="lang-toggle" type="button" aria-label="Sprache wechseln"><span data-l="de">DE</span><span data-l="en">EN</span></button><button class="ticket-pill" id="supportBtn" type="button" title="Write a ticket: ideas, bugs or wishes for the admins"><span class="tp-ico" aria-hidden="true">🎫</span><span class="tp-long">Support ticket</span><span class="tp-short">Support</span><i class="dot-badge" id="supportBadge" hidden></i></button><button class="profile-pill" id="profileBtn" type="button" title="Your profile and settings"><span aria-hidden="true">⚙</span> My profile</button><button class="link-btn" id="logout" type="button">Sign out</button></span>
 </div>
 
 <div class="announce" id="announce" role="status" aria-live="polite" hidden>
@@ -3811,6 +3820,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Higher positions pay more and bring new kinds of work.': 'Höhere Positionen zahlen mehr und bringen neue Aufgaben.',
     'buns': 'Brötchen', 'potatoes': 'Kartoffeln', 'cups': 'Becher', 'ketchup': 'Ketchup', 'napkins': 'Servietten', 'patties': 'Pattys',
     '🛠 Admin menu': '🛠 Admin-Menü',
+    'Write a ticket: ideas, bugs or wishes for the admins': 'Ticket schreiben: Ideen, Fehler oder Wünsche an die Admins', 'Support ticket': 'Support-Ticket',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
