@@ -1940,3 +1940,251 @@ begin
   return new;
 end;
 $$;
+
+
+-- ---------------------------------------------------------------------------
+-- Rocket: run this part once (after "Global roulette"). One rocket for
+-- everyone: 45 seconds to bet, then it lifts off and the multiplier climbs
+-- (2× after about 5 s, 10× after about 17 s, 200× after 40 s). Cash out
+-- before it explodes; at 200× it lands on the moon and pays everyone still
+-- on board. The database picks the explosion point when the round starts,
+-- keeps it secret until it happens and checks every cash-out against its
+-- own clock. Over the long run about 96% of bets come back.
+
+create table if not exists public.rocket_rounds (
+  id bigint primary key,
+  bet_start bigint not null,                 -- milliseconds since 1970
+  launch bigint not null,
+  crash numeric not null,                    -- kept secret until crash_at
+  crash_at bigint not null,
+  next_start bigint not null,
+  settled boolean not null default false,
+  created_at timestamptz not null default now()
+);
+alter table public.rocket_rounds enable row level security;
+revoke all on public.rocket_rounds from anon, authenticated;
+
+create table if not exists public.rocket_bets (
+  id bigint generated always as identity primary key,
+  round_id bigint not null,
+  player uuid not null references public.players (id) on delete cascade,
+  name text not null,
+  amount bigint not null check (amount > 0),
+  auto numeric check (auto is null or auto between 1.01 and 200),
+  cashed numeric,                            -- the multiplier this bet was cashed out at
+  payout bigint,                             -- null while the rocket is still flying
+  claimed boolean not null default false,
+  created_at timestamptz not null default now(),
+  unique (round_id, player)
+);
+create index if not exists rocket_bets_open on public.rocket_bets (player) where not claimed;
+alter table public.rocket_bets enable row level security;
+revoke all on public.rocket_bets from anon, authenticated;
+grant select on public.rocket_bets to authenticated;
+drop policy if exists "Everyone sees the rocket bets" on public.rocket_bets;
+create policy "Everyone sees the rocket bets" on public.rocket_bets for select to authenticated using (true);
+
+-- The multiplier after a number of milliseconds in the air.
+create or replace function public.rocket_mult(elapsed bigint)
+returns numeric language sql immutable as $$
+  select least(200, floor(power(200::numeric, greatest(0, elapsed) / 40000.0) * 100) / 100)
+$$;
+
+-- The round that is on now; starts the next one when the last is over.
+create or replace function public.rocket_current()
+returns public.rocket_rounds
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+  r public.rocket_rounds;
+  bs bigint;
+  c numeric;
+  ca bigint;
+begin
+  select * into r from public.rocket_rounds order by id desc limit 1;
+  if r.id is not null and now_ms < r.next_start then return r; end if;
+  bs := case when r.id is null or now_ms - r.next_start > 10000 then now_ms else r.next_start end;
+  -- 4% of rockets blow up on the pad; otherwise P(reaching m) = 0.96 / m, up to the moon at 200.
+  c := least(200, greatest(1, floor(0.96 / (1 - random()) * 100) / 100));
+  ca := bs + 45000 + round(40000 * ln(c) / ln(200));
+  insert into public.rocket_rounds (id, bet_start, launch, crash, crash_at, next_start)
+    values (coalesce(r.id, 0) + 1, bs, bs + 45000, c, ca, ca + case when c >= 200 then 8000 else 5000 end)
+    on conflict (id) do nothing;
+  delete from public.rocket_bets where round_id < coalesce(r.id, 0) - 5000 and claimed;
+  delete from public.rocket_rounds where id < coalesce(r.id, 0) - 5000;
+  select * into r from public.rocket_rounds order by id desc limit 1;
+  return r;
+end;
+$$;
+
+-- Once the rocket is gone (or on the moon): auto cash-outs below the explosion win, moon riders get 200×.
+create or replace function public.rocket_settle(round bigint)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  r public.rocket_rounds;
+begin
+  select * into r from public.rocket_rounds where id = round for update;
+  if r.id is null or r.settled or public.horse_now_ms() < r.crash_at then return; end if;
+  update public.rocket_bets set
+      cashed = case when auto is not null and auto < r.crash then auto when r.crash >= 200 then 200 else null end,
+      payout = case when auto is not null and auto < r.crash then floor(amount * auto)::bigint when r.crash >= 200 then amount * 200 else 0 end
+    where round_id = round and payout is null;
+  update public.rocket_rounds set settled = true where id = round;
+end;
+$$;
+
+create or replace function public.rocket_state()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+  r public.rocket_rounds;
+  done boolean;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  r := public.rocket_current();
+  perform public.rocket_settle(r.id - 1);
+  done := now_ms >= r.crash_at;
+  if done then perform public.rocket_settle(r.id); end if;
+  return jsonb_build_object('id', r.id, 'now', now_ms, 'bet_start', r.bet_start, 'launch', r.launch,
+    'crash', case when done then r.crash end, 'crash_at', case when done then r.crash_at end, 'next_start', case when done then r.next_start end,
+    'recent', (select coalesce(jsonb_agg(crash order by id desc), '[]') from (
+      select id, crash from public.rocket_rounds where crash_at <= now_ms and id < r.id order by id desc limit 14) x));
+end;
+$$;
+
+-- A bet on the round that is taking bets now, with an optional automatic cash-out.
+create or replace function public.rocket_bet(round bigint, amount bigint, auto_at numeric default null)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+  r public.rocket_rounds := public.rocket_current();
+  me public.players;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  if round <> r.id or now_ms < r.bet_start or now_ms >= r.launch then raise exception 'betting closed'; end if;
+  if amount is null or amount < 1 then raise exception 'bet at least 1'; end if;
+  if auto_at is not null and (auto_at < 1.01 or auto_at > 200) then raise exception 'auto cash-out must be 1.01 to 200'; end if;
+  select * into me from public.players where id = auth.uid() for update;
+  if me is null or me.is_banned then raise exception 'not allowed'; end if;
+  if coalesce((select (data ->> 'maintenance')::boolean from public.settings where id = 1), false) and not me.is_admin then raise exception 'paused'; end if;
+  if me.credits < amount then raise exception 'not enough credits'; end if;
+  if exists (select 1 from public.rocket_bets where round_id = round and player = me.id) then raise exception 'already on board'; end if;
+  update public.players set credits = credits - amount, admin_rev = admin_rev + 1, updated_at = now() where id = me.id;
+  insert into public.rocket_bets (round_id, player, name, amount, auto) values (round, me.id, me.name, amount, auto_at);
+  return jsonb_build_object('credits', me.credits - amount, 'rev', me.admin_rev + 1);
+end;
+$$;
+
+-- Cash out now, at the multiplier on the database's clock (or the automatic one if that came first).
+create or replace function public.rocket_cashout(round bigint)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+  r public.rocket_rounds;
+  b public.rocket_bets;
+  m numeric;
+  pay bigint;
+  me public.players;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  select * into r from public.rocket_rounds where id = round;
+  if r.id is null or now_ms < r.launch then raise exception 'not flying'; end if;
+  m := public.rocket_mult(now_ms - r.launch);
+  if now_ms >= r.crash_at or m >= r.crash then
+    perform public.rocket_settle(round);
+    raise exception 'crashed';
+  end if;
+  select * into b from public.rocket_bets where round_id = round and player = auth.uid() and payout is null for update;
+  if b.id is null then raise exception 'no bet'; end if;
+  if b.auto is not null and b.auto < m then m := b.auto; end if;
+  pay := floor(b.amount * m)::bigint;
+  update public.rocket_bets set cashed = m, payout = pay, claimed = true where id = b.id;
+  select * into me from public.players where id = auth.uid() for update;
+  update public.players set credits = credits + pay, admin_rev = admin_rev + 1, updated_at = now() where id = me.id;
+  return jsonb_build_object('mult', m, 'payout', pay, 'credits', me.credits + pay, 'rev', me.admin_rev + 1);
+end;
+$$;
+
+-- Collects finished rounds of mine (automatic cash-outs and moon landings) onto my balance.
+create or replace function public.rocket_claim()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+  round bigint;
+  won bigint;
+  rows_ jsonb;
+  me public.players;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  for round in select b.round_id from public.rocket_bets b join public.rocket_rounds r on r.id = b.round_id
+      where b.player = auth.uid() and not b.claimed and r.crash_at <= now_ms loop
+    perform public.rocket_settle(round);
+  end loop;
+  select * into me from public.players where id = auth.uid() for update;
+  if me is null then raise exception 'not allowed'; end if;
+  with c as (
+    update public.rocket_bets set claimed = true
+    where player = me.id and not claimed and payout is not null
+    returning round_id, amount, auto, cashed, payout
+  )
+  select coalesce(sum(c.payout), 0), coalesce(jsonb_agg(to_jsonb(c) || jsonb_build_object('crash', r.crash)), '[]') into won, rows_
+    from c join public.rocket_rounds r on r.id = c.round_id;
+  if won > 0 then
+    update public.players set credits = credits + won, admin_rev = admin_rev + 1, updated_at = now() where id = me.id;
+    return jsonb_build_object('bets', rows_, 'credits', me.credits + won, 'rev', me.admin_rev + 1);
+  end if;
+  return jsonb_build_object('bets', rows_, 'credits', me.credits, 'rev', me.admin_rev);
+end;
+$$;
+
+revoke execute on function public.rocket_current() from public, anon, authenticated;
+revoke execute on function public.rocket_settle(bigint) from public, anon, authenticated;
+revoke execute on function public.rocket_state() from public, anon;
+revoke execute on function public.rocket_bet(bigint, bigint, numeric) from public, anon;
+revoke execute on function public.rocket_cashout(bigint) from public, anon;
+revoke execute on function public.rocket_claim() from public, anon;
+grant execute on function public.rocket_state() to authenticated;
+grant execute on function public.rocket_bet(bigint, bigint, numeric) to authenticated;
+grant execute on function public.rocket_cashout(bigint) to authenticated;
+grant execute on function public.rocket_claim() to authenticated;
+
+-- A reset or hard reset also drops a player's bets that were not collected yet.
+create or replace function public.players_clear_cosmetics()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+begin
+  if new.game is null and old.game is not null then
+    new.flair := null;
+    new.trophies := '{}';
+    delete from public.horse_bets where player = new.id and not claimed;
+    delete from public.roulette_bets where player = new.id and not claimed;
+    delete from public.rocket_bets where player = new.id and not claimed;
+  end if;
+  return new;
+end;
+$$;

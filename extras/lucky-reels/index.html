@@ -455,7 +455,7 @@ details.paytable, details.bj-rules { background: var(--panel); border-radius: 10
 @media (max-width: 600px) { .back-btn { left: 10px; top: 10px; } }
 .gm { padding: 6px 16px; border-radius: 999px; background: var(--panel); color: var(--muted); font-weight: 600; font-size: 13px; }
 .gm[aria-selected="true"] { background: var(--accent); color: var(--ink); }
-.cabinet:not([data-mode="bj"]) .bj, .cabinet:not([data-mode="rl"]) .rl, .cabinet:not([data-mode="pk"]) .pk, .cabinet:not([data-mode="pl"]) .pl, .cabinet:not([data-mode="ck"]) .ck, .cabinet:not([data-mode="hr"]) .hr { display: none; }
+.cabinet:not([data-mode="bj"]) .bj, .cabinet:not([data-mode="rl"]) .rl, .cabinet:not([data-mode="pk"]) .pk, .cabinet:not([data-mode="pl"]) .pl, .cabinet:not([data-mode="ck"]) .ck, .cabinet:not([data-mode="hr"]) .hr, .cabinet:not([data-mode="rk"]) .rk { display: none; }
 .cabinet:not([data-mode="slots"]) :is(#window, #reelCtl, #tier, #message, .meters, .bet, .spin-row, #boosts, details.paytable) { display: none !important; }
 body.wide .layout { max-width: 980px; grid-template-columns: minmax(0, 1fr); }
 body.wide .account-bar { max-width: 980px; }
@@ -1708,6 +1708,33 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
   .float, .tier, .tier-title, .toast, .modal, .modal-card, .reel.wild, .card.flip, .chat-panel, .jp-badge { animation: none; }
   .jp-flash, .float { opacity: 0; }
 }
+/* Rocket */
+.rk { display: grid; gap: 12px; }
+.rk-view { position: relative; height: clamp(280px, 44vw, 400px); border-radius: 16px; overflow: hidden; border: 3px solid #0b0712; box-shadow: inset 0 0 0 2px #ffffff14, 0 14px 30px -14px #000; background: #0d1030; }
+.rk-view canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.rk-hist { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; min-height: 22px; }
+.rk-hist span { padding: 2px 7px; border-radius: 6px; font: 700 11px var(--font-mono); color: #fff; }
+.rk-hist .lo { background: #e0414a; } .rk-hist .mid { background: #3d7bd9; } .rk-hist .hi { background: #3fae5a; } .rk-hist .moon { background: #f3c94b; color: #1d1714; }
+.rk-inputs { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 10px; }
+.rk-field { display: grid; gap: 4px; min-width: 0; }
+.rk-field > span:first-child { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+.rk-auto-in { position: relative; display: block; }
+.rk-auto-in input { width: 100%; height: 100%; min-height: 48px; padding: 0 28px 0 12px; border-radius: 12px; border: 2px solid var(--chrome); background: #0b0806; color: var(--fg); font: 700 16px var(--font-mono); }
+.rk-auto-in i { position: absolute; right: 12px; top: 50%; translate: 0 -50%; font-style: normal; color: var(--muted); }
+.rk-cash { background: linear-gradient(#8fe39b, #4fae5c); color: #0b2410; box-shadow: 0 6px 0 #2f6e38, 0 0 24px -4px #7fd18b; animation: rkPulse 0.8s ease-in-out infinite alternate; }
+.rk-cash.done { background: linear-gradient(#f3c94b, #c98a24); color: var(--ink); box-shadow: 0 6px 0 #8a5a12; animation: none; }
+.rk-cash.lost { background: linear-gradient(#6a2a30, #3f171b); color: #ffb3b8; box-shadow: 0 6px 0 #250d10; animation: none; }
+@keyframes rkPulse { to { box-shadow: 0 6px 0 #2f6e38, 0 0 40px 2px #7fd18bcc; } }
+.rk-table { display: grid; gap: 8px; }
+.rk-flying { display: inline-block; animation: rkBob 0.6s ease-in-out infinite alternate; }
+@keyframes rkBob { to { transform: translateY(-3px); } }
+.gp-rk { width: min(150px, 100%); height: auto; }
+.gp-rk .gp-rocket { transition: transform 0.4s cubic-bezier(.3, 1.4, .5, 1); }
+.gp-rk .gp-flame { transform-origin: 70px 92px; transform: scaleY(0.5); transition: transform 0.2s; }
+.game-pick:hover .gp-rk .gp-rocket, .game-pick:focus-visible .gp-rk .gp-rocket { transform: translateY(-10px); }
+.game-pick:hover .gp-rk .gp-flame, .game-pick:focus-visible .gp-rk .gp-flame { transform: scaleY(1.2); }
+@media (max-width: 600px) { .rk-inputs { grid-template-columns: minmax(0, 1fr); } .rk-view { height: 280px; } }
+@media (prefers-reduced-motion: reduce) { .rk-cash, .rk-flying { animation: none; } }
 /* Who plays what */
 .p-game { display: inline-flex; align-items: center; gap: 3px; margin-left: 6px; padding: 1px 7px 1px 5px; border-radius: 999px; background: #7fd18b1f; color: var(--win); font-size: 10px; font-weight: 600; letter-spacing: 0.04em; white-space: nowrap; vertical-align: 1px; }
 .p-game > span:first-child { font-size: 11px; }
@@ -1940,6 +1967,25 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         <canvas class="gp-hr" id="hrLobbyCv" width="280" height="230" aria-hidden="true"></canvas>
         <span class="gp-title">Horse Racing</span>
         <span class="gp-desc">One race for everyone every 3 minutes. Bet, watch live, cash in.</span>
+        <span class="gp-go">Play</span>
+      </button>
+      <button class="game-pick" type="button" data-mode="rk">
+        <span class="gp-online gp-live" id="rkBadge">Live</span>
+        <svg class="gp-rk" viewBox="0 0 140 130" aria-hidden="true">
+          <rect x="8" y="8" width="124" height="112" rx="14" fill="#0d1030"/>
+          <g fill="#fff"><circle cx="24" cy="24" r="1.5"/><circle cx="110" cy="20" r="1.2"/><circle cx="96" cy="52" r="1.4"/><circle cx="30" cy="70" r="1.2"/><circle cx="118" cy="90" r="1.5"/><circle cx="50" cy="30" r="1"/></g>
+          <circle cx="108" cy="30" r="14" fill="#f1ead8"/><circle cx="103" cy="26" r="3" fill="#cfc6b2"/><circle cx="112" cy="35" r="2.2" fill="#cfc6b2"/>
+          <g class="gp-rocket">
+            <path class="gp-flame" d="M62 92q8 26 16 0z" fill="#ffb347"/>
+            <path d="M56 70l-10 18 12-4zM84 70l10 18-12-4z" fill="#c8323a"/>
+            <path d="M70 28c12 10 12 40 9 62H61c-3-22-3-52 9-62z" fill="#f6efe3"/>
+            <path d="M70 28c5 4 8 9 9 14H61c1-5 4-10 9-14z" fill="#c8323a"/>
+            <circle cx="70" cy="58" r="6" fill="#e9a23b"/><circle cx="70" cy="58" r="4" fill="#4fa8e0"/>
+          </g>
+          <text x="70" y="114" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="14" fill="#7fd18b">2.47×</text>
+        </svg>
+        <span class="gp-title">Rocket</span>
+        <span class="gp-desc">Board it, watch the multiplier climb and cash out before it blows. 200× is the moon.</span>
         <span class="gp-go">Play</span>
       </button>
       <button class="game-pick" type="button" data-mode="bj">
@@ -2218,6 +2264,38 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       <details class="bj-rules">
         <summary>Horse racing rules</summary>
         <p class="note">Every three minutes six horses race, the same race for everyone. For two minutes you can bet on as many horses as you like (up to 12 bets per race). Win pays if your horse comes first; Place pays if it comes first or second, at lower odds. The odds are fixed when you bet: the favourite pays least, the outsiders most. When betting closes the gates open and everybody watches the race live; winnings land on your balance as soon as the race is over, even if you left the page. Over the long run about 92% of bets come back.</p>
+      </details>
+    </section>
+
+    <section class="rk" id="rk" aria-label="Rocket">
+      <div class="hr-top">
+        <span class="hr-phase" id="rkPhase" data-phase="bet">Boarding</span>
+        <span class="hr-clock" id="rkClock"></span>
+      </div>
+      <div class="hr-bar"><span id="rkBar"></span></div>
+      <div class="rk-view" id="rkView"><canvas id="rkCanvas" aria-label="Rocket flight"></canvas></div>
+      <div class="rk-hist" id="rkHist" aria-label="Last flights"></div>
+      <p class="message" id="rkMsg" role="status" aria-live="polite">Bet and board the rocket before liftoff. The higher it flies, the more it pays.</p>
+      <div class="rk-inputs">
+        <div class="rk-field"><span>Bet</span>
+          <div class="pl-bet">
+            <button class="chip-btn" type="button" data-rkb="half" aria-label="Halve bet">½</button>
+            <input id="rkBet" type="number" min="1" step="1" inputmode="numeric" aria-label="Bet">
+            <button class="chip-btn" type="button" data-rkb="double" aria-label="Double bet">×2</button>
+            <button class="chip-btn" type="button" data-rkb="max">Max</button>
+          </div>
+        </div>
+        <label class="rk-field rk-auto"><span>Auto cash-out at</span><span class="rk-auto-in"><input id="rkAuto" type="text" inputmode="decimal" placeholder="off, e.g. 2.00" aria-label="Auto cash-out at"><i>×</i></span></label>
+      </div>
+      <button class="spin" id="rkPlace" type="button">Board the rocket</button>
+      <button class="spin rk-cash" id="rkCash" type="button" hidden>Cash out</button>
+      <div class="rk-table">
+        <h4 class="hr-h">On board <span id="rkPool"></span></h4>
+        <ul class="hr-list" id="rkPlayers"></ul>
+      </div>
+      <details class="bj-rules">
+        <summary>Rocket rules</summary>
+        <p class="note">One rocket for everyone. For 45 seconds you can board it with a bet (and, if you like, an automatic cash-out). Then it lifts off and the multiplier climbs faster and faster: about 2× after 5 seconds, 10× after 17 seconds. Cash out whenever you like and your bet pays that multiplier; if the rocket explodes first, the bet is gone. The higher it goes, the likelier the explosion: about half of all rockets make it past 2×, one in ten past 10×. One in 25 blows up right on the pad. The few that reach 200× land on the moon and pay 200× to everyone still on board. Over the long run about 96% of bets come back, whenever you cash out. Space boards and cashes out.</p>
       </details>
     </section>
 
@@ -2703,6 +2781,23 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Private chats are not set up yet. Ask the person who runs the game to run the private-chat setup.': 'Private Chats sind noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, sie einzurichten.',
     'The message did not go through. Try again.': 'Die Nachricht ging nicht durch. Versuch es nochmal.', 'Chat is switched off for players': 'Der Chat ist für Spieler abgeschaltet',
     'Someone': 'Jemand', 'Actions': 'Aktionen',
+    'Rocket': 'Rakete', 'Rocket flight': 'Raketenflug', 'Rocket rules': 'Raketen-Regeln', 'Boarding': 'Einsteigen', 'In flight': 'Im Flug', 'Exploded': 'Explodiert',
+    'On the moon': 'Auf dem Mond', 'Fuelling': 'Wird betankt', 'Fuelling…': 'Wird betankt…', 'Next rocket': 'Nächste Rakete', 'Last flights': 'Letzte Flüge',
+    'Bet': 'Einsatz', 'Auto cash-out at': 'Auto-Auszahlung bei', 'off, e.g. 2.00': 'aus, z. B. 2.00', 'Board the rocket': 'Einsteigen', 'On board': 'An Bord',
+    'Cash out': 'Auszahlen', 'Cashed out': 'Ausgezahlt', 'Moon landing': 'Mondlandung', 'Auto cash-out': 'Auto-Auszahlung', 'Blown up': 'Explodiert',
+    'Next rocket soon': 'Gleich die nächste Rakete', 'boarding opens after this flight': 'Einsteigen nach diesem Flug', 'Nobody on board yet.': 'Noch niemand an Bord.',
+    'Liftoff!': 'Abheben!', 'BOOM!': 'BUMM!', 'To the moon!': 'Zum Mond!', 'Live · next rocket soon': 'Live · gleich nächste Rakete',
+    'Rocket · cash out before it blows · play credits': 'Rakete · auszahlen, bevor sie explodiert · Spiel-Credits',
+    'Board it, watch the multiplier climb and cash out before it blows. 200× is the moon.': 'Einsteigen, den Multiplikator steigen sehen und auszahlen, bevor sie explodiert. 200× ist der Mond.',
+    'Bet and board the rocket before liftoff. The higher it flies, the more it pays.': 'Setz und steig ein, bevor sie abhebt. Je höher sie fliegt, desto mehr zahlt sie.',
+    'The rocket is in the air. Board the next one.': 'Die Rakete ist in der Luft. Steig in die nächste ein.',
+    'Liftoff! Cash out before it blows.': 'Abheben! Zahl aus, bevor sie explodiert.', 'Too late: it blew up!': 'Zu spät: Sie ist explodiert!',
+    'Too late: the rocket is already on its way. Wait for the next one.': 'Zu spät: Die Rakete ist schon unterwegs. Warte auf die nächste.',
+    'You are already on board for this flight.': 'Du bist bei diesem Flug schon an Bord.',
+    'The rocket needs the “Rocket” part of supabase-setup.sql.': 'Die Rakete braucht den Abschnitt „Rocket“ aus supabase-setup.sql.',
+    'The rocket needs the “Rocket” part of supabase-setup.sql. Ask the person who runs the game to run it.': 'Die Rakete braucht den Abschnitt „Rocket“ aus supabase-setup.sql. Bitte die Person, die das Spiel betreibt, ihn auszuführen.',
+    'Sky High': 'Himmelhoch', 'Cash out a rocket at 10× or more.': 'Zahl eine Rakete bei 10× oder mehr aus.', 'To the Moon': 'Bis zum Mond', 'Ride the rocket all the way to the moon.': 'Flieg mit der Rakete bis zum Mond.',
+    'One rocket for everyone. For 45 seconds you can board it with a bet (and, if you like, an automatic cash-out). Then it lifts off and the multiplier climbs faster and faster: about 2× after 5 seconds, 10× after 17 seconds. Cash out whenever you like and your bet pays that multiplier; if the rocket explodes first, the bet is gone. The higher it goes, the likelier the explosion: about half of all rockets make it past 2×, one in ten past 10×. One in 25 blows up right on the pad. The few that reach 200× land on the moon and pay 200× to everyone still on board. Over the long run about 96% of bets come back, whenever you cash out. Space boards and cashes out.': 'Eine Rakete für alle. 45 Sekunden lang kannst du mit einem Einsatz einsteigen (und, wenn du willst, einer automatischen Auszahlung). Dann hebt sie ab und der Multiplikator steigt immer schneller: etwa 2× nach 5 Sekunden, 10× nach 17 Sekunden. Zahl aus, wann du willst, und dein Einsatz zahlt diesen Multiplikator; explodiert die Rakete vorher, ist der Einsatz weg. Je höher sie fliegt, desto wahrscheinlicher die Explosion: etwa die Hälfte aller Raketen schafft mehr als 2×, eine von zehn mehr als 10×. Eine von 25 explodiert schon auf der Startrampe. Die wenigen, die 200× erreichen, landen auf dem Mond und zahlen allen, die noch an Bord sind, 200×. Auf lange Sicht kommen etwa 96 % der Einsätze zurück, egal wann du auszahlst. Leertaste steigt ein und zahlt aus.',
     'other player online': 'anderer Spieler online', 'other players online': 'andere Spieler online', 'in the lobby': 'in der Lobby',
     'Nobody else is online right now.': 'Gerade ist sonst niemand online.', 'Lobby': 'Lobby',
     'Place your bets': 'Setzt eure Chips', 'No more bets': 'Nichts geht mehr', 'Spinning': 'Die Kugel rollt', 'Next round': 'Nächste Runde', 'At the table': 'Am Tisch',
@@ -2858,7 +2953,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['({a} not placed yet)', '({a} noch nicht gesetzt)'], ['next round in {a} s', 'nächste Runde in {a} s'], ['{a} on the table', '{a} auf dem Tisch'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['bet {a}', 'Einsatz {a}'], ['auto {a}', 'auto {a}'],
+    ["You're on board with {a}. Auto cash-out at {b}.", 'Du bist mit {a} an Bord. Auto-Auszahlung bei {b}.'], ["You're on board with {a}. Cash out before it blows!", 'Du bist mit {a} an Bord. Zahl aus, bevor sie explodiert!'],
+    ['To the moon! {a} · +{b}', 'Zum Mond! {a} · +{b}'], ['Cashed out at {a} · +{b}', 'Ausgezahlt bei {a} · +{b}'], ['Auto cash-out at {a} · +{b}', 'Auto-Auszahlung bei {a} · +{b}'],
+    ['Boom at {a}. Your {b} went up in smoke.', 'Bumm bei {a}. Deine {b} sind in Rauch aufgegangen.'], ['Boom at {a}!', 'Bumm bei {a}!'],
+    ['To the moon! Everyone still on board gets {a}.', 'Zum Mond! Alle, die noch an Bord sind, bekommen {a}.'], ['Your rocket paid: +{a} credits!', 'Deine Rakete hat gezahlt: +{a} Credits!'], ['({a} not placed yet)', '({a} noch nicht gesetzt)'], ['next round in {a} s', 'nächste Runde in {a} s'], ['{a} on the table', '{a} auf dem Tisch'],
     ['Bets placed: {a}. Good luck!', 'Einsätze gesetzt: {a}. Viel Glück!'], ['Time is up: your {a} went in automatically. Good luck!', 'Zeit um: Deine {a} wurden automatisch gesetzt. Viel Glück!'],
     ['{a}. Place your chips for the next round.', '{a}. Setz deine Chips für die nächste Runde.'], ['Your chips paid: +{a} credits!', 'Deine Chips haben gezahlt: +{a} Credits!'], ['Next race {a}', 'Nächstes Rennen {a}'], ['Live · bets close in {a}', 'Live · Wetten schließen in {a}'], ['Live · next race in {a}', 'Live · nächstes Rennen in {a}'],
     ['{a} takes the lead!', '{a} übernimmt die Führung!'], ['Halfway: {a} ahead of {b}.', 'Halbzeit: {a} vor {b}.'],
@@ -3226,6 +3325,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     { id: 'shark', name: 'Card Shark', desc: 'Win a poker pot.', reward: 300, test: c => c?.pokerWin },
     { id: 'royalty', name: 'Royalty', desc: 'Win a poker pot with a straight flush.', reward: 2000, test: c => c?.pokerSF },
     { id: 'chicken', name: 'Why Did the Chicken…', desc: 'Get the chicken across all ten lanes.', reward: 600, test: c => c?.chickenCrossed },
+    { id: 'skyhigh', name: 'Sky High', desc: 'Cash out a rocket at 10× or more.', reward: 800, test: c => c?.rocketMult >= 10 },
+    { id: 'moon', name: 'To the Moon', desc: 'Ride the rocket all the way to the moon.', reward: 5000, test: c => c?.rocketMult >= 200 },
     { id: 'horses', name: 'Day at the Races', desc: 'Win a horse racing bet.', reward: 300, test: c => c?.horseWin },
     { id: 'longshot', name: 'Long Shot', desc: 'Win a horse bet at 10× odds or more.', reward: 2000, test: c => c?.horseOdds >= 10 },
     { id: 'plinko', name: 'Sky Drop', desc: 'Land a Plinko ball on 25× or more.', reward: 800, test: c => c?.plinkoMult >= 25 },
@@ -3256,6 +3357,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     pl: { bet: 10, rows: 12, risk: 'medium', drops: 0, history: [], pending: [] },
     ck: { bet: 10, diff: 'medium', games: 0, round: null },
     hr: { bet: 100, kind: 'win', races: 0, wins: 0, won: 0, open: [], history: [] },
+    rk: { bet: 100, auto: null, rounds: 0, wins: 0, open: [], history: [] },
     pk: { view: 'solo', solo: null, hands: 0, buyIn: 2000 },
   });
   const state = fresh();
@@ -4433,18 +4535,20 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     pl: 'Plinko · real bounces · play credits',
     ck: 'Chicken · cross the road · play credits',
     hr: 'Horse racing · live for everyone · play credits',
+    rk: 'Rocket · cash out before it blows · play credits',
   };
   const gameBusy = () => busy || bjBusy || (typeof pkBusy === 'function' && pkBusy()) || (typeof plBusy === 'function' && plBusy()) || (typeof ckBusy === 'function' && ckBusy());
   function applyGameMode() {
     const bj = state.mode === 'bj';
     cabinet.dataset.mode = state.mode;
     cabinet.classList.toggle('mode-bj', bj);
-    document.body.classList.toggle('wide', state.mode === 'pk' || state.mode === 'hr');
+    document.body.classList.toggle('wide', state.mode === 'pk' || state.mode === 'hr' || state.mode === 'rk');
     $('marqueeSub').textContent = MODE_SUBS[state.mode];
     if (state.mode === 'rl') rlEnter();
     if (state.mode === 'pl' && typeof plEnter === 'function') plEnter();
     if (state.mode === 'ck' && typeof ckEnter === 'function') ckEnter();
     if (state.mode === 'hr' && typeof hrEnter === 'function') hrEnter();
+    if (state.mode === 'rk' && typeof rkEnter === 'function') rkEnter();
     if (state.mode === 'pk' && typeof pkEnter === 'function') pkEnter();
     if (bj) {
       renderBJTable(false);
@@ -4458,7 +4562,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     renderBroke();
     document.querySelectorAll('.game-pick').forEach(b => {
       b.querySelector('.gp-last')?.remove();
-      if (b.dataset.mode === state.mode && state.spins + state.bj.hands + state.rl.spins + state.pk.hands + state.pl.drops + state.ck.games + state.hr.races > 0) b.insertAdjacentHTML('afterbegin', '<span class="gp-last">Last played</span>');
+      if (b.dataset.mode === state.mode && state.spins + state.bj.hands + state.rl.spins + state.pk.hands + state.pl.drops + state.ck.games + state.hr.races + state.rk.rounds > 0) b.insertAdjacentHTML('afterbegin', '<span class="gp-last">Last played</span>');
     });
     $('lobby').hidden = false;
     renderLobbyCounts();
@@ -4471,7 +4575,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     $('lobby').hidden = true;
     sound.chime();
     render();
-    ({ bj: $('bjDeal'), rl: $('rlSpin'), slots: $('spin'), pk: $('pkSit'), pl: $('plDrop'), ck: $('ckGo'), hr: $('hrBet') }[state.mode])?.focus({ preventScroll: true });
+    ({ bj: $('bjDeal'), rl: $('rlSpin'), slots: $('spin'), pk: $('pkSit'), pl: $('plDrop'), ck: $('ckGo'), hr: $('hrBet'), rk: $('rkBet') }[state.mode])?.focus({ preventScroll: true });
   }));
 
   $('backBtn').addEventListener('click', () => {
@@ -6187,6 +6291,515 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     document.fonts?.ready.then(draw);
   }
 
+  // ---------- Rocket ----------
+  // One rocket for everyone. 45 seconds to bet, then lift-off: the multiplier grows as 200^(t / 40 s), so 2× after
+  // about 5 s, 10× after about 17 s and 200× (the moon) after 40 s. With the online database the explosion point is
+  // drawn and kept on the server, which also checks every cash-out against its own clock. Must match the "Rocket"
+  // part of supabase-setup.sql.
+  const RK_BET = 45000, RK_FULL = 40000, RK_CAP = 200;
+  const rkMult = ms => Math.min(RK_CAP, Math.floor(Math.pow(RK_CAP, Math.max(0, ms) / RK_FULL) * 100) / 100);
+  const rkTimeFor = m => RK_FULL * Math.log(m) / Math.log(RK_CAP);
+  // Without the online database: fixed 91-second rounds, the explosion point from the round number.
+  function localRocket() {
+    const P = 91000;
+    const key = () => 'lucky-reels-rk-' + (account?.id || '');
+    const read = () => { try { return JSON.parse(localStorage.getItem(key()) || '[]'); } catch { return []; } };
+    const write = l => { try { localStorage.setItem(key(), JSON.stringify(l.slice(-60))); } catch {} };
+    const crashOf = id => Math.min(RK_CAP, Math.max(1, Math.floor(0.96 / (1 - hrRng(id, 999)()) * 100) / 100));
+    const round = id => { const bs = id * P, c = crashOf(id); return { id, bet_start: bs, launch: bs + RK_BET, crash: c, crash_at: bs + RK_BET + Math.round(rkTimeFor(c)), next_start: (id + 1) * P }; };
+    const settle = b => {
+      if (b.payout != null) return;
+      const r = round(b.round_id);
+      if (Date.now() < r.crash_at) return;
+      if (b.auto && b.auto < r.crash) { b.cashed = b.auto; b.payout = Math.floor(b.amount * b.auto); }
+      else if (r.crash >= RK_CAP) { b.cashed = RK_CAP; b.payout = b.amount * RK_CAP; }
+      else b.payout = 0;
+    };
+    return {
+      shared: false,
+      async state() {
+        const now = Date.now(), id = Math.floor(now / P), r = round(id), done = now >= r.crash_at;
+        const recent = [];
+        for (let k = id - 1; k >= id - 14; k--) recent.push(crashOf(k));
+        return { ...r, now, crash: done ? r.crash : null, crash_at: done ? r.crash_at : null, next_start: done ? r.next_start : null, recent };
+      },
+      async bet(id, amount, auto) {
+        const now = Date.now(), r = round(id);
+        if (id !== Math.floor(now / P) || now >= r.launch) throw Object.assign(new Error('betting closed'), { code: 'rk_closed' });
+        const list = read();
+        if (list.some(b => b.round_id === id)) throw new Error('already on board');
+        list.push({ round_id: id, player: account.id, name: account.name, amount, auto: auto || null, cashed: null, payout: null, claimed: false });
+        write(list);
+        return { credits: null, rev: null };
+      },
+      async cashout(id) {
+        const now = Date.now(), r = round(id), list = read(), b = list.find(x => x.round_id === id && x.payout == null);
+        if (now < r.launch) throw new Error('not flying');
+        let m = rkMult(now - r.launch);
+        if (now >= r.crash_at || m >= r.crash) throw new Error('crashed');
+        if (!b) throw new Error('no bet');
+        if (b.auto && b.auto < m) m = b.auto;
+        b.cashed = m; b.payout = Math.floor(b.amount * m); b.claimed = true;
+        write(list);
+        return { mult: m, payout: b.payout, credits: null, rev: null };
+      },
+      async bets(id) { const list = read(); list.forEach(settle); return list.filter(b => b.round_id === id); },
+      async claim() {
+        const list = read(), out = [];
+        for (const b of list) { if (b.claimed) continue; settle(b); if (b.payout == null) continue; b.claimed = true; out.push({ ...b, crash: round(b.round_id).crash }); }
+        write(list);
+        return { bets: out, credits: null, rev: null };
+      },
+    };
+  }
+
+  let rkCur = null, rkFetching = false, rkFetchAt = 0, rkReady = null, rkBets = [], rkBetsFor = -1, rkBetsAt = 0;
+  let rkBusyBet = false, rkCashing = false, rkClaiming = false, rkClaimSoon = true, rkAutoTried = -1, rkSeen = {};
+  const rkMine = () => rkBetsFor === rkCur?.id ? rkBets.find(b => !b.player || b.player === account?.id) : null;
+  async function rkFetch() {
+    if (!backend?.rocket || rkFetching || !account) return;
+    rkFetching = true; rkFetchAt = performance.now();
+    try {
+      const t0 = Date.now();
+      const r = await backend.rocket.state();
+      if (backend.rocket.shared && Number.isFinite(Number(r?.now))) { const off = Number(r.now) - (t0 + Date.now()) / 2; hrOffset = hrOffsetSet ? hrOffset * 0.7 + off * 0.3 : off; hrOffsetSet = true; }
+      const next = { id: Number(r.id), betStart: Number(r.bet_start), launch: Number(r.launch), crash: r.crash == null ? null : Number(r.crash), crashAt: r.crash_at == null ? null : Number(r.crash_at), nextStart: r.next_start == null ? null : Number(r.next_start) };
+      if (!rkCur || next.id !== rkCur.id) { rkCur = next; rkBets = []; rkBetsFor = -1; rkScene.reset(); renderRK(); rkLoadBets(); }
+      else Object.assign(rkCur, next);
+      if (Array.isArray(r.recent)) state.rk.history = r.recent.map(Number).slice(0, 14);
+      rkReady = true;
+    } catch (e) {
+      if (e?.code === 'PGRST202' || /could not find the function/i.test(e?.message || '')) { if (rkReady !== false) { rkReady = false; renderRK(); } }
+    }
+    rkFetching = false;
+  }
+  async function rkLoadBets() {
+    if (!backend?.rocket || !rkCur) return;
+    rkBetsAt = performance.now();
+    const id = rkCur.id;
+    try {
+      const list = await backend.rocket.bets(id);
+      if (Array.isArray(list) && rkCur?.id === id) { rkBets = list.map(b => ({ ...b, amount: Number(b.amount), auto: b.auto == null ? null : Number(b.auto), cashed: b.cashed == null ? null : Number(b.cashed), payout: b.payout == null ? null : Number(b.payout) })); rkBetsFor = id; }
+    } catch {}
+    if (state.mode === 'rk') renderRKList();
+  }
+  // Where the round is: betting, flying (multiplier from the clock) or over.
+  function rkPhase(now) {
+    const r = rkCur;
+    if (!r) return { phase: 'wait', m: 1 };
+    if (now < r.launch) return { phase: 'bet', m: 1, left: r.launch - now };
+    const crashed = r.crash != null && now >= r.crashAt;
+    if (crashed) return { phase: r.crash >= RK_CAP ? 'moon' : 'boom', m: r.crash, since: now - r.crashAt };
+    return { phase: 'fly', m: rkMult(now - r.launch), t: now - r.launch };
+  }
+  const rkAutoValue = () => { const v = Number(String($('rkAuto').value).replace(',', '.')); return v >= 1.01 ? Math.min(RK_CAP, Math.floor(v * 100) / 100) : null; };
+  async function rkPlace() {
+    const now = hrNow(), p = rkPhase(now);
+    if (!account || rkBusyBet || !rkCur) return;
+    if (p.phase !== 'bet') { rkSay('Too late: the rocket is already on its way. Wait for the next one.', 'lose'); return; }
+    if (settings.maintenance && !account.isAdmin) { rkSay('The game is paused by an admin. Try again later.', 'lose'); return; }
+    const amount = Math.floor(Number($('rkBet').value)), auto = rkAutoValue();
+    if (!(amount >= 1)) { rkSay('Enter a bet of at least 1.', 'lose'); return; }
+    if (settings.maxBet && amount > settings.maxBet) { rkSay(`The highest bet is ${fmt(settings.maxBet)}.`, 'lose'); return; }
+    if (amount > state.credits) { rkSay(`Not enough credits for a ${fmt(amount)} bet.`, 'lose'); return; }
+    rkBusyBet = true;
+    renderRKControls();
+    try {
+      await flush();
+      quietCreditsUntil = Date.now() + 8000;
+      const res = await backend.rocket.bet(rkCur.id, amount, auto);
+      serverCredits(res, -amount);
+      state.rk.bet = amount; state.rk.auto = auto; state.rk.rounds++;
+      if (!state.rk.open.includes(rkCur.id)) state.rk.open.push(rkCur.id);
+      rkBets = rkBets.filter(b => b.player !== account.id).concat({ player: account.id, name: account.name, amount, auto, cashed: null, payout: null });
+      rkBetsFor = rkCur.id;
+      gainXp(3);
+      sound.chip();
+      rkSay(auto ? `You're on board with ${fmt(amount)}. Auto cash-out at ${auto.toFixed(2)}×.` : `You're on board with ${fmt(amount)}. Cash out before it blows!`, 'win');
+      lastSaved = '';
+      persist();
+      rkLoadBets();
+      while (pendingLevels.length) levelUp(pendingLevels.shift());
+    } catch (e) {
+      const m = e?.message || '';
+      rkSay(/closed/.test(m) ? 'Too late: the rocket is already on its way. Wait for the next one.' : /already/.test(m) ? 'You are already on board for this flight.'
+        : /credits/.test(m) ? 'Not enough credits for that.' : /paused/.test(m) ? 'The game is paused by an admin. Try again later.'
+        : e?.code === 'PGRST202' || /could not find the function/i.test(m) ? 'The rocket needs the “Rocket” part of supabase-setup.sql.' : 'That did not work. Check the connection and try again.', 'lose');
+      refreshOwn();
+    }
+    rkBusyBet = false;
+    renderRK();
+    render();
+  }
+  async function rkCashOut(auto = false) {
+    const mine = rkMine();
+    if (!account || rkCashing || !rkCur || !mine || mine.payout != null) return;
+    rkCashing = true;
+    renderRKControls();
+    try {
+      await flush();
+      quietCreditsUntil = Date.now() + 8000;
+      const res = await backend.rocket.cashout(rkCur.id);
+      const m = Number(res.mult), pay = Number(res.payout) || 0;
+      serverCredits(res, pay);
+      mine.cashed = m; mine.payout = pay; mine.claimed = true;
+      state.rk.open = state.rk.open.filter(r => r !== rkCur.id);
+      rkWin(mine.amount, m, pay, auto);
+      rkScene.chute(account.id, account.name, m);
+      lastSaved = '';
+      persist();
+      rkLoadBets();
+    } catch (e) {
+      const m = e?.message || '';
+      if (/crashed/.test(m)) { rkSay('Too late: it blew up!', 'lose'); rkFetch(); }
+      else if (!/no bet/.test(m)) rkSay('That did not work. Check the connection and try again.', 'lose');
+    }
+    rkCashing = false;
+    render();
+  }
+  // A win: the numbers, the noise and the achievements.
+  function rkWin(amount, m, pay, auto) {
+    state.lastWin = pay;
+    state.best = Math.max(state.best, pay - amount);
+    state.rk.wins++;
+    gainXp(6);
+    checkAch({ win: pay - amount, bet: amount, rocketMult: m });
+    if (state.mode === 'rk') {
+      rkSay(m >= RK_CAP ? `To the moon! ${RK_CAP}× · +${fmt(pay)}` : `${auto ? 'Auto cash-out' : 'Cashed out'} at ${m.toFixed(2)}× · +${fmt(pay)}`, 'win');
+      const b = $('rkCash').getBoundingClientRect();
+      fxTop.coinBurst(b.left + b.width / 2, b.top, m >= 10 ? 50 : 24, m >= 10 ? 11 : 8);
+      if (m >= 10) { sound.bigWin(); fireworks(m >= 50 ? 10 : 5); } else sound.win();
+    }
+    while (pendingLevels.length) levelUp(pendingLevels.shift());
+  }
+  async function rkClaim() {
+    if (!backend?.rocket || !account || rkClaiming) return;
+    rkClaiming = true;
+    try {
+      await flush();
+      const res = await backend.rocket.claim();
+      const rows = (res?.bets || []).map(b => ({ ...b, round_id: Number(b.round_id), amount: Number(b.amount), payout: Number(b.payout) || 0, cashed: b.cashed == null ? null : Number(b.cashed) }));
+      const won = rows.reduce((a, b) => a + b.payout, 0);
+      serverCredits(res, won);
+      const ids = new Set(rows.map(b => b.round_id));
+      state.rk.open = state.rk.open.filter(r => !ids.has(r) && r >= (rkCur?.id ?? 0) - 1);
+      for (const b of rows) if (b.payout > 0) {
+        rkWin(b.amount, b.cashed || 0, b.payout, true);
+        if (state.mode !== 'rk') {
+          const el = document.createElement('button');
+          el.type = 'button';
+          el.className = 'chat-pop gift-pop';
+          el.innerHTML = `<span class="gift-ico" aria-hidden="true">🚀</span><span class="body"><span class="head"><b>${i18n('Rocket')}</b></span><span class="note">${i18n(`Your rocket paid: +${fmt(b.payout)} credits!`)}</span></span>`;
+          showPop(el, 6000);
+        }
+      }
+      if (rows.length) { persist(); render(); }
+    } catch {}
+    rkClaiming = false;
+  }
+
+  // ----- The scene -----
+  const rkCv = $('rkCanvas'), rkCtx = rkCv.getContext('2d');
+  let rkW = 0, rkH = 0, rkFrameOn = false;
+  function rkResize() {
+    const r = $('rkView').getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1);
+    rkW = Math.max(200, r.width); rkH = Math.max(160, r.height);
+    rkCv.width = Math.round(rkW * dpr); rkCv.height = Math.round(rkH * dpr);
+    rkCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  const rkStars = Array.from({ length: 140 }, (_, i) => { const r = hrRng(i, 21); return { x: r(), y: r(), d: 0.2 + r() * 0.8, s: 0.6 + r() * 1.6, tw: r() * 6 }; });
+  const rkScene = {
+    parts: [], chutes: [], boomAt: 0, shake: 0, lastRound: -1, lastLaunch: 0,
+    reset() { this.parts = []; this.chutes = []; this.boomAt = 0; this.shake = 0; },
+    chute(pid, name, m) { if (!this.chutes.some(c => c.pid === pid)) this.chutes.push({ pid, name, m, at: performance.now(), x: (Math.random() - 0.5) * 0.3 }); },
+  };
+  function rkRocket(c, x, y, s, flame, tilt) {
+    c.save(); c.translate(x, y); c.rotate(tilt); c.scale(s, s);
+    // flame
+    if (flame > 0) {
+      const fl = 26 + flame * 30 + Math.random() * 10;
+      let g = c.createLinearGradient(0, 30, 0, 30 + fl);
+      g.addColorStop(0, '#fff6c4'); g.addColorStop(0.35, '#ffb347'); g.addColorStop(1, 'rgba(255,80,40,0)');
+      c.fillStyle = g;
+      c.beginPath(); c.moveTo(-11, 30); c.quadraticCurveTo(0, 30 + fl * 1.2, 11, 30); c.fill();
+      g = c.createLinearGradient(0, 30, 0, 30 + fl * 0.6);
+      g.addColorStop(0, '#ffffff'); g.addColorStop(1, 'rgba(120,200,255,0)');
+      c.fillStyle = g; c.beginPath(); c.moveTo(-5, 30); c.quadraticCurveTo(0, 30 + fl * 0.7, 5, 30); c.fill();
+    }
+    // fins
+    c.fillStyle = '#c8323a';
+    c.beginPath(); c.moveTo(-14, 8); c.lineTo(-28, 32); c.lineTo(-12, 28); c.fill();
+    c.beginPath(); c.moveTo(14, 8); c.lineTo(28, 32); c.lineTo(12, 28); c.fill();
+    // body
+    const g = c.createLinearGradient(-15, 0, 15, 0);
+    g.addColorStop(0, '#c9c2b6'); g.addColorStop(0.45, '#ffffff'); g.addColorStop(1, '#9d968c');
+    c.fillStyle = g;
+    c.beginPath(); c.moveTo(0, -46); c.bezierCurveTo(18, -30, 16, 10, 12, 30); c.lineTo(-12, 30); c.bezierCurveTo(-16, 10, -18, -30, 0, -46); c.fill();
+    c.fillStyle = '#c8323a';
+    c.beginPath(); c.moveTo(0, -46); c.bezierCurveTo(9, -38, 12, -30, 13.5, -24); c.lineTo(-13.5, -24); c.bezierCurveTo(-12, -30, -9, -38, 0, -46); c.fill();
+    c.fillStyle = '#3a3f4a'; c.fillRect(-10, 28, 20, 5);
+    // window
+    c.fillStyle = '#e9a23b'; c.beginPath(); c.arc(0, -6, 8, 0, Math.PI * 2); c.fill();
+    const wg = c.createRadialGradient(-2, -8, 1, 0, -6, 6); wg.addColorStop(0, '#bff3ff'); wg.addColorStop(1, '#2a6fb0');
+    c.fillStyle = wg; c.beginPath(); c.arc(0, -6, 5.8, 0, Math.PI * 2); c.fill();
+    c.fillStyle = '#c8323a'; c.fillRect(-1.5, 12, 3, 14);
+    c.restore();
+  }
+  function rkDraw(now) {
+    const c = rkCtx, W = rkW, H = rkH, t = performance.now();
+    const p = rkPhase(now), r = rkCur;
+    const prog = Math.log(Math.max(1, p.m)) / Math.log(RK_CAP);
+    const flying = p.phase === 'fly', moon = p.phase === 'moon', boom = p.phase === 'boom';
+    const air = r ? Math.max(0, now - r.launch) / 1000 : 0;
+    // altitude in screen pixels: a gentle climb at first, faster as the multiplier grows
+    const alt = flying || boom || moon ? air * 70 + prog * prog * 2600 : 0;
+    // sky from dusk to deep space
+    const k = Math.min(1, prog * 3.2);
+    const sky = c.createLinearGradient(0, 0, 0, H);
+    const mix = (a, b, f) => `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * f)).join(',')})`;
+    sky.addColorStop(0, mix([27, 45, 92], [4, 5, 16], k)); sky.addColorStop(0.7, mix([168, 92, 120], [10, 12, 34], k)); sky.addColorStop(1, mix([244, 154, 88], [18, 16, 40], k));
+    c.fillStyle = sky; c.fillRect(0, 0, W, H);
+    c.save();
+    if (rkScene.shake > 0) { c.translate((Math.random() - 0.5) * rkScene.shake, (Math.random() - 0.5) * rkScene.shake); rkScene.shake *= 0.9; if (rkScene.shake < 0.3) rkScene.shake = 0; }
+    // stars stream past
+    for (const s of rkStars) {
+      const y = ((s.y * H + alt * s.d * 0.6) % H + H) % H;
+      c.globalAlpha = (0.25 + k * 0.75) * (0.6 + 0.4 * Math.sin(t / 500 + s.tw));
+      c.fillStyle = '#ffffff';
+      const streak = flying ? Math.min(14, 1 + prog * 18 * s.d) : 1;
+      c.fillRect(s.x * W, y, s.s, s.s * streak);
+    }
+    c.globalAlpha = 1;
+    // the moon grows as the rocket gets close
+    if (prog > 0.45 || moon) {
+      const f = moon ? 1 : Math.min(1, (prog - 0.45) / 0.55);
+      const mr = 18 + f * f * W * 0.55;
+      const my = moon ? H + mr * 0.55 - Math.min(1, p.since / 2500) * mr * 0.25 : -mr * 0.2 + f * mr * 0.4;
+      const mx = W * (moon ? 0.5 : 0.72 - f * 0.22);
+      const mg = c.createRadialGradient(mx - mr * 0.3, my - mr * 0.3, mr * 0.1, mx, my, mr);
+      mg.addColorStop(0, '#fbf6e8'); mg.addColorStop(1, '#bdb4a2');
+      c.fillStyle = mg; c.beginPath(); c.arc(mx, my, mr, 0, Math.PI * 2); c.fill();
+      c.fillStyle = '#a89f8c55';
+      for (let i = 0; i < 9; i++) { const q = hrRng(i, 5); c.beginPath(); c.arc(mx + (q() - 0.5) * mr * 1.3, my + (q() - 0.5) * mr * 1.3, mr * (0.05 + q() * 0.1), 0, Math.PI * 2); c.fill(); }
+      c.shadowColor = '#fff6'; c.shadowBlur = 30; c.strokeStyle = '#fff3'; c.lineWidth = 2; c.beginPath(); c.arc(mx, my, mr, 0, Math.PI * 2); c.stroke(); c.shadowBlur = 0;
+    }
+    // clouds and the launch pad fall away below
+    for (let i = 0; i < 4; i++) {
+      const q = hrRng(i, 8), cy = H * (0.2 + q() * 0.5) + alt * (0.9 + q() * 0.3);
+      if (cy > H + 60) continue;
+      const cx = q() * W;
+      c.fillStyle = `rgba(255,255,255,${0.55 - k * 0.4})`;
+      c.beginPath(); c.ellipse(cx, cy, 60, 16, 0, 0, Math.PI * 2); c.ellipse(cx + 30, cy - 10, 36, 14, 0, 0, Math.PI * 2); c.fill();
+    }
+    const groundY = H * 0.86 + alt;
+    if (groundY < H + 40) {
+      c.fillStyle = '#2b2430'; c.fillRect(0, groundY, W, H);
+      c.fillStyle = '#3a3346'; c.fillRect(W / 2 - 60, groundY - 8, 120, 10);
+      c.strokeStyle = '#e9a23b'; c.lineWidth = 3;
+      c.beginPath(); c.moveTo(W / 2 + 40, groundY - 8); c.lineTo(W / 2 + 40, groundY - 120); c.moveTo(W / 2 + 40, groundY - 90); c.lineTo(W / 2 + 18, groundY - 90); c.stroke();
+      for (let i = 0; i < 8; i++) { c.fillStyle = i % 2 ? '#e0414a' : '#f3c94b'; c.fillRect(i * W / 8, groundY + 6, W / 16, 4); }
+    }
+    // the rocket
+    const rs = Math.max(0.7, Math.min(1.3, H / 300));
+    const baseY = H * 0.86 - 33 * rs;
+    let rx = W / 2, ry = baseY;
+    if (flying) { ry = baseY - Math.min(1, air / 2.5) * (baseY - H * 0.5); rx += Math.sin(t / 380) * 4 * Math.min(1, air); }
+    if (moon) { const f = Math.min(1, p.since / 2500); ry = H * 0.5 + f * (H * 0.24); }
+    let tilt = flying ? Math.sin(t / 500) * 0.04 : 0;
+    const shakePad = p.phase === 'bet' && p.left < 3000 ? (3000 - p.left) / 3000 : 0;
+    if (shakePad) rx += (Math.random() - 0.5) * 3 * shakePad;
+    if (!boom || p.since < 30) {
+      rkRocket(c, rx, ry, rs, flying ? 0.6 + prog : moon ? Math.max(0, 1 - p.since / 2500) : shakePad, tilt);
+      // smoke trail
+      if ((flying || shakePad > 0) && !reduceMotion) for (let i = 0; i < (flying ? 3 : 1); i++) rkScene.parts.push({ x: rx + (Math.random() - 0.5) * 12, y: ry + 40 * rs, vx: (Math.random() - 0.5) * 1.4, vy: flying ? 2.5 + prog * 6 : 0.5, life: 1, r: 4 + Math.random() * 5, smoke: true });
+    }
+    if (moon && p.since > 2600) {
+      c.strokeStyle = '#d9cbb8'; c.lineWidth = 2; c.beginPath(); c.moveTo(rx + 34, ry + 30); c.lineTo(rx + 34, ry - 14); c.stroke();
+      c.fillStyle = '#e0414a'; c.fillRect(rx + 34, ry - 14, 22, 13); c.fillStyle = '#f3c94b'; c.font = '700 9px Figtree, sans-serif'; c.textAlign = 'left'; c.fillText('LR', rx + 38, ry - 4);
+    }
+    // explosion
+    if (boom && rkScene.boomAt !== r.id) {
+      rkScene.boomAt = r.id;
+      if (p.since < 4000) {
+        rkScene.shake = 16;
+        for (let i = 0; i < 140; i++) { const a = Math.random() * Math.PI * 2, v = 1 + Math.random() * 8; rkScene.parts.push({ x: rx, y: ry, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0.6 + Math.random() * 0.4, r: 3 + Math.random() * 8, fire: true }); }
+        for (let i = 0; i < 30; i++) rkScene.parts.push({ x: rx + (Math.random() - 0.5) * 40, y: ry + (Math.random() - 0.5) * 40, vx: (Math.random() - 0.5) * 1.5, vy: -0.4 - Math.random(), life: 1, r: 10 + Math.random() * 12, smoke: true });
+        for (let i = 0; i < 14; i++) { const a = Math.random() * Math.PI * 2, v = 3 + Math.random() * 6; rkScene.parts.push({ x: rx, y: ry, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 2, life: 1, r: 3 + Math.random() * 4, debris: true, rot: Math.random() * 6 }); }
+        rkScene.ring = { x: rx, y: ry, at: performance.now() };
+      }
+    }
+    if (rkScene.ring) {
+      const age = (performance.now() - rkScene.ring.at) / 600;
+      if (age < 1) { c.strokeStyle = `rgba(255,220,150,${1 - age})`; c.lineWidth = 6 * (1 - age) + 1; c.beginPath(); c.arc(rkScene.ring.x, rkScene.ring.y, 20 + age * 140, 0, Math.PI * 2); c.stroke(); }
+      if (age < 0.25) { c.fillStyle = `rgba(255,240,200,${0.6 - age * 2.4})`; c.fillRect(0, 0, W, H); }
+    }
+    // particles
+    rkScene.parts = rkScene.parts.filter(q => (q.life -= q.smoke ? 0.018 : q.debris ? 0.008 : 0.011) > 0);
+    if (rkScene.parts.length > 500) rkScene.parts.splice(0, rkScene.parts.length - 500);
+    for (const q of rkScene.parts) {
+      q.x += q.vx; q.y += q.vy;
+      if (q.fire) { q.vx *= 0.94; q.vy = q.vy * 0.94 + 0.08; c.fillStyle = `rgba(255,${Math.round(120 + q.life * 120)},${Math.round(q.life * 80)},${q.life})`; c.beginPath(); c.arc(q.x, q.y, q.r * (1.6 - q.life), 0, Math.PI * 2); c.fill(); }
+      else if (q.debris) { q.vy += 0.25; q.rot += 0.2; c.save(); c.translate(q.x, q.y); c.rotate(q.rot); c.fillStyle = `rgba(200,195,185,${q.life})`; c.fillRect(-q.r, -q.r / 2, q.r * 2, q.r); c.restore(); }
+      else { q.r += 0.35; c.fillStyle = `rgba(220,215,230,${q.life * 0.35})`; c.beginPath(); c.arc(q.x, q.y, q.r, 0, Math.PI * 2); c.fill(); }
+    }
+    // parachutes for everyone who cashed out
+    if (flying || boom) for (const b of rkBetsFor === r?.id ? rkBets : []) if (b.cashed && b.cashed < (boom ? r.crash : p.m + 0.001)) rkScene.chute(b.player, b.name, b.cashed);
+    for (const ch of rkScene.chutes) {
+      const age = (performance.now() - ch.at) / 1000;
+      const x = W / 2 + ch.x * W + Math.sin(age * 1.6 + ch.x * 9) * 18 + age * 6, y = H * 0.48 + age * 34;
+      if (y > H + 40) continue;
+      c.fillStyle = '#e9a23b'; c.beginPath(); c.arc(x, y - 18, 16, Math.PI, 0); c.fill();
+      c.strokeStyle = '#ffffffaa'; c.lineWidth = 1; c.beginPath(); c.moveTo(x - 16, y - 18); c.lineTo(x, y); c.lineTo(x + 16, y - 18); c.stroke();
+      c.fillStyle = '#f6efe3'; c.beginPath(); c.arc(x, y + 2, 4, 0, Math.PI * 2); c.fill();
+      c.font = '700 11px Figtree, sans-serif'; c.textAlign = 'center'; c.fillStyle = '#ffffff'; c.fillText(`${ch.name} ${ch.m.toFixed(2)}×`, x, y + 18);
+    }
+    c.restore();
+    // altitude scale on the right
+    const sx = W - 34, top = 24, bot = H - 24;
+    c.strokeStyle = '#ffffff33'; c.lineWidth = 2; c.beginPath(); c.moveTo(sx, top); c.lineTo(sx, bot); c.stroke();
+    c.font = '600 10px Chivo Mono, monospace'; c.textAlign = 'right'; c.textBaseline = 'middle';
+    for (const m of [1, 2, 5, 10, 25, 50, 100, 200]) {
+      const y = bot - (Math.log(m) / Math.log(RK_CAP)) * (bot - top);
+      c.fillStyle = '#ffffff66'; c.fillRect(sx - 4, y - 1, 8, 2);
+      c.fillStyle = '#ffffffaa'; c.fillText(m === 200 ? '🌕' : m + '×', sx - 8, y);
+    }
+    const my = bot - prog * (bot - top);
+    c.fillStyle = boom ? '#e0414a' : '#7fd18b'; c.beginPath(); c.moveTo(sx + 2, my); c.lineTo(sx + 12, my - 6); c.lineTo(sx + 12, my + 6); c.fill();
+    // the big number
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    const big = (text, size, col, y = H * 0.2) => { c.font = `400 ${size}px Bungee, Impact, sans-serif`; c.lineWidth = Math.max(4, size / 8); c.strokeStyle = '#0b0712'; c.strokeText(text, W / 2, y); c.fillStyle = col; c.fillText(text, W / 2, y); };
+    const col = p.m < 2 ? '#ffffff' : p.m < 10 ? '#7fd18b' : p.m < 50 ? '#f3c94b' : '#ff8a3c';
+    if (p.phase === 'bet') {
+      const s = Math.ceil(p.left / 1000);
+      if (s <= 5) big(s <= 0 ? i18n('Liftoff!') : String(s), Math.min(110, H * 0.32), '#fff2c4', H * 0.38);
+      else big(`0:${String(s).padStart(2, '0')}`, Math.min(54, H * 0.17), '#ffffff', H * 0.2);
+    } else if (flying) big(`${p.m.toFixed(2)}×`, Math.min(78, H * 0.22) * (1 + Math.min(0.25, prog * 0.3)), col);
+    else if (boom) { big(`${p.m.toFixed(2)}×`, Math.min(70, H * 0.2), '#e0414a'); big(i18n('BOOM!'), Math.min(40, H * 0.12), '#ffb347', H * 0.36); }
+    else if (moon) { big(`${RK_CAP}×`, Math.min(78, H * 0.22), '#f3c94b'); big(i18n('To the moon!'), Math.min(36, H * 0.11), '#ffffff', H * 0.36); }
+    else if (p.phase === 'wait') big(i18n('Fuelling…'), Math.min(30, H * 0.1), '#ffffff', H * 0.5);
+    return p;
+  }
+  let rkLastPhase = '', rkLastTone = 0, rkLastCount = -1;
+  function rkFrame() {
+    if (!(state.mode === 'rk' && account && $('lobby').hidden && $('shopPage').hidden && !document.hidden)) { rkFrameOn = false; return; }
+    const now = hrNow(), p = rkDraw(now);
+    if (p.phase !== rkLastPhase) {
+      if (p.phase === 'fly' && rkLastPhase === 'bet') { sound.rumble(); sound.chime(); rkSay('Liftoff! Cash out before it blows.', 'hot'); }
+      if (p.phase === 'boom' && p.since < 3000) {
+        sound.boom(); sound.thunder();
+        const mine = rkMine();
+        rkSay(mine && mine.payout == null && !(mine.auto && mine.auto < p.m) ? `Boom at ${p.m.toFixed(2)}×. Your ${fmt(mine.amount)} went up in smoke.` : `Boom at ${p.m.toFixed(2)}×!`, 'lose');
+      }
+      if (p.phase === 'moon' && p.since < 3000) { sound.fanfare(); for (let i = 0; i < 80; i++) fxTop.confetti(CONFETTI); fireworks(12); rkSay(`To the moon! Everyone still on board gets ${RK_CAP}×.`, 'win'); }
+      rkLastPhase = p.phase;
+      renderRK();
+    }
+    if (p.phase === 'fly' && state.sound && performance.now() - rkLastTone > 140) { rkLastTone = performance.now(); sound.tone(90 + Math.log(p.m) * 60 + Math.random() * 20, 0, 0.12, 'sawtooth', 0.012); }
+    if (p.phase === 'bet' && p.left < 5000 && Math.ceil(p.left / 1000) !== rkLastCount) { rkLastCount = Math.ceil(p.left / 1000); sound.tick(); }
+    if (p.phase === 'fly') renderRKControls(p);
+    requestAnimationFrame(rkFrame);
+  }
+  function rkSay(text, kind = '') { showMessage($('rkMsg'), text, kind); }
+  function renderRKControls(p = rkPhase(hrNow())) {
+    const mine = rkMine(), btn = $('rkCash');
+    const open = p.phase === 'bet' && rkReady !== false;
+    const paused = settings.maintenance && !account?.isAdmin;
+    $('rkPlace').hidden = p.phase !== 'bet' && !!mine;
+    $('rkPlace').disabled = !open || !!mine || rkBusyBet || paused || !account;
+    $('rkPlace').innerHTML = paused ? 'Paused<small>an admin paused the game</small>'
+      : p.phase !== 'bet' ? 'Next rocket soon<small>boarding opens after this flight</small>'
+      : mine ? `On board<small>${fmt(mine.amount)}${mine.auto ? ` · auto ${mine.auto.toFixed(2)}×` : ''}</small>` : `Board the rocket<small>bet ${fmt(Math.max(0, Math.floor(Number($('rkBet').value)) || 0))}</small>`;
+    btn.hidden = p.phase === 'bet' || !mine;
+    if (!btn.hidden) {
+      if (mine.payout != null && mine.payout > 0) { btn.disabled = true; btn.className = 'spin rk-cash done'; btn.innerHTML = `Cashed out<small>${mine.cashed.toFixed(2)}× · +${fmt(mine.payout)}</small>`; }
+      else if (p.phase === 'fly') { btn.disabled = rkCashing; btn.className = 'spin rk-cash'; btn.innerHTML = `Cash out<small>${fmt(Math.floor(mine.amount * p.m))} · ${p.m.toFixed(2)}×</small>`; }
+      else if (p.phase === 'moon') { btn.disabled = true; btn.className = 'spin rk-cash done'; btn.innerHTML = `Moon landing<small>+${fmt(mine.amount * RK_CAP)}</small>`; }
+      else { btn.disabled = true; btn.className = 'spin rk-cash lost'; btn.innerHTML = mine.auto && mine.auto < (rkCur?.crash ?? 0) ? `Auto cash-out<small>${mine.auto.toFixed(2)}× · +${fmt(Math.floor(mine.amount * mine.auto))}</small>` : `Blown up<small>−${fmt(mine.amount)}</small>`; }
+    }
+    for (const el of document.querySelectorAll('[data-rkb], #rkBet, #rkAuto')) el.disabled = !open || !!mine;
+  }
+  function renderRKList() {
+    const p = rkPhase(hrNow()), list = rkBetsFor === rkCur?.id ? rkBets : [];
+    $('rkPool').textContent = list.length ? `${fmt(list.reduce((a, b) => a + b.amount, 0))} · ${list.length} players` : '';
+    $('rkPlayers').innerHTML = list.length ? list.slice().sort((a, b) => b.amount - a.amount).map(b => {
+      const over = p.phase === 'boom' || p.phase === 'moon';
+      const cashedNow = b.cashed && (over || b.cashed <= p.m);
+      const res = cashedNow ? `<b class="hr-paid">${b.cashed.toFixed(2)}× · +${fmt(b.payout ?? Math.floor(b.amount * b.cashed))}</b>` : over ? (p.phase === 'moon' ? `<b class="hr-paid">${RK_CAP}× · +${fmt(b.amount * RK_CAP)}</b>` : '<span class="hr-lost">💥</span>') : p.phase === 'fly' ? '<span class="rk-flying">🚀</span>' : (b.auto ? `<span class="hr-lost">auto ${b.auto.toFixed(2)}×</span>` : '');
+      return `<li><b class="name">${nameHtml(b.player, b.name)}</b><span>${fmt(b.amount)}</span><span class="hr-res">${res}</span></li>`;
+    }).join('') : '<li class="empty">Nobody on board yet.</li>';
+    $('rkHist').innerHTML = state.rk.history.map(m => `<span class="${m >= RK_CAP ? 'moon' : m >= 10 ? 'hi' : m >= 2 ? 'mid' : 'lo'}">${m >= RK_CAP ? '🌕' : m.toFixed(2) + '×'}</span>`).join('');
+  }
+  function renderRKClock(now) {
+    const p = rkPhase(now);
+    $('rkPhase').textContent = p.phase === 'bet' ? 'Boarding' : p.phase === 'fly' ? 'In flight' : p.phase === 'boom' ? 'Exploded' : p.phase === 'moon' ? 'On the moon' : 'Fuelling';
+    $('rkPhase').dataset.phase = p.phase === 'bet' ? 'bet' : p.phase === 'fly' ? 'live' : 'done';
+    const nextIn = rkCur?.nextStart ? Math.max(0, Math.ceil((rkCur.nextStart - now) / 1000)) : null;
+    $('rkClock').textContent = p.phase === 'bet' ? `0:${String(Math.ceil(p.left / 1000)).padStart(2, '0')}` : nextIn != null && p.phase !== 'fly' ? `${i18n('Next rocket')} 0:${String(nextIn).padStart(2, '0')}` : '';
+    $('rkBar').style.width = (p.phase === 'bet' ? p.left / RK_BET * 100 : p.phase === 'fly' ? Math.log(p.m) / Math.log(RK_CAP) * 100 : 100) + '%';
+  }
+  function renderRK() {
+    if (!account) return;
+    if (rkReady === false) rkSay('The rocket needs the “Rocket” part of supabase-setup.sql. Ask the person who runs the game to run it.', 'lose');
+    renderRKControls();
+    renderRKList();
+  }
+  function rkEnter() {
+    if (document.activeElement !== $('rkBet')) $('rkBet').value = state.rk.bet;
+    if (document.activeElement !== $('rkAuto')) $('rkAuto').value = state.rk.auto ? state.rk.auto.toFixed(2) : '';
+    rkResize();
+    renderRK();
+    renderRKClock(hrNow());
+    const p = rkPhase(hrNow());
+    rkLastPhase = p.phase;
+    if (rkReady !== false) rkSay(p.phase === 'bet' ? 'Bet and board the rocket before liftoff. The higher it flies, the more it pays.' : 'The rocket is in the air. Board the next one.');
+    rkFetch();
+    if (!rkFrameOn) { rkFrameOn = true; requestAnimationFrame(rkFrame); }
+  }
+  // Runs five times a second on every signed-in page.
+  function rkTick() {
+    if (!account || !backend?.rocket) return;
+    const now = hrNow(), p = rkPhase(now);
+    const watching = state.mode === 'rk' && $('lobby').hidden && $('shopPage').hidden;
+    const mine = rkMine();
+    const since = performance.now() - rkFetchAt;
+    if (rkReady !== false || watching) {
+      if (!rkCur || (rkCur.nextStart && now >= rkCur.nextStart)) { if (since > 1500) rkFetch(); }
+      else if (p.phase === 'fly' && (watching || (mine && mine.payout == null)) && since > (watching ? 250 : 1000)) rkFetch();
+      else if (p.phase === 'bet' && since > 15000) rkFetch();
+    }
+    // Auto cash-out as soon as the multiplier gets there (the database pays it anyway if this page is gone).
+    if (p.phase === 'fly' && mine && mine.payout == null && mine.auto && p.m >= mine.auto && rkAutoTried !== rkCur.id) { rkAutoTried = rkCur.id; rkCashOut(true); }
+    if (watching && performance.now() - rkBetsAt > (p.phase === 'fly' ? 1200 : 3000)) rkLoadBets();
+    // When the round is over, collect what the database paid (auto cash-outs, the moon).
+    const over = p.phase === 'boom' || p.phase === 'moon';
+    if ((over && state.rk.open.includes(rkCur.id) && p.since > 600) || state.rk.open.some(r => r < (rkCur?.id ?? 0)) || (rkClaimSoon && backend.rocket.shared && rkReady)) { rkClaimSoon = false; rkClaim(); }
+    if (watching) { renderRKClock(now); if (p.phase !== 'fly' && performance.now() - (rkTick.list || 0) > 1000) { rkTick.list = performance.now(); renderRKList(); } }
+    if (watching && p.phase === 'fly' && performance.now() - (rkTick.list || 0) > 500) { rkTick.list = performance.now(); renderRKList(); }
+    const badge = $('rkBadge');
+    if (badge && !$('lobby').hidden) badge.textContent = p.phase === 'bet' ? `Live · 0:${String(Math.ceil(p.left / 1000)).padStart(2, '0')}` : p.phase === 'fly' ? `Live · ${p.m.toFixed(2)}×` : i18n('Live · next rocket soon');
+  }
+  $('rkPlace').addEventListener('click', rkPlace);
+  $('rkCash').addEventListener('click', () => rkCashOut(false));
+  document.querySelectorAll('[data-rkb]').forEach(b => b.addEventListener('click', () => {
+    const cur = Math.max(1, Math.floor(Number($('rkBet').value)) || 1);
+    const cap = Math.max(1, Math.min(state.credits, settings.maxBet || MAX));
+    const v = { half: Math.max(1, Math.floor(cur / 2)), double: Math.min(cap, cur * 2), max: cap }[b.dataset.rkb];
+    $('rkBet').value = v; state.rk.bet = v;
+    sound.chip(); renderRKControls();
+  }));
+  $('rkBet').addEventListener('input', () => { const v = Math.floor(Number($('rkBet').value)); if (v >= 1) state.rk.bet = v; renderRKControls(); });
+  $('rkAuto').addEventListener('change', () => { state.rk.auto = rkAutoValue(); $('rkAuto').value = state.rk.auto ? state.rk.auto.toFixed(2) : ''; });
+  document.addEventListener('keydown', e => {
+    if (state.mode !== 'rk' || !account || !$('lobby').hidden || e.code !== 'Space') return;
+    if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'SUMMARY'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal, #profileModal, #mineModal')) return;
+    e.preventDefault();
+    const p = rkPhase(hrNow());
+    if (p.phase === 'fly') rkCashOut(false); else if (p.phase === 'bet') rkPlace();
+  });
+  addEventListener('resize', () => { if (state.mode === 'rk') rkResize(); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && state.mode === 'rk' && account && !rkFrameOn) { rkFrameOn = true; requestAnimationFrame(rkFrame); } });
+  setInterval(rkTick, 200);
+
   // ---------- Poker ----------
   // Cards are 0-51: rank = code >> 2 (0 = two … 12 = ace), suit = code & 3.
   const PK_SB = 10, PK_BB = 20, PK_MIN_BUYIN = 200, PK_TURN_MS = 25000;
@@ -7699,6 +8312,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       poker: null,
       horse: localHorse(),
       roulette: localRoulette(),
+      rocket: localRocket(),
       presence: cb => store.presence(cb),
       setOnline: me => store.setOnline(me),
       dmWatch: cb => store.dmWatch(cb),
@@ -8138,6 +8752,19 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         async tick() { await sb.rpc('poker_tick'); },
         watch(cb) { sb.channel('poker-pulse').on('postgres_changes', { event: '*', schema: 'public', table: 'poker_pulse' }, cb).subscribe(); },
       },
+      // Rocket: the database keeps the explosion point secret and checks every cash-out.
+      rocket: {
+        shared: true,
+        async state() { const { data, error } = await sb.rpc('rocket_state'); if (error) throw error; return data; },
+        async bet(id, amount, auto) { const { data, error } = await sb.rpc('rocket_bet', { round: id, amount, auto_at: auto }); if (error) throw error; return data; },
+        async cashout(id) { const { data, error } = await sb.rpc('rocket_cashout', { round: id }); if (error) throw error; return data; },
+        async bets(id) {
+          const { data, error } = await sb.from('rocket_bets').select('player,name,amount,auto,cashed,payout').eq('round_id', id).order('id');
+          if (error) throw error;
+          return data;
+        },
+        async claim() { const { data, error } = await sb.rpc('rocket_claim'); if (error) throw error; return data; },
+      },
       // Global roulette: the database takes the chips, draws the number and pays out.
       roulette: {
         shared: true,
@@ -8357,6 +8984,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     state.pl = Object.assign(fresh().pl, saved.pl);
     state.ck = Object.assign(fresh().ck, saved.ck);
     if (!['easy', 'medium', 'hard'].includes(state.ck.diff)) state.ck.diff = 'medium';
+    state.rk = Object.assign(fresh().rk, saved.rk);
+    state.rk.open = (Array.isArray(state.rk.open) ? state.rk.open : []).filter(Number.isFinite).slice(-20);
+    state.rk.history = (Array.isArray(state.rk.history) ? state.rk.history : []).filter(Number.isFinite).slice(0, 14);
+    if (!(state.rk.auto >= 1.01 && state.rk.auto <= 200)) state.rk.auto = null;
     state.hr = Object.assign(fresh().hr, saved.hr);
     if (!['win', 'place'].includes(state.hr.kind)) state.hr.kind = 'win';
     state.hr.open = (Array.isArray(state.hr.open) ? state.hr.open : []).filter(Number.isFinite).slice(-20);
@@ -8372,7 +9003,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (typeof state.rl.bets !== 'object' || !state.rl.bets) state.rl.bets = {};
     if (!Array.isArray(state.bj.shoe)) state.bj.shoe = [];
     if (state.bj.round && !Array.isArray(state.bj.round.hands)) state.bj.round = null;
-    if (!['bj', 'rl', 'pk', 'pl', 'ck', 'hr'].includes(state.mode)) state.mode = 'slots';
+    if (!['bj', 'rl', 'pk', 'pl', 'ck', 'hr', 'rk'].includes(state.mode)) state.mode = 'slots';
     autoLeft = 0;
     pendingLevels.length = 0;
     held = [false, false, false];
@@ -8414,6 +9045,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     setTimeout(checkGifts, 1200);
     hrClaimSoon = true; hrBetsFor = -1; hrBetList = [];
     rlClaimSoon = true; rlCur = { id: -1, result: null }; rlTableFor = -1; rlAnimFor = -1;
+    rkClaimSoon = true; rkCur = null; rkBets = []; rkBetsFor = -1;
     syncAdminButton();
     $('accountBar').hidden = false;
     document.body.classList.add('signed-in');
@@ -8697,7 +9329,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Which game each online player has open, shown in the highscores and on the lobby cards.
   const GAME_INFO = {
     slots: ['🎰', 'Slots'], bj: ['🃏', 'Blackjack'], rl: ['🎡', 'Roulette'], pk: ['♠️', 'Poker'], pl: ['🔻', 'Plinko'],
-    ck: ['🐔', 'Chicken'], hr: ['🏇', 'Horse Racing'], lobby: ['🏠', 'Lobby'], shop: ['🛍️', 'Shop'], mine: ['⛏️', 'Gold mine'],
+    ck: ['🐔', 'Chicken'], hr: ['🏇', 'Horse Racing'], rk: ['🚀', 'Rocket'], lobby: ['🏠', 'Lobby'], shop: ['🛍️', 'Shop'], mine: ['⛏️', 'Gold mine'],
   };
   let playing = new Map(), presenceGame = null;
   function currentGame() {
@@ -8985,7 +9617,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   }
   async function refreshOwn() {
     if (refreshing || !account) return;
-    if (busy || hrClaiming || hrPlacing || rlSubmitting || rlClaimingR) { setTimeout(refreshOwn, 1000); return; }
+    if (busy || hrClaiming || hrPlacing || rlSubmitting || rlClaimingR || rkBusyBet || rkCashing || rkClaiming) { setTimeout(refreshOwn, 1000); return; }
     refreshing = true;
     try {
       const doc = await backend.loadOwn(account.id);
