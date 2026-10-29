@@ -2396,6 +2396,13 @@ html[data-theme="night"] .ware-stand { border-bottom-color: #4a5266; box-shadow:
 .shop-open { margin-left: auto; color: var(--accent); font-weight: 700; }
 .shop-teaser .shop-title, .shop-teaser .shop-owned, .shop-open { white-space: nowrap; }
 .shop-teaser .shop-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+/* phones: the two counters wrap under the title instead of pushing the page wider */
+@media (max-width: 560px) {
+  .shop-teaser { flex-wrap: wrap; row-gap: 6px; }
+  .shop-teaser .shop-title { flex: 1 1 100%; }
+  .shop-teaser .ach-teaser { margin-left: 0; }
+  .shop-teaser .shop-open { margin-left: auto; }
+}
 .gp-shop .gp-shop-items { transition: transform 0.3s; }
 .game-pick:hover .gp-shop .gp-shop-items { transform: translateY(-3px); }
 @media (max-width: 600px) {
@@ -2427,6 +2434,11 @@ body:not(.signed-in) .lang-toggle.floating { display: flex; }
   .account-bar > span:first-child b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .account-bar .links { gap: 10px; align-items: center; flex: none; }
   .account-bar .profile-pill { padding: 5px 10px; }
+}
+@media (max-width: 420px) {
+  .account-bar .links { gap: 4px 7px; flex: 0 1 auto; min-width: 0; flex-wrap: wrap; justify-content: flex-end; }
+  .account-bar .profile-pill { padding: 4px 8px; font-size: 12px; gap: 4px; }
+  .account-bar .link-btn { font-size: 12px; }
   .account-bar .lang-toggle span { padding: 4px 7px; font-size: 10px; }
   body.signed-in { padding-bottom: 76px; }
   .chat-fab { padding: 10px 14px; font-size: 14px; }
@@ -3974,7 +3986,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
     ['Rises in {a} of steps', 'Steigt in {a} der Schritte'], ['Usually {a} or {b}', 'Meist {a} oder {b}'], ['Swings: {a}', 'Schwankung: {a}'],
     ['Start {a} · bankrupt below {b} · takeover at {c}', 'Start {a} · Pleite unter {b} · Übernahme ab {c}'],
     ['Buy {a} for {b} · sell {c} for {d} (1% fee each way)', 'Kauf {a} für {b} · Verkauf {c} für {d} (je 1 % Gebühr)'],
