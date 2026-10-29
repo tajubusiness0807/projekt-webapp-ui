@@ -5048,7 +5048,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     state.spins++;
     reels.forEach(r => r.classList.remove('win', 'star', 'wild'));
     cabinet.classList.add('spinning');
-    if (!reduceMotion) audio.noise(0.25, { type: 'bandpass', freq: 600, to: 1800, vol: 0.08 });
     say(free ? `Free spin ${freeDone} · wins ×${FREE_MULT}` : raised ? 'Bet raised, so the holds are off. Spinning…' : holds.some(Boolean) ? 'Spinning the reels you did not hold…' : 'Spinning…', free ? 'bonus' : '');
     render();
     holds.forEach((h, i) => reels[i].classList.toggle('held', h));
@@ -8706,7 +8705,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     }
     // continuous effect
     let fxKind = '', vol = 0, fr = 0;
-    if (mode === 'slots' && cabinet.classList.contains('spinning')) { fxKind = 'reels'; vol = 0.05; fr = 900; }
+    // spinning reels: a soft click as the symbols pass, no rushing noise
+    if (mode === 'slots' && cabinet.classList.contains('spinning')) { if (Math.random() < 0.8) audio.noise(0.025, { type: 'bandpass', freq: 1800 + Math.random() * 600, q: 5, vol: 0.035 }); }
     else if (mode === 'rl') {
       const { phase, e } = rlPhaseOf(hrNow());
       if (phase === 'roll' || phase === 'closed') { fxKind = 'ball'; const sp = rlRollAt(e - RL_ROLL).wb / RL_V0; vol = 0.03 + sp * 0.05; fr = 1600 + sp * 1600; }
