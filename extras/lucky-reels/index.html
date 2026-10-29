@@ -1708,6 +1708,16 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
   .float, .tier, .tier-title, .toast, .modal, .modal-card, .reel.wild, .card.flip, .chat-panel, .jp-badge { animation: none; }
   .jp-flash, .float { opacity: 0; }
 }
+/* Who plays what */
+.p-game { display: inline-flex; align-items: center; gap: 3px; margin-left: 6px; padding: 1px 7px 1px 5px; border-radius: 999px; background: #7fd18b1f; color: var(--win); font-size: 10px; font-weight: 600; letter-spacing: 0.04em; white-space: nowrap; vertical-align: 1px; }
+.p-game > span:first-child { font-size: 11px; }
+@media (max-width: 600px) { .p-game { padding: 1px 4px; } .p-game-t { display: none; } }
+.gp-players { position: absolute; top: 8px; right: 10px; display: flex; align-items: center; padding: 2px 8px 2px 4px; border-radius: 999px; background: #000a; box-shadow: 0 0 0 1px #7fd18b55; }
+.gp-players .av { width: 20px; height: 20px; margin: 0 0 0 -6px; border-width: 1.5px; font-size: 10px; }
+.gp-players .av:first-child { margin-left: 0; }
+.gp-players b { margin-left: 5px; font: 700 12px var(--font-mono); color: var(--win); }
+.lobby-online { margin: -6px 0 4px; font-size: 13px; color: var(--muted); }
+.lobby-online:empty { display: none; }
 /* Global roulette */
 .rl-top { justify-content: space-between; }
 .rl-chip.pending { opacity: 0.75; outline: 2px dashed #fff2c4; outline-offset: 1px; }
@@ -1899,6 +1909,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     <h1 class="login-logo" id="lobbyTitle">Lucky Reels</h1>
     <p class="lobby-hi">Hi <b id="lobbyName"></b>, what do you want to play?</p>
     <p class="lobby-credits">Credits <b id="lobbyCredits">0</b></p>
+    <p class="lobby-online" id="lobbyOnline"></p>
     <button type="button" class="chip-btn lobby-mine" id="lobbyMine" data-mine hidden>Out of credits? Go mining for 50</button>
     <div class="lobby-games">
       <button class="game-pick" type="button" data-mode="slots">
@@ -2692,6 +2703,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Private chats are not set up yet. Ask the person who runs the game to run the private-chat setup.': 'Private Chats sind noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, sie einzurichten.',
     'The message did not go through. Try again.': 'Die Nachricht ging nicht durch. Versuch es nochmal.', 'Chat is switched off for players': 'Der Chat ist für Spieler abgeschaltet',
     'Someone': 'Jemand', 'Actions': 'Aktionen',
+    'other player online': 'anderer Spieler online', 'other players online': 'andere Spieler online', 'in the lobby': 'in der Lobby',
+    'Nobody else is online right now.': 'Gerade ist sonst niemand online.', 'Lobby': 'Lobby',
     'Place your bets': 'Setzt eure Chips', 'No more bets': 'Nichts geht mehr', 'Spinning': 'Die Kugel rollt', 'Next round': 'Nächste Runde', 'At the table': 'Am Tisch',
     'wait for the next round': 'warte auf die nächste Runde', 'Place bets': 'Einsätze setzen', 'Bets placed': 'Einsätze gesetzt', 'tap the table to add chips': 'tipp auf den Tisch für Chips', 'Live · spinning': 'Live · Kugel rollt',
     'Roulette · one wheel for everyone · play credits': 'Roulette · ein Rad für alle · Spiel-Credits',
@@ -4448,6 +4461,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       if (b.dataset.mode === state.mode && state.spins + state.bj.hands + state.rl.spins + state.pk.hands + state.pl.drops + state.ck.games + state.hr.races > 0) b.insertAdjacentHTML('afterbegin', '<span class="gp-last">Last played</span>');
     });
     $('lobby').hidden = false;
+    renderLobbyCounts();
+    syncPresence();
     document.querySelector(`.game-pick[data-mode="${state.mode}"]`)?.focus();
   }
   document.querySelectorAll('.game-pick[data-mode]').forEach(b => b.addEventListener('click', () => {
@@ -7755,7 +7770,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       // Online: each tab stamps its player every 10 s; a stamp younger than 25 s counts as online.
       presence(cb) {
         const read = () => { try { return JSON.parse(localStorage.getItem(ONLINE_KEY) || '{}'); } catch { return {}; } };
-        const emitOnline = () => { const now = Date.now(); cb(Object.entries(read()).filter(([, at]) => now - at < 25000).map(([id]) => id)); };
+        const emitOnline = () => {
+          const now = Date.now();
+          cb(Object.entries(read()).map(([id, v]) => ({ id, ...(typeof v === 'number' ? { at: v } : v) })).filter(x => now - x.at < 25000).map(x => ({ id: x.id, game: x.game || null })));
+        };
         emitOnline();
         setInterval(emitOnline, 5000);
         addEventListener('storage', e => { if (e.key === ONLINE_KEY) emitOnline(); });
@@ -7766,7 +7784,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         const stamp = (id, at) => {
           let map = {};
           try { map = JSON.parse(localStorage.getItem(ONLINE_KEY) || '{}'); } catch {}
-          if (at) map[id] = at; else delete map[id];
+          if (at) map[id] = { at, game: me?.game || null }; else delete map[id];
           try { localStorage.setItem(ONLINE_KEY, JSON.stringify(map)); } catch {}
           onlineEmit?.();
         };
@@ -7852,9 +7870,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       },
       presence(cb) {
         if (!room) { cb([]); return; }
-        room.onPeers(change => cb(change.peers.map(peer => peer.presence?.id).filter(Boolean)));
+        room.onPeers(change => cb(change.peers.filter(peer => peer.presence?.id).map(peer => ({ id: peer.presence.id, game: peer.presence.game || null }))));
       },
-      setOnline(me) { room?.presence({ id: me?.id ?? null, name: me?.name ?? null }).catch(() => {}); },
+      setOnline(me) { room?.presence({ id: me?.id ?? null, name: me?.name ?? null, game: me?.game ?? null }).catch(() => {}); },
       // Private messages here are kept in the artifact's shared store: everyone with access to the link could read them.
       dmWatch(cb) {
         const me = account.id;
@@ -8053,7 +8071,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       presence(cb) {
         onlineCh = sb.channel('online-players', { config: { presence: { key: newSalt() } } });
         onlineCh.on('presence', { event: 'sync' }, () => {
-          cb([...new Set(Object.values(onlineCh.presenceState()).flat().map(m => m.id).filter(Boolean))]);
+          cb(Object.values(onlineCh.presenceState()).flat().filter(m => m.id).map(m => ({ id: m.id, game: m.game || null })));
         });
         onlineCh.subscribe(status => {
           if (status !== 'SUBSCRIBED') return;
@@ -8267,7 +8285,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
             `<td><span class="rank">${i + 1}</span>${online.has(p.id) ? '<i class="dot" title="Online"></i>' : ''}` +
             avatarHtml(p.id, p.name, '', account ? 'button' : 'span') +
             `${me || !account ? nameHtml(p.id, p.name) : `<span data-dm="${esc(p.id)}" title="Send ${esc(p.name)} a private message">${nameHtml(p.id, p.name)}</span>`}` +
-            trophyHtml(p.id) + medalsHtml(p.id) +
+            trophyHtml(p.id) + medalsHtml(p.id) + gameTag(p.id) +
             `${me ? '<span class="you">you</span>' : ''}${hot ? '<span class="jp-badge">JACKPOT</span>' : ''}</td>` +
             `<td>${fmt(p.credits)}</td><td>${fmt(p.best)}</td><td>${p.level}</td></tr>`;
         }).join('') + '</tbody>'
@@ -8676,6 +8694,56 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       sound.chime();
     }
   }
+  // Which game each online player has open, shown in the highscores and on the lobby cards.
+  const GAME_INFO = {
+    slots: ['🎰', 'Slots'], bj: ['🃏', 'Blackjack'], rl: ['🎡', 'Roulette'], pk: ['♠️', 'Poker'], pl: ['🔻', 'Plinko'],
+    ck: ['🐔', 'Chicken'], hr: ['🏇', 'Horse Racing'], lobby: ['🏠', 'Lobby'], shop: ['🛍️', 'Shop'], mine: ['⛏️', 'Gold mine'],
+  };
+  let playing = new Map(), presenceGame = null;
+  function currentGame() {
+    if (!account) return null;
+    if (!$('mineModal').hidden) return 'mine';
+    if (!$('shopPage').hidden) return 'shop';
+    if (!$('lobby').hidden) return 'lobby';
+    return state.mode;
+  }
+  const gameOf = id => id === account?.id ? currentGame() : online.has(id) ? playing.get(id) : null;
+  function gameTag(id) {
+    const g = GAME_INFO[gameOf(id)];
+    return g ? `<span class="p-game" title="${g[1]}"><span aria-hidden="true">${g[0]}</span><span class="p-game-t">${g[1]}</span></span>` : '';
+  }
+  function syncPresence() {
+    if (!account || !backend) return;
+    const g = currentGame();
+    if (!$('lobby').hidden) renderLobbyCounts();
+    if (g === presenceGame) return;
+    presenceGame = g;
+    backend.setOnline({ id: account.id, name: account.name, game: g });
+    renderBoards();
+  }
+  setInterval(syncPresence, 1200);
+  // Lobby cards: who is in which game right now (a few faces and a count).
+  function renderLobbyCounts() {
+    if (!account) return;
+    const by = {};
+    for (const id of online) {
+      if (id === account.id) continue;
+      const g = playing.get(id);
+      if (g) (by[g] ||= []).push(id);
+    }
+    document.querySelectorAll('.lobby-games .game-pick').forEach(card => {
+      const ids = by[card.dataset.mode || (card.hasAttribute('data-shop') ? 'shop' : '')] || [];
+      let el = card.querySelector('.gp-players');
+      if (!ids.length) { el?.remove(); return; }
+      if (!el) { el = document.createElement('span'); el.className = 'gp-players'; card.append(el); }
+      const names = ids.map(nameOf);
+      const html = ids.slice(0, 3).map(id => avatarHtml(id, nameOf(id))).join('') + `<b>${ids.length}</b>`;
+      if (el.dataset.html !== html) { el.dataset.html = html; el.innerHTML = html; }
+      el.title = names.join(', ');
+    });
+    const total = [...online].filter(id => id !== account.id).length, inLobby = (by.lobby || []).length;
+    $('lobbyOnline').textContent = total ? `${total} ${i18n(total === 1 ? 'other player online' : 'other players online')}${inLobby ? ` · ${inLobby} ${i18n('in the lobby')}` : ''}` : i18n('Nobody else is online right now.');
+  }
   function showPop(el, ms) {
     const box = $('chatPops');
     box.append(el);
@@ -8702,13 +8770,17 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       chatMessages = list;
       renderChat();
     });
-    backend.presence(ids => {
-      const next = new Set(ids);
+    backend.presence(list => {
+      const next = new Set(list.map(x => x.id));
       noteOnline(next);
       online = next;
+      // Where everybody is; a player with two tabs counts where they are playing rather than browsing.
+      playing = new Map();
+      for (const x of list) if (x.game && (!playing.has(x.id) || ['lobby', 'shop'].includes(playing.get(x.id)))) playing.set(x.id, x.game);
       renderChat();
       renderBoards();
       renderAdminPlayers();
+      renderLobbyCounts();
     });
   }
   function startDms() {
@@ -8722,13 +8794,15 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       dms = list;
       renderChat();
     });
-    backend.setOnline({ id: account.id, name: account.name });
+    presenceGame = currentGame();
+    backend.setOnline({ id: account.id, name: account.name, game: presenceGame });
   }
   function stopDms() {
     dmStop?.();
     dmStop = null;
     dms = [];
     chatWith = null;
+    presenceGame = null;
     backend.setOnline(null);
   }
   function chatSystem(text) {
