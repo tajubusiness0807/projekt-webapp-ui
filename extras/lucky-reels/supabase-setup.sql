@@ -2501,3 +2501,115 @@ revoke execute on function public.admin_rig_rocket(bigint) from public, anon;
 grant execute on function public.admin_rig_horse(bigint, integer) to authenticated;
 grant execute on function public.admin_rig_roulette(bigint) to authenticated;
 grant execute on function public.admin_rig_rocket(bigint) to authenticated;
+
+
+-- ---------------------------------------------------------------------------
+-- Support tickets: run this part once (after "Admin security"). Every player
+-- can send requests (bugs, wishes, questions) from the Support link; they show
+-- up in the admin menu, where an admin can set a status and write a reply the
+-- player sees.
+
+create table if not exists public.support_tickets (
+  id bigint generated always as identity primary key,
+  player uuid references public.players (id) on delete set null,
+  name text not null,
+  category text not null check (category in ('bug', 'wish', 'question', 'other')),
+  subject text not null check (length(subject) between 3 and 80),
+  body text not null check (length(body) between 5 and 2000),
+  status text not null default 'open' check (status in ('open', 'doing', 'done', 'declined')),
+  reply text check (reply is null or length(reply) <= 2000),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists support_tickets_player on public.support_tickets (player);
+alter table public.support_tickets enable row level security;
+revoke all on public.support_tickets from anon, authenticated;
+grant select on public.support_tickets to authenticated;
+drop policy if exists "See your own tickets" on public.support_tickets;
+create policy "See your own tickets" on public.support_tickets for select to authenticated using (auth.uid() = player);
+
+create or replace function public.submit_ticket(category text, subject text, body text)
+returns bigint
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  me public.players;
+  new_id bigint;
+begin
+  select * into me from public.players where id = auth.uid();
+  if me.id is null or me.is_banned then raise exception 'not allowed'; end if;
+  if (select count(*) from public.support_tickets where player = me.id and created_at > now() - interval '1 day') >= 10 then
+    raise exception 'too many tickets';
+  end if;
+  insert into public.support_tickets (player, name, category, subject, body)
+    values (me.id, me.name, category, trim(subject), trim(body)) returning id into new_id;
+  return new_id;
+end;
+$$;
+
+-- Number of open tickets, for the badge on the Admin link (0 for everyone else).
+create or replace function public.open_ticket_count()
+returns integer
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select case when coalesce((select is_admin from public.players where id = auth.uid()), false)
+    then (select count(*)::integer from public.support_tickets where status in ('open', 'doing')) else 0 end
+$$;
+
+create or replace function public.admin_tickets(tok uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.admin_check(tok);
+  return (select coalesce(jsonb_agg(to_jsonb(t) order by (t.status in ('open', 'doing')) desc, t.created_at desc), '[]')
+    from (select * from public.support_tickets order by created_at desc limit 300) t);
+end;
+$$;
+
+create or replace function public.admin_ticket_update(tok uuid, ticket bigint, new_status text, new_reply text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.admin_check(tok);
+  update public.support_tickets set
+    status = coalesce(new_status, status),
+    reply = case when new_reply is null then reply else nullif(trim(new_reply), '') end,
+    updated_at = now()
+  where id = ticket;
+  if not found then raise exception 'no such ticket'; end if;
+end;
+$$;
+
+create or replace function public.admin_ticket_delete(tok uuid, ticket bigint)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.admin_check(tok);
+  delete from public.support_tickets where id = ticket;
+end;
+$$;
+
+revoke execute on function public.submit_ticket(text, text, text) from public, anon;
+revoke execute on function public.open_ticket_count() from public, anon;
+revoke execute on function public.admin_tickets(uuid) from public, anon;
+revoke execute on function public.admin_ticket_update(uuid, bigint, text, text) from public, anon;
+revoke execute on function public.admin_ticket_delete(uuid, bigint) from public, anon;
+grant execute on function public.submit_ticket(text, text, text) to authenticated;
+grant execute on function public.open_ticket_count() to authenticated;
+grant execute on function public.admin_tickets(uuid) to authenticated;
+grant execute on function public.admin_ticket_update(uuid, bigint, text, text) to authenticated;
+grant execute on function public.admin_ticket_delete(uuid, bigint) to authenticated;

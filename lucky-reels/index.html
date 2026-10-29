@@ -1782,6 +1782,36 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
 .game-pick:hover .gp-rk .gp-flame, .game-pick:focus-visible .gp-rk .gp-flame { transform: scaleY(1.2); }
 @media (max-width: 600px) { .rk-inputs { grid-template-columns: minmax(0, 1fr); } .rk-view { height: 280px; } }
 @media (prefers-reduced-motion: reduce) { .rk-cash, .rk-flying { animation: none; } }
+/* Support tickets */
+.dot-badge { display: inline-grid; place-items: center; min-width: 8px; height: 16px; margin-left: 4px; padding: 0 5px; border-radius: 999px; background: #e0414a; color: #fff; font: 700 10px var(--font-mono); font-style: normal; vertical-align: 1px; text-decoration: none; }
+.dot-badge:empty { width: 8px; min-width: 8px; height: 8px; padding: 0; }
+.tab-badge { display: inline-grid; place-items: center; min-width: 16px; height: 16px; margin-left: 6px; padding: 0 4px; border-radius: 999px; background: #e0414a; color: #fff; font: 700 10px var(--font-mono); font-style: normal; }
+.support-card { max-width: 520px; max-height: min(88vh, 860px); overflow-y: auto; text-align: left; justify-items: stretch; position: relative; }
+.support-card .chat-close { position: absolute; top: 12px; right: 12px; }
+.support-card h2 { margin: 0; font: 400 24px var(--font-display); color: var(--accent); text-align: center; }
+.support-card > .note { text-align: center; margin: 0; }
+.ticket-form { display: grid; gap: 8px; }
+.ticket-cat button { font-size: 12px; padding: 8px 4px; }
+.ticket-form input, .ticket-form textarea, .ticket-edit textarea, .ticket-edit select { width: 100%; padding: 10px 12px; border-radius: 10px; border: 2px solid var(--cabinet-edge); background: #0006; color: var(--fg); font: 14px var(--font-body, inherit); resize: vertical; }
+.ticket-form input:focus-visible, .ticket-form textarea:focus-visible { border-color: var(--accent); outline: none; }
+.ticket-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.ticket-foot small { color: var(--muted); font-size: 12px; }
+.ticket-foot .spin { width: auto; padding: 10px 22px; font-size: 16px; }
+.ticket-list, .ticket-admin { display: grid; gap: 8px; }
+.ticket { display: grid; gap: 4px; padding: 10px 12px; border-radius: 12px; background: var(--panel); border-left: 4px solid #e9a23b; text-align: left; }
+.ticket.doing { border-left-color: #3d7bd9; } .ticket.done { border-left-color: var(--win); } .ticket.declined { border-left-color: #7c7f8a; opacity: 0.85; }
+.ticket-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ticket-cat-chip { font-size: 11px; padding: 1px 7px; border-radius: 999px; background: #ffffff12; }
+.ticket-subj { flex: 1; min-width: 0; font-size: 14px; }
+.ticket-status { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+.ticket-status.s-open { background: #e9a23b33; color: var(--accent-hi); } .ticket-status.s-doing { background: #3d7bd933; color: #9cc2ff; }
+.ticket-status.s-done { background: #7fd18b2a; color: var(--win); } .ticket-status.s-declined { background: #ffffff14; color: var(--muted); }
+.ticket-meta { color: var(--muted); font-size: 11px; }
+.ticket-body { margin: 2px 0 0; font-size: 13px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ticket-reply { margin-top: 4px; padding: 8px 10px; border-radius: 8px; background: #7fd18b14; border: 1px solid #7fd18b44; font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ticket-reply b { color: var(--win); }
+.ticket-edit { display: grid; gap: 6px; margin-top: 6px; }
+.ticket-filter button { padding: 6px 12px; font-size: 12px; }
 /* Game goodies */
 .gg { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; }
 .cabinet:not([data-mode="slots"]) .gg[data-gg="slots"] { display: none; }
@@ -2167,7 +2197,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
 <div class="account-bar" id="accountBar" hidden>
   <span><span class="who-label">Signed in as </span><span id="myAv"></span><b id="whoami"></b></span>
-  <span class="links"><button class="theme-toggle" type="button" aria-label="Night mode" title="Night mode"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="currentColor"/></svg></button><button class="lang-toggle" type="button" aria-label="Sprache wechseln"><span data-l="de">DE</span><span data-l="en">EN</span></button><button class="link-btn" id="profileBtn" type="button">Profile</button><button class="link-btn" id="pwToggle" type="button">Change password</button><button class="link-btn" id="logout" type="button">Sign out</button></span>
+  <span class="links"><button class="theme-toggle" type="button" aria-label="Night mode" title="Night mode"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="currentColor"/></svg></button><button class="lang-toggle" type="button" aria-label="Sprache wechseln"><span data-l="de">DE</span><span data-l="en">EN</span></button><button class="link-btn" id="supportBtn" type="button">Support<i class="dot-badge" id="supportBadge" hidden></i></button><button class="link-btn" id="profileBtn" type="button">Profile</button><button class="link-btn" id="pwToggle" type="button">Change password</button><button class="link-btn" id="logout" type="button">Sign out</button></span>
   <form class="pw-form" id="pwForm" hidden>
     <input id="pwOld" type="password" autocomplete="current-password" placeholder="Current password" aria-label="Current password">
     <input id="pwNew" type="password" autocomplete="new-password" placeholder="New password (4+ characters)" aria-label="New password">
@@ -2496,6 +2526,24 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   </aside>
 </div>
 
+<div class="modal" id="supportModal" role="dialog" aria-modal="true" aria-labelledby="supportTitle" hidden>
+  <div class="modal-card support-card">
+    <button class="chat-close" id="supportClose" type="button" aria-label="Close support">×</button>
+    <h2 id="supportTitle">Support</h2>
+    <p class="note">Found a bug, missing something or got an idea? Send it to the admins. You see their answer here.</p>
+    <form id="ticketForm" class="ticket-form" novalidate>
+      <div class="pl-seg ticket-cat" id="ticketCat" role="group" aria-label="Kind of request">
+        <button type="button" data-cat="wish" aria-pressed="true">💡 Wish</button><button type="button" data-cat="bug" aria-pressed="false">🐞 Bug</button><button type="button" data-cat="question" aria-pressed="false">❓ Question</button><button type="button" data-cat="other" aria-pressed="false">💬 Other</button>
+      </div>
+      <input id="ticketSubject" maxlength="80" placeholder="Subject, e.g. More goodies for the rocket" aria-label="Subject" autocomplete="off">
+      <textarea id="ticketBody" maxlength="2000" rows="5" placeholder="Describe what you would like to change…" aria-label="Your request"></textarea>
+      <div class="ticket-foot"><small id="ticketMsg"></small><button class="spin" id="ticketSend" type="submit">Send</button></div>
+    </form>
+    <h3 class="hr-h">Your tickets</h3>
+    <div class="ticket-list" id="myTickets"></div>
+  </div>
+</div>
+
 <div class="modal" id="profileModal" role="dialog" aria-modal="true" aria-labelledby="profileName" hidden>
   <div class="modal-card profile-card">
     <button class="chat-close" id="profileClose" type="button" aria-label="Close profile">×</button>
@@ -2592,6 +2640,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       <div class="tabs" role="tablist">
         <button class="tab" role="tab" data-tab="players" aria-selected="true">Players</button>
         <button class="tab" role="tab" data-tab="game" aria-selected="false">Game settings</button>
+        <button class="tab" role="tab" data-tab="tickets" aria-selected="false">Tickets<i class="tab-badge" id="ticketTabBadge" hidden></i></button>
         <button class="tab" role="tab" data-tab="aff" aria-selected="false">Affiliates</button>
         <button class="tab" role="tab" data-tab="chat" aria-selected="false">Chat</button>
         <button class="tab" role="tab" data-tab="security" aria-selected="false">Security</button>
@@ -2617,6 +2666,18 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           </div>
         </div>
         <p class="admin-note">Set credits replaces the balance. Reset puts the player back to the start: credits, level, goodies and achievements. Blocked players can't sign in, save or chat. Delete removes the account for good, with its game, chat and private messages; admins have to lose their admin rights first. Dangerous buttons ask once more before they act.</p>
+      </section>
+
+      <section class="admin-section" data-pane="tickets" hidden>
+        <div class="admin-tools">
+          <div class="pl-seg ticket-filter" id="ticketFilter" role="group" aria-label="Show tickets">
+            <button type="button" data-tf="active" aria-pressed="true">Open</button><button type="button" data-tf="all" aria-pressed="false">All</button>
+          </div>
+          <input id="ticketSearch" type="search" placeholder="Search tickets…" aria-label="Search tickets" autocomplete="off">
+          <button class="abtn" id="ticketReload" type="button">Refresh</button>
+        </div>
+        <div class="ticket-admin" id="adminTickets"></div>
+        <p class="admin-note">Requests from players. Set a status and write a reply: the player sees both under Support and gets a note when something changes.</p>
       </section>
 
       <section class="admin-section" data-pane="aff" hidden>
@@ -2896,6 +2957,19 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Parachute': 'Fallschirm', 'Get 5% of your bet back when the rocket explodes with you on board.': 'Du bekommst 5 % deines Einsatzes zurück, wenn die Rakete mit dir an Bord explodiert.',
     'Goodies for this game ›': 'Goodies für dieses Spiel ›',
     'The shoe is rich in tens and aces: good for you.': 'Im Schlitten sind viele Zehner und Asse: gut für dich.', 'Lots of small cards left: good for the dealer.': 'Viele kleine Karten übrig: gut für den Dealer.', 'The shoe is about even.': 'Der Schlitten ist ungefähr ausgeglichen.',
+    'Support': 'Support', 'Close support': 'Support schließen', 'Tickets': 'Tickets',
+    'Found a bug, missing something or got an idea? Send it to the admins. You see their answer here.': 'Einen Fehler gefunden, fehlt dir etwas oder hast du eine Idee? Schick es den Admins. Ihre Antwort siehst du hier.',
+    '💡 Wish': '💡 Wunsch', '🐞 Bug': '🐞 Fehler', '❓ Question': '❓ Frage', '💬 Other': '💬 Sonstiges', 'Kind of request': 'Art der Anfrage',
+    'Subject, e.g. More goodies for the rocket': 'Betreff, z. B. Mehr Goodies für die Rakete', 'Subject': 'Betreff',
+    'Describe what you would like to change…': 'Beschreib, was du gern ändern würdest…', 'Your request': 'Deine Anfrage', 'Send': 'Senden',
+    'Your tickets': 'Deine Tickets', 'No tickets yet.': 'Noch keine Tickets.', 'Open': 'Offen', 'In progress': 'In Arbeit', 'Done': 'Erledigt', 'Declined': 'Abgelehnt', 'All': 'Alle',
+    'updated': 'aktualisiert', 'Admin:': 'Admin:', 'Status': 'Status', 'Reply': 'Antwort', 'Delete': 'Löschen',
+    'Give your ticket a subject (3 characters or more).': 'Gib deinem Ticket einen Betreff (mindestens 3 Zeichen).', 'Describe your request in a few words.': 'Beschreib deine Anfrage in ein paar Worten.',
+    'Thanks! Your ticket went to the admins.': 'Danke! Dein Ticket ist bei den Admins angekommen.', 'That is a lot of tickets today. Try again tomorrow.': 'Das sind heute schon viele Tickets. Versuch es morgen wieder.',
+    'Support tickets need the “Support tickets” part of supabase-setup.sql.': 'Support-Tickets brauchen den Abschnitt „Support tickets“ aus supabase-setup.sql.',
+    'This needs the “Support tickets” part of supabase-setup.sql.': 'Dafür braucht es den Abschnitt „Support tickets“ aus supabase-setup.sql.',
+    'Search tickets…': 'Tickets suchen…', 'Show tickets': 'Tickets anzeigen', 'No open tickets. 🎉': 'Keine offenen Tickets. 🎉', 'Ticket saved.': 'Ticket gespeichert.', 'Ticket deleted.': 'Ticket gelöscht.',
+    'Requests from players. Set a status and write a reply: the player sees both under Support and gets a note when something changes.': 'Anfragen der Spieler. Setz einen Status und schreib eine Antwort: Der Spieler sieht beides unter Support und bekommt einen Hinweis, wenn sich etwas ändert.',
     'Affiliates': 'Affiliates', 'Search affiliates or invited players…': 'Affiliates oder eingeladene Spieler suchen…', 'Search affiliates': 'Affiliates suchen', 'Refresh': 'Aktualisieren',
     'Codes': 'Codes', 'Players invited': 'Eingeladene Spieler', 'Credits to affiliates': 'Credits an Affiliates', 'Start bonus for new players': 'Startbonus für neue Spieler',
     'no code': 'kein Code', 'Joined': 'Beigetreten', 'Nobody has used this code yet.': 'Diesen Code hat noch niemand benutzt.', 'No match.': 'Kein Treffer.',
@@ -3066,7 +3140,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['Goodies {a} ›', 'Goodies {a} ›'], ['Bonus for {a}', 'Bonus für {a}'], ["Thanks to {a}'s code you start with {b} credits!", 'Dank des Codes von {a} startest du mit {b} Credits!'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['Reply to {a}…', 'Antwort an {a}…'], ['Your ticket “{a}” is now: {b}', 'Dein Ticket „{a}“ ist jetzt: {b}'], ['Goodies {a} ›', 'Goodies {a} ›'], ['Bonus for {a}', 'Bonus für {a}'], ["Thanks to {a}'s code you start with {b} credits!", 'Dank des Codes von {a} startest du mit {b} Credits!'],
     ['joined with your affiliate code: +{a} credits!', 'hat sich mit deinem Affiliate-Code angemeldet: +{a} Credits!'], ['Your code is {a}. Share it with friends!', 'Dein Code ist {a}. Teil ihn mit Freunden!'],
     ['{a} player joined with your code · +{b} credits earned', '{a} Spieler hat sich mit deinem Code angemeldet · +{b} Credits verdient'], ['{a} players joined with your code · +{b} credits earned', '{a} Spieler haben sich mit deinem Code angemeldet · +{b} Credits verdient'], ['Golden rocket! This one flies past {a} for sure.', 'Goldene Rakete! Die fliegt garantiert über {a}.'], ['bet {a}', 'Einsatz {a}'], ['auto {a}', 'auto {a}'],
     ["You're on board with {a}. Auto cash-out at {b}.", 'Du bist mit {a} an Bord. Auto-Auszahlung bei {b}.'], ["You're on board with {a}. Cash out before it blows!", 'Du bist mit {a} an Bord. Zahl aus, bevor sie explodiert!'],
@@ -3196,7 +3270,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const enText = new WeakMap(), deText = new WeakMap();
   const I18N_ATTRS = ['placeholder', 'title', 'aria-label'];
   // Never translate what players typed: chat messages and the like.
-  const I18N_SKIP = 'script, style, textarea, .msg .text, .chat-pop .text, .admin-msg span, .announce .ann-run, .pk-who b, .board .name, .neon-name, .hr-name, .hr-list .name';
+  const I18N_SKIP = 'script, style, textarea, .msg .text, .chat-pop .text, .admin-msg span, .announce .ann-run, .pk-who b, .board .name, .neon-name, .hr-name, .hr-list .name, .ticket-subj, .ticket-body, .ticket-reply, .ticket-meta .name';
   function trText(node) {
     const raw = node.data;
     if (deText.get(node) === raw || !/[A-Za-z]/.test(raw)) return;
@@ -8666,6 +8740,12 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           await store.save(id, { level, adminRev: (Number(doc?.adminRev) || 0) + 1 });
         },
         setAdmin: (id, make) => store.save(id, { admin: make }),
+        async tickets() { return (Array.isArray(rawSettings.tickets) ? rawSettings.tickets : []).slice().reverse(); },
+        async ticketUpdate(id, status, reply) {
+          const list = (rawSettings.tickets || []).map(t => t.id === id ? { ...t, status: status ?? t.status, reply: reply == null ? t.reply : (reply.trim() || null), updated_at: new Date().toISOString() } : t);
+          await store.saveSettings({ tickets: list });
+        },
+        async ticketDelete(id) { await store.saveSettings({ tickets: (rawSettings.tickets || []).filter(t => t.id !== id) }); },
         async affiliates() {
           const out = [];
           for (const p of players) {
@@ -8711,6 +8791,18 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       async giftsSince(since) {
         const doc = await store.load(account.id);
         return (Array.isArray(doc?.gifts) ? doc.gifts : []).filter(g => g.at > since);
+      },
+      // Support tickets in this copy live in the shared settings.
+      tickets: {
+        async submit(category, subject, body) {
+          const list = Array.isArray(rawSettings.tickets) ? rawSettings.tickets : [];
+          const at = new Date().toISOString();
+          const t = { id: Date.now() * 10 + randInt(10), player: account.id, name: account.name, category, subject, body, status: 'open', reply: null, created_at: at, updated_at: at };
+          await store.saveSettings({ tickets: [...list, t].slice(-200) });
+          return t.id;
+        },
+        async mine() { return (Array.isArray(rawSettings.tickets) ? rawSettings.tickets : []).filter(t => t.player === account.id).reverse(); },
+        async openCount() { return account?.isAdmin ? (rawSettings.tickets || []).filter(t => t.status === 'open' || t.status === 'doing').length : 0; },
       },
       // Affiliate codes live on the owner's account; a new account can use one code once.
       async affiliateCheck(code) { return players.some(p => p.affCode === code && !p.banned); },
@@ -9078,6 +9170,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         addAll: amount => adminRpc('admin_give_all', { amount }),
         hardReset: () => adminRpc('admin_hard_reset', {}),
         affiliates: () => adminRpcData('admin_affiliates', {}),
+        tickets: () => adminRpcData('admin_tickets', {}),
+        ticketUpdate: (id, status, reply) => adminRpc('admin_ticket_update', { ticket: id, new_status: status ?? null, new_reply: reply ?? null }),
+        ticketDelete: id => adminRpc('admin_ticket_delete', { ticket: id }),
         reset: id => adminRpc('admin_update_player', { target: id, new_credits: null, reset: true, set_banned: null }),
         setBanned: (id, value) => adminRpc('admin_update_player', { target: id, new_credits: null, reset: false, set_banned: value }),
         setMedals: (id, medals) => adminRpc('admin_set_medals', { target: id, new_medals: medals }),
@@ -9154,6 +9249,15 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         const aff = await sb.from('affiliate_uses').select('new_name,bonus,created_at').eq('affiliate', account.id).gt('created_at', new Date(since).toISOString()).order('created_at');
         if (!aff.error) out.push(...aff.data.map(g => ({ from: g.new_name, amount: Number(g.bonus), at: Date.parse(g.created_at), aff: true })));
         return out.sort((a, b) => a.at - b.at);
+      },
+      tickets: {
+        async submit(category, subject, body) { const { data, error } = await sb.rpc('submit_ticket', { category, subject, body }); if (error) throw error; return data; },
+        async mine() {
+          const { data, error } = await sb.from('support_tickets').select('id,category,subject,body,status,reply,created_at,updated_at').eq('player', account.id).order('created_at', { ascending: false }).limit(50);
+          if (error) throw error;
+          return data;
+        },
+        async openCount() { const { data, error } = await sb.rpc('open_ticket_count'); if (error) throw error; return Number(data) || 0; },
       },
       async affiliateCheck(code) {
         const { data, error } = await sb.rpc('affiliate_check', { code });
@@ -9479,6 +9583,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     setTimeout(checkGifts, 1200);
     hrClaimSoon = true; hrBetsFor = -1; hrBetList = [];
     affMine = null; affStats = null; affStatsAt = 0;
+    myTickets = []; setTimeout(ticketTick, 2500);
     rlClaimSoon = true; rlCur = { id: -1, result: null }; rlTableFor = -1; rlAnimFor = -1;
     rkClaimSoon = true; rkCur = null; rkBets = []; rkBetsFor = -1;
     syncAdminButton();
@@ -10008,7 +10113,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
   // The first settings a page sees set the baseline; a later, newer reload request shows the prompt.
   let reloadSeen = null;
+  let rawSettings = {};
   function applySettings(raw) {
+    rawSettings = raw || {};
     settings = cleanSettings(raw);
     if (reloadSeen === null) reloadSeen = settings.reloadAt;
     else if (settings.reloadAt > reloadSeen) { reloadSeen = settings.reloadAt; $('reloadModal').hidden = false; $('reloadNow').focus(); }
@@ -10189,6 +10296,143 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     $('adminLockErr').textContent = '';
     if (adminUnlocked) { showTab('players'); } else { $('adminPass').value = ''; $('adminPass').focus(); }
   }
+  // ---------- Support tickets ----------
+  const TICKET_CATS = { wish: '💡 Wish', bug: '🐞 Bug', question: '❓ Question', other: '💬 Other' };
+  const TICKET_STATUS = { open: 'Open', doing: 'In progress', done: 'Done', declined: 'Declined' };
+  const ticketWhen = v => { const t = Date.parse(v); return Number.isFinite(t) ? new Date(t).toLocaleString(lang === 'de' ? 'de-DE' : 'en-GB', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : ''; };
+  let ticketCat = 'wish', myTickets = [], ticketSending = false;
+  const ticketHtml = (t, admin) => `<div class="ticket ${esc(t.status)}" data-ticket="${esc(t.id)}">
+      <div class="ticket-head"><span class="ticket-cat-chip">${esc(TICKET_CATS[t.category] || t.category)}</span><b class="ticket-subj">${esc(t.subject)}</b><span class="ticket-status s-${esc(t.status)}">${esc(TICKET_STATUS[t.status] || t.status)}</span></div>
+      <small class="ticket-meta">${admin ? `<b class="name">${esc(t.name)}</b> · ` : ''}${ticketWhen(t.created_at)}${Date.parse(t.updated_at) - Date.parse(t.created_at) > 60000 ? ` · ${i18n('updated')} ${ticketWhen(t.updated_at)}` : ''}</small>
+      <p class="ticket-body">${esc(t.body)}</p>
+      ${admin ? `<div class="ticket-edit"><select data-ts aria-label="Status">${Object.entries(TICKET_STATUS).map(([k, v]) => `<option value="${k}"${k === t.status ? ' selected' : ''}>${esc(i18n(v))}</option>`).join('')}</select>
+          <textarea data-tr rows="2" maxlength="2000" placeholder="Reply to ${esc(t.name)}…" aria-label="Reply">${esc(t.reply || '')}</textarea>
+          <div class="admin-row"><button class="abtn ok" type="button" data-tsave>Save</button><button class="abtn warn" type="button" data-tdel>Delete</button></div></div>`
+        : t.reply ? `<div class="ticket-reply"><b>Admin:</b> ${esc(t.reply)}</div>` : ''}
+    </div>`;
+  const ticketSig = t => `${t.status}|${t.reply || ''}`;
+  function renderMyTickets() {
+    $('myTickets').innerHTML = myTickets.length ? myTickets.map(t => ticketHtml(t, false)).join('') : `<p class="note">No tickets yet.</p>`;
+  }
+  async function loadMyTickets(notify = false) {
+    if (!account || !backend?.tickets) return;
+    try {
+      myTickets = await backend.tickets.mine();
+    } catch { return; }
+    // Changes the player hasn't seen yet: a dot on the Support link and, when asked, a pop-up.
+    state.ticketSeen ||= {};
+    const fresh = myTickets.filter(t => state.ticketSeen[t.id] !== undefined && state.ticketSeen[t.id] !== ticketSig(t));
+    for (const t of myTickets) if (state.ticketSeen[t.id] === undefined) state.ticketSeen[t.id] = ticketSig(t);
+    const open = !$('supportModal').hidden;
+    if (open) { for (const t of myTickets) state.ticketSeen[t.id] = ticketSig(t); renderMyTickets(); }
+    else if (fresh.length && notify) {
+      for (const t of fresh.slice(0, 2)) {
+        const el = document.createElement('button');
+        el.type = 'button';
+        el.className = 'chat-pop gift-pop';
+        el.innerHTML = `<span class="gift-ico" aria-hidden="true">🎫</span><span class="body"><span class="head"><b>Support</b></span><span class="note">${i18n(`Your ticket “${t.subject}” is now: ${i18n(TICKET_STATUS[t.status] || t.status)}`)}</span></span>`;
+        el.addEventListener('click', () => { el.remove(); openSupport(); });
+        showPop(el, 7000);
+      }
+      sound.chime();
+    }
+    $('supportBadge').hidden = open || !fresh.length;
+    persist();
+  }
+  function openSupport() {
+    if (!account) return;
+    $('supportModal').hidden = false;
+    $('ticketMsg').textContent = '';
+    renderMyTickets();
+    loadMyTickets();
+    $('supportBadge').hidden = true;
+    $('ticketSubject').focus();
+  }
+  const closeSupport = () => { $('supportModal').hidden = true; };
+  $('supportBtn').addEventListener('click', openSupport);
+  $('supportClose').addEventListener('click', closeSupport);
+  $('supportModal').addEventListener('click', e => { if (e.target === $('supportModal')) closeSupport(); });
+  $('supportModal').addEventListener('keydown', e => { if (e.key === 'Escape') closeSupport(); });
+  $('ticketCat').addEventListener('click', e => {
+    const b = e.target.closest('[data-cat]');
+    if (!b) return;
+    ticketCat = b.dataset.cat;
+    document.querySelectorAll('#ticketCat [data-cat]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  });
+  $('ticketForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    if (ticketSending || !backend?.tickets) return;
+    const subject = $('ticketSubject').value.trim(), body = $('ticketBody').value.trim(), msg = $('ticketMsg');
+    if (subject.length < 3) { msg.textContent = 'Give your ticket a subject (3 characters or more).'; return; }
+    if (body.length < 5) { msg.textContent = 'Describe your request in a few words.'; return; }
+    ticketSending = true;
+    $('ticketSend').disabled = true;
+    try {
+      await backend.tickets.submit(ticketCat, subject, body);
+      $('ticketSubject').value = ''; $('ticketBody').value = '';
+      msg.textContent = 'Thanks! Your ticket went to the admins.';
+      sound.chime();
+      await loadMyTickets();
+    } catch (err) {
+      const m = err?.message || '';
+      msg.textContent = /too many/.test(m) ? 'That is a lot of tickets today. Try again tomorrow.' : err?.code === 'PGRST202' || /could not find the function/i.test(m) ? 'Support tickets need the “Support tickets” part of supabase-setup.sql.' : 'That did not work. Check the connection and try again.';
+    }
+    ticketSending = false;
+    $('ticketSend').disabled = false;
+  });
+  // Admin side: every ticket with status and reply.
+  let adminTicketList = [], ticketFilter = 'active';
+  async function loadAdminTickets() {
+    if (!backend?.admin?.tickets) { $('adminTickets').innerHTML = '<p class="note">Not available here.</p>'; return; }
+    try {
+      const list = await backend.admin.tickets();
+      adminTicketList = Array.isArray(list) ? list : [];
+      adminTouched = Date.now();
+      renderAdminTickets();
+      syncTicketBadges(adminTicketList.filter(t => t.status === 'open' || t.status === 'doing').length);
+    } catch (e) {
+      if (e?.code === 'admin_locked') { lockAdmin('The admin menu locked itself. Enter the admin password again.'); return; }
+      $('adminTickets').innerHTML = `<p class="note">${e?.code === 'PGRST202' || /could not find the function/i.test(e?.message || '') ? 'This needs the “Support tickets” part of supabase-setup.sql.' : 'That did not work. Check the connection and try again.'}</p>`;
+    }
+  }
+  function renderAdminTickets() {
+    const q = $('ticketSearch').value.trim().toLowerCase();
+    const list = adminTicketList.filter(t => (ticketFilter === 'all' || t.status === 'open' || t.status === 'doing') && (!q || [t.subject, t.body, t.name, t.reply].some(v => String(v || '').toLowerCase().includes(q))));
+    $('adminTickets').innerHTML = list.length ? list.map(t => ticketHtml(t, true)).join('') : `<p class="note">${ticketFilter === 'all' ? 'No tickets yet.' : 'No open tickets. 🎉'}</p>`;
+  }
+  $('ticketFilter').addEventListener('click', e => {
+    const b = e.target.closest('[data-tf]');
+    if (!b) return;
+    ticketFilter = b.dataset.tf;
+    document.querySelectorAll('#ticketFilter [data-tf]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    renderAdminTickets();
+  });
+  $('ticketSearch').addEventListener('input', renderAdminTickets);
+  $('ticketReload').addEventListener('click', loadAdminTickets);
+  $('adminTickets').addEventListener('click', e => {
+    const card = e.target.closest('[data-ticket]');
+    if (!card) return;
+    const id = adminTicketList.find(t => String(t.id) === card.dataset.ticket)?.id;
+    if (id == null) return;
+    if (e.target.closest('[data-tsave]')) adminDo('Ticket saved.', async () => { await backend.admin.ticketUpdate(id, card.querySelector('[data-ts]').value, card.querySelector('[data-tr]').value); await loadAdminTickets(); });
+    else if (e.target.closest('[data-tdel]') && confirmed(e.target.closest('[data-tdel]'))) adminDo('Ticket deleted.', async () => { await backend.admin.ticketDelete(id); await loadAdminTickets(); });
+  });
+  function syncTicketBadges(n) {
+    $('ticketTabBadge').hidden = !n;
+    $('ticketTabBadge').textContent = n;
+    const btn = document.getElementById('adminBtn');
+    if (!btn) return;
+    let b = btn.querySelector('.dot-badge');
+    if (!b) { b = document.createElement('i'); b.className = 'dot-badge'; btn.append(b); }
+    b.hidden = !n;
+    b.textContent = n || '';
+  }
+  async function ticketTick() {
+    if (!account || !backend?.tickets) return;
+    loadMyTickets(true);
+    if (account.isAdmin) backend.tickets.openCount().then(syncTicketBadges).catch(() => {});
+  }
+  setInterval(ticketTick, 45000);
   // Affiliate overview: who brought in how many players and what it earned them.
   let adminAffs = [];
   async function loadAdminAffiliates() {
@@ -10226,6 +10470,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (name === 'game') fillSettingsForm();
     if (name === 'chat') renderAdminMsgs();
     if (name === 'aff') loadAdminAffiliates();
+    if (name === 'tickets') loadAdminTickets();
     if (name === 'security') $('adminSecNote').hidden = backend.kind !== 'supabase';
   }
 
