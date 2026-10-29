@@ -1959,6 +1959,16 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
 .ck-btns:has(#cfCash[hidden]) #cfFlip { grid-column: 1 / -1; }
 .cf-pick button { min-width: 130px; font-size: 16px; }
 @media (prefers-reduced-motion: reduce) { .cf-stage.idle .cf-toss, .gp-cf .gp-coin3 { animation: none !important; } }
+/* News pop-up from the admin */
+#newsModal { z-index: 55; }
+.news-card { max-width: 480px; text-align: left; border: 2px solid var(--accent); box-shadow: 0 0 0 4px #e9a23b33, 0 30px 70px -20px #000; }
+.news-card .eyebrow { color: var(--accent); }
+.news-title { margin: 0; overflow-wrap: anywhere; }
+.news-text { margin: 0; max-height: 50vh; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.5; color: var(--fg); font-weight: 400; }
+.news-meta { margin: 0; font-size: 12px; color: var(--muted); }
+.news-ok { width: 100%; }
+.news-admin { display: grid; gap: 8px; }
+.news-admin textarea { width: 100%; resize: vertical; font: inherit; padding: 10px 12px; border-radius: 10px; border: 1px solid #ffffff22; background: #0006; color: var(--fg); }
 #fx, #fxTop { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 #fxTop { z-index: 18; }
 .jp {
@@ -2986,6 +2996,16 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   </div>
 </div>
 
+<div class="modal" id="newsModal" role="alertdialog" aria-modal="true" aria-labelledby="newsTitle" hidden>
+  <div class="modal-card news-card">
+    <div class="eyebrow">News</div>
+    <h2 id="newsTitle" class="news-title"></h2>
+    <p class="news-text" id="newsText"></p>
+    <p class="news-meta" id="newsMeta"></p>
+    <button type="button" class="spin news-ok" id="newsOk">Got it</button>
+  </div>
+</div>
+
 <div class="modal" id="reloadModal" role="alertdialog" aria-modal="true" aria-labelledby="reloadTitle" hidden>
   <div class="modal-card">
     <div class="eyebrow">Update</div>
@@ -3147,6 +3167,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           <label class="setting"><span class="label">Free spin win multiplier</span><input name="freeMult" type="number" min="1" max="20" step="1"></label>
           <label class="setting"><span class="label">Nudge chance after a loss (%)</span><input name="nudgeChance" type="number" min="0" max="100" step="1"></label>
           <label class="setting"><span class="label">Hold chance after a loss (%)</span><input name="holdChance" type="number" min="0" max="100" step="1"></label>
+          <div class="setting wide news-admin">
+            <span class="label">Pop-up for everyone</span>
+            <input id="newsTitleIn" maxlength="80" placeholder="Title, e.g. Update 1.4: Coin flip!" aria-label="Pop-up title">
+            <textarea id="newsTextIn" maxlength="1500" rows="5" placeholder="What is new? Line breaks stay as you type them." aria-label="Pop-up text"></textarea>
+            <small>Everyone online gets it right away and has to press “Got it”. Everyone else sees it once at their next sign-in. A new pop-up replaces the old one.</small>
+            <div class="admin-row"><button class="abtn ok" type="button" id="newsSend">Send pop-up</button><button class="abtn" type="button" id="newsClear">Remove pop-up</button></div>
+            <p class="admin-note" id="newsNow"></p>
+          </div>
           <div class="admin-row setting wide reload-row">
             <span><b>New version online?</b> Ask everyone who has the game open to reload the page.</span>
             <button class="abtn" type="button" id="askReload">Ask everyone to reload</button>
@@ -3443,6 +3471,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'You picked heads. Up it goes…': 'Du hast Kopf gewählt. Hoch damit…', 'You picked tails. Up it goes…': 'Du hast Zahl gewählt. Hoch damit…', 'Wait… it is standing on its edge!': 'Moment… sie steht auf der Kante!',
     'Unbelievable! The coin landed on its edge!': 'Unglaublich! Die Münze ist auf der Kante gelandet!', 'On the Edge': 'Auf der Kante', 'Land the coin flip on its edge (1 in 10,000).': 'Lass die Münze auf der Kante landen (1 zu 10.000).',
     'Flip again': 'Nochmal werfen', 'win': 'Sieg', 'Double Up': 'Verdoppler', 'Win 5 coin flips in a row and cash out (×32).': 'Gewinn 5 Münzwürfe hintereinander und zahl aus (×32).',
+    'News': 'News', 'Got it': 'Verstanden', 'From the team': 'Vom Team', 'Pop-up for everyone': 'Pop-up für alle', 'Pop-up title': 'Pop-up-Titel', 'Pop-up text': 'Pop-up-Text',
+    'Title, e.g. Update 1.4: Coin flip!': 'Titel, z. B. Update 1.4: Münzwurf!', 'What is new? Line breaks stay as you type them.': 'Was ist neu? Zeilenumbrüche bleiben so, wie du sie tippst.',
+    'Everyone online gets it right away and has to press “Got it”. Everyone else sees it once at their next sign-in. A new pop-up replaces the old one.': 'Alle, die online sind, bekommen es sofort und müssen „Verstanden“ drücken. Alle anderen sehen es einmal bei der nächsten Anmeldung. Ein neues Pop-up ersetzt das alte.',
+    'Send pop-up': 'Pop-up senden', 'Remove pop-up': 'Pop-up entfernen', 'No pop-up is live right now.': 'Gerade ist kein Pop-up aktiv.', 'Write a title or a text first.': 'Schreib zuerst einen Titel oder Text.',
+    'Pop-up sent. Everyone sees it once.': 'Pop-up gesendet. Alle sehen es einmal.', 'Remove it?': 'Wirklich entfernen?', 'The pop-up is removed. Nobody sees it any more.': 'Das Pop-up ist entfernt. Niemand sieht es mehr.',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -3641,7 +3674,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['×{a} on the coin · {b} wins in a row', '×{a} auf der Münze · {b} Siege in Folge'], ['×{a} on the coin · {b} win in a row', '×{a} auf der Münze · {b} Sieg in Folge'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['From the team · {a}', 'Vom Team · {a}'], ['Live now: “{a}”, sent {b}.', 'Aktiv: „{a}“, gesendet {b}.'], ['×{a} on the coin · {b} wins in a row', '×{a} auf der Münze · {b} Siege in Folge'], ['×{a} on the coin · {b} win in a row', '×{a} auf der Münze · {b} Sieg in Folge'],
     ['{a} is still on the coin (×{b}). Cash out or flip again.', '{a} liegen noch auf der Münze (×{b}). Auszahlen oder weiter werfen.'],
     ['{a} on the coin, ×{b} if it shows heads…', '{a} auf der Münze, ×{b}, wenn Kopf kommt…'], ['{a} on the coin, ×{b} if it shows tails…', '{a} auf der Münze, ×{b}, wenn Zahl kommt…'],
     ['The coin landed on its edge! 1 in {a}: ×{b} · {c} on the coin. Cash out or keep going!', 'Die Münze ist auf der Kante gelandet! 1 zu {a}: ×{b} · {c} auf der Münze. Auszahlen oder weitermachen!'],
@@ -3791,7 +3824,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const enText = new WeakMap(), deText = new WeakMap();
   const I18N_ATTRS = ['placeholder', 'title', 'aria-label'];
   // Never translate what players typed: chat messages and the like.
-  const I18N_SKIP = 'script, style, textarea, .lt-name, .msg .text, .chat-pop .text, .admin-msg span, .announce .ann-run, .pk-who b, .board .name, .neon-name, .hr-name, .hr-list .name, .ticket-subj, .ticket-body, .ticket-reply, .ticket-meta .name';
+  const I18N_SKIP = 'script, style, textarea, .lt-name, .news-title, .news-text, .msg .text, .chat-pop .text, .admin-msg span, .announce .ann-run, .pk-who b, .board .name, .neon-name, .hr-name, .hr-list .name, .ticket-subj, .ticket-body, .ticket-reply, .ticket-meta .name';
   function trText(node) {
     const raw = node.data;
     if (deText.get(node) === raw || !/[A-Za-z]/.test(raw)) return;
@@ -9561,7 +9594,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   $('startOverYes').addEventListener('click', () => {
     closeStartOver();
     if (gameBusy()) return;
-    Object.assign(state, fresh(), { sound: state.sound, adminRev: state.adminRev, credits: settings.startCredits, mode: state.mode, avatar: state.avatar, giftSeen: state.giftSeen, prestige: state.prestige });
+    Object.assign(state, fresh(), { sound: state.sound, adminRev: state.adminRev, credits: settings.startCredits, mode: state.mode, avatar: state.avatar, giftSeen: state.giftSeen, newsSeen: state.newsSeen, prestige: state.prestige });
     bjShown.clear();
     renderBJTable(false);
     pendingLevels.length = 0;
@@ -11479,7 +11512,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     document.querySelectorAll('[data-pane]').forEach(p => { p.hidden = p.dataset.pane !== name; });
     adminSay('');
     if (name === 'players') renderAdminPlayers(true);
-    if (name === 'game') fillSettingsForm();
+    if (name === 'game') { fillSettingsForm(); renderNewsAdmin(); }
     if (name === 'chat') renderAdminMsgs();
     if (name === 'aff') loadAdminAffiliates();
     if (name === 'tickets') loadAdminTickets();
@@ -12566,6 +12599,74 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   }
   setInterval(jbTick, 100);
   function jbEnter() { jbRender(); if (!jb.on) jbSay(state.job.shifts ? 'Welcome back! Start a shift when you are ready.' : 'Welcome to Lucky Burger! Start your first shift as a cleaner.'); }
+
+  // ----- News pop-up: an admin sends it, every player sees it once (now if online, otherwise at the next sign-in) -----
+  const NEWS_LS = () => 'lucky-reels-news-' + (account?.id || '');
+  function newsNow() {
+    const n = rawSettings?.popup;
+    return n && typeof n === 'object' && n.id && (n.title || n.text) ? n : null;
+  }
+  function newsSeen(id) {
+    if (state.newsSeen === id) return true;
+    try { return localStorage.getItem(NEWS_LS()) === id; } catch { return false; }
+  }
+  function checkNews() {
+    const n = newsNow();
+    if (!account || !n || newsSeen(n.id) || !$('newsModal').hidden || !$('reloadModal').hidden || (typeof ltShow !== 'undefined' && ltShow.open)) return;
+    $('newsTitle').textContent = n.title || 'News';
+    $('newsText').textContent = n.text || '';
+    $('newsText').hidden = !n.text;
+    const at = Number(n.at);
+    $('newsMeta').textContent = at ? `From the team · ${new Date(at).toLocaleString(lang === 'de' ? 'de-DE' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' })}` : 'From the team';
+    $('newsModal').dataset.id = n.id;
+    $('newsModal').hidden = false;
+    sound.chime();
+    $('newsOk').focus();
+  }
+  $('newsOk').addEventListener('click', () => {
+    const id = $('newsModal').dataset.id;
+    $('newsModal').hidden = true;
+    if (!id) return;
+    state.newsSeen = id;
+    try { localStorage.setItem(NEWS_LS(), id); } catch {}
+    sound.chip();
+    lastSaved = '';
+    persist();
+  });
+  // a pop-up that was removed while it was open goes away
+  setInterval(() => {
+    if (!$('newsModal').hidden && newsNow()?.id !== $('newsModal').dataset.id) $('newsModal').hidden = true;
+    checkNews();
+  }, 1500);
+  function renderNewsAdmin() {
+    const n = newsNow();
+    $('newsNow').textContent = n ? `Live now: “${n.title || n.text.slice(0, 40)}”, sent ${new Date(Number(n.at) || Date.now()).toLocaleString(lang === 'de' ? 'de-DE' : 'en-GB', { dateStyle: 'short', timeStyle: 'short' })}.` : 'No pop-up is live right now.';
+    $('newsClear').disabled = !n;
+  }
+  $('newsSend').addEventListener('click', e => {
+    const title = $('newsTitleIn').value.trim().slice(0, 80), text = $('newsTextIn').value.replace(/\r/g, '').trim().slice(0, 1500);
+    if (!title && !text) { adminSay('Write a title or a text first.', false); return; }
+    if (!confirmed(e.currentTarget, 'Send to everyone?')) return;
+    const popup = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7), title, text, at: Date.now() };
+    adminDo('Pop-up sent. Everyone sees it once.', async () => {
+      await backend.admin.saveSettings({ popup });
+      rawSettings.popup = popup;
+      // the sender has seen it already
+      state.newsSeen = popup.id;
+      try { localStorage.setItem(NEWS_LS(), popup.id); } catch {}
+      persist();
+      $('newsTitleIn').value = ''; $('newsTextIn').value = '';
+      renderNewsAdmin();
+    });
+  });
+  $('newsClear').addEventListener('click', e => {
+    if (!confirmed(e.currentTarget, 'Remove it?')) return;
+    adminDo('The pop-up is removed. Nobody sees it any more.', async () => {
+      await backend.admin.saveSettings({ popup: null });
+      rawSettings.popup = null;
+      renderNewsAdmin();
+    });
+  });
 
   function renderAdminMsgs() {
     if (!adminUnlocked || $('adminModal').hidden) return;
