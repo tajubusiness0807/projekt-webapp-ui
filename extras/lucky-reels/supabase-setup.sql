@@ -2328,3 +2328,34 @@ grant execute on function public.note_device(text) to authenticated;
 grant execute on function public.affiliate_check(text) to anon, authenticated;
 grant execute on function public.set_affiliate_code(text) to authenticated;
 grant execute on function public.affiliate_redeem(text, text) to authenticated;
+
+
+-- ---------------------------------------------------------------------------
+-- Admin: affiliate overview: run this part once (after "Affiliate codes" and
+-- "Admin security"). Lets the admin menu list every affiliate code with the
+-- players who joined through it and the credits its owner earned.
+
+create or replace function public.admin_affiliates(tok uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  out jsonb;
+begin
+  perform public.admin_check(tok);
+  select coalesce(jsonb_agg(x order by x.uses desc, x.earned desc, x.name), '[]') into out from (
+    select p.id, p.name, p.affiliate_code as code, count(u.id) as uses, coalesce(sum(u.bonus), 0) as earned, max(u.created_at) as last,
+      coalesce(jsonb_agg(jsonb_build_object('name', u.new_name, 'bonus', u.bonus, 'at', u.created_at) order by u.created_at desc)
+        filter (where u.id is not null), '[]') as refs
+    from public.players p left join public.affiliate_uses u on u.affiliate = p.id
+    where p.affiliate_code is not null or u.id is not null
+    group by p.id
+  ) x;
+  return out;
+end;
+$$;
+
+revoke execute on function public.admin_affiliates(uuid) from public, anon;
+grant execute on function public.admin_affiliates(uuid) to authenticated;

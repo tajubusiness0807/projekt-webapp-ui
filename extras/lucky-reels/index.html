@@ -1450,6 +1450,32 @@ html[data-lang="de"] .reel.held::after { content: "GEHALTEN"; }
 .aff-code { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; border-radius: 10px; background: #0006; border: 2px dashed #7fd18b88; }
 .aff-code b { font: 700 20px var(--font-mono); letter-spacing: 0.14em; color: var(--win); }
 .aff-row input { text-transform: uppercase; color: var(--win); }
+.aff-sum { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.aff-sum div { display: grid; gap: 2px; padding: 10px; border-radius: 10px; background: var(--panel); text-align: center; }
+.aff-sum b { font: 700 18px var(--font-mono); color: var(--win); }
+.aff-sum span { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.aff-list { display: grid; gap: 8px; }
+.aff-item { border-radius: 12px; background: var(--panel); border: 1px solid #ffffff12; }
+.aff-item[open] { border-color: #7fd18b55; }
+.aff-item summary { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto auto auto; align-items: center; gap: 8px; padding: 10px 12px; cursor: pointer; list-style: none; }
+.aff-item summary::-webkit-details-marker { display: none; }
+.aff-item .rank { color: var(--muted); font: 600 12px var(--font-mono); min-width: 18px; }
+.aff-item .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-transform: none; letter-spacing: 0; color: var(--fg); font-size: 14px; font-weight: 700; }
+.aff-chip { padding: 2px 8px; border-radius: 6px; background: #0006; border: 1px dashed #7fd18b88; color: var(--win); font: 700 12px var(--font-mono); letter-spacing: 0.08em; }
+.aff-chip.none { border-color: #ffffff33; color: var(--muted); font-weight: 400; }
+.aff-n { font-size: 12px; color: var(--muted); white-space: nowrap; } .aff-n b { color: var(--fg); font-family: var(--font-mono); }
+.aff-earned { font: 700 13px var(--font-mono); color: var(--accent); white-space: nowrap; }
+.aff-refs { width: calc(100% - 24px); margin: 0 12px 12px; border-collapse: collapse; font-size: 12px; }
+.aff-refs th { text-align: left; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 4px 6px; }
+.aff-refs td { padding: 6px; border-top: 1px solid #ffffff10; font-variant-numeric: tabular-nums; }
+.aff-refs td:last-child { color: var(--win); text-align: right; } .aff-refs th:last-child { text-align: right; }
+@media (max-width: 600px) {
+  .aff-sum { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .aff-item summary { grid-template-columns: auto auto minmax(0, 1fr) auto; }
+  .aff-item .aff-chip { grid-column: 3; grid-row: 2; justify-self: start; }
+  .aff-item .aff-n { grid-column: 4; grid-row: 1; }
+  .aff-item .aff-earned { grid-column: 4; grid-row: 2; }
+}
 #loginAff { text-transform: uppercase; letter-spacing: 0.08em; }
 #loginAff::placeholder, .aff-row input::placeholder { text-transform: none; letter-spacing: 0; }
 .chat-pop.online-pop { border-color: #7fd18b88; align-items: center; }
@@ -2536,6 +2562,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       <div class="tabs" role="tablist">
         <button class="tab" role="tab" data-tab="players" aria-selected="true">Players</button>
         <button class="tab" role="tab" data-tab="game" aria-selected="false">Game settings</button>
+        <button class="tab" role="tab" data-tab="aff" aria-selected="false">Affiliates</button>
         <button class="tab" role="tab" data-tab="chat" aria-selected="false">Chat</button>
         <button class="tab" role="tab" data-tab="security" aria-selected="false">Security</button>
       </div>
@@ -2560,6 +2587,16 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           </div>
         </div>
         <p class="admin-note">Set credits replaces the balance. Reset puts the player back to the start: credits, level, goodies and achievements. Blocked players can't sign in, save or chat. Delete removes the account for good, with its game, chat and private messages; admins have to lose their admin rights first. Dangerous buttons ask once more before they act.</p>
+      </section>
+
+      <section class="admin-section" data-pane="aff" hidden>
+        <div class="aff-sum" id="affSum"></div>
+        <div class="admin-tools">
+          <input id="affSearch" type="search" placeholder="Search affiliates or invited players…" aria-label="Search affiliates" autocomplete="off">
+          <button class="abtn" id="affReload" type="button">Refresh</button>
+        </div>
+        <div class="aff-list" id="affList"></div>
+        <p class="admin-note">Every player with an affiliate code, how many new players joined with it and how many credits the owner got for them (5% of their credits at that moment). Open a row to see who joined and when.</p>
       </section>
 
       <section class="admin-section" data-pane="game" hidden>
@@ -2813,6 +2850,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Affiliate codes have 3 to 12 letters or digits.': 'Affiliate-Codes haben 3 bis 12 Buchstaben oder Ziffern.',
     'Affiliate codes need the “Affiliate codes” part of supabase-setup.sql.': 'Affiliate-Codes brauchen den Abschnitt „Affiliate codes“ aus supabase-setup.sql.',
     'No player has that affiliate code. Check it, or leave the field empty.': 'Diesen Affiliate-Code hat niemand. Prüf ihn oder lass das Feld leer.',
+    'player': 'Spieler', 'players': 'Spieler',
+    'Affiliates': 'Affiliates', 'Search affiliates or invited players…': 'Affiliates oder eingeladene Spieler suchen…', 'Search affiliates': 'Affiliates suchen', 'Refresh': 'Aktualisieren',
+    'Codes': 'Codes', 'Players invited': 'Eingeladene Spieler', 'Credits to affiliates': 'Credits an Affiliates', 'Start bonus for new players': 'Startbonus für neue Spieler',
+    'no code': 'kein Code', 'Joined': 'Beigetreten', 'Nobody has used this code yet.': 'Diesen Code hat noch niemand benutzt.', 'No match.': 'Kein Treffer.',
+    'Nobody has an affiliate code yet.': 'Noch hat niemand einen Affiliate-Code.', 'Not available here.': 'Hier nicht verfügbar.',
+    'This needs the “Admin: affiliate overview” part of supabase-setup.sql.': 'Dafür braucht es den Abschnitt „Admin: affiliate overview“ aus supabase-setup.sql.',
+    'Every player with an affiliate code, how many new players joined with it and how many credits the owner got for them (5% of their credits at that moment). Open a row to see who joined and when.': 'Alle Spieler mit Affiliate-Code: wie viele neue Spieler sich damit angemeldet haben und wie viele Credits der Besitzer dafür bekommen hat (5 % seiner Credits zu dem Zeitpunkt). Öffne eine Zeile, um zu sehen, wer wann beigetreten ist.',
     'Affiliate bonus': 'Affiliate-Bonus', 'No affiliate bonus': 'Kein Affiliate-Bonus',
     'The affiliate bonus is only for the first account on a device. Leave the code empty to create the account without it.': 'Den Affiliate-Bonus gibt es nur für das erste Konto auf einem Gerät. Lass das Feld leer, um das Konto ohne Bonus zu erstellen.',
     'This device already has an account, so there is no affiliate bonus.': 'Auf diesem Gerät gibt es schon ein Konto, deshalb gibt es keinen Affiliate-Bonus.',
@@ -2977,7 +3021,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ["Thanks to {a}'s code you start with {b} credits!", 'Dank des Codes von {a} startest du mit {b} Credits!'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['Bonus for {a}', 'Bonus für {a}'], ["Thanks to {a}'s code you start with {b} credits!", 'Dank des Codes von {a} startest du mit {b} Credits!'],
     ['joined with your affiliate code: +{a} credits!', 'hat sich mit deinem Affiliate-Code angemeldet: +{a} Credits!'], ['Your code is {a}. Share it with friends!', 'Dein Code ist {a}. Teil ihn mit Freunden!'],
     ['{a} player joined with your code · +{b} credits earned', '{a} Spieler hat sich mit deinem Code angemeldet · +{b} Credits verdient'], ['{a} players joined with your code · +{b} credits earned', '{a} Spieler haben sich mit deinem Code angemeldet · +{b} Credits verdient'], ['Golden rocket! This one flies past {a} for sure.', 'Goldene Rakete! Die fliegt garantiert über {a}.'], ['bet {a}', 'Einsatz {a}'], ['auto {a}', 'auto {a}'],
     ["You're on board with {a}. Auto cash-out at {b}.", 'Du bist mit {a} an Bord. Auto-Auszahlung bei {b}.'], ["You're on board with {a}. Cash out before it blows!", 'Du bist mit {a} an Bord. Zahl aus, bevor sie explodiert!'],
@@ -8457,6 +8501,16 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           await store.save(id, { level, adminRev: (Number(doc?.adminRev) || 0) + 1 });
         },
         setAdmin: (id, make) => store.save(id, { admin: make }),
+        async affiliates() {
+          const out = [];
+          for (const p of players) {
+            const d = await store.load(p.id), st = d?.affStats;
+            if (!d?.affCode && !st?.uses) continue;
+            const refs = Array.isArray(st?.refs) ? st.refs : [];
+            out.push({ id: p.id, name: p.name, code: d.affCode || null, uses: st?.uses || 0, earned: st?.earned || 0, last: refs[0]?.at || null, refs });
+          }
+          return out.sort((a, b) => b.uses - a.uses || b.earned - a.earned || a.name.localeCompare(b.name));
+        },
         deletePlayer: id => store.remove(id),
         deleteMessage: id => store.deleteMessage(id),
         clearChat: () => store.clearChat(),
@@ -8510,7 +8564,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         const bonus = Math.floor((Number(od.credits) || 0) * 0.05);
         const stats = od.affStats || { uses: 0, earned: 0 };
         const gifts = [...(Array.isArray(od.gifts) ? od.gifts : []), { from: me.name, amount: bonus, at: Date.now(), aff: true }].slice(-10);
-        await store.save(owner.id, { credits: (Number(od.credits) || 0) + bonus, adminRev: (Number(od.adminRev) || 0) + 1, gifts, affStats: { uses: stats.uses + 1, earned: stats.earned + bonus } });
+        const refs = [{ name: me.name, bonus, at: Date.now() }, ...(Array.isArray(stats.refs) ? stats.refs : [])].slice(0, 100);
+        await store.save(owner.id, { credits: (Number(od.credits) || 0) + bonus, adminRev: (Number(od.adminRev) || 0) + 1, gifts, affStats: { uses: stats.uses + 1, earned: stats.earned + bonus, refs } });
         await store.save(key, { credits: (Number(me.credits) || 0) + 4500, affUsed: code, adminRev: (Number(me.adminRev) || 0) + 1 });
         return { affiliate: od.name || owner.name };
       },
@@ -8729,6 +8784,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     } catch {}
     let adminToken = null;
     const adminLocked = () => Object.assign(new Error('admin menu locked'), { code: 'admin_locked' });
+    async function adminRpcData(fn, args) {
+      if (!adminToken) throw adminLocked();
+      const { data, error } = await sb.rpc(fn, { tok: adminToken, ...args });
+      if (!error) return data;
+      if (/session expired|not allowed/i.test(error.message || '')) { adminToken = null; throw adminLocked(); }
+      throw error;
+    }
     async function adminRpc(fn, args) {
       if (!adminToken) throw adminLocked();
       const { error } = await sb.rpc(fn, { tok: adminToken, ...args });
@@ -8850,6 +8912,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         setCredits: (id, amount) => adminRpc('admin_update_player', { target: id, new_credits: amount, reset: false, set_banned: null }),
         addAll: amount => adminRpc('admin_give_all', { amount }),
         hardReset: () => adminRpc('admin_hard_reset', {}),
+        affiliates: () => adminRpcData('admin_affiliates', {}),
         reset: id => adminRpc('admin_update_player', { target: id, new_credits: null, reset: true, set_banned: null }),
         setBanned: (id, value) => adminRpc('admin_update_player', { target: id, new_credits: null, reset: false, set_banned: value }),
         setMedals: (id, medals) => adminRpc('admin_set_medals', { target: id, new_medals: medals }),
@@ -9958,6 +10021,35 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     $('adminLockErr').textContent = '';
     if (adminUnlocked) { showTab('players'); } else { $('adminPass').value = ''; $('adminPass').focus(); }
   }
+  // Affiliate overview: who brought in how many players and what it earned them.
+  let adminAffs = [];
+  async function loadAdminAffiliates() {
+    if (!backend?.admin?.affiliates) { $('affList').innerHTML = '<p class="note">Not available here.</p>'; return; }
+    $('affList').innerHTML = '<p class="note">Loading…</p>';
+    try {
+      const list = await backend.admin.affiliates();
+      adminAffs = (Array.isArray(list) ? list : []).map(a => ({ ...a, uses: Number(a.uses) || 0, earned: Number(a.earned) || 0, refs: Array.isArray(a.refs) ? a.refs : [] }));
+      adminTouched = Date.now();
+      renderAdminAffiliates();
+    } catch (e) {
+      if (e?.code === 'admin_locked') { lockAdmin('The admin menu locked itself. Enter the admin password again.'); return; }
+      $('affList').innerHTML = `<p class="note">${e?.code === 'PGRST202' || /could not find the function/i.test(e?.message || '') ? 'This needs the “Admin: affiliate overview” part of supabase-setup.sql.' : 'That did not work. Check the connection and try again.'}</p>`;
+    }
+  }
+  function renderAdminAffiliates() {
+    const when = v => { const t = typeof v === 'number' ? v : Date.parse(v); return Number.isFinite(t) ? new Date(t).toLocaleString(lang === 'de' ? 'de-DE' : 'en-GB', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '–'; };
+    const q = $('affSearch').value.trim().toLowerCase();
+    const list = adminAffs.filter(a => !q || a.name.toLowerCase().includes(q) || (a.code || '').toLowerCase().includes(q) || a.refs.some(r => String(r.name).toLowerCase().includes(q)));
+    const users = adminAffs.reduce((s2, a) => s2 + a.uses, 0), paid = adminAffs.reduce((s2, a) => s2 + a.earned, 0);
+    $('affSum').innerHTML = `<div><b>${adminAffs.filter(a => a.code).length}</b><span>Codes</span></div><div><b>${users}</b><span>Players invited</span></div><div><b>${fmt(paid)}</b><span>Credits to affiliates</span></div><div><b>${fmt(users * 4500)}</b><span>Start bonus for new players</span></div>`;
+    $('affList').innerHTML = list.length ? list.map((a, i) => `<details class="aff-item"${q && a.refs.some(r => String(r.name).toLowerCase().includes(q)) ? ' open' : ''}>
+        <summary><span class="rank">${i + 1}</span>${avatarHtml(a.id, a.name)}<b class="name">${nameHtml(a.id, a.name)}</b>${a.code ? `<code class="aff-chip">${esc(a.code)}</code>` : '<span class="aff-chip none">no code</span>'}
+          <span class="aff-n"><b>${a.uses}</b> ${a.uses === 1 ? 'player' : 'players'}</span><span class="aff-earned">+${fmt(a.earned)}</span></summary>
+        ${a.refs.length ? `<table class="aff-refs"><thead><tr><th>Joined</th><th>Player</th><th>Bonus for ${esc(a.name)}</th></tr></thead><tbody>${a.refs.map(r => `<tr><td>${when(r.at)}</td><td class="name">${esc(r.name)}</td><td>+${fmt(Number(r.bonus) || 0)}</td></tr>`).join('')}</tbody></table>` : '<p class="note">Nobody has used this code yet.</p>'}
+      </details>`).join('') : `<p class="note">${adminAffs.length ? 'No match.' : 'Nobody has an affiliate code yet.'}</p>`;
+  }
+  $('affSearch').addEventListener('input', renderAdminAffiliates);
+  $('affReload').addEventListener('click', loadAdminAffiliates);
   function showTab(name) {
     document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.tab === name)));
     document.querySelectorAll('[data-pane]').forEach(p => { p.hidden = p.dataset.pane !== name; });
@@ -9965,6 +10057,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (name === 'players') renderAdminPlayers(true);
     if (name === 'game') fillSettingsForm();
     if (name === 'chat') renderAdminMsgs();
+    if (name === 'aff') loadAdminAffiliates();
     if (name === 'security') $('adminSecNote').hidden = backend.kind !== 'supabase';
   }
 
