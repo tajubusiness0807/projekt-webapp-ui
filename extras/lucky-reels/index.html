@@ -8211,17 +8211,35 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const g = c.createLinearGradient(-15, 0, 15, 0);
     if (gold) { g.addColorStop(0, '#a8741a'); g.addColorStop(0.45, '#fff2c4'); g.addColorStop(0.6, '#f3c94b'); g.addColorStop(1, '#8a5a12'); }
     else { g.addColorStop(0, '#c9c2b6'); g.addColorStop(0.45, '#ffffff'); g.addColorStop(1, '#9d968c'); }
-    c.fillStyle = g;
-    if (gold) { c.shadowColor = '#f3c94b'; c.shadowBlur = 26; }
-    c.fill(body);
-    c.shadowBlur = 0;
+    const now = performance.now();
     if (gold) {
+      // a soft halo that breathes (a drawn gradient: much smoother than a canvas blur every frame)
+      const a = 0.32 + 0.12 * Math.sin(now / 520);
+      const halo = c.createRadialGradient(0, -6, 6, 0, -6, 58);
+      halo.addColorStop(0, `rgba(255,226,122,${a})`); halo.addColorStop(0.55, `rgba(243,201,75,${a * 0.45})`); halo.addColorStop(1, 'rgba(243,201,75,0)');
+      c.fillStyle = halo; c.beginPath(); c.arc(0, -6, 58, 0, Math.PI * 2); c.fill();
+    }
+    c.fillStyle = g;
+    c.fill(body);
+    if (gold) {
+      // a band of light glides over the body and back, eased at both ends, never jumping
       c.save(); c.clip(body);
-      const sw = ((performance.now() / 900) % 1.6 - 0.3) * 110 - 55;
-      const sh = c.createLinearGradient(sw - 14, -40, sw + 14, 40);
-      sh.addColorStop(0, 'rgba(255,255,255,0)'); sh.addColorStop(0.5, 'rgba(255,255,255,0.85)'); sh.addColorStop(1, 'rgba(255,255,255,0)');
+      const ph = (now % 2600) / 2600, k = 0.5 - 0.5 * Math.cos(ph * Math.PI * 2);
+      const sw = -34 + k * 68;
+      const sh = c.createLinearGradient(sw - 22, -46, sw + 22, 34);
+      sh.addColorStop(0, 'rgba(255,250,225,0)'); sh.addColorStop(0.5, 'rgba(255,250,225,0.7)'); sh.addColorStop(1, 'rgba(255,250,225,0)');
+      c.globalCompositeOperation = 'lighter';
       c.fillStyle = sh; c.fillRect(-30, -50, 60, 90);
       c.restore();
+      // and a few sparkles twinkling on the hull
+      for (let i = 0; i < 3; i++) {
+        const tw = Math.max(0, Math.sin(now / 330 + i * 2.1));
+        if (tw < 0.05) continue;
+        const sx = [-6, 7, -2][i], sy = [-28, 2, 18][i], r = 2.6 * tw;
+        c.fillStyle = `rgba(255,255,240,${0.9 * tw})`;
+        c.beginPath(); c.moveTo(sx, sy - r * 2); c.lineTo(sx + r * 0.5, sy); c.lineTo(sx, sy + r * 2); c.lineTo(sx - r * 0.5, sy); c.closePath(); c.fill();
+        c.beginPath(); c.moveTo(sx - r * 2, sy); c.lineTo(sx, sy + r * 0.5); c.lineTo(sx + r * 2, sy); c.lineTo(sx, sy - r * 0.5); c.closePath(); c.fill();
+      }
     }
     c.fillStyle = gold ? '#e9a23b' : '#c8323a';
     c.beginPath(); c.moveTo(0, -46); c.bezierCurveTo(9, -38, 12, -30, 13.5, -24); c.lineTo(-13.5, -24); c.bezierCurveTo(-12, -30, -9, -38, 0, -46); c.fill();
