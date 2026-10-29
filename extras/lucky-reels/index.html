@@ -1,7 +1,7 @@
 <title>Lucky Reels</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Chivo+Mono:wght@400;600&family=Figtree:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Chivo+Mono:wght@400;600&family=Figtree:wght@400;600&family=Playfair+Display:ital,wght@0,700;1,400;1,700&display=swap">
 <style>
 /* Layout: cabinet beside a goodie shop (stacked on phones). Single dark "arcade cabinet" look by choice. */
 :root {
@@ -1676,6 +1676,152 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
   60% { transform: translate(-5px, 2px); }
   80% { transform: translate(5px, -2px); }
 }
+/* ----- Lotto: the big card on top of the lobby, the two tickets and the draw show ----- */
+.lotto-hero {
+  position: relative; width: 100%; display: grid; gap: 14px; padding: 20px 14px 16px; border-radius: 28px; overflow: hidden; isolation: isolate;
+  background: radial-gradient(ellipse at 50% -10%, #e9a23b40, transparent 60%), linear-gradient(180deg, #2c1d15, #17100c);
+  border: 3px solid #e9a23b;
+  box-shadow: 0 0 0 4px #17100c, 0 0 0 6px #e9a23b55, 0 26px 60px -22px #000, 0 0 70px -16px #e9a23bbb;
+  animation: tierIn 0.55s cubic-bezier(.2, 1.4, .4, 1) both;
+}
+.lotto-hero[hidden] { display: none; }
+.lt-bulbs { position: absolute; inset: 7px; z-index: -1; border-radius: 22px; pointer-events: none;
+  background: radial-gradient(circle, #ffe7a8 0 2.2px, transparent 3px) 0 0 / 22px 22px; opacity: 0.55;
+  -webkit-mask: linear-gradient(#000 0 0) top / 100% 10px no-repeat, linear-gradient(#000 0 0) bottom / 100% 10px no-repeat;
+  mask: linear-gradient(#000 0 0) top / 100% 10px no-repeat, linear-gradient(#000 0 0) bottom / 100% 10px no-repeat;
+  animation: ltBulbs 1.2s steps(2) infinite; }
+@keyframes ltBulbs { 50% { background-position: 11px 0; } }
+.lt-head { display: grid; justify-items: center; gap: 4px; }
+.lt-logo { display: flex; gap: 6px; justify-content: center; margin: 0; }
+.lt-logo i { display: grid; place-items: center; width: clamp(42px, 11vw, 58px); aspect-ratio: 1; border-radius: 50%; font-style: normal; font-family: Bungee, Impact, sans-serif; font-size: clamp(22px, 6vw, 30px); color: #1d1714;
+  background: radial-gradient(circle at 34% 30%, #fff 0 12%, transparent 13%), radial-gradient(circle at 50% 50%, #fffaf0 0 44%, var(--b) 45%);
+  box-shadow: inset -4px -6px 10px #0005, 0 6px 14px -6px #000; animation: ltBob 2.6s ease-in-out infinite; }
+.lt-logo i:nth-child(1) { --b: #e0453a; }
+.lt-logo i:nth-child(2) { --b: #f2a516; animation-delay: -0.4s; }
+.lt-logo i:nth-child(3) { --b: #2f9e6a; animation-delay: -0.8s; }
+.lt-logo i:nth-child(4) { --b: #3a7bd5; animation-delay: -1.2s; }
+.lt-logo i:nth-child(5) { --b: #9b4dca; animation-delay: -1.6s; }
+@keyframes ltBob { 50% { transform: translateY(-6px) rotate(8deg); } }
+.lt-sub { margin: 0; font-size: 14px; color: var(--fg); }
+.lt-sub b { color: var(--accent); }
+.lt-times { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 2px 0 0; }
+.lt-times span { padding: 4px 11px; border-radius: 999px; font-size: 13px; font-weight: 600; }
+.lt-times .lt-t-noon { background: #ffcf4a; color: #5a2c00; }
+.lt-times .lt-t-eve { background: #12112a; color: #f0d58a; border: 1px solid #d4af37; font-family: 'Playfair Display', Georgia, serif; font-style: italic; }
+.lt-times .lt-t-tz { background: #ffffff14; color: var(--muted); font-weight: 400; }
+.lt-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 560px) { .lt-pair { grid-template-columns: minmax(0, 1fr); } }
+.lt-ticket { position: relative; display: grid; align-content: start; gap: 8px; padding: 16px 14px 14px; border-radius: 20px; text-align: center; overflow: hidden; isolation: isolate; }
+.lt-ticket::before { content: ''; position: absolute; z-index: -2; pointer-events: none; }
+.lt-tk-head { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.lt-tk-ico { width: 30px; height: 30px; flex: none; }
+.lt-tk-title { font-size: 22px; line-height: 1.1; }
+.lt-tk-when { font-size: 13px; opacity: 0.85; }
+.lt-tk-when b { font-size: 17px; }
+.lt-perf { position: relative; height: 0; margin: 4px -14px; border-top: 2px dashed currentColor; opacity: 0.35; }
+.lt-perf::before, .lt-perf::after { content: ''; position: absolute; top: -10px; width: 18px; height: 18px; border-radius: 50%; background: #1d140f; }
+.lt-perf::before { left: -9px; } .lt-perf::after { right: -9px; }
+.lt-tk-pot { display: grid; gap: 0; }
+.lt-tk-pot small { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.8; }
+.lt-tk-pot b { font-size: clamp(28px, 7vw, 36px); line-height: 1.1; font-variant-numeric: tabular-nums; }
+.lt-tk-status { justify-self: center; padding: 4px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.lt-tk-status[data-s="live"] { animation: ltPulse 0.9s ease-in-out infinite; }
+@keyframes ltPulse { 50% { transform: scale(1.06); } }
+.lt-tk-people { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 26px; font-size: 13px; }
+.lt-tk-people .av { width: 24px; height: 24px; margin-left: -8px; box-shadow: 0 0 0 2px var(--ring, #fff); }
+.lt-tk-people .av:first-child { margin-left: 0; }
+.lt-tk-price { font-size: 13px; }
+.lt-tk-price b { font-variant-numeric: tabular-nums; }
+.lt-buy { justify-self: stretch; padding: 12px 14px; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; transition: transform 0.15s, filter 0.15s; }
+.lt-buy:not(:disabled):hover { transform: translateY(-2px); filter: brightness(1.08); }
+.lt-buy:disabled { cursor: default; opacity: 0.55; }
+.lt-buy[hidden] { display: none; }
+.lt-mine { padding: 9px 10px; border-radius: 12px; font-size: 14px; font-weight: 600; }
+.lt-mine[hidden] { display: none; }
+.lt-tk-last { font-size: 12px; opacity: 0.85; min-height: 1em; }
+.lt-tk-last .lt-name { font-weight: 700; }
+.lt-off { margin: 0; font-size: 13px; color: var(--muted); }
+
+/* Midday: sunshine, rays and a red stamp */
+.lt-noon { color: #4a2604; background: #ffc63d; border: 3px solid #fff0b0; box-shadow: inset 0 0 0 2px #e8950f, 0 14px 30px -14px #000; --ring: #ffc63d; }
+.lt-noon::before { left: 50%; top: -30%; width: 280%; aspect-ratio: 1; translate: -50% -50%; background: repeating-conic-gradient(#ffdc70 0 9deg, #ffc12e 9deg 18deg); animation: ltRays 50s linear infinite; }
+.lt-noon::after { content: ''; position: absolute; z-index: -1; inset: 0; background: linear-gradient(180deg, transparent 0 30%, #fff8dccc 62%, #fff3c9 100%); pointer-events: none; }
+@keyframes ltRays { to { rotate: 360deg; } }
+.lt-noon .lt-tk-title { font-family: Bungee, Impact, sans-serif; color: #c0350a; text-shadow: 0 2px 0 #fff8; }
+.lt-noon .lt-tk-pot b { font-family: Bungee, Impact, sans-serif; color: #b02a0c; }
+.lt-noon .lt-tk-status { background: #fff6d8; color: #8a3a06; box-shadow: 0 0 0 1px #e8950f; }
+.lt-noon .lt-tk-status[data-s="sale"] { background: #2f9e6a; color: #fff; box-shadow: none; }
+.lt-noon .lt-tk-status[data-s="live"] { background: #e0453a; color: #fff; box-shadow: none; }
+.lt-noon .lt-buy { border: 0; color: #fff; background: linear-gradient(180deg, #ff6a3d, #d93a12); box-shadow: inset 0 2px 0 #fff5, 0 5px 0 #8f2507, 0 10px 18px -8px #8f2507; text-shadow: 0 1px 0 #0004; }
+.lt-noon .lt-mine { background: #fffdf2; color: #2f7a4f; box-shadow: 0 0 0 2px #2f9e6a; }
+.lt-noon .lt-perf::before, .lt-noon .lt-perf::after { background: #23180f; }
+
+/* Evening: midnight blue, gold lines, serif lettering */
+.lt-eve { color: #f1e3bd; background: radial-gradient(ellipse at 50% -10%, #2f2766 0%, #12102b 55%, #08071a 100%); border: 1px solid #d4af37;
+  box-shadow: inset 0 0 0 5px #0b0a20, inset 0 0 0 6px #d4af3799, 0 14px 30px -14px #000, 0 0 36px -14px #d4af3788; --ring: #12102b; }
+.lt-eve::before { inset: 0; background:
+  radial-gradient(circle at 12% 18%, #fff 0 1px, transparent 1.5px), radial-gradient(circle at 82% 12%, #fff 0 1.2px, transparent 1.8px),
+  radial-gradient(circle at 70% 34%, #fffc 0 0.8px, transparent 1.3px), radial-gradient(circle at 26% 44%, #fffa 0 0.8px, transparent 1.3px),
+  radial-gradient(circle at 90% 56%, #fffb 0 1px, transparent 1.5px), radial-gradient(circle at 6% 70%, #fff9 0 0.8px, transparent 1.3px),
+  repeating-conic-gradient(from -64deg at 50% 118%, #d4af3726 0 1.2deg, transparent 1.2deg 8deg);
+  -webkit-mask: linear-gradient(#000, #0008); mask: linear-gradient(#000, #0008); animation: ltTwinkle 4s ease-in-out infinite; }
+@keyframes ltTwinkle { 50% { opacity: 0.7; } }
+.lt-eve::after { content: ''; position: absolute; z-index: -1; inset: -20% -60%; background: linear-gradient(105deg, transparent 42%, #f7e3a322 50%, transparent 58%); animation: ltSheen 6s ease-in-out infinite; pointer-events: none; }
+@keyframes ltSheen { 0%, 30% { translate: -40% 0; } 70%, 100% { translate: 40% 0; } }
+.lt-eve .lt-tk-title, .lt-eve .lt-tk-pot b { font-family: 'Playfair Display', Georgia, serif; font-weight: 700; background: linear-gradient(180deg, #fff6d6, #e2c36a 55%, #a8801f); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.lt-eve .lt-tk-title { font-style: italic; font-size: 26px; letter-spacing: 0.01em; }
+.lt-eve .lt-tk-pot b { font-size: clamp(30px, 7.4vw, 40px); }
+.lt-eve .lt-tk-pot small, .lt-eve .lt-tk-when { color: #d9c48a; letter-spacing: 0.22em; }
+.lt-eve .lt-tk-when { letter-spacing: 0.08em; }
+.lt-eve .lt-tk-status { background: transparent; color: #e9d28c; box-shadow: inset 0 0 0 1px #d4af3799; letter-spacing: 0.04em; }
+.lt-eve .lt-tk-status[data-s="sale"] { background: #d4af37; color: #12102b; }
+.lt-eve .lt-tk-status[data-s="live"] { background: #8e1f2f; color: #fff2d0; box-shadow: inset 0 0 0 1px #d4af37; }
+.lt-eve .lt-buy { color: #12102b; border: 1px solid #fff2c4; background: linear-gradient(180deg, #f6df93, #d4af37 55%, #b38a1f); box-shadow: 0 0 0 3px #12102b, 0 0 0 4px #d4af3799, 0 10px 22px -10px #d4af37; font-family: 'Playfair Display', Georgia, serif; letter-spacing: 0.04em; }
+.lt-eve .lt-mine { color: #f1e3bd; box-shadow: inset 0 0 0 1px #d4af37; background: #d4af3714; }
+.lt-eve .lt-perf { border-top-style: solid; border-top-width: 1px; opacity: 0.6; color: #d4af37; }
+.lt-eve .lt-perf::before, .lt-eve .lt-perf::after { background: #1d140f; box-shadow: inset 0 0 0 1px #d4af37; }
+
+/* The draw show, over everything, the same moment for everyone */
+.lt-show { position: fixed; inset: 0; z-index: 42; overflow: hidden; background: #000; animation: fadeIn 0.6s ease-out; }
+.lt-show[hidden] { display: none; }
+#ltCv { position: absolute; inset: 0; width: 100%; height: 100%; }
+.lt-show-head { position: absolute; top: max(18px, env(safe-area-inset-top, 0px)); left: 16px; right: 16px; display: grid; justify-items: center; gap: 4px; text-align: center; pointer-events: none; }
+.lt-show-kind { font-size: clamp(26px, 6.4vw, 46px); line-height: 1.05; }
+.lt-show-pot { font-family: var(--font-mono); font-size: 15px; letter-spacing: 0.12em; text-transform: uppercase; }
+.lt-show-pot b { display: block; font-size: clamp(28px, 7vw, 46px); letter-spacing: 0; font-variant-numeric: tabular-nums; }
+.lt-show-msg { position: absolute; left: 16px; right: 16px; bottom: max(26px, env(safe-area-inset-bottom, 0px)); margin: 0; text-align: center; font-size: clamp(16px, 3.8vw, 22px); font-weight: 600; pointer-events: none; }
+.lt-show-close { position: absolute; top: 12px; right: 12px; z-index: 3; }
+.lt-win { position: absolute; left: 50%; top: 54%; translate: -50% -50%; display: grid; justify-items: center; gap: 6px; width: max-content; max-width: calc(100% - 32px); padding: 22px 30px 20px; border-radius: 26px; text-align: center; animation: ltWinIn 1s cubic-bezier(.2, 1.5, .4, 1) both; }
+.lt-win[hidden] { display: none; }
+.lt-win small { font-size: 13px; letter-spacing: 0.3em; text-transform: uppercase; }
+.lt-win .lt-name { font-size: clamp(32px, 10vw, 68px); line-height: 1.05; overflow-wrap: anywhere; }
+.lt-win .lt-win-pay { font-family: var(--font-mono); font-size: clamp(18px, 4.6vw, 26px); font-weight: 600; }
+.lt-win em { font-style: normal; font-weight: 700; padding: 4px 12px; border-radius: 999px; }
+.lt-win em[hidden] { display: none; }
+@keyframes ltWinIn { from { opacity: 0; scale: 0.3; rotate: -8deg; } to { opacity: 1; scale: 1; rotate: 0deg; } }
+.lt-show[data-kind="noon"] .lt-show-kind { font-family: Bungee, Impact, sans-serif; color: #fff; text-shadow: 0 3px 0 #d9480f, 0 0 24px #fff8; }
+.lt-show[data-kind="noon"] .lt-show-pot { color: #7a3306; }
+.lt-show[data-kind="noon"] .lt-show-pot b { font-family: Bungee, Impact, sans-serif; color: #c0350a; text-shadow: 0 2px 0 #fff9; }
+.lt-show[data-kind="noon"] .lt-show-msg { color: #5a2604; text-shadow: 0 1px 0 #fff9; }
+.lt-show[data-kind="noon"] .lt-win { background: #fffdf3; color: #7a2e05; border: 4px solid #ffb627; box-shadow: 0 0 0 8px #fff6, 0 30px 80px -20px #0009; }
+.lt-show[data-kind="noon"] .lt-win .lt-name { font-family: Bungee, Impact, sans-serif; color: #d9480f; }
+.lt-show[data-kind="noon"] .lt-win em { background: #2f9e6a; color: #fff; }
+.lt-show[data-kind="eve"] .lt-show-kind, .lt-show[data-kind="eve"] .lt-win .lt-name, .lt-show[data-kind="eve"] .lt-show-pot b {
+  font-family: 'Playfair Display', Georgia, serif; font-weight: 700; background: linear-gradient(180deg, #fff6d6, #e2c36a 55%, #a8801f); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.lt-show[data-kind="eve"] .lt-show-kind, .lt-show[data-kind="eve"] .lt-win .lt-name { font-style: italic; }
+.lt-show[data-kind="eve"] .lt-show-pot { color: #d9c48a; }
+.lt-show[data-kind="eve"] .lt-show-msg { color: #f1e3bd; font-family: 'Playfair Display', Georgia, serif; font-style: italic; font-weight: 400; letter-spacing: 0.02em; }
+.lt-show[data-kind="eve"] .lt-win { background: #0b0a20ee; color: #e9d28c; border: 1px solid #d4af37; box-shadow: inset 0 0 0 6px #0b0a20, inset 0 0 0 7px #d4af37aa, 0 0 90px -10px #d4af3799; }
+.lt-show[data-kind="eve"] .lt-win em { background: #d4af37; color: #12102b; }
+
+/* Admin: the lotto tab */
+.lt-admin-draws { display: grid; gap: 10px; margin-top: 14px; }
+.lt-admin-draw { padding: 12px 14px; border-radius: 12px; background: #ffffff0a; border: 1px solid #ffffff18; font-size: 13px; }
+.lt-admin-draw h4 { margin: 0 0 4px; font-size: 15px; }
+.lt-admin-draw ol { margin: 6px 0 0; padding-left: 20px; }
+.lt-admin-draw li { margin: 2px 0; }
+.lt-admin-draw .note { margin: 4px 0 0; color: var(--muted); }
+
 #fx, #fxTop { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 #fxTop { z-index: 18; }
 .jp {
@@ -2044,6 +2190,41 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     <p class="lobby-credits">Credits <b id="lobbyCredits">0</b></p>
     <p class="lobby-online" id="lobbyOnline"></p>
     <button type="button" class="chip-btn lobby-mine" id="lobbyMine" data-mine hidden>Out of credits? Go mining for 50</button>
+    <section class="lotto-hero" id="lottoHero" aria-labelledby="ltLogo" hidden>
+      <span class="lt-bulbs" aria-hidden="true"></span>
+      <div class="lt-head">
+        <h2 class="lt-logo" id="ltLogo" aria-label="Lotto"><i>L</i><i>O</i><i>T</i><i>T</i><i>O</i></h2>
+        <p class="lt-sub">Twice a day. <b>One winner</b> takes the whole pot.</p>
+        <p class="lt-times"><span class="lt-t-noon" id="ltTimeNoon">☀ Midday 12:00</span><span class="lt-t-eve" id="ltTimeEve">☾ Evening 18:00</span><span class="lt-t-tz">German time</span></p>
+      </div>
+      <div class="lt-pair">
+      <article class="lt-ticket lt-noon" data-lt="noon">
+        <div class="lt-tk-head"><svg class="lt-tk-ico" viewBox="0 0 32 32" aria-hidden="true"><g stroke="#e0453a" stroke-width="2.6" stroke-linecap="round"><path d="M16 2v4M16 26v4M2 16h4M26 16h4M6 6l3 3M23 23l3 3M26 6l-3 3M9 23l-3 3"/></g><circle cx="16" cy="16" r="7" fill="#ff7a2e" stroke="#fff3c4" stroke-width="2"/></svg><span class="lt-tk-title">Midday Lotto</span></div>
+        <div class="lt-tk-when" data-f="when"><b>12:00</b> German time</div>
+        <div class="lt-perf" aria-hidden="true"></div>
+        <div class="lt-tk-pot"><small>Pot</small><b data-f="pot">0</b></div>
+        <div class="lt-tk-status" data-f="status">…</div>
+        <div class="lt-tk-people" data-f="people"></div>
+        <div class="lt-tk-price" data-f="price"></div>
+        <button class="lt-buy" type="button" data-f="buy" data-kind="noon">Buy ticket</button>
+        <div class="lt-mine" data-f="mine" hidden></div>
+        <div class="lt-tk-last" data-f="last"></div>
+      </article>
+      <article class="lt-ticket lt-eve" data-lt="eve">
+        <div class="lt-tk-head"><svg class="lt-tk-ico" viewBox="0 0 32 32" aria-hidden="true"><path d="M21 4a12 12 0 1 0 7 19A10 10 0 0 1 21 4z" fill="#e2c36a"/><path d="M8 7l.8 1.8L10.6 9.6 8.8 10.4 8 12.2 7.2 10.4 5.4 9.6 7.2 8.8z M27 3l.6 1.4 1.4.6-1.4.6L27 7l-.6-1.4L25 5l1.4-.6z" fill="#fff4cf"/></svg><span class="lt-tk-title">Evening Lotto</span></div>
+        <div class="lt-tk-when" data-f="when"><b>18:00</b> German time</div>
+        <div class="lt-perf" aria-hidden="true"></div>
+        <div class="lt-tk-pot"><small>Pot</small><b data-f="pot">0</b></div>
+        <div class="lt-tk-status" data-f="status">…</div>
+        <div class="lt-tk-people" data-f="people"></div>
+        <div class="lt-tk-price" data-f="price"></div>
+        <button class="lt-buy" type="button" data-f="buy" data-kind="eve">Buy ticket</button>
+        <div class="lt-mine" data-f="mine" hidden></div>
+        <div class="lt-tk-last" data-f="last"></div>
+      </article>
+      </div>
+      <p class="lt-off" id="ltOff" hidden></p>
+    </section>
     <div class="lobby-games">
       <button class="game-pick" type="button" data-mode="slots">
         <svg class="gp-slots" viewBox="0 0 140 130" aria-hidden="true">
@@ -2640,6 +2821,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   </div>
 </div>
 <canvas id="fxTop" aria-hidden="true"></canvas>
+<div class="lt-show" id="ltShow" role="dialog" aria-modal="true" aria-labelledby="ltShowKind" data-kind="noon" hidden>
+  <canvas id="ltCv" aria-hidden="true"></canvas>
+  <div class="lt-show-head"><span class="lt-show-kind" id="ltShowKind">Midday Lotto</span><span class="lt-show-pot">Pot <b id="ltShowPot">0</b></span></div>
+  <div class="lt-win" id="ltWin" hidden><small>The winner</small><b class="lt-name" id="ltWinName"></b><span class="lt-win-pay" id="ltWinPay"></span><em id="ltWinMe" hidden>That's you!</em></div>
+  <p class="lt-show-msg" id="ltShowMsg" aria-live="polite"></p>
+  <button class="chat-close lt-show-close" id="ltShowClose" type="button" aria-label="Close the draw">×</button>
+</div>
 <div class="modal" id="adminModal" role="dialog" aria-modal="true" aria-labelledby="adminTitle" hidden>
   <div class="admin-card">
     <div class="admin-head"><h2 id="adminTitle">Admin</h2><button class="chat-close" id="adminClose" type="button" aria-label="Close admin menu">×</button></div>
@@ -2654,6 +2842,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         <button class="tab" role="tab" data-tab="players" aria-selected="true">Players</button>
         <button class="tab" role="tab" data-tab="game" aria-selected="false">Game settings</button>
         <button class="tab" role="tab" data-tab="tickets" aria-selected="false">Tickets<i class="tab-badge" id="ticketTabBadge" hidden></i></button>
+        <button class="tab" role="tab" data-tab="lotto" aria-selected="false">Lotto</button>
         <button class="tab" role="tab" data-tab="aff" aria-selected="false">Affiliates</button>
         <button class="tab" role="tab" data-tab="chat" aria-selected="false">Chat</button>
         <button class="tab" role="tab" data-tab="security" aria-selected="false">Security</button>
@@ -2691,6 +2880,30 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         </div>
         <div class="ticket-admin" id="adminTickets"></div>
         <p class="admin-note">Requests from players. Set a status and write a reply: the player sees both under Support and gets a note when something changes.</p>
+      </section>
+
+      <section class="admin-section" data-pane="lotto" hidden>
+        <form id="lottoForm" class="settings-grid">
+          <label class="setting check"><input type="checkbox" name="lottoOn"><span>Lotto on</span><small>When off, no tickets are sold and sending credits is always allowed.</small></label>
+          <label class="setting"><span class="label">Draw mode</span><select name="lottoMode"><option value="weighted">Fair: chance by ticket price</option><option value="equal">Equal: every ticket the same chance</option></select><small>Fair: a ticket that cost twice as much has twice the chance.</small></label>
+          <label class="setting"><span class="label">Midday draw (hour, German time)</span><input name="lottoNoonHour" type="number" min="0" max="23" step="1"></label>
+          <label class="setting"><span class="label">Evening draw (hour, German time)</span><input name="lottoEveHour" type="number" min="0" max="23" step="1"></label>
+          <label class="setting"><span class="label">Midday ticket (% of the credits)</span><input name="lottoNoonPct" type="number" min="1" max="100" step="1"></label>
+          <label class="setting"><span class="label">Evening ticket (% of the credits)</span><input name="lottoEvePct" type="number" min="1" max="100" step="1"></label>
+          <label class="setting"><span class="label">Sales open (hours before the draw)</span><input name="lottoOpenHours" type="number" min="0.25" max="24" step="0.25"></label>
+          <label class="setting"><span class="label">Sales close (minutes before the draw)</span><input name="lottoCloseMin" type="number" min="0" max="120" step="1"></label>
+          <label class="setting"><span class="label">Ticket money into the pot (%)</span><input name="lottoShare" type="number" min="0" max="500" step="1"><small>100 = the winner gets all the ticket money. More than 100 adds credits from the house.</small></label>
+          <label class="setting"><span class="label">Extra credits in the midday pot</span><input name="lottoNoonBonus" type="number" min="0" step="1"></label>
+          <label class="setting"><span class="label">Extra credits in the evening pot</span><input name="lottoEveBonus" type="number" min="0" step="1"></label>
+          <div class="admin-row setting wide">
+            <button class="abtn ok" type="submit">Save lotto settings</button>
+            <button class="abtn" type="button" id="lottoPreviewNoon">Preview the midday show</button>
+            <button class="abtn" type="button" id="lottoPreviewEve">Preview the evening show</button>
+            <button class="abtn" type="button" id="lottoReload">Refresh</button>
+          </div>
+        </form>
+        <div class="lt-admin-draws" id="lottoAdmin"></div>
+        <p class="admin-note">Every player can buy one ticket per draw, for the set share of their credits at that moment. While tickets are on sale nobody can send credits. At draw time the database picks exactly one winner among the tickets, and everyone online watches the draw. The preview only plays the show for you.</p>
       </section>
 
       <section class="admin-section" data-pane="aff" hidden>
@@ -2959,6 +3172,35 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Took advantage of a bug instead of reporting it.': 'Hat einen Fehler ausgenutzt, statt ihn zu melden.',
     'Auto cash-out is off.': 'Auto-Auszahlung ist aus.', 'The rocket is already past that. Use Cash out instead.': 'Die Rakete ist schon darüber. Nutz stattdessen „Auszahlen“.',
     'Changing it in flight needs the updated “Rocket” part of supabase-setup.sql.': 'Zum Ändern im Flug braucht es den aktualisierten Abschnitt „Rocket“ aus supabase-setup.sql.',
+    'Midday Lotto': 'Mittagslotto', 'Evening Lotto': 'Abendlotto', 'Twice a day.': 'Zweimal am Tag.', 'One winner': 'Ein Gewinner', 'takes the whole pot.': 'räumt den ganzen Pot ab.',
+    'German time': 'deutsche Zeit', 'today · German time': 'heute · deutsche Zeit', 'tomorrow · German time': 'morgen · deutsche Zeit', 'Pot': 'Pot', 'Paused': 'Pausiert',
+    'The draw is on!': 'Die Ziehung läuft!', 'Drawn': 'Gezogen', '1 ticket': '1 Los', 'Your chance:': 'Deine Chance:', 'Ticket:': 'Los:', 'of your credits · now': 'deiner Credits · jetzt',
+    'of your credits': 'deiner Credits', 'Watch the draw': 'Ziehung ansehen', 'Not on sale yet': 'Noch nicht im Verkauf', 'Sales closed': 'Verkauf beendet', 'Next draw soon': 'Nächste Ziehung bald',
+    'Buy ticket': 'Los kaufen', 'Winner:': 'Gewinner:', 'Last winner:': 'Letzter Gewinner:', 'No winner yet. Be the first!': 'Noch kein Gewinner. Sei der Erste!',
+    'The lotto needs the “Lotto” part of supabase-setup.sql.': 'Das Lotto braucht den Abschnitt „Lotto“ aus supabase-setup.sql.', 'The lotto is paused right now.': 'Das Lotto ist gerade pausiert.',
+    'You need some credits for a ticket.': 'Für ein Los brauchst du ein paar Credits.', 'You already have a ticket for this draw.': 'Du hast schon ein Los für diese Ziehung.',
+    'Ticket sales for this draw are closed.': 'Der Losverkauf für diese Ziehung ist beendet.', 'Midday Lotto: you won!': 'Mittagslotto: Du hast gewonnen!', 'Evening Lotto: you won!': 'Abendlotto: Du hast gewonnen!',
+    'The evening draw is on! Open the lobby to watch.': 'Die Abendziehung läuft! Öffne die Lobby zum Zuschauen.', 'The midday draw is on! Open the lobby to watch.': 'Die Mittagsziehung läuft! Öffne die Lobby zum Zuschauen.',
+    'The midday draw starts in one minute!': 'Die Mittagsziehung beginnt in einer Minute!', 'The evening draw starts in one minute!': 'Die Abendziehung beginnt in einer Minute!',
+    'Last ten minutes to buy a ticket for the midday lotto!': 'Nur noch zehn Minuten, um ein Los fürs Mittagslotto zu kaufen!', 'Last ten minutes to buy a ticket for the evening lotto!': 'Nur noch zehn Minuten, um ein Los fürs Abendlotto zu kaufen!',
+    'The winner': 'Der Gewinner', "That's you!": 'Das bist du!', 'Close the draw': 'Ziehung schließen', 'One ticket in the drum · it takes it all': 'Ein Los in der Trommel · es räumt alles ab',
+    'The drum is turning…': 'Die Trommel dreht sich…', 'The drum is turning… the result is on its way.': 'Die Trommel dreht sich… das Ergebnis ist unterwegs.', 'And the winner is…': 'Und der Gewinner ist…',
+    'You won the pot!': 'Du hast den Pot gewonnen!', 'Good evening and welcome to the evening lotto draw!': 'Guten Abend und willkommen zur Ziehung des Abendlottos!',
+    'Welcome to the midday lotto draw!': 'Willkommen zur Ziehung des Mittagslottos!', 'One ticket is in the drum. Good luck!': 'Ein Los ist in der Trommel. Viel Glück!',
+    'Congratulations, you won the pot!': 'Herzlichen Glückwunsch, du hast den Pot gewonnen!', 'Congratulations!': 'Herzlichen Glückwunsch!',
+    'Lotto on': 'Lotto an', 'When off, no tickets are sold and sending credits is always allowed.': 'Wenn aus, werden keine Lose verkauft und Credits senden ist immer erlaubt.',
+    'Draw mode': 'Ziehungsart', 'Fair: chance by ticket price': 'Fair: Chance nach Lospreis', 'Equal: every ticket the same chance': 'Gleich: jedes Los dieselbe Chance',
+    'Fair: a ticket that cost twice as much has twice the chance.': 'Fair: Ein doppelt so teures Los hat die doppelte Chance.',
+    'Midday draw (hour, German time)': 'Mittagsziehung (Stunde, deutsche Zeit)', 'Evening draw (hour, German time)': 'Abendziehung (Stunde, deutsche Zeit)',
+    'Midday ticket (% of the credits)': 'Mittagslos (% der Credits)', 'Evening ticket (% of the credits)': 'Abendlos (% der Credits)',
+    'Sales open (hours before the draw)': 'Verkauf startet (Stunden vor der Ziehung)', 'Sales close (minutes before the draw)': 'Verkauf endet (Minuten vor der Ziehung)',
+    'Ticket money into the pot (%)': 'Losgeld in den Pot (%)', '100 = the winner gets all the ticket money. More than 100 adds credits from the house.': '100 = der Gewinner bekommt das ganze Losgeld. Mehr als 100 legt Credits vom Haus drauf.',
+    'Extra credits in the midday pot': 'Extra-Credits im Mittagspot', 'Extra credits in the evening pot': 'Extra-Credits im Abendpot', 'Save lotto settings': 'Lotto-Einstellungen speichern',
+    'Preview the midday show': 'Vorschau: Mittagsshow', 'Preview the evening show': 'Vorschau: Abendshow',
+    'Every player can buy one ticket per draw, for the set share of their credits at that moment. While tickets are on sale nobody can send credits. At draw time the database picks exactly one winner among the tickets, and everyone online watches the draw. The preview only plays the show for you.': 'Jeder Spieler kann pro Ziehung ein Los kaufen, für den eingestellten Anteil seiner Credits in dem Moment. Während des Losverkaufs kann niemand Credits senden. Zur Ziehung wählt die Datenbank genau einen Gewinner unter den Losen, und alle, die online sind, schauen die Ziehung. Die Vorschau spielt die Show nur für dich ab.',
+    'Lotto settings saved. Everyone sees them within seconds.': 'Lotto-Einstellungen gespeichert. Alle sehen sie in wenigen Sekunden.', 'The midday and evening draws need different hours.': 'Mittags- und Abendziehung brauchen verschiedene Stunden.',
+    'Sales': 'Verkauf', 'on sale now': 'läuft gerade', 'not open yet': 'noch nicht offen', 'sales closed': 'Verkauf beendet', 'draw running': 'Ziehung läuft', 'paused': 'pausiert', 'drawn': 'gezogen',
+    'No lotto tickets yet.': 'Noch keine Lose.', 'Last winners': 'Letzte Gewinner', 'No sending while lotto tickets are on sale.': 'Während des Losverkaufs kann man keine Credits senden.',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -3168,7 +3410,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['Auto cash-out set to {a}.', 'Auto-Auszahlung auf {a} gesetzt.'], ['The rocket is already past {a}. Use Cash out instead.', 'Die Rakete ist schon über {a}. Nutz stattdessen „Auszahlen“.'], ['An admin gave you the title “{a}”.', 'Ein Admin hat dir den Titel „{a}“ gegeben.'], ['{a} is now marked as Bug Abuser.', '{a} ist jetzt als Bug Abuser markiert.'], ['{a} is no longer marked as Bug Abuser.', '{a} ist nicht mehr als Bug Abuser markiert.'], ['{a} times!', '{a}-fach!'], ['Reply to {a}…', 'Antwort an {a}…'], ['Your ticket “{a}” is now: {b}', 'Dein Ticket „{a}“ ist jetzt: {b}'], ['Goodies {a} ›', 'Goodies {a} ›'], ['Bonus for {a}', 'Bonus für {a}'], ["Thanks to {a}'s code you start with {b} credits!", 'Dank des Codes von {a} startest du mit {b} Credits!'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['☀ Midday {a}', '☀ Mittag {a} Uhr'], ['☾ Evening {a}', '☾ Abend {a} Uhr'], ['{a} · German time', '{a} · deutsche Zeit'],
+    ['Tickets from {a}', 'Lose ab {a} Uhr'], ['On sale · closes in {a}', 'Verkauf läuft · endet in {a}'], ['Sales closed · draw in {a}', 'Verkauf beendet · Ziehung in {a}'], ['{a} tickets', '{a} Lose'],
+    ['Buy ticket · {a}', 'Los kaufen · {a}'], ['Pay {a}?', '{a} zahlen?'], ['🎟 Your ticket · {a} credits', '🎟 Dein Los · {a} Credits'],
+    ['Your ticket for {a} credits is in the drum. Draw at {b}!', 'Dein Los für {a} Credits ist in der Trommel. Ziehung um {b} Uhr!'], ['+{a} credits are on your balance.', '+{a} Credits sind auf deinem Konto.'],
+    ['You won the pot: +{a} credits!', 'Du hast den Pot gewonnen: +{a} Credits!'], ['{a} tickets in the drum · one of them takes it all', '{a} Lose in der Trommel · eines davon räumt alles ab'],
+    ['{a} tickets are in the drum. Good luck!', '{a} Lose sind in der Trommel. Viel Glück!'], ['{a} wins the pot!', '{a} gewinnt den Pot!'],
+    ['Midday Lotto · {a}', 'Mittagslotto · {a}'], ['Evening Lotto · {a}', 'Abendlotto · {a}'], ['Midday Lotto {a}:', 'Mittagslotto {a}:'], ['Evening Lotto {a}:', 'Abendlotto {a}:'],
+    ['pot {a}', 'Pot {a}'], ['· +{a} · {b} tickets', '· +{a} · {b} Lose'], ['No sending while lotto tickets are on sale (until {a}).', 'Während des Losverkaufs kann man keine Credits senden (bis {a} Uhr).'], ['Auto cash-out set to {a}.', 'Auto-Auszahlung auf {a} gesetzt.'], ['The rocket is already past {a}. Use Cash out instead.', 'Die Rakete ist schon über {a}. Nutz stattdessen „Auszahlen“.'], ['An admin gave you the title “{a}”.', 'Ein Admin hat dir den Titel „{a}“ gegeben.'], ['{a} is now marked as Bug Abuser.', '{a} ist jetzt als Bug Abuser markiert.'], ['{a} is no longer marked as Bug Abuser.', '{a} ist nicht mehr als Bug Abuser markiert.'], ['{a} times!', '{a}-fach!'], ['Reply to {a}…', 'Antwort an {a}…'], ['Your ticket “{a}” is now: {b}', 'Dein Ticket „{a}“ ist jetzt: {b}'], ['Goodies {a} ›', 'Goodies {a} ›'], ['Bonus for {a}', 'Bonus für {a}'], ["Thanks to {a}'s code you start with {b} credits!", 'Dank des Codes von {a} startest du mit {b} Credits!'],
     ['joined with your affiliate code: +{a} credits!', 'hat sich mit deinem Affiliate-Code angemeldet: +{a} Credits!'], ['Your code is {a}. Share it with friends!', 'Dein Code ist {a}. Teil ihn mit Freunden!'],
     ['{a} player joined with your code · +{b} credits earned', '{a} Spieler hat sich mit deinem Code angemeldet · +{b} Credits verdient'], ['{a} players joined with your code · +{b} credits earned', '{a} Spieler haben sich mit deinem Code angemeldet · +{b} Credits verdient'], ['Golden rocket! This one flies past {a} for sure.', 'Goldene Rakete! Die fliegt garantiert über {a}.'], ['bet {a}', 'Einsatz {a}'], ['auto {a}', 'auto {a}'],
     ["You're on board with {a}. Auto cash-out at {b}.", 'Du bist mit {a} an Bord. Auto-Auszahlung bei {b}.'], ["You're on board with {a}. Cash out before it blows!", 'Du bist mit {a} an Bord. Zahl aus, bevor sie explodiert!'],
@@ -3298,7 +3547,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const enText = new WeakMap(), deText = new WeakMap();
   const I18N_ATTRS = ['placeholder', 'title', 'aria-label'];
   // Never translate what players typed: chat messages and the like.
-  const I18N_SKIP = 'script, style, textarea, .msg .text, .chat-pop .text, .admin-msg span, .announce .ann-run, .pk-who b, .board .name, .neon-name, .hr-name, .hr-list .name, .ticket-subj, .ticket-body, .ticket-reply, .ticket-meta .name';
+  const I18N_SKIP = 'script, style, textarea, .lt-name, .msg .text, .chat-pop .text, .admin-msg span, .announce .ann-run, .pk-who b, .board .name, .neon-name, .hr-name, .hr-list .name, .ticket-subj, .ticket-body, .ticket-reply, .ticket-meta .name';
   function trText(node) {
     const raw = node.data;
     if (deText.get(node) === raw || !/[A-Za-z]/.test(raw)) return;
@@ -4836,6 +5085,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       if (b.dataset.mode === state.mode && state.spins + state.bj.hands + state.rl.spins + state.pk.hands + state.pl.drops + state.ck.games + state.hr.races + state.rk.rounds > 0) b.insertAdjacentHTML('afterbegin', '<span class="gp-last">Last played</span>');
     });
     $('lobby').hidden = false;
+    renderLotto();
     renderLobbyCounts();
     syncPresence();
     document.querySelector(`.game-pick[data-mode="${state.mode}"]`)?.focus();
@@ -7555,6 +7805,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   };
   // Ten times a second: which room tone and which continuous effect fit what is on screen.
   function atmosTick() {
+    if (ltShow.open) { loopTo('amb', 'ltcrowd', () => makeLoop('bandpass', 750, 0.5))?.set(0.035, 720); return; }
     const watching = account && state.sound && $('lobby').hidden && $('shopPage').hidden && !document.hidden;
     const mode = watching ? state.mode : '';
     // room tone
@@ -9163,12 +9414,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       horse: localHorse(),
       roulette: localRoulette(),
       rocket: localRocket(),
+      lotto: localLotto(store),
       presence: cb => store.presence(cb),
       setOnline: me => store.setOnline(me),
       dmWatch: cb => store.dmWatch(cb),
       dmSend: (to, text) => store.dmSend(to, text),
       // Gifts: both accounts change and get a new admin revision, so open pages pick up the new balance.
       async sendCredits(to, amount) {
+        if (ltSelling()) throw Object.assign(new Error('lotto sales running'), { code: 'gift_lotto' });
         const me = await store.load(account.id), them = await store.load(to);
         if (!them) throw Object.assign(new Error('no such player'), { code: 'gift_player' });
         if ((Number(me?.credits) || 0) < amount) throw Object.assign(new Error('not enough credits'), { code: 'gift_credits' });
@@ -9628,7 +9881,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         const { error } = await sb.rpc('send_credits', { target: to, amount });
         if (!error) return;
         const m = error.message || '';
-        throw Object.assign(error, { code: error.code === 'PGRST202' || /could not find the function/i.test(m) ? 'gift_setup'
+        throw Object.assign(error, { code: error.code === 'PGRST202' || /could not find the function/i.test(m) ? 'gift_setup' : /lotto/i.test(m) ? 'gift_lotto'
           : /level/i.test(m) ? 'gift_level' : /credits/i.test(m) ? 'gift_credits' : /player|yourself|blocked/i.test(m) ? 'gift_player' : 'gift_error' });
       },
       async giftsSince(since) {
@@ -9690,6 +9943,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         },
         async claim() { const { data, error } = await sb.rpc('rocket_claim'); if (error) throw error; return data; },
         async rig(id) { const { error } = await sb.rpc('admin_rig_rocket', { round: id }); if (error) throw error; },
+      },
+      // Lotto: the database sells the tickets, draws the one winner and pays the pot.
+      lotto: {
+        shared: true,
+        async state() { const { data, error } = await sb.rpc('lotto_state'); if (error) throw error; return data; },
+        async buy(id) { const { data, error } = await sb.rpc('lotto_buy', { draw: id }); if (error) throw error; return data; },
+        async claim() { const { data, error } = await sb.rpc('lotto_claim'); if (error) throw error; return data; },
       },
       // Global roulette: the database takes the chips, draws the number and pays out.
       roulette: {
@@ -10146,6 +10406,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (!p || sending) return;
     if (!(amount >= 1)) { msg('Enter how many credits to send.'); return; }
     if (amount > state.credits) { msg(`You only have ${fmt(state.credits)} credits.`); return; }
+    // While lotto tickets are on sale the price depends on everyone's balance, so credits stay where they are.
+    const sale = ltSelling();
+    if (sale) { msg(`No sending while lotto tickets are on sale (until ${ltClock(sale.closeAt)}).`); return; }
     if (state.level < GIFT_LEVEL && !state.prestige) { msg(`Reach level ${GIFT_LEVEL} to send credits.`); return; }
     if (gameBusy()) { msg('Let the current round finish first.'); return; }
     sending = true;
@@ -10163,7 +10426,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       renderProfile();
     } catch (e) {
       msg({ gift_setup: 'Sending credits needs the “Sending credits” part of supabase-setup.sql.', gift_level: `Reach level ${GIFT_LEVEL} to send credits.`,
-        gift_credits: 'Not enough credits for that.', gift_player: 'That player cannot get credits right now.' }[e?.code] || 'That did not work. Check the connection and try again.');
+        gift_credits: 'Not enough credits for that.', gift_player: 'That player cannot get credits right now.', gift_lotto: 'No sending while lotto tickets are on sale.' }[e?.code] || 'That did not work. Check the connection and try again.');
     }
     sending = false;
     if ($('sendBtn')) $('sendBtn').disabled = false;
@@ -10598,7 +10861,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   }
   async function refreshOwn() {
     if (refreshing || !account) return;
-    if (busy || hrClaiming || hrPlacing || rlSubmitting || rlClaimingR || rkBusyBet || rkCashing || rkClaiming) { setTimeout(refreshOwn, 1000); return; }
+    if (busy || hrClaiming || hrPlacing || rlSubmitting || rlClaimingR || rkBusyBet || rkCashing || rkClaiming || ltBusy || ltClaiming) { setTimeout(refreshOwn, 1000); return; }
     refreshing = true;
     try {
       const doc = await backend.loadOwn(account.id);
@@ -10880,6 +11143,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (name === 'chat') renderAdminMsgs();
     if (name === 'aff') loadAdminAffiliates();
     if (name === 'tickets') loadAdminTickets();
+    if (name === 'lotto') { fillLottoForm(); renderAdminLotto(); ltFetchAt = 0; ltFetch(); }
     if (name === 'security') $('adminSecNote').hidden = backend.kind !== 'supabase';
   }
 
@@ -11075,6 +11339,605 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       fillSettingsForm();
     });
   });
+
+  // ---------- Lotto ----------
+  // Two draws a day (German time). Every player can buy one ticket per draw for a share of their credits;
+  // at draw time exactly one ticket wins the pot, and everyone online watches the same draw show.
+  const LT_SHOW = 48000, LT_T = { drum: 5000, pick: 27000, hold: 33000, reveal: 36000 };
+  const LT_KINDS = ['noon', 'eve'];
+  const LT_TITLE = { noon: 'Midday Lotto', eve: 'Evening Lotto' };
+  function lottoCfg(raw) {
+    const num = (k, def, lo, hi) => { const n = Number(raw?.[k]); return Number.isFinite(n) && raw?.[k] !== '' && raw?.[k] != null ? Math.min(hi, Math.max(lo, n)) : def; };
+    return {
+      on: raw?.lottoOn == null ? true : raw.lottoOn === true || raw.lottoOn === 'true',
+      noonHour: Math.floor(num('lottoNoonHour', 12, 0, 23)), eveHour: Math.floor(num('lottoEveHour', 18, 0, 23)),
+      noonPct: num('lottoNoonPct', 20, 1, 100), evePct: num('lottoEvePct', 50, 1, 100),
+      openHours: num('lottoOpenHours', 5, 0.25, 24), closeMin: num('lottoCloseMin', 5, 0, 120),
+      share: num('lottoShare', 100, 0, 500),
+      noonBonus: Math.floor(num('lottoNoonBonus', 0, 0, Number.MAX_SAFE_INTEGER)), eveBonus: Math.floor(num('lottoEveBonus', 0, 0, Number.MAX_SAFE_INTEGER)),
+      mode: raw?.lottoMode === 'equal' ? 'equal' : 'weighted',
+    };
+  }
+  // German time without a library: the browser knows the Europe/Berlin rules (summer and winter time).
+  const ltFmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Berlin', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' });
+  function berlinParts(ms) { const o = {}; for (const p of ltFmt.formatToParts(ms)) o[p.type] = p.value; return o; }
+  const berlinOffset = ms => { const o = berlinParts(ms); return Date.UTC(+o.year, o.month - 1, +o.day, +o.hour, +o.minute, +o.second) - Math.floor(ms / 1000) * 1000; };
+  const berlinDay = ms => { const o = berlinParts(ms); return `${o.year}-${o.month}-${o.day}`; };
+  const ltAddDay = (day, n) => { const [y, m, d] = day.split('-').map(Number); return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10); };
+  function berlinAt(day, hour) {
+    const [y, m, d] = day.split('-').map(Number), wall = Date.UTC(y, m - 1, d, hour);
+    return wall - berlinOffset(wall - berlinOffset(wall));
+  }
+  const ltClock = ms => { const o = berlinParts(ms); return `${o.hour}:${o.minute}`; };
+  function ltSlot(day, kind, cfg) {
+    const draw = berlinAt(day, cfg[kind + 'Hour']);
+    return { id: `${day}-${kind}`, kind, drawAt: draw, openAt: draw - cfg.openHours * 3600000, closeAt: draw - cfg.closeMin * 60000 };
+  }
+  const ltHash = str => { let h = 2166136261; for (const c of str) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
+  // Without the online database: tickets are kept with the shared settings, and the draw id picks the winner.
+  function localLotto(store) {
+    const cfg = () => lottoCfg(rawSettings);
+    const all = () => Array.isArray(rawSettings.lottoTickets) ? rawSettings.lottoTickets : [];
+    const claimKey = () => 'lucky-reels-lotto-' + (account?.id || '');
+    const claimedSet = () => { try { return new Set(JSON.parse(localStorage.getItem(claimKey()) || '[]')); } catch { return new Set(); } };
+    const slotOf = id => ltSlot(id.slice(0, 10), id.slice(11), cfg());
+    function result(id) {
+      const c = cfg(), list = all().filter(t => t.draw_id === id);
+      if (!list.length) return { tickets: 0, pot: 0 };
+      const tot = list.reduce((a, t) => a + t.cost, 0), rng = hrRng(ltHash(id), 4242);
+      let win = list[Math.floor(rng() * list.length)];
+      if (c.mode === 'weighted') { let x = rng() * tot; win = list.find(t => (x -= t.cost) < 0) || list[list.length - 1]; }
+      return { tickets: list.length, pot: Math.floor(tot * c.share / 100) + c[slotOf(id).kind + 'Bonus'], winner: win.player, winner_name: win.name, winner_cost: win.cost };
+    }
+    return {
+      shared: false,
+      async state() {
+        const c = cfg(), now = Date.now(), today = berlinDay(now);
+        const slots = LT_KINDS.map(k => {
+          let s = ltSlot(today, k, c);
+          if (s.drawAt + 180000 < now) s = ltSlot(ltAddDay(today, 1), k, c);
+          const done = now >= s.drawAt, r = done ? result(s.id) : {};
+          return { id: s.id, kind: k, draw_at: s.drawAt, open_at: s.openAt, close_at: s.closeAt, pct: c[k + 'Pct'], bonus: c[k + 'Bonus'], share: c.share,
+            settled: done, pot: done ? r.pot : null, winner: r.winner ?? null, winner_name: r.winner_name ?? null, winner_cost: r.winner_cost ?? null,
+            people: all().filter(t => t.draw_id === s.id).sort((a, b) => b.cost - a.cost) };
+        });
+        const ids = [...new Set(all().map(t => t.draw_id))].filter(id => slotOf(id).drawAt <= now).sort().reverse().slice(0, 6);
+        const recent = ids.map(id => ({ id, kind: slotOf(id).kind, draw_at: slotOf(id).drawAt, ...result(id) }));
+        return { now, cfg: c, slots, recent };
+      },
+      async buy(id, credits) {
+        const c = cfg(), s = slotOf(id), now = Date.now();
+        if (!c.on) throw new Error('lotto is off');
+        if (now < s.openAt || now >= s.closeAt) throw new Error('sales closed');
+        if (all().some(t => t.draw_id === id && t.player === account.id)) throw new Error('already have a ticket');
+        const cost = Math.floor(credits * c[s.kind + 'Pct'] / 100);
+        if (cost < 1) throw new Error('not enough credits');
+        // tickets of draws older than three days are dropped so the settings stay small
+        const keep = all().filter(t => now - slotOf(t.draw_id).drawAt < 3 * 86400000);
+        const t = { draw_id: id, player: account.id, name: account.name, cost };
+        await store.saveSettings({ lottoTickets: [...keep, t] });
+        rawSettings.lottoTickets = [...keep, t];
+        return { cost, credits: null, rev: null };
+      },
+      async claim() {
+        const done = claimedSet(), out = [], now = Date.now();
+        for (const t of all()) {
+          if (t.player !== account.id || done.has(t.draw_id) || slotOf(t.draw_id).drawAt > now) continue;
+          const r = result(t.draw_id);
+          done.add(t.draw_id);
+          out.push({ draw_id: t.draw_id, cost: t.cost, payout: r.winner === account.id ? r.pot : 0 });
+        }
+        try { localStorage.setItem(claimKey(), JSON.stringify([...done].slice(-40))); } catch {}
+        return { tickets: out, credits: null, rev: null };
+      },
+      selling() {
+        const c = cfg(), now = Date.now(), today = berlinDay(now);
+        if (!c.on) return null;
+        for (const d of [ltAddDay(today, -1), today, ltAddDay(today, 1)]) for (const k of LT_KINDS) {
+          const s = ltSlot(d, k, c);
+          if (now >= s.openAt && now < s.closeAt) return s;
+        }
+        return null;
+      },
+    };
+  }
+
+  let lt = null, ltFetching = false, ltFetchAt = 0, ltMissing = false, ltBusy = false, ltClaiming = false, ltClaimSoon = true;
+  const ltSaid = new Set();
+  function ltNorm(r) {
+    const n = v => v == null ? null : Number(v);
+    const ms = v => typeof v === 'number' ? v : Date.parse(v);
+    return {
+      cfg: lottoCfg({ lottoOn: r.cfg?.on, lottoNoonHour: r.cfg?.noonHour, lottoEveHour: r.cfg?.eveHour, lottoNoonPct: r.cfg?.noonPct, lottoEvePct: r.cfg?.evePct, lottoOpenHours: r.cfg?.openHours,
+        lottoCloseMin: r.cfg?.closeMin, lottoShare: r.cfg?.share, lottoNoonBonus: r.cfg?.noonBonus, lottoEveBonus: r.cfg?.eveBonus, lottoMode: r.cfg?.mode }),
+      slots: (r.slots || []).map(s => ({ id: s.id, kind: s.kind, drawAt: ms(s.draw_at), openAt: ms(s.open_at), closeAt: ms(s.close_at), pct: Number(s.pct), bonus: Number(s.bonus) || 0, share: Number(s.share),
+        settled: !!s.settled, pot: n(s.pot), winner: s.winner || null, winnerName: s.winner_name || null, winnerCost: n(s.winner_cost),
+        people: (s.people || []).map(p => ({ player: p.player, name: String(p.name || '?'), cost: Number(p.cost) || 0 })) })),
+      recent: (r.recent || []).map(d => ({ id: d.id, kind: d.kind, drawAt: ms(d.draw_at), pot: n(d.pot), tickets: n(d.tickets), winner: d.winner, winnerName: d.winner_name, winnerCost: n(d.winner_cost) })),
+    };
+  }
+  async function ltFetch() {
+    if (!backend?.lotto || ltFetching || !account) return;
+    ltFetching = true; ltFetchAt = Date.now();
+    try {
+      const t0 = Date.now();
+      const r = await backend.lotto.state();
+      if (backend.lotto.shared && Number.isFinite(Number(r?.now))) { const off = Number(r.now) - (t0 + Date.now()) / 2; hrOffset = hrOffsetSet ? hrOffset * 0.7 + off * 0.3 : off; hrOffsetSet = true; }
+      lt = ltNorm(r);
+      ltMissing = false;
+    } catch (e) {
+      if (e?.code === 'PGRST202' || /could not find the function/i.test(e?.message || '')) ltMissing = true;
+    }
+    ltFetching = false;
+    renderLotto();
+    if (adminUnlocked && !$('adminModal').hidden && !document.querySelector('[data-pane="lotto"]').hidden) renderAdminLotto();
+  }
+  const ltPot = s => s.settled && s.pot != null ? s.pot : Math.floor(s.people.reduce((a, p) => a + p.cost, 0) * s.share / 100) + s.bonus;
+  const ltMineOf = s => s.people.find(p => p.player === account?.id);
+  const ltChance = (s, p) => { const tot = s.people.reduce((a, x) => a + x.cost, 0); return !p || !tot ? 0 : lt?.cfg.mode === 'equal' ? 1 / s.people.length : p.cost / tot; };
+  const ltPct = x => x >= 0.995 ? '100%' : x < 0.01 ? '<1%' : Math.round(x * 100) + '%';
+  function ltLeft(ms) {
+    const s = Math.max(0, Math.ceil(ms / 1000)), h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, x = s % 60;
+    return h ? `${h}:${String(m).padStart(2, '0')}:${String(x).padStart(2, '0')}` : `${m}:${String(x).padStart(2, '0')}`;
+  }
+  function ltPhase(s, now = hrNow()) {
+    if (!lt?.cfg.on) return 'off';
+    if (now < s.openAt) return 'soon';
+    if (now < s.closeAt) return 'sale';
+    if (now < s.drawAt) return 'closed';
+    if (now < s.drawAt + LT_SHOW) return 'live';
+    return 'done';
+  }
+  // Is a ticket sale running right now? Then nobody can send credits.
+  function ltSelling() {
+    const now = hrNow();
+    if (lt) return lt.cfg.on ? lt.slots.find(s => now >= s.openAt && now < s.closeAt) || null : null;
+    return backend?.lotto?.selling?.() || null;
+  }
+  const ltSet = (el, prop, v) => { if (el && el[prop] !== v) el[prop] = v; };
+  function renderLotto() {
+    const hero = $('lottoHero');
+    if (!hero || !account) return;
+    hero.hidden = !backend?.lotto || (!lt && !ltMissing);
+    if (hero.hidden) return;
+    $('ltOff').hidden = !ltMissing && lt?.cfg.on !== false;
+    $('ltOff').textContent = ltMissing ? 'The lotto needs the “Lotto” part of supabase-setup.sql.' : 'The lotto is paused right now.';
+    hero.querySelector('.lt-pair').hidden = ltMissing;
+    if (!lt) return;
+    ltSet($('lobbyCredits'), 'textContent', fmt(state.credits));
+    $('ltTimeNoon').textContent = `☀ Midday ${String(lt.cfg.noonHour).padStart(2, '0')}:00`;
+    $('ltTimeEve').textContent = `☾ Evening ${String(lt.cfg.eveHour).padStart(2, '0')}:00`;
+    const now = hrNow(), today = berlinDay(now);
+    for (const s of lt.slots) {
+      const card = hero.querySelector(`[data-lt="${s.kind}"]`);
+      if (!card) continue;
+      const f = k => card.querySelector(`[data-f="${k}"]`);
+      const ph = ltPhase(s, now), mine = ltMineOf(s), cost = Math.floor(state.credits * s.pct / 100);
+      const day = berlinDay(s.drawAt);
+      ltSet(f('when'), 'innerHTML', `<b>${ltClock(s.drawAt)}</b> ${day === today ? 'today' : day === ltAddDay(today, 1) ? 'tomorrow' : day} · German time`);
+      ltSet(f('pot'), 'textContent', fmt(ltPot(s)));
+      const st = f('status');
+      st.dataset.s = ph;
+      ltSet(st, 'textContent', ph === 'off' ? 'Paused' : ph === 'soon' ? `Tickets from ${ltClock(s.openAt)}` : ph === 'sale' ? `On sale · closes in ${ltLeft(s.closeAt - now)}`
+        : ph === 'closed' ? `Sales closed · draw in ${ltLeft(s.drawAt - now)}` : ph === 'live' ? 'The draw is on!' : 'Drawn');
+      const n = s.people.length;
+      const ppl = s.people.slice(0, 5).map(p => avatarHtml(p.player, p.name)).join('') + `<span>${n === 1 ? '1 ticket' : `${fmt(n)} tickets`}</span>`;
+      if (f('people').dataset.html !== ppl) { f('people').dataset.html = ppl; f('people').innerHTML = ppl; }
+      ltSet(f('price'), 'innerHTML', mine ? `Your chance: <b>${ltPct(ltChance(s, mine))}</b>` : `Ticket: <b>${s.pct}%</b> of your credits${ph === 'sale' || ph === 'soon' ? ` · now <b>${fmt(cost)}</b>` : ''}`);
+      const buy = f('buy');
+      buy.hidden = !!mine && ph !== 'live';
+      if (!buy.dataset.armed) {
+        ltSet(buy, 'textContent', ph === 'live' ? 'Watch the draw' : ph === 'sale' ? `Buy ticket · ${fmt(cost)}` : ph === 'soon' ? 'Not on sale yet' : ph === 'closed' ? 'Sales closed' : ph === 'done' ? 'Next draw soon' : 'Paused');
+        buy.disabled = ph === 'live' ? false : ph !== 'sale' || ltBusy || cost < 1;
+      }
+      f('mine').hidden = !mine;
+      if (mine) ltSet(f('mine'), 'textContent', `🎟 Your ticket · ${fmt(mine.cost)} credits`);
+      const last = s.settled && s.winnerName ? s : lt.recent.find(r => r.kind === s.kind && r.winnerName);
+      const lastHtml = last ? `${s.settled && s.winnerName ? 'Winner' : 'Last winner'}: <span class="lt-name">${esc(last.winnerName)}</span> · +${fmt(last.pot || 0)}` : 'No winner yet. Be the first!';
+      if (f('last').dataset.html !== lastHtml) { f('last').dataset.html = lastHtml; f('last').innerHTML = lastHtml; }
+    }
+  }
+  async function ltBuy(kind, btn) {
+    const s = lt?.slots.find(x => x.kind === kind);
+    if (!s || ltBusy || !account) return;
+    const ph = ltPhase(s);
+    if (ph === 'live') { ltShowOpen(s); return; }
+    if (ph !== 'sale' || ltMineOf(s)) return;
+    const cost = Math.floor(state.credits * s.pct / 100);
+    if (cost < 1) { toast('Lotto', 'You need some credits for a ticket.'); return; }
+    if (gameBusy()) { toast('One moment', 'Let the current round finish first.'); return; }
+    if (!confirmed(btn, `Pay ${fmt(cost)}?`)) return;
+    ltBusy = true; renderLotto();
+    try {
+      await flush();
+      quietCreditsUntil = Date.now() + 8000;
+      const res = await backend.lotto.buy(s.id, state.credits);
+      const paid = Number(res?.cost) || cost;
+      serverCredits(res, -paid);
+      s.people.push({ player: account.id, name: account.name, cost: paid });
+      s.people.sort((a, b) => b.cost - a.cost);
+      gainXp(5);
+      lastSaved = '';
+      persist(); render();
+      sound.chime(); audio.kaching();
+      const b = btn.getBoundingClientRect();
+      fxTop.coinBurst(b.left + b.width / 2, b.top, 30, 9);
+      toast(LT_TITLE[kind], `Your ticket for ${fmt(paid)} credits is in the drum. Draw at ${ltClock(s.drawAt)}!`);
+      while (pendingLevels.length) levelUp(pendingLevels.shift());
+      ltFetch();
+    } catch (e) {
+      const m = e?.message || '';
+      toast('Lotto', /already/.test(m) ? 'You already have a ticket for this draw.' : /closed/.test(m) ? 'Ticket sales for this draw are closed.' : /credits/.test(m) ? 'You need some credits for a ticket.'
+        : /off/.test(m) ? 'The lotto is paused right now.' : e?.code === 'PGRST202' || /could not find the function/i.test(m) ? 'The lotto needs the “Lotto” part of supabase-setup.sql.' : 'That did not work. Check the connection and try again.');
+    }
+    ltBusy = false;
+    renderLotto();
+  }
+  document.querySelectorAll('.lt-buy').forEach(b => b.addEventListener('click', () => ltBuy(b.dataset.kind, b)));
+  async function ltClaim() {
+    if (!backend?.lotto || !account || ltClaiming) return;
+    ltClaiming = true;
+    try {
+      await flush();
+      const res = await backend.lotto.claim();
+      const rows = (res?.tickets || []).map(t => ({ id: t.draw_id, cost: Number(t.cost) || 0, payout: Number(t.payout) || 0 }));
+      const won = rows.reduce((a, t) => a + t.payout, 0);
+      serverCredits(res, won);
+      for (const t of rows) if (t.payout > 0) {
+        const kind = t.id.endsWith('eve') ? 'eve' : 'noon';
+        toast(`${LT_TITLE[kind]}: you won!`, `+${fmt(t.payout)} credits are on your balance.`);
+        const el = document.createElement('button');
+        el.type = 'button';
+        el.className = 'chat-pop gift-pop';
+        el.innerHTML = `<span class="gift-ico" aria-hidden="true">🎟</span><span class="body"><span class="head"><b>${i18n(LT_TITLE[kind])}</b></span><span class="note">${i18n(`You won the pot: +${fmt(t.payout)} credits!`)}</span></span>`;
+        showPop(el, 9000);
+      }
+      if (rows.length) { lastSaved = ''; persist(); render(); }
+    } catch {}
+    ltClaiming = false;
+  }
+  function ltPop(text) {
+    const el = document.createElement('button');
+    el.type = 'button';
+    el.className = 'chat-pop gift-pop';
+    el.innerHTML = `<span class="gift-ico" aria-hidden="true">🎟</span><span class="body"><span class="head"><b>Lotto</b></span><span class="note">${esc(i18n(text))}</span></span>`;
+    el.addEventListener('click', () => { if (!account) return; render(); showLobby(); });
+    showPop(el, 8000);
+  }
+  function ltTick() {
+    if (!account || !backend?.lotto) return;
+    const now = hrNow();
+    const near = lt?.slots.some(s => now > s.drawAt - 120000 && now < s.drawAt + LT_SHOW + 8000);
+    const waiting = ltShow.open && !ltShow.preview && !ltShowSlot()?.winnerName;
+    if (Date.now() - ltFetchAt > (waiting ? 1500 : near ? 6000 : 25000)) ltFetch();
+    for (const s of lt?.slots || []) {
+      const ph = ltPhase(s, now), mine = ltMineOf(s);
+      // the show starts by itself at draw time, for everyone who is online
+      if (ph === 'live' && s.people.length && !ltShow.open && !ltShow.closed.has(s.id)) {
+        if (gameBusy() || !$('prestigeModal').hidden) { if (!ltSaid.has(s.id + 'w')) { ltSaid.add(s.id + 'w'); ltPop(`The ${s.kind === 'eve' ? 'evening' : 'midday'} draw is on! Open the lobby to watch.`); } }
+        else ltShowOpen(s);
+      }
+      if (ph === 'closed' && s.people.length && s.drawAt - now < 60000 && !ltSaid.has(s.id + 'm')) { ltSaid.add(s.id + 'm'); ltPop(`The ${s.kind === 'eve' ? 'evening' : 'midday'} draw starts in one minute!`); }
+      if (ph === 'sale' && !mine && s.closeAt - now < 600000 && !ltSaid.has(s.id + 'l')) { ltSaid.add(s.id + 'l'); ltPop(`Last ten minutes to buy a ticket for the ${s.kind === 'eve' ? 'evening' : 'midday'} lotto!`); }
+      // collect a finished draw once its show is over
+      if (mine && ph === 'done' && !ltSaid.has(s.id + 'c')) { ltSaid.add(s.id + 'c'); ltClaimSoon = true; }
+    }
+    if (ltClaimSoon && lt && !lt.slots.some(s => ltPhase(s, now) === 'live' && ltMineOf(s))) { ltClaimSoon = false; ltClaim(); }
+    if (!$('lobby').hidden) renderLotto();
+  }
+  setInterval(ltTick, 500);
+
+  // ----- The draw show -----
+  const ltShow = { open: false, id: null, fake: null, preview: false, closed: new Set(), delay: 0, last: 0, conf: [], fired: new Set(), balls: null, ballsFor: '' };
+  const ltCv = $('ltCv'), ltCx = ltCv.getContext('2d');
+  let ltW = 0, ltH = 0;
+  function ltResize() {
+    const d = Math.min(2, window.devicePixelRatio || 1);
+    ltW = window.innerWidth; ltH = window.innerHeight;
+    ltCv.width = Math.round(ltW * d); ltCv.height = Math.round(ltH * d);
+    ltCx.setTransform(d, 0, 0, d, 0, 0);
+  }
+  window.addEventListener('resize', () => { if (ltShow.open) ltResize(); });
+  const ltShowSlot = () => ltShow.preview ? ltShow.fake : lt?.slots.find(s => s.id === ltShow.id) || ltShow.fake;
+  function ltShowOpen(s, preview = false) {
+    ltShow.open = true; ltShow.preview = preview; ltShow.id = s.id; ltShow.fake = s;
+    ltShow.delay = 0; ltShow.last = 0; ltShow.conf = []; ltShow.fired = new Set(); ltShow.balls = null;
+    // someone who opens the page late joins the show where everyone else is
+    const t = hrNow() - s.drawAt;
+    for (const k of ['intro', 'drum', 'pick', 'hold', 'reveal']) if (t > ({ intro: 0, ...LT_T })[k] + 1500) ltShow.fired.add(k);
+    $('ltShow').dataset.kind = s.kind;
+    $('ltShowKind').textContent = LT_TITLE[s.kind];
+    $('ltWin').hidden = true;
+    $('ltShowMsg').textContent = '';
+    $('ltShow').hidden = false;
+    ltResize();
+    requestAnimationFrame(ltFrame);
+  }
+  function ltShowClose() {
+    if (!ltShow.open) return;
+    if (!ltShow.preview) ltShow.closed.add(ltShow.id);
+    ltShow.open = false;
+    $('ltShow').hidden = true;
+    loopTo('fx', '', null);
+    if (!ltShow.preview) { ltClaimSoon = true; ltFetch(); }
+  }
+  $('ltShowClose').addEventListener('click', ltShowClose);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && ltShow.open) ltShowClose(); });
+  // How fast the drum turns (turns per second) and how far it has turned.
+  function ltSpeed(t) {
+    if (t < 3000) return 0.04;
+    if (t < 8000) return 0.04 + (t - 3000) / 5000 * 1.06;
+    if (t < 23000) return 1.1 + Math.sin(t / 1300) * 0.12;
+    if (t < LT_T.pick) return Math.max(0.12, 1.1 - (t - 23000) / 4000);
+    return Math.max(0, 0.12 - (t - LT_T.pick) / 3000 * 0.12);
+  }
+  function ltTurn(t) { let a = 0; for (let x = 0; x < t; x += 40) a += ltSpeed(x) * 0.04; return a * Math.PI * 2; }
+  function ltMakeBalls(s) {
+    const list = s.people.slice(0, 28);
+    if (s.winner && !list.some(p => p.player === s.winner)) { const w = s.people.find(p => p.player === s.winner); if (w) list[list.length - 1] = w; }
+    const max = Math.max(1, ...list.map(p => p.cost)), rng = hrRng(ltHash(s.id), 77);
+    const noonCols = ['#e0453a', '#f2a516', '#2f9e6a', '#3a7bd5', '#9b4dca', '#ff7a2e', '#13a3b5', '#d6336c'];
+    // with only a few tickets the drum gets extra blank balls, so it never looks empty
+    const balls = list.map((p, i) => ({ p, name: p.name.length > 9 ? p.name.slice(0, 8) + '…' : p.name, size: 0.75 + 0.55 * Math.sqrt(p.cost / max), col: noonCols[i % noonCols.length] }));
+    while (balls.length < 12) balls.push({ p: null, name: '', size: 0.6 + rng() * 0.2, col: noonCols[balls.length % noonCols.length] });
+    balls.forEach((b, i) => Object.assign(b, { ph: rng() * Math.PI * 2, rad: 0.15 + rng() * 0.6, k: 0.6 + rng() * 0.8, wob: 500 + rng() * 900, spin: rng() * 6, row: i }));
+    return balls;
+  }
+  const ltEase = x => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+  function ltBallPos(b, i, n, t, turn, cx, cy, R) {
+    const sp = Math.min(1, ltSpeed(t) / 1.1), r = R * 0.13 * b.size;
+    const ang = b.ph + turn * b.k + Math.sin(t / b.wob + b.ph) * 0.8;
+    const rr = (R - r) * Math.min(0.95, b.rad + 0.25 * Math.sin(t / (b.wob * 0.7) + b.spin));
+    const ox = cx + Math.cos(ang) * rr, oy = cy + Math.sin(ang) * rr;
+    // at rest the balls lie in a heap at the bottom of the drum
+    const per = 5, row = Math.floor(i / per), col = i % per;
+    const rx = cx + (col - (per - 1) / 2) * R * 0.27 + (row % 2) * R * 0.12, ry = cy + R * 0.68 - row * R * 0.24;
+    const e = ltEase(sp);
+    return { x: rx + (ox - rx) * e, y: ry + (oy - ry) * e, r };
+  }
+  function ltBall(c, x, y, r, b, eve, glow = 0) {
+    c.save();
+    if (glow) { c.shadowColor = eve ? '#f6df93' : '#fff6c4'; c.shadowBlur = 30 * glow; }
+    const g = c.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.1, x, y, r);
+    if (eve) { g.addColorStop(0, '#fffdf4'); g.addColorStop(0.55, '#efe4c6'); g.addColorStop(1, '#a8915a'); }
+    else { g.addColorStop(0, '#ffffff'); g.addColorStop(0.25, b.col); g.addColorStop(1, '#00000088'); }
+    c.fillStyle = eve ? g : b.col;
+    c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill();
+    if (!eve) { c.fillStyle = g; c.globalAlpha = 0.85; c.fill(); c.globalAlpha = 1; }
+    c.shadowBlur = 0;
+    if (eve) { c.strokeStyle = '#d4af37'; c.lineWidth = Math.max(1, r * 0.08); c.stroke(); }
+    if (b.name && r > 9) {
+      c.fillStyle = eve ? '#12102b' : '#fffdf3';
+      c.beginPath(); c.ellipse(x, y, r * 0.86, r * 0.36, 0, 0, Math.PI * 2); c.fill();
+      c.fillStyle = eve ? '#e2c36a' : '#1d1714';
+      c.font = `${eve ? 'italic 700' : '700'} ${Math.max(8, r * 0.36)}px ${eve ? "'Playfair Display', Georgia, serif" : 'Figtree, sans-serif'}`;
+      c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.fillText(b.name, x, y + 1, r * 1.6);
+    }
+    c.restore();
+  }
+  function ltBackdrop(c, t, eve, W, H) {
+    if (!eve) {
+      const g = c.createLinearGradient(0, 0, 0, H);
+      g.addColorStop(0, '#3fa9f5'); g.addColorStop(0.55, '#a9ddff'); g.addColorStop(1, '#fff1c1');
+      c.fillStyle = g; c.fillRect(0, 0, W, H);
+      // sun rays from above the drum
+      c.save(); c.translate(W / 2, H * 0.08); c.rotate(t / 9000);
+      c.fillStyle = '#fff7c955';
+      for (let i = 0; i < 18; i++) { c.rotate(Math.PI * 2 / 18); c.beginPath(); c.moveTo(0, 0); c.lineTo(Math.max(W, H) * 1.2, -60); c.lineTo(Math.max(W, H) * 1.2, 60); c.closePath(); c.fill(); }
+      c.restore();
+      const sg = c.createRadialGradient(W / 2, H * 0.08, 10, W / 2, H * 0.08, 120);
+      sg.addColorStop(0, '#fffbe6'); sg.addColorStop(0.4, '#ffe27a'); sg.addColorStop(1, '#ffe27a00');
+      c.fillStyle = sg; c.beginPath(); c.arc(W / 2, H * 0.08, 120, 0, Math.PI * 2); c.fill();
+      // clouds drifting by
+      c.fillStyle = '#ffffffd0';
+      for (let i = 0; i < 5; i++) {
+        const x = ((i * 0.27 + t / 60000 * (1 + i * 0.3)) % 1.3 - 0.15) * W, y = H * (0.2 + (i % 3) * 0.16), s = 0.7 + (i % 2) * 0.5;
+        c.beginPath(); c.arc(x, y, 26 * s, 0, Math.PI * 2); c.arc(x + 30 * s, y - 12 * s, 32 * s, 0, Math.PI * 2); c.arc(x + 62 * s, y, 24 * s, 0, Math.PI * 2); c.fill();
+      }
+      // a sunny stage floor
+      c.fillStyle = '#ffcf4a'; c.fillRect(0, H * 0.86, W, H * 0.14);
+      c.fillStyle = '#f2a516'; for (let x = 0; x < W; x += 40) c.fillRect(x, H * 0.86, 20, H * 0.14);
+    } else {
+      const g = c.createRadialGradient(W / 2, H * 0.45, 20, W / 2, H * 0.45, Math.max(W, H) * 0.75);
+      g.addColorStop(0, '#2a2360'); g.addColorStop(0.5, '#120f2e'); g.addColorStop(1, '#05040f');
+      c.fillStyle = g; c.fillRect(0, 0, W, H);
+      // stars
+      const rng = hrRng(7, 7);
+      for (let i = 0; i < 90; i++) { const x = rng() * W, y = rng() * H * 0.8, a = 0.3 + 0.7 * Math.abs(Math.sin(t / 900 + i)); c.fillStyle = `rgba(255,248,225,${a * 0.8})`; c.fillRect(x, y, 1.6, 1.6); }
+      // an art-deco sunburst in gold behind the drum
+      c.save(); c.translate(W / 2, H * 1.02);
+      c.strokeStyle = '#d4af3724'; c.lineWidth = 1.2;
+      for (let i = 0; i <= 26; i++) { const a = Math.PI + (i / 26) * Math.PI; c.beginPath(); c.moveTo(0, 0); c.lineTo(Math.cos(a) * H * 1.2, Math.sin(a) * H * 1.2); c.stroke(); }
+      for (let k = 1; k <= 3; k++) { c.beginPath(); c.arc(0, 0, H * (0.3 + k * 0.17), Math.PI, 0); c.stroke(); }
+      c.restore();
+      // two spotlights from the floor corners, sweeping over the drum
+      for (const side of [-1, 1]) {
+        const ox = W / 2 + side * W * 0.46, oy = H * 0.9;
+        const tx = W / 2 + Math.sin(t / 1900 + (side > 0 ? 2.1 : 0)) * W * 0.22, ty = H * 0.35;
+        const a = Math.atan2(ty - oy, tx - ox), len = Math.hypot(W, H);
+        c.save(); c.translate(ox, oy); c.rotate(a);
+        const lg = c.createLinearGradient(0, 0, len, 0);
+        lg.addColorStop(0, '#fff3c83a'); lg.addColorStop(0.6, '#fff3c80f'); lg.addColorStop(1, '#fff3c800');
+        c.fillStyle = lg; c.beginPath(); c.moveTo(0, -8); c.lineTo(len, -len * 0.16); c.lineTo(len, len * 0.16); c.lineTo(0, 8); c.fill();
+        c.restore();
+      }
+      // gold double frame
+      c.strokeStyle = '#d4af37aa'; c.lineWidth = 1.5; c.strokeRect(12, 12, W - 24, H - 24);
+      c.strokeStyle = '#d4af3755'; c.strokeRect(18, 18, W - 36, H - 36);
+      c.fillStyle = '#0b0a20'; c.fillRect(0, H * 0.88, W, H * 0.12);
+      c.fillStyle = '#d4af3766'; c.fillRect(0, H * 0.88, W, 1.5);
+    }
+  }
+  function ltConfetti(eve, x, y, n) {
+    const cols = eve ? ['#f6df93', '#d4af37', '#fff4cf', '#b38a1f', '#ffffff'] : ['#e0453a', '#f2a516', '#2f9e6a', '#3a7bd5', '#9b4dca', '#ffffff'];
+    for (let i = 0; i < n; i++) {
+      const a = Math.random() * Math.PI * 2, v = 3 + Math.random() * 9;
+      ltShow.conf.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 4, r: Math.random() * 6, vr: (Math.random() - 0.5) * 0.4, s: 4 + Math.random() * 6, col: cols[i % cols.length], life: 1 });
+    }
+  }
+  function ltFire(key, fn) { if (!ltShow.fired.has(key)) { ltShow.fired.add(key); fn(); } }
+  function ltFrame(ts) {
+    if (!ltShow.open) return;
+    const s = ltShowSlot();
+    if (!s) { ltShowClose(); return; }
+    const raw = hrNow() - s.drawAt;
+    // the winner comes from the database a moment after the draw time; until then the drum keeps turning
+    if (!s.winnerName && raw - ltShow.delay > LT_T.pick - 300) ltShow.delay = raw - (LT_T.pick - 300);
+    const t = raw - ltShow.delay;
+    if (t >= LT_SHOW || t < -2000) { ltShowClose(); return; }
+    const c = ltCx, W = ltW, H = ltH, eve = s.kind === 'eve';
+    const dt = ltShow.last ? Math.min(50, ts - ltShow.last) : 16; ltShow.last = ts;
+    if (!ltShow.balls || ltShow.ballsFor !== s.id + ':' + s.people.length + ':' + (s.winner || '')) { ltShow.balls = ltMakeBalls(s); ltShow.ballsFor = s.id + ':' + s.people.length + ':' + (s.winner || ''); }
+    const balls = ltShow.balls, n = balls.length;
+    const R = Math.min(W * 0.32, H * 0.2), cx = W / 2, cy = H * 0.6;
+    const holdY = Math.max(Math.min(170, H * 0.24), cy - R - Math.max(80, H * 0.15));
+    const turn = ltTurn(Math.max(0, t));
+    const pot = ltPot(s);
+
+    ltBackdrop(c, t, eve, W, H);
+    // the stand
+    c.fillStyle = eve ? '#d4af37' : '#ffffff'; c.strokeStyle = eve ? '#8a6a16' : '#e8950f'; c.lineWidth = 3;
+    c.beginPath(); c.moveTo(cx - R * 0.5, cy + R + R * 0.45); c.lineTo(cx - R * 0.12, cy + R * 0.8); c.lineTo(cx + R * 0.12, cy + R * 0.8); c.lineTo(cx + R * 0.5, cy + R + R * 0.45); c.closePath(); c.fill(); c.stroke();
+    c.fillRect(cx - R * 0.7, cy + R + R * 0.42, R * 1.4, 10);
+    // the glass drum
+    const gg = c.createRadialGradient(cx - R * 0.3, cy - R * 0.35, R * 0.1, cx, cy, R);
+    gg.addColorStop(0, eve ? '#ffffff22' : '#ffffff99'); gg.addColorStop(0.7, eve ? '#ffffff0c' : '#ffffff40'); gg.addColorStop(1, eve ? '#d4af3733' : '#7cc4ff80');
+    c.fillStyle = gg; c.beginPath(); c.arc(cx, cy, R, 0, Math.PI * 2); c.fill();
+    // the balls inside, clipped to the glass (the winner's leaves the drum when it is picked)
+    const win = s.winner ? balls.findIndex(b => b.p?.player === s.winner) : -1;
+    c.save(); c.translate(cx, cy); c.rotate(turn);
+    c.lineWidth = eve ? 1.2 : 2; c.strokeStyle = eve ? '#d4af3788' : '#ffffffaa';
+    for (let i = 0; i < 4; i++) { c.rotate(Math.PI / 4); c.beginPath(); c.moveTo(-R, 0); c.lineTo(R, 0); c.stroke(); }
+    c.restore();
+    c.fillStyle = eve ? '#d4af37' : '#ff7a2e'; c.beginPath(); c.arc(cx, cy, R * 0.07, 0, Math.PI * 2); c.fill();
+    c.save(); c.beginPath(); c.arc(cx, cy, R - 3, 0, Math.PI * 2); c.clip();
+    const pos = balls.map((b, i) => ltBallPos(b, i, n, Math.max(0, t), turn, cx, cy, R));
+    balls.forEach((b, i) => { if (!(i === win && t >= LT_T.pick)) ltBall(c, pos[i].x, pos[i].y, pos[i].r, b, eve); });
+    c.restore();
+    // the rim, with rivets that turn with the drum
+    c.strokeStyle = eve ? '#d4af37' : '#ffffff'; c.lineWidth = eve ? 3 : 5;
+    c.beginPath(); c.arc(cx, cy, R, 0, Math.PI * 2); c.stroke();
+    if (eve) { c.strokeStyle = '#d4af3766'; c.lineWidth = 1; c.beginPath(); c.arc(cx, cy, R + 6, 0, Math.PI * 2); c.stroke(); }
+    c.fillStyle = eve ? '#f6df93' : '#ff7a2e';
+    for (let i = 0; i < 12; i++) { const a = turn + i * Math.PI / 6; c.beginPath(); c.arc(cx + Math.cos(a) * R, cy + Math.sin(a) * R, eve ? 2.5 : 3.5, 0, Math.PI * 2); c.fill(); }
+    // a shine on the glass
+    c.strokeStyle = '#ffffff66'; c.lineWidth = R * 0.05; c.lineCap = 'round';
+    c.beginPath(); c.arc(cx, cy, R * 0.86, Math.PI * 1.1, Math.PI * 1.38); c.stroke();
+    // the tube up to the holder
+    c.fillStyle = eve ? '#ffffff10' : '#ffffff55'; c.strokeStyle = eve ? '#d4af37aa' : '#ffffff';
+    const tw = R * 0.2;
+    c.lineWidth = 2; c.beginPath(); c.rect(cx - tw, holdY, tw * 2, cy - R - holdY + 4); c.fill(); c.stroke();
+    c.beginPath(); c.arc(cx, holdY, tw * 1.5, Math.PI, 0); c.lineTo(cx + tw * 1.5, holdY + 6); c.lineTo(cx - tw * 1.5, holdY + 6); c.closePath(); c.fill(); c.stroke();
+
+    // the winning ball rises
+    if (win >= 0 && t >= LT_T.pick) {
+      const b = balls[win], start = ltBallPos(b, win, n, LT_T.pick, ltTurn(LT_T.pick), cx, cy, R);
+      const p = Math.min(1, (t - LT_T.pick) / (LT_T.hold - LT_T.pick));
+      let x, y;
+      if (p < 0.45) { const q = ltEase(p / 0.45); x = start.x + (cx - start.x) * q; y = start.y + (cy - R + start.r - start.y) * q; }
+      else { const q = ltEase((p - 0.45) / 0.55); x = cx; y = (cy - R + start.r) + (holdY - (cy - R + start.r)) * q; }
+      const grow = t < LT_T.hold ? 1 : 1 + Math.min(1, (t - LT_T.hold) / 1500) * 0.9;
+      const shake = t >= LT_T.hold && t < LT_T.reveal ? Math.sin(t / 25) * Math.min(4, (t - LT_T.hold) / 600) : 0;
+      if (t < LT_T.reveal) ltBall(c, x + shake, y, start.r * grow, { ...b, name: t >= LT_T.hold ? '?' : '' }, eve, t >= LT_T.hold ? 1 : 0.4);
+    }
+
+    // timeline: sounds, voice and words
+    const msg = $('ltShowMsg'), say = (txt, o) => voice.say(txt, o);
+    ltSet($('ltShowPot'), 'textContent', fmt(t < 4000 ? Math.floor(pot * ltEase(Math.max(0, t) / 4000)) : pot));
+    if (t < LT_T.drum) {
+      ltFire('intro', () => { audio.bell(eve ? 392 : 523, 0.1); audio.bell(eve ? 587 : 784, 0.08, 0.35); audio.whoosh(); say(eve ? 'Good evening and welcome to the evening lotto draw!' : 'Welcome to the midday lotto draw!', { urgent: true }); });
+      ltSet(msg, 'textContent', s.people.length === 1 ? 'One ticket in the drum · it takes it all' : `${fmt(s.people.length)} tickets in the drum · one of them takes it all`);
+    } else if (t < LT_T.pick) {
+      ltFire('drum', () => { audio.whoosh(); say(s.people.length === 1 ? 'One ticket is in the drum. Good luck!' : `${s.people.length} tickets are in the drum. Good luck!`); });
+      ltSet(msg, 'textContent', !s.winnerName && t > LT_T.pick - 1500 ? 'The drum is turning… the result is on its way.' : 'The drum is turning…');
+      if (Math.random() < ltSpeed(t) * dt / 90) audio.clack();
+    } else if (t < LT_T.reveal) {
+      ltFire('pick', () => { audio.whoosh(); sound.tick(); say('And the winner is…', { urgent: true, rate: 0.9 }); });
+      ltSet(msg, 'textContent', 'And the winner is…');
+      const k = Math.floor((t - LT_T.pick) / Math.max(90, 420 - (t - LT_T.pick) / 25));
+      ltFire('tk' + k, () => sound.tick());
+    } else {
+      const meWin = s.winner === account?.id && !ltShow.preview;
+      ltSet($('ltWinName'), 'textContent', s.winnerName || '?');
+      ltSet($('ltWinPay'), 'textContent', `+${fmt(pot)} credits`);
+      ltSet($('ltWinMe'), 'hidden', !meWin);
+      ltSet($('ltWin'), 'hidden', false);
+      ltFire('reveal', () => {
+        sound.fanfare(); audio.kaching(); audio.roar();
+        if (meWin) { sound.bigWin(); setTimeout(() => sound.levelUp(), 900); }
+        ltConfetti(eve, cx, holdY, 160);
+        setTimeout(() => { if (ltShow.open) ltConfetti(eve, W * 0.2, H * 0.3, 80); }, 500);
+        setTimeout(() => { if (ltShow.open) ltConfetti(eve, W * 0.8, H * 0.3, 80); }, 900);
+        say(s.winnerName || '', { urgent: true, raw: true, rate: 0.95, pitch: 1.1 });
+        setTimeout(() => say(meWin ? 'Congratulations, you won the pot!' : 'Congratulations!'), 1600);
+      });
+      ltSet(msg, 'textContent', meWin ? 'You won the pot!' : `${s.winnerName || '?'} wins the pot!`);
+      if (Math.random() < dt / 250) ltConfetti(eve, Math.random() * W, -10, 6);
+    }
+    // confetti
+    for (const p of ltShow.conf) {
+      p.vy += 0.18; p.vx *= 0.985; p.x += p.vx; p.y += p.vy; p.r += p.vr; if (p.y > H + 20) p.life = 0;
+      c.save(); c.translate(p.x, p.y); c.rotate(p.r); c.fillStyle = p.col; c.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); c.restore();
+    }
+    ltShow.conf = ltShow.conf.filter(p => p.life > 0).slice(-700);
+    // a drum roll while the drum turns and the ball climbs
+    const roll = t >= LT_T.drum && t < LT_T.reveal;
+    const fx = roll ? loopTo('fx', 'ltdrum', () => makeLoop('bandpass', 160, 1.4)) : loopTo('fx', '', null);
+    if (fx) fx.set(t < LT_T.pick ? 0.04 + ltSpeed(t) * 0.05 : 0.05 + (t - LT_T.pick) / (LT_T.reveal - LT_T.pick) * 0.12, t < LT_T.pick ? 160 : 160 + (t - LT_T.pick) / 60);
+    requestAnimationFrame(ltFrame);
+  }
+  // The admin preview: the show with the current tickets (or the players list) and a random winner, nothing is paid.
+  function ltPreview(kind) {
+    const real = lt?.slots.find(s => s.kind === kind);
+    let people = real?.people.length ? real.people.map(p => ({ ...p })) : [...players].sort((a, b) => b.credits - a.credits).slice(0, 10).map(p => ({ player: p.id, name: p.name, cost: Math.max(1, Math.floor(p.credits * (kind === 'eve' ? 0.5 : 0.2))) }));
+    if (!people.length) people = [{ player: account.id, name: account.name, cost: 100 }];
+    const tot = people.reduce((a, p) => a + p.cost, 0);
+    let x = Math.random() * tot, w = people.find(p => (x -= p.cost) < 0) || people[0];
+    const s = { id: 'preview-' + Date.now(), kind, drawAt: hrNow() + 600, openAt: 0, closeAt: 0, pct: 0, bonus: real?.bonus || 0, share: real?.share ?? 100, settled: true, pot: null, winner: w.player, winnerName: w.name, winnerCost: w.cost, people };
+    s.pot = Math.floor(tot * s.share / 100) + s.bonus;
+    $('adminModal').hidden = true;
+    ltShowOpen(s, true);
+  }
+
+  // ----- Admin: the lotto tab -----
+  function fillLottoForm() {
+    const form = $('lottoForm'), c = lottoCfg(rawSettings);
+    const map = { lottoOn: c.on, lottoMode: c.mode, lottoNoonHour: c.noonHour, lottoEveHour: c.eveHour, lottoNoonPct: c.noonPct, lottoEvePct: c.evePct, lottoOpenHours: c.openHours, lottoCloseMin: c.closeMin, lottoShare: c.share, lottoNoonBonus: c.noonBonus, lottoEveBonus: c.eveBonus };
+    for (const [k, v] of Object.entries(map)) { const el = form.elements[k]; if (!el) continue; if (el.type === 'checkbox') el.checked = v; else el.value = v; }
+  }
+  function renderAdminLotto() {
+    const box = $('lottoAdmin');
+    if (!lt) { box.innerHTML = `<p class="note">${ltMissing ? 'The lotto needs the “Lotto” part of supabase-setup.sql.' : 'Loading…'}</p>`; return; }
+    const now = hrNow();
+    const draws = lt.slots.map(s => {
+      const tot = s.people.reduce((a, p) => a + p.cost, 0), ph = ltPhase(s, now);
+      return `<div class="lt-admin-draw"><h4>${LT_TITLE[s.kind]} · ${berlinDay(s.drawAt)} ${ltClock(s.drawAt)}</h4>
+        <div><span>Sales</span> ${ltClock(s.openAt)}–${ltClock(s.closeAt)} · <span>${ph === 'sale' ? 'on sale now' : ph === 'soon' ? 'not open yet' : ph === 'closed' ? 'sales closed' : ph === 'live' ? 'draw running' : ph === 'off' ? 'paused' : 'drawn'}</span> · <span>${s.people.length === 1 ? '1 ticket' : `${s.people.length} tickets`}</span> · <span>pot ${fmt(ltPot(s))}</span></div>
+        ${s.winnerName ? `<div>Winner: <b class="lt-name">${esc(s.winnerName)}</b> (+${fmt(s.pot || 0)})</div>` : ''}
+        ${s.people.length ? `<ol>${s.people.map(p => `<li><span class="lt-name">${esc(p.name)}</span> · ${fmt(p.cost)} · ${ltPct(tot ? (lt.cfg.mode === 'equal' ? 1 / s.people.length : p.cost / tot) : 0)}</li>`).join('')}</ol>` : '<p class="note">No lotto tickets yet.</p>'}</div>`;
+    }).join('');
+    const past = lt.recent.length ? `<div class="lt-admin-draw"><h4>Last winners</h4><ol>${lt.recent.map(r => `<li>${LT_TITLE[r.kind]} ${berlinDay(r.drawAt)}: <b class="lt-name">${esc(r.winnerName || '?')}</b> · +${fmt(r.pot || 0)} · ${r.tickets} tickets</li>`).join('')}</ol></div>` : '';
+    const html = draws + past;
+    if (box.dataset.html !== html) { box.dataset.html = html; box.innerHTML = html; }
+  }
+  $('lottoForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const f = $('lottoForm').elements, v = k => f[k].value;
+    const c = lottoCfg({ lottoOn: f.lottoOn.checked, lottoMode: v('lottoMode'), lottoNoonHour: v('lottoNoonHour'), lottoEveHour: v('lottoEveHour'), lottoNoonPct: v('lottoNoonPct'), lottoEvePct: v('lottoEvePct'),
+      lottoOpenHours: v('lottoOpenHours'), lottoCloseMin: v('lottoCloseMin'), lottoShare: v('lottoShare'), lottoNoonBonus: v('lottoNoonBonus'), lottoEveBonus: v('lottoEveBonus') });
+    if (c.noonHour === c.eveHour) { adminSay('The midday and evening draws need different hours.', false); return; }
+    const patch = { lottoOn: c.on, lottoMode: c.mode, lottoNoonHour: c.noonHour, lottoEveHour: c.eveHour, lottoNoonPct: c.noonPct, lottoEvePct: c.evePct, lottoOpenHours: c.openHours, lottoCloseMin: c.closeMin, lottoShare: c.share, lottoNoonBonus: c.noonBonus, lottoEveBonus: c.eveBonus };
+    adminDo('Lotto settings saved. Everyone sees them within seconds.', async () => {
+      await backend.admin.saveSettings(patch);
+      Object.assign(rawSettings, patch);
+      fillLottoForm();
+      ltFetchAt = 0; await ltFetch();
+    });
+  });
+  $('lottoPreviewNoon').addEventListener('click', () => ltPreview('noon'));
+  $('lottoPreviewEve').addEventListener('click', () => ltPreview('eve'));
+  $('lottoReload').addEventListener('click', () => { ltFetchAt = 0; ltFetch(); });
 
   function renderAdminMsgs() {
     if (!adminUnlocked || $('adminModal').hidden) return;

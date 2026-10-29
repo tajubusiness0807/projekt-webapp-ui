@@ -2688,3 +2688,321 @@ $$;
 
 revoke execute on function public.admin_set_title(uuid, uuid, text) from public, anon;
 grant execute on function public.admin_set_title(uuid, uuid, text) to authenticated;
+
+
+-- ---------------------------------------------------------------------------
+-- Lotto: run this part once (after "Sending credits" and "Rocket"). Two draws
+-- a day, at noon and in the evening (German time, 12:00 and 18:00 unless the
+-- admin menu says otherwise). While tickets are on sale every player can buy
+-- one ticket per draw for a share of their whole balance (20% at noon, 50% in
+-- the evening). At draw time the database picks exactly one winner from the
+-- tickets (by default the chance follows the ticket price, so it is fair for
+-- small and big balances) and the winner gets the pot. While tickets are on
+-- sale nobody can send credits, so nobody can shrink their balance to buy a
+-- cheap ticket. The numbers come from the admin menu (Lotto tab).
+
+create table if not exists public.lotto_draws (
+  id text primary key,                       -- German date and draw, e.g. '2026-10-29-noon' or '2026-10-29-eve'
+  kind text not null check (kind in ('noon', 'eve')),
+  draw_at timestamptz not null,
+  pot bigint,
+  tickets integer,
+  winner uuid references public.players (id) on delete set null,
+  winner_name text,
+  winner_cost bigint,
+  settled boolean not null default false,
+  created_at timestamptz not null default now()
+);
+alter table public.lotto_draws enable row level security;
+revoke all on public.lotto_draws from anon, authenticated;
+grant select on public.lotto_draws to authenticated;
+drop policy if exists "Everyone sees the lotto draws" on public.lotto_draws;
+create policy "Everyone sees the lotto draws" on public.lotto_draws for select to authenticated using (true);
+
+create table if not exists public.lotto_tickets (
+  id bigint generated always as identity primary key,
+  draw_id text not null references public.lotto_draws (id) on delete cascade,
+  player uuid not null references public.players (id) on delete cascade,
+  name text not null,
+  cost bigint not null check (cost > 0),
+  payout bigint,
+  claimed boolean not null default false,
+  created_at timestamptz not null default now(),
+  unique (draw_id, player)
+);
+create index if not exists lotto_tickets_open on public.lotto_tickets (player) where not claimed;
+alter table public.lotto_tickets enable row level security;
+revoke all on public.lotto_tickets from anon, authenticated;
+grant select on public.lotto_tickets to authenticated;
+drop policy if exists "Everyone sees the lotto tickets" on public.lotto_tickets;
+create policy "Everyone sees the lotto tickets" on public.lotto_tickets for select to authenticated using (true);
+
+-- The lotto settings from the admin menu, with the defaults.
+create or replace function public.lotto_cfg()
+returns jsonb
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select jsonb_build_object(
+    'on', coalesce((data ->> 'lottoOn')::boolean, true),
+    'noonHour', least(23, greatest(0, coalesce((data ->> 'lottoNoonHour')::numeric, 12)))::integer,
+    'eveHour', least(23, greatest(0, coalesce((data ->> 'lottoEveHour')::numeric, 18)))::integer,
+    'noonPct', least(100, greatest(1, coalesce((data ->> 'lottoNoonPct')::numeric, 20))),
+    'evePct', least(100, greatest(1, coalesce((data ->> 'lottoEvePct')::numeric, 50))),
+    'openHours', least(24, greatest(0.25, coalesce((data ->> 'lottoOpenHours')::numeric, 5))),
+    'closeMin', least(120, greatest(0, coalesce((data ->> 'lottoCloseMin')::numeric, 5))),
+    'share', least(500, greatest(0, coalesce((data ->> 'lottoShare')::numeric, 100))),
+    'noonBonus', greatest(0, coalesce((data ->> 'lottoNoonBonus')::numeric, 0))::bigint,
+    'eveBonus', greatest(0, coalesce((data ->> 'lottoEveBonus')::numeric, 0))::bigint,
+    'mode', case when data ->> 'lottoMode' = 'equal' then 'equal' else 'weighted' end)
+  from public.settings where id = 1
+$$;
+
+-- One draw's times: draw, sales open, sales close.
+create or replace function public.lotto_slot(day date, k text, cfg jsonb)
+returns jsonb
+language sql
+stable
+as $$
+  select jsonb_build_object('id', to_char(day, 'YYYY-MM-DD') || '-' || k, 'kind', k, 'draw_at', d,
+    'open_at', d - make_interval(secs => ((cfg ->> 'openHours')::numeric * 3600)::double precision),
+    'close_at', d - make_interval(secs => ((cfg ->> 'closeMin')::numeric * 60)::double precision))
+  from (select ((day + make_time((cfg ->> (k || 'Hour'))::integer, 0, 0)) at time zone 'Europe/Berlin') as d) x
+$$;
+
+-- Are lotto tickets on sale right now?
+create or replace function public.lotto_selling()
+returns boolean
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  cfg jsonb := public.lotto_cfg();
+  today date := (now() at time zone 'Europe/Berlin')::date;
+  d date;
+  k text;
+  s jsonb;
+begin
+  if not (cfg ->> 'on')::boolean then return false; end if;
+  foreach d in array array[today - 1, today, today + 1] loop
+    foreach k in array array['noon', 'eve'] loop
+      s := public.lotto_slot(d, k, cfg);
+      if now() >= (s ->> 'open_at')::timestamptz and now() < (s ->> 'close_at')::timestamptz then return true; end if;
+    end loop;
+  end loop;
+  return false;
+end;
+$$;
+
+-- The draw: exactly one winner among the tickets, who gets the pot.
+create or replace function public.lotto_settle(draw text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  dr public.lotto_draws;
+  cfg jsonb := public.lotto_cfg();
+  n integer;
+  tot numeric;
+  v_pot bigint;
+  pick public.lotto_tickets;
+  x numeric;
+begin
+  select * into dr from public.lotto_draws where id = draw for update;
+  if dr.id is null or dr.settled or now() < dr.draw_at then return; end if;
+  select count(*), coalesce(sum(cost), 0) into n, tot from public.lotto_tickets where draw_id = draw;
+  if n = 0 then
+    update public.lotto_draws set settled = true, pot = 0, tickets = 0 where id = draw;
+    return;
+  end if;
+  v_pot := floor(tot * (cfg ->> 'share')::numeric / 100)::bigint + (cfg ->> (dr.kind || 'Bonus'))::bigint;
+  if cfg ->> 'mode' = 'equal' then
+    select * into pick from public.lotto_tickets where draw_id = draw order by random() limit 1;
+  else
+    x := random() * tot;
+    select t.id, t.draw_id, t.player, t.name, t.cost, t.payout, t.claimed, t.created_at into pick
+      from (select *, sum(cost) over (order by id) as run from public.lotto_tickets where draw_id = draw) t
+      where t.run > x order by t.run limit 1;
+    if pick.id is null then select * into pick from public.lotto_tickets where draw_id = draw order by id desc limit 1; end if;
+  end if;
+  update public.lotto_tickets set payout = case when id = pick.id then v_pot else 0 end where draw_id = draw;
+  update public.lotto_draws set settled = true, pot = v_pot, tickets = n, winner = pick.player, winner_name = pick.name, winner_cost = pick.cost
+    where id = draw;
+end;
+$$;
+
+-- What the page shows: the next noon and evening draw (or the one being drawn right now), with everyone's tickets.
+create or replace function public.lotto_state()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  cfg jsonb := public.lotto_cfg();
+  today date := (now() at time zone 'Europe/Berlin')::date;
+  k text;
+  s jsonb;
+  dr public.lotto_draws;
+  slots jsonb := '[]';
+  d text;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  for d in select id from public.lotto_draws where not settled and draw_at <= now() loop
+    perform public.lotto_settle(d);
+  end loop;
+  foreach k in array array['noon', 'eve'] loop
+    s := public.lotto_slot(today, k, cfg);
+    -- a draw stays on show for three minutes after its time, then the next day's takes over
+    if (s ->> 'draw_at')::timestamptz + interval '3 minutes' < now() then s := public.lotto_slot(today + 1, k, cfg); end if;
+    -- (a new time from the admin menu moves a draw that has not happened yet)
+    insert into public.lotto_draws (id, kind, draw_at) values (s ->> 'id', k, (s ->> 'draw_at')::timestamptz)
+      on conflict (id) do update set draw_at = excluded.draw_at where not public.lotto_draws.settled and public.lotto_draws.draw_at > now();
+    select * into dr from public.lotto_draws where id = s ->> 'id';
+    slots := slots || jsonb_build_array(s || jsonb_build_object(
+      'pct', cfg ->> (k || 'Pct'), 'bonus', cfg ->> (k || 'Bonus'), 'share', cfg ->> 'share',
+      'settled', dr.settled, 'pot', dr.pot, 'winner', dr.winner, 'winner_name', dr.winner_name, 'winner_cost', dr.winner_cost,
+      'people', (select coalesce(jsonb_agg(jsonb_build_object('player', player, 'name', name, 'cost', cost) order by cost desc), '[]')
+        from public.lotto_tickets where draw_id = s ->> 'id')));
+  end loop;
+  return jsonb_build_object('now', floor(extract(epoch from clock_timestamp()) * 1000), 'cfg', cfg, 'slots', slots,
+    'recent', (select coalesce(jsonb_agg(to_jsonb(r) order by r.draw_at desc), '[]') from (
+      select id, kind, draw_at, pot, tickets, winner, winner_name, winner_cost from public.lotto_draws
+      where settled and tickets > 0 order by draw_at desc limit 6) r));
+end;
+$$;
+
+-- Buy my one ticket for a draw that is on sale: the price is a share of my whole balance right now.
+create or replace function public.lotto_buy(draw text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  cfg jsonb := public.lotto_cfg();
+  k text := split_part(draw, '-', 4);
+  s jsonb;
+  me public.players;
+  c bigint;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  if not (cfg ->> 'on')::boolean then raise exception 'lotto is off'; end if;
+  if k not in ('noon', 'eve') then raise exception 'no such draw'; end if;
+  s := public.lotto_slot(left(draw, 10)::date, k, cfg);
+  if s ->> 'id' <> draw then raise exception 'no such draw'; end if;
+  if now() < (s ->> 'open_at')::timestamptz or now() >= (s ->> 'close_at')::timestamptz then raise exception 'sales closed'; end if;
+  select * into me from public.players where id = auth.uid() for update;
+  if me.id is null or me.is_banned then raise exception 'not allowed'; end if;
+  if exists (select 1 from public.lotto_tickets where draw_id = draw and player = me.id) then raise exception 'already have a ticket'; end if;
+  c := floor(me.credits * (cfg ->> (k || 'Pct'))::numeric / 100)::bigint;
+  if c < 1 then raise exception 'not enough credits'; end if;
+  insert into public.lotto_draws (id, kind, draw_at) values (draw, k, (s ->> 'draw_at')::timestamptz) on conflict (id) do nothing;
+  update public.players set credits = credits - c, admin_rev = admin_rev + 1, updated_at = now() where id = me.id;
+  insert into public.lotto_tickets (draw_id, player, name, cost) values (draw, me.id, me.name, c);
+  return jsonb_build_object('cost', c, 'credits', me.credits - c, 'rev', me.admin_rev + 1);
+end;
+$$;
+
+-- Collect my finished draws: the winner's pot lands on the balance.
+create or replace function public.lotto_claim()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  d text;
+  won bigint;
+  rows_ jsonb;
+  me public.players;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  for d in select t.draw_id from public.lotto_tickets t join public.lotto_draws r on r.id = t.draw_id
+      where t.player = auth.uid() and not t.claimed and r.draw_at <= now() loop
+    perform public.lotto_settle(d);
+  end loop;
+  select * into me from public.players where id = auth.uid() for update;
+  if me is null then raise exception 'not allowed'; end if;
+  with c as (
+    update public.lotto_tickets set claimed = true
+    where player = me.id and not claimed and payout is not null
+    returning draw_id, cost, payout
+  )
+  select coalesce(sum(payout), 0), coalesce(jsonb_agg(to_jsonb(c)), '[]') into won, rows_ from c;
+  if won > 0 then
+    update public.players set credits = credits + won, admin_rev = admin_rev + 1, updated_at = now() where id = me.id;
+    return jsonb_build_object('tickets', rows_, 'credits', me.credits + won, 'rev', me.admin_rev + 1);
+  end if;
+  return jsonb_build_object('tickets', rows_, 'credits', me.credits, 'rev', me.admin_rev);
+end;
+$$;
+
+revoke execute on function public.lotto_cfg() from public, anon, authenticated;
+revoke execute on function public.lotto_settle(text) from public, anon, authenticated;
+revoke execute on function public.lotto_selling() from public, anon;
+revoke execute on function public.lotto_state() from public, anon;
+revoke execute on function public.lotto_buy(text) from public, anon;
+revoke execute on function public.lotto_claim() from public, anon;
+grant execute on function public.lotto_selling() to authenticated;
+grant execute on function public.lotto_state() to authenticated;
+grant execute on function public.lotto_buy(text) to authenticated;
+grant execute on function public.lotto_claim() to authenticated;
+
+-- Sending credits stops while tickets are on sale.
+create or replace function public.send_credits(target uuid, amount bigint)
+returns bigint
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  me public.players;
+  them public.players;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  -- While lotto tickets are on sale, nobody can move credits: the ticket price depends on everyone's balance.
+  if public.lotto_selling() then raise exception 'lotto sales running'; end if;
+  if target = auth.uid() then raise exception 'cannot send to yourself'; end if;
+  if amount is null or amount < 1 then raise exception 'send at least 1'; end if;
+  -- Lock both rows in a fixed order so two gifts at once can't deadlock.
+  perform 1 from public.players where id in (auth.uid(), target) order by id for update;
+  select * into me from public.players where id = auth.uid();
+  select * into them from public.players where id = target;
+  if me is null or me.is_banned then raise exception 'not allowed'; end if;
+  if them is null or them.is_banned then raise exception 'no such player'; end if;
+  -- Players who went Prestige may send at any level. (Read through jsonb so this works before the prestige column exists.)
+  if me.level < 3 and coalesce((to_jsonb(me) ->> 'prestige')::integer, 0) = 0 then raise exception 'reach level 3 first'; end if;
+  if me.credits < amount then raise exception 'not enough credits'; end if;
+  update public.players set credits = credits - amount, admin_rev = admin_rev + 1, updated_at = now() where id = me.id;
+  update public.players set credits = credits + amount, admin_rev = admin_rev + 1, updated_at = now() where id = them.id;
+  insert into public.transfers (sender, recipient, sender_name, amount) values (me.id, them.id, me.name, amount);
+  return me.credits - amount;
+end;
+$$;
+
+-- A reset or hard reset also drops a player's lotto tickets that were not collected yet.
+create or replace function public.players_clear_cosmetics()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+begin
+  if new.game is null and old.game is not null then
+    new.flair := null;
+    new.trophies := '{}';
+    delete from public.horse_bets where player = new.id and not claimed;
+    delete from public.roulette_bets where player = new.id and not claimed;
+    delete from public.rocket_bets where player = new.id and not claimed;
+    delete from public.lotto_tickets where player = new.id and not claimed;
+  end if;
+  return new;
+end;
+$$;
+
