@@ -454,7 +454,7 @@ details.paytable, details.bj-rules { background: var(--panel); border-radius: 10
 @media (max-width: 600px) { .back-btn { left: 10px; top: 10px; } }
 .gm { padding: 6px 16px; border-radius: 999px; background: var(--panel); color: var(--muted); font-weight: 600; font-size: 13px; }
 .gm[aria-selected="true"] { background: var(--accent); color: var(--ink); }
-.cabinet:not([data-mode="bj"]) .bj, .cabinet:not([data-mode="rl"]) .rl, .cabinet:not([data-mode="pk"]) .pk, .cabinet:not([data-mode="pl"]) .pl, .cabinet:not([data-mode="ck"]) .ck, .cabinet:not([data-mode="hr"]) .hr, .cabinet:not([data-mode="rk"]) .rk, .cabinet:not([data-mode="jb"]) .jb { display: none; }
+.cabinet:not([data-mode="bj"]) .bj, .cabinet:not([data-mode="rl"]) .rl, .cabinet:not([data-mode="pk"]) .pk, .cabinet:not([data-mode="pl"]) .pl, .cabinet:not([data-mode="ck"]) .ck, .cabinet:not([data-mode="hr"]) .hr, .cabinet:not([data-mode="rk"]) .rk, .cabinet:not([data-mode="jb"]) .jb, .cabinet:not([data-mode="cf"]) .cf { display: none; }
 .cabinet:not([data-mode="slots"]) :is(#window, #reelCtl, #tier, #message, .meters, .bet, .spin-row, #boosts, details.paytable) { display: none !important; }
 body.wide .layout { max-width: 980px; grid-template-columns: minmax(0, 1fr); }
 body.wide .account-bar { max-width: 980px; }
@@ -671,11 +671,15 @@ body.wide .account-bar { max-width: 980px; }
 .lobby-games > .lotto-hero { grid-column: 1 / -1; }
 @media (min-width: 1100px) {
   .lobby-card:has(.lotto-hero:not([hidden])) { max-width: 1180px; }
-  .lobby-games:has(> .lotto-hero:not([hidden])) { grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-flow: row dense; }
-  .lobby-games > .lotto-hero { grid-column: 2 / 4; grid-row: 2 / 4; align-content: center; }
-  /* the last row: the two games left over sit in the middle under the lotto */
-  .lobby-games:has(> .lotto-hero:not([hidden])) .game-pick:nth-of-type(9) { grid-column: 2; grid-row: 4; }
-  .lobby-games:has(> .lotto-hero:not([hidden])) .game-pick:nth-of-type(10) { grid-column: 3; grid-row: 4; }
+  /* eight half columns: every game takes two, the lotto the middle four */
+  .lobby-games:has(> .lotto-hero:not([hidden])) { grid-template-columns: repeat(8, minmax(0, 1fr)); grid-auto-flow: row dense; }
+  .lobby-games:has(> .lotto-hero:not([hidden])) > .game-pick { grid-column: span 2; }
+  .lobby-games > .lotto-hero { grid-column: 3 / 7; grid-row: 2 / 4; align-content: center; }
+  /* the last row: the three games left over sit centred under the lotto */
+  .lobby-games:has(> .lotto-hero:not([hidden])) > .game-pick:nth-of-type(9) { grid-column: 2 / 4; grid-row: 4; }
+  .lobby-games:has(> .lotto-hero:not([hidden])) > .game-pick:nth-of-type(10) { grid-column: 4 / 6; grid-row: 4; }
+  .lobby-games:has(> .lotto-hero:not([hidden])) > .game-pick:nth-of-type(11) { grid-column: 6 / 8; grid-row: 4; }
+  .lobby-games:has(> .lotto-hero:not([hidden])) > .game-pick:last-of-type { width: auto; justify-self: stretch; }
 }
 .rl { display: grid; gap: 12px; }
 .rl-wheel-wrap { position: relative; justify-self: center; width: min(300px, 78vw); aspect-ratio: 1; max-width: 100%; }
@@ -1905,6 +1909,39 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
 .jb-ladder li.cur b, .jb-ladder li.cur span { color: #fff; }
 @media (prefers-reduced-motion: reduce) { .jb-spot, .jb-spot.late, .jb-job, .jb-cust, .jb-badge.promo, .jb-mood[data-m="bad"] .jb-face { animation: none; } }
 
+/* ----- Coin flip ----- */
+.gp-cf .gp-coin3 { transform-origin: 70px 60px; transition: transform 0.3s; }
+.game-pick:hover .gp-cf .gp-coin3, .game-pick:focus-visible .gp-cf .gp-coin3 { animation: gpFlip 0.9s cubic-bezier(.3, .6, .4, 1) infinite; }
+@keyframes gpFlip { 0% { transform: translateY(0) scaleY(1); } 25% { transform: translateY(-14px) scaleY(0.1); } 50% { transform: translateY(-20px) scaleY(1); } 75% { transform: translateY(-14px) scaleY(0.1); } 100% { transform: translateY(0) scaleY(1); } }
+.cf { display: grid; gap: 12px; }
+.cf-stage { position: relative; height: 340px; border-radius: 16px; overflow: hidden; perspective: 900px; border: 3px solid #0a3a26;
+  background: radial-gradient(ellipse at 50% 85%, #1f8a5a 0%, #11553a 55%, #0a3624 100%); box-shadow: inset 0 10px 40px #000a; }
+.cf-stage::before { content: ''; position: absolute; inset: 0; background: repeating-radial-gradient(circle at 50% 85%, #ffffff07 0 2px, transparent 2px 6px); pointer-events: none; }
+.cf-shadow { position: absolute; left: 50%; bottom: 46px; width: 120px; height: 22px; translate: -50% 0; border-radius: 50%; background: radial-gradient(#000a, transparent 70%); }
+.cf-toss { position: absolute; left: 50%; bottom: 62px; width: 130px; height: 130px; margin-left: -65px; transform-style: preserve-3d; }
+.cf-coin { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transform: rotateX(0deg); }
+.cf-coin i { position: absolute; inset: 0; border-radius: 50%; background: #a8740f; transform: translateZ(var(--z)); box-shadow: inset 0 0 0 3px #7a5410; }
+.cf-face { position: absolute; inset: 0; display: grid; place-items: center; border-radius: 50%; backface-visibility: hidden;
+  background: radial-gradient(circle at 35% 30%, #fff3c0 0 8%, #f3c94b 30%, #d9a52a 70%, #b8860b 100%); box-shadow: inset 0 0 0 6px #c9961f, inset 0 0 0 9px #f6dc7c, inset 0 0 0 12px #b8860b; }
+.cf-face svg { width: 58%; height: 58%; }
+.cf-heads { transform: translateZ(7px); }
+.cf-tails { transform: rotateX(180deg) translateZ(7px); }
+.cf-stage.idle .cf-toss { animation: cfHover 2.6s ease-in-out infinite; }
+@keyframes cfHover { 50% { transform: translateY(-6px); } }
+.cf-big { position: absolute; left: 0; right: 0; top: 16px; text-align: center; font: clamp(26px, 6vw, 44px) Bungee, Impact, sans-serif; color: #ffe27a; text-shadow: 0 3px 0 #7a5410, 0 0 30px #ffd355; pointer-events: none; animation: cfBig 0.7s cubic-bezier(.2, 1.6, .4, 1); }
+.cf-big[hidden] { display: none; }
+.cf-big.lose { color: #f6efe3; text-shadow: 0 3px 0 #0008; font-size: clamp(22px, 5vw, 34px); }
+.cf-big.edge { animation: cfBig 0.7s cubic-bezier(.2, 1.6, .4, 1), hue 1.2s linear infinite; font-size: clamp(30px, 7.5vw, 56px); }
+@keyframes cfBig { from { transform: scale(0.2); opacity: 0; } }
+.cf-stage.flash::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle, #fff6 0%, transparent 70%); animation: cfFlash 0.9s ease-out forwards; pointer-events: none; }
+@keyframes cfFlash { from { opacity: 1; } to { opacity: 0; } }
+.cf-hist { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; min-height: 28px; }
+.cf-hist span { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; font-size: 14px; background: #f3c94b33; box-shadow: inset 0 0 0 2px #f3c94b66; }
+.cf-hist span.won { box-shadow: inset 0 0 0 2px var(--win); }
+.cf-hist span.edge { background: linear-gradient(135deg, #f3c94b, #ff8fb8, #a77bff); }
+.cf-pick { justify-self: center; }
+.cf-pick button { min-width: 130px; font-size: 16px; }
+@media (prefers-reduced-motion: reduce) { .cf-stage.idle .cf-toss, .gp-cf .gp-coin3 { animation: none !important; } }
 #fx, #fxTop { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 #fxTop { z-index: 18; }
 .jp {
@@ -2442,6 +2479,21 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         <span class="gp-desc">Hop across the road. Every lane pays more, every car could end it.</span>
         <span class="gp-go">Play</span>
       </button>
+      <button class="game-pick" type="button" data-mode="cf">
+        <svg class="gp-cf" viewBox="0 0 140 130" aria-hidden="true">
+          <ellipse cx="70" cy="116" rx="34" ry="6" fill="#0006"/>
+          <g class="gp-coin3">
+            <ellipse cx="70" cy="62" rx="40" ry="40" fill="#b8860b"/>
+            <ellipse cx="70" cy="58" rx="40" ry="40" fill="#f3c94b"/>
+            <ellipse cx="70" cy="58" rx="31" ry="31" fill="none" stroke="#c9961f" stroke-width="3"/>
+            <path d="M50 70l-3-18 10 7 13-14 13 14 10-7-3 18z" fill="#a8740f"/><rect x="50" y="72" width="40" height="5" rx="2" fill="#a8740f"/>
+            <path d="M46 34q14-10 30-4" stroke="#fff8" stroke-width="4" fill="none" stroke-linecap="round"/>
+          </g>
+        </svg>
+        <span class="gp-title">Coin Flip</span>
+        <span class="gp-desc">Heads or tails, one flip, almost double. And once in 10,000 flips the coin lands on its edge: ×10.</span>
+        <span class="gp-go">Play</span>
+      </button>
       <button class="game-pick" type="button" data-mode="pk">
         <span class="gp-online">Solo or online</span>
         <svg class="gp-pk" viewBox="0 0 140 130" aria-hidden="true">
@@ -2714,6 +2766,30 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       <details class="bj-rules">
         <summary>How the job works</summary>
         <p class="note">Lucky Burger costs nothing. Start a shift and do the work that comes up: scrub stains off the floor, take the fries out when the bar is in the green, flip and serve the patties at the right moment, and put exactly what a customer ordered on the tray. Every 10 seconds you get your wage, but only if you did something in those 10 seconds and the boss is not angry. Finished jobs make the boss happier; things you let slip (a stain someone slips on, burnt food, a customer who walks out) make the boss angry. Paid time counts as time worked, and time worked brings promotions: from cleaner (14 credits every 10 seconds) up to store manager (250 credits every 10 seconds) after 9 hours of work. Higher positions run more stations at once and things go faster. A shift ends when you press End shift, leave the game, switch to another tab or do nothing for 45 seconds.</p>
+      </details>
+    </section>
+
+    <section class="cf" id="cf" aria-label="Coin flip">
+      <div class="cf-stage" id="cfStage">
+        <div class="cf-shadow" id="cfShadow"></div>
+        <div class="cf-toss" id="cfToss"><div class="cf-coin" id="cfCoin"><i style="--z:-6px"></i><i style="--z:-5px"></i><i style="--z:-4px"></i><i style="--z:-3px"></i><i style="--z:-2px"></i><i style="--z:-1px"></i><i style="--z:0px"></i><i style="--z:1px"></i><i style="--z:2px"></i><i style="--z:3px"></i><i style="--z:4px"></i><i style="--z:5px"></i><i style="--z:6px"></i><b class="cf-face cf-heads"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M12 44l-4-24 14 10 10-18 10 18 14-10-4 24z" fill="#7a5410"/><rect x="12" y="46" width="40" height="6" rx="2" fill="#7a5410"/><circle cx="8" cy="19" r="3" fill="#7a5410"/><circle cx="32" cy="10" r="3" fill="#7a5410"/><circle cx="56" cy="19" r="3" fill="#7a5410"/></svg></b><b class="cf-face cf-tails"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 8l6.5 15 16 1.5-12 10.5 3.6 15.8L32 42.6 17.9 50.8l3.6-15.8-12-10.5 16-1.5z" fill="#7a5410"/><text x="32" y="38" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="14" fill="#f3c94b">1</text></svg></b></div></div>
+        <div class="cf-big" id="cfBig" hidden></div>
+      </div>
+      <div class="cf-hist" id="cfHist" aria-label="Last flips"></div>
+      <p class="message" id="cfMsg" role="status" aria-live="polite">Pick a side, set your bet and flip.</p>
+      <div class="pl-seg cf-pick" id="cfPick" role="group" aria-label="Your side">
+        <button type="button" data-side="heads">👑 Heads</button><button type="button" data-side="tails">⭐ Tails</button>
+      </div>
+      <div class="pl-bet">
+        <button class="chip-btn" type="button" data-cfb="half" aria-label="Halve bet">½</button>
+        <input id="cfBet" type="number" min="1" step="1" inputmode="numeric" aria-label="Bet per flip">
+        <button class="chip-btn" type="button" data-cfb="double" aria-label="Double bet">×2</button>
+        <button class="chip-btn" type="button" data-cfb="max">Max</button>
+      </div>
+      <button class="spin" id="cfFlip" type="button">Flip</button>
+      <details class="bj-rules">
+        <summary>Coin flip rules</summary>
+        <p class="note">Pick heads (crown) or tails (star), set a bet and flip. If the coin shows your side you get 1.95× your bet back. Once in 10,000 flips (0.01%) the coin lands on its edge: then everyone wins 10× the bet, whichever side they picked. Over the long run about 97.6% of bets come back. Space flips the coin.</p>
       </details>
     </section>
 
@@ -3340,6 +3416,12 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'You fell asleep on the job. Shift over.': 'Du bist bei der Arbeit eingeschlafen. Schicht vorbei.', 'Welcome back! Start a shift when you are ready.': 'Willkommen zurück! Starte eine Schicht, wenn du bereit bist.',
     'Welcome to Lucky Burger! Start your first shift as a cleaner.': 'Willkommen bei Lucky Burger! Starte deine erste Schicht als Putzkraft.',
     'Lucky Burger costs nothing. Start a shift and do the work that comes up: scrub stains off the floor, take the fries out when the bar is in the green, flip and serve the patties at the right moment, and put exactly what a customer ordered on the tray. Every 10 seconds you get your wage, but only if you did something in those 10 seconds and the boss is not angry. Finished jobs make the boss happier; things you let slip (a stain someone slips on, burnt food, a customer who walks out) make the boss angry. Paid time counts as time worked, and time worked brings promotions: from cleaner (14 credits every 10 seconds) up to store manager (250 credits every 10 seconds) after 9 hours of work. Higher positions run more stations at once and things go faster. A shift ends when you press End shift, leave the game, switch to another tab or do nothing for 45 seconds.': 'Lucky Burger kostet nichts. Starte eine Schicht und erledige, was anfällt: Flecken vom Boden schrubben, die Pommes rausholen, wenn der Balken im grünen Bereich ist, Pattys im richtigen Moment wenden und servieren und genau das aufs Tablett legen, was ein Kunde bestellt hat. Alle 10 Sekunden gibt es Lohn, aber nur, wenn du in diesen 10 Sekunden etwas getan hast und der Chef nicht sauer ist. Erledigte Aufgaben machen den Chef zufriedener; was du schleifen lässt (ein Fleck, auf dem jemand ausrutscht, verbranntes Essen, ein Kunde, der geht) macht ihn sauer. Bezahlte Zeit zählt als Arbeitszeit, und Arbeitszeit bringt Beförderungen: von der Putzkraft (14 Credits alle 10 Sekunden) bis zum Filialmanager (250 Credits alle 10 Sekunden) nach 9 Stunden Arbeit. Höhere Positionen betreuen mehr Stationen gleichzeitig, und alles geht schneller. Eine Schicht endet, wenn du „Schicht beenden“ drückst, das Spiel verlässt, in einen anderen Tab wechselst oder 45 Sekunden nichts tust.',
+    'Coin Flip': 'Münzwurf', 'Coin flip': 'Münzwurf', 'Heads or tails, one flip, almost double. And once in 10,000 flips the coin lands on its edge: ×10.': 'Kopf oder Zahl, ein Wurf, fast das Doppelte. Und einmal in 10.000 Würfen landet die Münze auf der Kante: ×10.',
+    'Pick a side, set your bet and flip.': 'Wähl eine Seite, setz deinen Einsatz und wirf.', '👑 Heads': '👑 Kopf', '⭐ Tails': '⭐ Zahl', 'Your side': 'Deine Seite', 'Bet per flip': 'Einsatz pro Wurf',
+    'Flip': 'Werfen', 'Flipping…': 'Fliegt…', 'Coin flip rules': 'Münzwurf-Regeln', 'Last flips': 'Letzte Würfe', 'Edge': 'Kante', 'Heads': 'Kopf', 'Tails': 'Zahl', 'HEADS': 'KOPF', 'TAILS': 'ZAHL',
+    'Pick heads (crown) or tails (star), set a bet and flip. If the coin shows your side you get 1.95× your bet back. Once in 10,000 flips (0.01%) the coin lands on its edge: then everyone wins 10× the bet, whichever side they picked. Over the long run about 97.6% of bets come back. Space flips the coin.': 'Wähl Kopf (Krone) oder Zahl (Stern), setz einen Einsatz und wirf. Zeigt die Münze deine Seite, bekommst du das 1,95-Fache deines Einsatzes zurück. Einmal in 10.000 Würfen (0,01 %) landet die Münze auf der Kante: Dann gewinnt man das 10-Fache, egal welche Seite gewählt wurde. Auf lange Sicht kommen etwa 97,6 % der Einsätze zurück. Leertaste wirft die Münze.',
+    'You picked heads. Up it goes…': 'Du hast Kopf gewählt. Hoch damit…', 'You picked tails. Up it goes…': 'Du hast Zahl gewählt. Hoch damit…', 'Wait… it is standing on its edge!': 'Moment… sie steht auf der Kante!',
+    'Unbelievable! The coin landed on its edge!': 'Unglaublich! Die Münze ist auf der Kante gelandet!', 'On the Edge': 'Auf der Kante', 'Land the coin flip on its edge (1 in 10,000).': 'Lass die Münze auf der Kante landen (1 zu 10.000).',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -3538,7 +3620,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['{a} credits / 10 s', '{a} Credits / 10 s'], ['{a} / 10 s', '{a} / 10 s'], ['{a} credits every 10 s while you work', '{a} Credits alle 10 s, solange du arbeitest'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['{a} wins {b}', '{a} gewinnt {b}'], ['ON THE EDGE! ×{a}', 'AUF DER KANTE! ×{a}'], ['HEADS! +{a}', 'KOPF! +{a}'], ['TAILS! +{a}', 'ZAHL! +{a}'],
+    ['The coin landed on its edge! 1 in {a}: ×{b} · +{c}', 'Die Münze ist auf der Kante gelandet! 1 zu {a}: ×{b} · +{c}'], ['Heads! You win {a}.', 'Kopf! Du gewinnst {a}.'], ['Tails! You win {a}.', 'Zahl! Du gewinnst {a}.'],
+    ['Heads. The {a} is gone.', 'Kopf. Die {a} sind weg.'], ['Tails. The {a} is gone.', 'Zahl. Die {a} sind weg.'], ['{a} credits / 10 s', '{a} Credits / 10 s'], ['{a} / 10 s', '{a} / 10 s'], ['{a} credits every 10 s while you work', '{a} Credits alle 10 s, solange du arbeitest'],
     ['Next paycheck in {a} s', 'Nächster Lohn in {a} s'], ['Paycheck: +{a} credits!', 'Lohn: +{a} Credits!'], ['Unlocks as {a}', 'Ab {a}'], ['after {a}', 'nach {a}'],
     ['Next: {a} ({b} credits / 10 s) · {c} of work to go', 'Nächste Stufe: {a} ({b} Credits / 10 s) · noch {c} Arbeit'], ['Worked {a} · earned {b} credits', 'Gearbeitet: {a} · verdient: {b} Credits'],
     ['Shift over. You earned {a} credits this shift.', 'Schicht vorbei. Du hast in dieser Schicht {a} Credits verdient.'], ['You are now {a}: {b} credits every 10 seconds.', 'Du bist jetzt {a}: {b} Credits alle 10 Sekunden.'],
@@ -3963,6 +4047,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     { id: 'plinko', name: 'Sky Drop', desc: 'Land a Plinko ball on 25× or more.', reward: 800, test: c => c?.plinkoMult >= 25 },
     { id: 'prestige', name: 'Prestigious', desc: 'Go Prestige for the first time.', reward: 2500, test: c => c?.prestige >= 1 },
     { id: 'miner', name: 'First Paycheck', desc: 'Earn your first wage at Lucky Burger.', reward: 100, test: c => c?.jobPaid },
+    { id: 'coinEdge', name: 'On the Edge', desc: 'Land the coin flip on its edge (1 in 10,000).', reward: 10000, test: c => c?.coinEdge },
     { id: 'jobBoss', name: 'Burger Boss', desc: 'Work your way up to store manager at Lucky Burger.', reward: 5000, test: c => c?.jobPos >= 7 },
     { id: 'bullseye', name: 'Bullseye', desc: 'Hit a single number in roulette.', reward: 500, test: c => c?.bullseye },
     { id: 'natural', name: 'Natural', desc: 'Get a blackjack.', reward: 300, test: c => c?.natural },
@@ -3993,6 +4078,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     pk: { view: 'solo', solo: null, hands: 0, buyIn: 2000 },
     // the burger job: seconds worked (paid), credits earned, shifts, the highest position reached so far
     job: { worked: 0, earned: 0, shifts: 0, pos: 0 },
+    cf: { bet: 10, side: 'heads', flips: 0, history: [], pending: 0 },
   });
   const state = fresh();
 
@@ -5192,8 +5278,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     hr: 'Horse racing · live for everyone · play credits',
     rk: 'Rocket · cash out before it blows · play credits',
     jb: 'Lucky Burger · the free job · earn credits by working',
+    cf: 'Coin flip · heads or tails · play credits',
   };
-  const gameBusy = () => busy || bjBusy || (typeof pkBusy === 'function' && pkBusy()) || (typeof plBusy === 'function' && plBusy()) || (typeof ckBusy === 'function' && ckBusy());
+  const gameBusy = () => busy || bjBusy || (typeof pkBusy === 'function' && pkBusy()) || (typeof plBusy === 'function' && plBusy()) || (typeof ckBusy === 'function' && ckBusy()) || !!cfBusy;
   function applyGameMode() {
     const bj = state.mode === 'bj';
     cabinet.dataset.mode = state.mode;
@@ -5206,6 +5293,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (state.mode === 'hr' && typeof hrEnter === 'function') hrEnter();
     if (state.mode === 'rk' && typeof rkEnter === 'function') rkEnter();
     if (state.mode === 'jb' && typeof jbEnter === 'function') jbEnter();
+    if (state.mode === 'cf' && typeof cfEnter === 'function') cfEnter();
     if (state.mode === 'pk' && typeof pkEnter === 'function') pkEnter();
     if (bj) {
       renderBJTable(false);
@@ -5219,7 +5307,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     renderBroke();
     document.querySelectorAll('.game-pick').forEach(b => {
       b.querySelector('.gp-last')?.remove();
-      if (b.dataset.mode === state.mode && state.spins + state.bj.hands + state.rl.spins + state.pk.hands + state.pl.drops + state.ck.games + state.hr.races + state.rk.rounds + state.job.shifts > 0) b.insertAdjacentHTML('afterbegin', '<span class="gp-last">Last played</span>');
+      if (b.dataset.mode === state.mode && state.spins + state.bj.hands + state.rl.spins + state.pk.hands + state.pl.drops + state.ck.games + state.hr.races + state.rk.rounds + state.job.shifts + state.cf.flips > 0) b.insertAdjacentHTML('afterbegin', '<span class="gp-last">Last played</span>');
     });
     $('lobby').hidden = false;
     renderLotto();
@@ -5233,7 +5321,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     $('lobby').hidden = true;
     sound.chime();
     render();
-    ({ bj: $('bjDeal'), rl: $('rlSpin'), slots: $('spin'), pk: $('pkSit'), pl: $('plDrop'), ck: $('ckGo'), hr: $('hrBet'), rk: $('rkBet'), jb: $('jbShift') }[state.mode])?.focus({ preventScroll: true });
+    ({ bj: $('bjDeal'), rl: $('rlSpin'), slots: $('spin'), pk: $('pkSit'), pl: $('plDrop'), ck: $('ckGo'), hr: $('hrBet'), rk: $('rkBet'), jb: $('jbShift'), cf: $('cfFlip') }[state.mode])?.focus({ preventScroll: true });
   }));
 
   $('backBtn').addEventListener('click', () => {
@@ -6418,6 +6506,149 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     else if (e.key.toLowerCase() === 'c') ckCashOut(false);
   });
   addEventListener('resize', () => { if (state.mode === 'ck') ckPlace(false); });
+  // ---------- Coin flip ----------
+  // Heads or tails pays 1.95×; one flip in 10,000 lands on the edge and pays 10× whatever was picked.
+  const CF_PAY = 1.95, CF_EDGE = 10, CF_EDGE_IN = 10000;
+  // var: the busy check in gameBusy() can run before this part of the script
+  var cfBusy = false, cfTurn = 0;
+  const cfSay = (text, kind = '') => showMessage($('cfMsg'), text, kind);
+  function renderCFControls() {
+    document.querySelectorAll('#cfPick [data-side]').forEach(b => { b.setAttribute('aria-pressed', String(b.dataset.side === state.cf.side)); b.disabled = cfBusy; });
+    document.querySelectorAll('[data-cfb]').forEach(b => { b.disabled = cfBusy; });
+    $('cfBet').disabled = cfBusy;
+    const bet = Math.floor(Number($('cfBet').value));
+    const f = $('cfFlip');
+    f.disabled = !account || cfBusy || !(bet >= 1 && bet <= state.credits);
+    f.innerHTML = cfBusy ? 'Flipping…' : `Flip<small>${state.cf.side === 'heads' ? '👑' : '⭐'} wins ${fmt(happyPay(Math.max(1, bet || 1), CF_PAY))}</small>`;
+    const hist = state.cf.history.map(h => `<span class="${h.r === 'edge' ? 'edge' : h.w ? 'won' : ''}" title="${h.r === 'edge' ? 'Edge' : h.r === 'heads' ? 'Heads' : 'Tails'}">${h.r === 'edge' ? '🪙' : h.r === 'heads' ? '👑' : '⭐'}</span>`).join('');
+    if ($('cfHist').dataset.html !== hist) { $('cfHist').dataset.html = hist; $('cfHist').innerHTML = hist; }
+  }
+  function cfEnter() {
+    if (document.activeElement !== $('cfBet')) $('cfBet').value = state.cf.bet;
+    if (!cfBusy) { $('cfStage').classList.add('idle'); $('cfBig').hidden = true; cfSay('Pick a side, set your bet and flip.'); }
+    renderCFControls();
+  }
+  function cfBigText(text, cls) {
+    const el = $('cfBig');
+    el.className = 'cf-big ' + (cls || '');
+    el.textContent = text;
+    el.hidden = false;
+  }
+  async function cfFlip() {
+    if (!account || cfBusy) return;
+    if (settings.maintenance && !account.isAdmin) { cfSay('The game is paused by an admin. Try again later.', 'lose'); return; }
+    const bet = Math.floor(Number($('cfBet').value));
+    if (!(bet >= 1)) { cfSay('Enter a bet of at least 1.', 'lose'); return; }
+    if (settings.maxBet && bet > settings.maxBet) { cfSay(`The highest bet is ${fmt(settings.maxBet)}.`, 'lose'); return; }
+    if (bet > state.credits) { cfSay(`Not enough credits for a ${fmt(bet)} bet.`, 'lose'); return; }
+    const pick = state.cf.side;
+    // decided right away; the pay is kept as pending so a closed page still pays it
+    const edge = takeRigged() || randInt(CF_EDGE_IN) === 0;
+    const res = edge ? 'edge' : randInt(2) ? 'heads' : 'tails';
+    const won = edge || res === pick;
+    const pay = edge ? happyPay(bet, CF_EDGE) : won ? happyPay(bet, CF_PAY) : 0;
+    state.credits -= bet;
+    state.cf.bet = bet;
+    state.cf.pending = pay;
+    cfBusy = true;
+    render();
+    renderCFControls();
+    $('cfBig').hidden = true;
+    $('cfStage').classList.remove('idle', 'flash');
+    cfSay(pick === 'heads' ? 'You picked heads. Up it goes…' : 'You picked tails. Up it goes…', 'hot');
+    // the flip: up, many turns, down, a little bounce
+    const spins = 6 + randInt(3), from = cfTurn % 360;
+    const end = (edge ? 90 : res === 'heads' ? 0 : 180) + 360 * spins;
+    cfTurn = end;
+    const D = reduceMotion ? 300 : edge ? 2600 : 2100;
+    sound.tone(1400, 0, 0.05, 'triangle', 0.05); audio.coin();
+    setTimeout(() => audio.whoosh(), 60);
+    $('cfToss').animate([
+      { transform: 'translateY(0)', easing: 'cubic-bezier(.2,.7,.4,1)' },
+      { transform: 'translateY(-125px) scale(1.1)', offset: 0.45, easing: 'cubic-bezier(.6,0,.8,.4)' },
+      { transform: 'translateY(0) scale(1)', offset: 0.84, easing: 'ease-out' },
+      { transform: 'translateY(-22px)', offset: 0.92, easing: 'ease-in' },
+      { transform: 'translateY(0)' },
+    ], { duration: D, fill: 'forwards' });
+    $('cfShadow').animate([{ scale: '1', opacity: 1 }, { scale: '0.45', opacity: 0.35, offset: 0.45 }, { scale: '1', opacity: 1, offset: 0.84 }, { scale: '0.85', offset: 0.92 }, { scale: '1', opacity: 1 }], { duration: D, fill: 'forwards' });
+    const spin = $('cfCoin').animate([
+      { transform: `rotateX(${from}deg)` },
+      { transform: `rotateX(${end - (edge ? 40 : 0)}deg)`, offset: 0.84 },
+      { transform: `rotateX(${end + (edge ? 25 : 0)}deg)`, offset: 0.92 },
+      { transform: `rotateX(${end}deg)` },
+    ], { duration: D, easing: 'cubic-bezier(.25,.6,.35,1)', fill: 'forwards' });
+    // a ting for every half turn while it climbs
+    for (let k = 1; k < 7; k++) setTimeout(() => sound.tone(1800 + k * 120, 0, 0.03, 'sine', 0.025), D * 0.06 * k);
+    setTimeout(() => { audio.clack(); sound.tone(900, 0, 0.05, 'triangle', 0.05); }, D * 0.84);
+    setTimeout(() => audio.clack(), D * 0.97);
+    await spin.finished.catch(() => {});
+    if (edge && !reduceMotion) {
+      // it stands on the edge and wobbles... and stays
+      cfSay('Wait… it is standing on its edge!', 'hot');
+      await $('cfCoin').animate([0, -14, 11, -8, 6, -3, 1, 0].map(d => ({ transform: `rotateX(${end + d}deg)` })), { duration: 1700, easing: 'ease-out', fill: 'forwards' }).finished.catch(() => {});
+    }
+    $('cfCoin').getAnimations().forEach(a => { a.commitStyles?.(); a.cancel(); });
+    $('cfToss').getAnimations().forEach(a => { a.commitStyles?.(); a.cancel(); });
+    $('cfShadow').getAnimations().forEach(a => a.cancel());
+    state.credits = Math.min(MAX, state.credits + pay);
+    state.cf.pending = 0;
+    state.cf.flips++;
+    state.cf.history = [{ r: res, w: won }, ...state.cf.history].slice(0, 14);
+    state.lastWin = pay;
+    if (pay) state.best = Math.max(state.best, pay - bet);
+    gainXp(3);
+    const r = $('cfStage').getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height * 0.55;
+    if (edge) {
+      cfBigText(`ON THE EDGE! ×${CF_EDGE}`, 'edge');
+      cfSay(`The coin landed on its edge! 1 in ${fmt(CF_EDGE_IN)}: ×${CF_EDGE} · +${fmt(pay)}`, 'win');
+      $('cfStage').classList.add('flash');
+      sound.fanfare(); audio.kaching(); sound.bigWin();
+      voice.say('Unbelievable! The coin landed on its edge!', { urgent: true });
+      fxTop.coinBurst(cx, cy, 80, 12);
+      for (let k = 0; k < 80; k++) fxTop.confetti(CONFETTI);
+      fireworks(10);
+    } else if (won) {
+      cfBigText(`${res === 'heads' ? 'HEADS' : 'TAILS'}! +${fmt(pay)}`);
+      cfSay(`${res === 'heads' ? 'Heads' : 'Tails'}! You win ${fmt(pay)}.`, 'win');
+      $('cfStage').classList.add('flash');
+      sound.win(); audio.coins(6);
+      fxTop.coinBurst(cx, cy, bet >= 1000 ? 40 : 22, 9);
+    } else {
+      cfBigText(res === 'heads' ? 'HEADS' : 'TAILS', 'lose');
+      cfSay(`${res === 'heads' ? 'Heads' : 'Tails'}. The ${fmt(bet)} is gone.`, 'lose');
+      sound.lose();
+    }
+    checkAch({ win: pay - bet, bet, coinEdge: edge });
+    cfBusy = false;
+    $('cfStage').classList.add('idle');
+    render();
+    renderCFControls();
+    while (pendingLevels.length) levelUp(pendingLevels.shift());
+  }
+  $('cfFlip').addEventListener('click', cfFlip);
+  $('cfPick').addEventListener('click', e => {
+    const b = e.target.closest('[data-side]');
+    if (!b || cfBusy) return;
+    state.cf.side = b.dataset.side;
+    sound.chip();
+    renderCFControls(); persist();
+  });
+  document.querySelectorAll('[data-cfb]').forEach(b => b.addEventListener('click', () => {
+    const cur = Math.max(1, Math.floor(Number($('cfBet').value)) || 1);
+    const cap = Math.max(1, Math.min(state.credits, settings.maxBet || MAX));
+    const v = { half: Math.max(1, Math.floor(cur / 2)), double: Math.min(cap, cur * 2), max: cap }[b.dataset.cfb];
+    $('cfBet').value = v;
+    state.cf.bet = v;
+    sound.chip();
+    renderCFControls();
+  }));
+  $('cfBet').addEventListener('input', () => { const v = Math.floor(Number($('cfBet').value)); if (v >= 1) state.cf.bet = v; renderCFControls(); });
+  document.addEventListener('keydown', e => {
+    if (state.mode !== 'cf' || !account || !$('lobby').hidden || e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'SUMMARY'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal, #profileModal')) return;
+    if (e.code === 'Space') { e.preventDefault(); cfFlip(); }
+  });
+
 
   // ---------- Horse racing ----------
   // One race for everyone every three minutes: two minutes to bet, three seconds at the gates, then the race.
@@ -9185,6 +9416,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (state.mode === 'pk') renderPKControls();
     if (state.mode === 'pl' && typeof renderPLControls === 'function') renderPLControls();
     if (state.mode === 'ck' && typeof renderCKControls === 'function') renderCKControls();
+    if (state.mode === 'cf' && typeof renderCFControls === 'function') renderCFControls();
     persist();
   }
 
@@ -10230,12 +10462,18 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     state.pl.pending = [];
     state.pk = Object.assign(fresh().pk, saved.pk);
     state.job = Object.assign(fresh().job, saved.job);
+    state.cf = Object.assign(fresh().cf, saved.cf);
+    if (!['heads', 'tails'].includes(state.cf.side)) state.cf.side = 'heads';
+    state.cf.history = (Array.isArray(state.cf.history) ? state.cf.history : []).filter(h => h && ['heads', 'tails', 'edge'].includes(h.r)).slice(0, 14);
+    // a coin still in the air when the page closed: its result was already drawn, so pay it now
+    if (Number(state.cf.pending) > 0) state.credits = Math.min(MAX, state.credits + Math.floor(Number(state.cf.pending)));
+    state.cf.pending = 0;
     for (const k of ['worked', 'earned', 'shifts', 'pos']) state.job[k] = Math.max(0, Math.floor(Number(state.job[k]) || 0));
     if (state.pk.solo && !Array.isArray(state.pk.solo.seats)) state.pk.solo = null;
     if (typeof state.rl.bets !== 'object' || !state.rl.bets) state.rl.bets = {};
     if (!Array.isArray(state.bj.shoe)) state.bj.shoe = [];
     if (state.bj.round && !Array.isArray(state.bj.round.hands)) state.bj.round = null;
-    if (!['bj', 'rl', 'pk', 'pl', 'ck', 'hr', 'rk', 'jb'].includes(state.mode)) state.mode = 'slots';
+    if (!['bj', 'rl', 'pk', 'pl', 'ck', 'hr', 'rk', 'jb', 'cf'].includes(state.mode)) state.mode = 'slots';
     autoLeft = 0;
     pendingLevels.length = 0;
     held = [false, false, false];
@@ -10610,7 +10848,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Which game each online player has open, shown in the highscores and on the lobby cards.
   const GAME_INFO = {
     slots: ['🎰', 'Slots'], bj: ['🃏', 'Blackjack'], rl: ['🎡', 'Roulette'], pk: ['♠️', 'Poker'], pl: ['🔻', 'Plinko'],
-    ck: ['🐔', 'Chicken'], hr: ['🏇', 'Horse Racing'], rk: ['🚀', 'Rocket'], lobby: ['🏠', 'Lobby'], shop: ['🛍️', 'Shop'], jb: ['🍔', 'Lucky Burger'],
+    ck: ['🐔', 'Chicken'], hr: ['🏇', 'Horse Racing'], rk: ['🚀', 'Rocket'], lobby: ['🏠', 'Lobby'], shop: ['🛍️', 'Shop'], jb: ['🍔', 'Lucky Burger'], cf: ['🪙', 'Coin Flip'],
   };
   let playing = new Map(), presenceGame = null;
   function currentGame() {
