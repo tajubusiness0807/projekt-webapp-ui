@@ -1460,6 +1460,12 @@ html[data-lang="de"] .reel.held::after { content: "GEHALTEN"; }
 .send-row input { min-width: 0; background: #0006; color: var(--accent); border: 2px solid var(--cabinet-edge); border-radius: 10px; padding: 9px 10px; font: 600 16px var(--font-mono); }
 .send-row .spin { width: auto; padding: 8px 16px; font-size: 16px; }
 .send-msg { color: var(--muted); font-size: 12px; }
+.aff-box { display: grid; gap: 8px; width: 100%; padding: 12px; border-radius: 12px; background: var(--panel); border: 1px solid #7fd18b44; text-align: left; }
+.aff-code { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; border-radius: 10px; background: #0006; border: 2px dashed #7fd18b88; }
+.aff-code b { font: 700 20px var(--font-mono); letter-spacing: 0.14em; color: var(--win); }
+.aff-row input { text-transform: uppercase; color: var(--win); }
+#loginAff { text-transform: uppercase; letter-spacing: 0.08em; }
+#loginAff::placeholder, .aff-row input::placeholder { text-transform: none; letter-spacing: 0; }
 .chat-pop.online-pop { border-color: #7fd18b88; align-items: center; }
 .chat-pop .head .dot { margin: 0; }
 .chat-pop .note { font-size: 12px; color: var(--win); }
@@ -1938,6 +1944,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     <p class="login-hint" id="userHint" hidden>3 to 20 letters, digits, - or _. Everyone sees it in the highscores.</p>
     <label class="field"><span class="label">Password</span><input id="loginPass" name="password" type="password" autocomplete="current-password"></label>
     <label class="field" id="pass2Field" hidden><span class="label">Repeat password</span><input id="loginPass2" name="password2" type="password" autocomplete="new-password"></label>
+    <label class="field" id="affField" hidden><span class="label">Affiliate code (optional)</span><input id="loginAff" name="affiliate" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="12" placeholder="e.g. LUKAS7"></label>
+    <p class="login-hint" id="affHint" hidden>Got a code from a friend? You start with 5,000 credits instead of 500.</p>
     <p class="login-error" id="loginError" role="alert"></p>
     <button class="spin" id="loginBtn" type="submit" disabled>Connecting…</button>
     <p class="mode-switch" id="modeSwitch" hidden><span id="modeText">New here?</span><button type="button" class="link-btn" id="modeBtn">Create an account</button></p>
@@ -2814,6 +2822,16 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'The rocket needs the “Rocket” part of supabase-setup.sql. Ask the person who runs the game to run it.': 'Die Rakete braucht den Abschnitt „Rocket“ aus supabase-setup.sql. Bitte die Person, die das Spiel betreibt, ihn auszuführen.',
     'Sky High': 'Himmelhoch', 'Cash out a rocket at 10× or more.': 'Zahl eine Rakete bei 10× oder mehr aus.', 'To the Moon': 'Bis zum Mond', 'Ride the rocket all the way to the moon.': 'Flieg mit der Rakete bis zum Mond.',
     'One rocket for everyone. For 25 seconds you can board it with a bet (and, if you like, an automatic cash-out). Then it lifts off and the multiplier climbs faster and faster: about 2× after 5 seconds, 10× after 17 seconds. Cash out whenever you like and your bet pays that multiplier; if the rocket explodes first, the bet is gone. The higher it goes, the likelier the explosion: about 43% of rockets make it past 2×, one in eleven past 10×, and about one in eight blows up right on the pad. But one rocket in 300 is golden: you see it at liftoff, and it flies past 30× for sure. The few that reach 200× land on the moon and pay 200× to everyone still on board. Over the long run about 96% of bets come back if you hold every golden rocket to 30×. Space boards and cashes out.': 'Eine Rakete für alle. 25 Sekunden lang kannst du mit einem Einsatz einsteigen (und, wenn du willst, einer automatischen Auszahlung). Dann hebt sie ab und der Multiplikator steigt immer schneller: etwa 2× nach 5 Sekunden, 10× nach 17 Sekunden. Zahl aus, wann du willst, und dein Einsatz zahlt diesen Multiplikator; explodiert die Rakete vorher, ist der Einsatz weg. Je höher sie fliegt, desto wahrscheinlicher die Explosion: etwa 43 % der Raketen schaffen mehr als 2×, eine von elf mehr als 10×, und etwa eine von acht explodiert schon auf der Startrampe. Aber eine von 300 Raketen ist golden: Du siehst es beim Abheben, und sie fliegt garantiert über 30×. Die wenigen, die 200× erreichen, landen auf dem Mond und zahlen allen, die noch an Bord sind, 200×. Auf lange Sicht kommen etwa 96 % der Einsätze zurück, wenn du jede goldene Rakete bis 30× hältst. Leertaste steigt ein und zahlt aus.',
+    'Affiliate code (optional)': 'Affiliate-Code (optional)', 'e.g. LUKAS7': 'z. B. LUKAS7',
+    'Got a code from a friend? You start with 5,000 credits instead of 500.': 'Code von einem Freund? Dann startest du mit 5,000 statt 500 Credits.',
+    'Affiliate codes have 3 to 12 letters or digits.': 'Affiliate-Codes haben 3 bis 12 Buchstaben oder Ziffern.',
+    'Affiliate codes need the “Affiliate codes” part of supabase-setup.sql.': 'Affiliate-Codes brauchen den Abschnitt „Affiliate codes“ aus supabase-setup.sql.',
+    'No player has that affiliate code. Check it, or leave the field empty.': 'Diesen Affiliate-Code hat niemand. Prüf ihn oder lass das Feld leer.',
+    'Affiliate bonus': 'Affiliate-Bonus', 'Affiliate code': 'Affiliate-Code', 'Your affiliate code': 'Dein Affiliate-Code', 'Affiliate code saved': 'Affiliate-Code gespeichert',
+    'Copy': 'Kopieren', 'Copied!': 'Kopiert!', 'Create': 'Erstellen', 'Change': 'Ändern', 'New code': 'Neuer Code',
+    'New players who use it start with 5,000 credits.': 'Neue Spieler, die ihn nutzen, starten mit 5,000 Credits.',
+    'New players who sign up with your code start with 5,000 credits, and you get 5% of your credits on top.': 'Neue Spieler, die sich mit deinem Code anmelden, starten mit 5,000 Credits, und du bekommst 5 % deiner Credits obendrauf.',
+    'Use 3 to 12 letters or digits.': 'Nimm 3 bis 12 Buchstaben oder Ziffern.', 'Somebody already has that code. Try another one.': 'Diesen Code hat schon jemand. Probier einen anderen.',
     'other player online': 'anderer Spieler online', 'other players online': 'andere Spieler online', 'in the lobby': 'in der Lobby',
     'Nobody else is online right now.': 'Gerade ist sonst niemand online.', 'Lobby': 'Lobby',
     'Place your bets': 'Setzt eure Chips', 'No more bets': 'Nichts geht mehr', 'Spinning': 'Die Kugel rollt', 'Next round': 'Nächste Runde', 'At the table': 'Am Tisch',
@@ -2969,7 +2987,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['Golden rocket! This one flies past {a} for sure.', 'Goldene Rakete! Die fliegt garantiert über {a}.'], ['bet {a}', 'Einsatz {a}'], ['auto {a}', 'auto {a}'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ["Thanks to {a}'s code you start with {b} credits!", 'Dank des Codes von {a} startest du mit {b} Credits!'],
+    ['joined with your affiliate code: +{a} credits!', 'hat sich mit deinem Affiliate-Code angemeldet: +{a} Credits!'], ['Your code is {a}. Share it with friends!', 'Dein Code ist {a}. Teil ihn mit Freunden!'],
+    ['{a} player joined with your code · +{b} credits earned', '{a} Spieler hat sich mit deinem Code angemeldet · +{b} Credits verdient'], ['{a} players joined with your code · +{b} credits earned', '{a} Spieler haben sich mit deinem Code angemeldet · +{b} Credits verdient'], ['Golden rocket! This one flies past {a} for sure.', 'Goldene Rakete! Die fliegt garantiert über {a}.'], ['bet {a}', 'Einsatz {a}'], ['auto {a}', 'auto {a}'],
     ["You're on board with {a}. Auto cash-out at {b}.", 'Du bist mit {a} an Bord. Auto-Auszahlung bei {b}.'], ["You're on board with {a}. Cash out before it blows!", 'Du bist mit {a} an Bord. Zahl aus, bevor sie explodiert!'],
     ['To the moon! {a} · +{b}', 'Zum Mond! {a} · +{b}'], ['Cashed out at {a} · +{b}', 'Ausgezahlt bei {a} · +{b}'], ['Auto cash-out at {a} · +{b}', 'Auto-Auszahlung bei {a} · +{b}'],
     ['Boom at {a}. Your {b} went up in smoke.', 'Bumm bei {a}. Deine {b} sind in Rauch aufgegangen.'], ['Boom at {a}!', 'Bumm bei {a}!'],
@@ -8359,7 +8379,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     avatar: Number.isInteger(p.avatar) && p.avatar >= 0 && p.avatar < 8 ? p.avatar : null,
     medals: Array.isArray(p.medals) ? p.medals.filter(m => MEDAL_IDS.includes(m)) : [],
     prestige: Math.max(0, Math.min(99, Number(p.prestige) || 0)),
-    trophies: Array.isArray(p.trophies) ? p.trophies.filter(t => t === '' || TROPHY_IDS.includes(t)) : [], admin: !!(p.admin ?? p.is_admin), banned: !!(p.banned ?? p.is_banned), adminRev: Number(p.adminRev ?? p.admin_rev) || 0,
+    trophies: Array.isArray(p.trophies) ? p.trophies.filter(t => t === '' || TROPHY_IDS.includes(t)) : [],
+    affCode: typeof (p.affCode ?? p.affiliate_code) === 'string' ? (p.affCode ?? p.affiliate_code) : null, admin: !!(p.admin ?? p.is_admin), banned: !!(p.banned ?? p.is_banned), adminRev: Number(p.adminRev ?? p.admin_rev) || 0,
   }));
   const adminChanged = () => Object.assign(new Error('changed by an admin'), { code: 'admin_changed' });
   const SESSION_KEY = 'lucky-reels-session';
@@ -8482,6 +8503,27 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         const doc = await store.load(account.id);
         return (Array.isArray(doc?.gifts) ? doc.gifts : []).filter(g => g.at > since);
       },
+      // Affiliate codes live on the owner's account; a new account can use one code once.
+      async affiliateCheck(code) { return players.some(p => p.affCode === code && !p.banned); },
+      async setAffiliateCode(code) {
+        if (players.some(p => p.affCode === code && p.id !== account.id)) throw new Error('code taken');
+        await store.save(account.id, { affCode: code });
+        return code;
+      },
+      async affiliateRedeem(key, code) {
+        const me = await store.load(key), owner = players.find(p => p.affCode === code && !p.banned);
+        if (!me || me.affUsed || (Number(me.spins) || 0) > 0) throw new Error('only for new accounts');
+        if (!owner) throw new Error('no such code');
+        if (owner.id === key) throw new Error('not your own code');
+        const od = await store.load(owner.id);
+        const bonus = Math.floor((Number(od.credits) || 0) * 0.05);
+        const stats = od.affStats || { uses: 0, earned: 0 };
+        const gifts = [...(Array.isArray(od.gifts) ? od.gifts : []), { from: me.name, amount: bonus, at: Date.now(), aff: true }].slice(-10);
+        await store.save(owner.id, { credits: (Number(od.credits) || 0) + bonus, adminRev: (Number(od.adminRev) || 0) + 1, gifts, affStats: { uses: stats.uses + 1, earned: stats.earned + bonus } });
+        await store.save(key, { credits: (Number(me.credits) || 0) + 4500, affUsed: code, adminRev: (Number(me.adminRev) || 0) + 1 });
+        return { affiliate: od.name || owner.name };
+      },
+      async affiliateStats() { const d = await store.load(account.id); return d?.affStats || { uses: 0, earned: 0 }; },
     };
   }
 
@@ -8685,6 +8727,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     let hasProfile = !(await sb.from('players').select('avatar,medals').limit(1)).error;
     let hasPrestige = !(await sb.from('players').select('prestige').limit(1)).error;
     let hasTrophies = !(await sb.from('players').select('trophies').limit(1)).error;
+    const hasAffiliate = !(await sb.from('players').select('affiliate_code').limit(1)).error;
     const adminCols = adminSchema ? ',is_admin,is_banned,admin_rev' : '';
     // New accounts are only offered when Supabase confirms them on the spot: the made-up addresses can't receive mail.
     let canSignUp = false;
@@ -8887,8 +8930,23 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       async giftsSince(since) {
         const { data, error } = await sb.from('transfers').select('sender_name,amount,created_at').eq('recipient', account.id)
           .gt('created_at', new Date(since).toISOString()).order('created_at');
-        if (error) return [];
-        return data.map(g => ({ from: g.sender_name, amount: Number(g.amount), at: Date.parse(g.created_at) }));
+        const out = error ? [] : data.map(g => ({ from: g.sender_name, amount: Number(g.amount), at: Date.parse(g.created_at) }));
+        // Players who joined with my affiliate code.
+        const aff = await sb.from('affiliate_uses').select('new_name,bonus,created_at').eq('affiliate', account.id).gt('created_at', new Date(since).toISOString()).order('created_at');
+        if (!aff.error) out.push(...aff.data.map(g => ({ from: g.new_name, amount: Number(g.bonus), at: Date.parse(g.created_at), aff: true })));
+        return out.sort((a, b) => a.at - b.at);
+      },
+      async affiliateCheck(code) {
+        const { data, error } = await sb.rpc('affiliate_check', { code });
+        if (error) { if (error.code === 'PGRST202' || /could not find the function/i.test(error.message || '')) return null; throw error; }
+        return !!data;
+      },
+      async setAffiliateCode(code) { const { data, error } = await sb.rpc('set_affiliate_code', { code }); if (error) throw error; return data; },
+      async affiliateRedeem(key, code) { const { data, error } = await sb.rpc('affiliate_redeem', { code }); if (error) throw error; return data; },
+      async affiliateStats() {
+        const { data, error } = await sb.from('affiliate_uses').select('bonus').eq('affiliate', account.id);
+        if (error) throw error;
+        return { uses: data.length, earned: data.reduce((a, r) => a + Number(r.bonus), 0) };
       },
       // Online poker: the database deals and checks every move; the page only sends moves and shows the state.
       poker: {
@@ -8971,7 +9029,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       },
       watch(cb) {
         const pull = async () => {
-          let { data, error } = await sb.from('players').select(`id,name,credits,best,level${hasJackpots ? ',jackpots' : ''}${hasFlair ? ',flair' : ''}${hasProfile ? ',avatar,medals' : ''}${hasPrestige ? ',prestige' : ''}${hasTrophies ? ',trophies' : ''}${adminCols}`);
+          let { data, error } = await sb.from('players').select(`id,name,credits,best,level${hasJackpots ? ',jackpots' : ''}${hasFlair ? ',flair' : ''}${hasProfile ? ',avatar,medals' : ''}${hasPrestige ? ',prestige' : ''}${hasTrophies ? ',trophies' : ''}${hasAffiliate ? ',affiliate_code' : ''}${adminCols}`);
           if (error && hasJackpots) {
             hasJackpots = false;
             ({ data } = await sb.from('players').select(`id,name,credits,best,level${adminCols}`));
@@ -9196,6 +9254,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     seenMedals = null;
     setTimeout(checkGifts, 1200);
     hrClaimSoon = true; hrBetsFor = -1; hrBetList = [];
+    affMine = null; affStats = null; affStatsAt = 0;
     rlClaimSoon = true; rlCur = { id: -1, result: null }; rlTableFor = -1; rlAnimFor = -1;
     rkClaimSoon = true; rkCur = null; rkBets = []; rkBetsFor = -1;
     syncAdminButton();
@@ -9319,10 +9378,37 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       `<span class="profile-label">Medals (${medals.length})</span>` +
       (medals.length ? `<div class="medal-list">${medals.map(m => `<div class="medal-row">${medalSvg(m)}<span><b>${esc(m.name)}</b><small>${esc(m.desc)}</small></span></div>`).join('')}</div>`
         : `<p class="note">${mine ? 'No medals yet. Admins award them for special moments.' : 'No medals yet.'}</p>`) + picker +
+      affBox(p, mine) +
       (!mine && backend?.sendCredits ? `<div class="send-box"><span class="profile-label">Send ${esc(p.name)} credits</span>
         <div class="send-row"><input id="sendAmt" type="number" min="1" step="1" inputmode="numeric" placeholder="Amount" aria-label="Credits to send"><button type="button" class="chip-btn" data-send-max>Max</button><button type="button" class="spin" id="sendBtn">Send</button></div>
         <small class="send-msg" id="sendMsg">You have ${fmt(state.credits)} credits.</small></div>` : '');
     if (keep.v) { $('sendAmt').value = keep.v; if (keep.focus) $('sendAmt').focus(); }
+  }
+  // Affiliate code: my own (pick, change, copy, see who joined) or someone else's to pass on.
+  let affStats = null, affStatsAt = 0, affMine = null;
+  function affBox(p, mine) {
+    const code = mine ? (affMine ?? p.affCode) : p.affCode;
+    if (!mine) return code ? `<div class="aff-box"><span class="profile-label">Affiliate code</span><div class="aff-code"><b>${esc(code)}</b><button type="button" class="chip-btn" data-aff-copy="${esc(code)}">Copy</button></div><small class="send-msg">New players who use it start with 5,000 credits.</small></div>` : '';
+    if (backend?.affiliateStats && Date.now() - affStatsAt > 15000) { affStatsAt = Date.now(); backend.affiliateStats().then(st => { affStats = st; if (profileFor === account?.id) renderProfile(); }).catch(() => {}); }
+    return `<div class="aff-box"><span class="profile-label">Your affiliate code</span>` +
+      (code ? `<div class="aff-code"><b>${esc(code)}</b><button type="button" class="chip-btn" data-aff-copy="${esc(code)}">Copy</button></div>` : '') +
+      `<div class="send-row aff-row"><input id="affIn" maxlength="12" autocapitalize="characters" spellcheck="false" placeholder="${code ? 'New code' : 'e.g. ' + esc(account.name.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8) || 'LUCKY') + '7'}" aria-label="Affiliate code"><button type="button" class="spin" id="affSave">${code ? 'Change' : 'Create'}</button></div>` +
+      `<small class="send-msg" id="affMsg">${affStats?.uses ? `${affStats.uses} ${affStats.uses === 1 ? 'player' : 'players'} joined with your code · +${fmt(affStats.earned)} credits earned` : 'New players who sign up with your code start with 5,000 credits, and you get 5% of your credits on top.'}</small></div>`;
+  }
+  async function saveAffCode() {
+    const code = affNorm($('affIn')?.value), msg = t => { if ($('affMsg')) $('affMsg').textContent = t; };
+    if (!AFF_RE.test(code)) { msg('Use 3 to 12 letters or digits.'); return; }
+    $('affSave').disabled = true;
+    try {
+      affMine = await backend.setAffiliateCode(code);
+      sound.chime();
+      toast('Affiliate code saved', `Your code is ${affMine}. Share it with friends!`);
+      renderProfile();
+    } catch (e) {
+      const m = e?.message || '';
+      msg(/taken/.test(m) ? 'Somebody already has that code. Try another one.' : e?.code === 'PGRST202' || /could not find the function/i.test(m) ? 'Affiliate codes need the “Affiliate codes” part of supabase-setup.sql.' : 'That did not work. Check the connection and try again.');
+      if ($('affSave')) $('affSave').disabled = false;
+    }
   }
   // Send credits to the player whose profile is open.
   let sending = false;
@@ -9365,7 +9451,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     for (const g of gifts) {
       const el = document.createElement('div');
       el.className = 'chat-pop gift-pop';
-      el.innerHTML = `<span class="gift-ico" aria-hidden="true">${SHOP_ICONS.gold}</span><span class="body"><span class="head"><b>${esc(g.from)}</b></span><span class="note">sent you ${fmt(g.amount)} credits!</span></span>`;
+      el.innerHTML = `<span class="gift-ico" aria-hidden="true">${SHOP_ICONS.gold}</span><span class="body"><span class="head"><b>${esc(g.from)}</b></span><span class="note">${g.aff ? i18n(`joined with your affiliate code: +${fmt(g.amount)} credits!`) : `sent you ${fmt(g.amount)} credits!`}</span></span>`;
       showPop(el, 6500);
     }
     sound.bigWin();
@@ -9373,9 +9459,12 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     persist();
     return gifts.length;
   }
-  $('profileBody').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'sendAmt') sendGift(); });
+  $('profileBody').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'sendAmt') sendGift(); if (e.key === 'Enter' && e.target.id === 'affIn') saveAffCode(); });
   $('profileBody').addEventListener('click', e => {
     if (e.target.closest('#sendBtn')) { sendGift(); return; }
+    if (e.target.closest('#affSave')) { saveAffCode(); return; }
+    const cp = e.target.closest('[data-aff-copy]');
+    if (cp) { navigator.clipboard?.writeText(cp.dataset.affCopy).then(() => { cp.textContent = i18n('Copied!'); setTimeout(() => { cp.textContent = i18n('Copy'); }, 1500); }).catch(() => {}); return; }
     if (e.target.closest('[data-prestige]')) { closeProfile(); openPrestige(); return; }
     if (e.target.closest('[data-send-max]')) { $('sendAmt').value = Math.max(0, Math.floor(state.credits)); return; }
     if (e.target.closest('[data-pw]')) {
@@ -10149,6 +10238,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     $('pick').hidden = up;
     $('userHint').hidden = !up;
     $('pass2Field').hidden = !up;
+    $('affField').hidden = $('affHint').hidden = !up;
     $('loginPass').autocomplete = up ? 'new-password' : 'current-password';
     $('loginBtn').textContent = !backend ? 'Connecting…' : up ? 'Create account' : 'Sign in';
     $('modeText').textContent = up ? 'Already have an account?' : 'New here?';
@@ -10165,18 +10255,38 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     norow: 'Your login was created, but the game has no place for new players yet. Ask the person who runs the game to finish the setup.',
   };
 
+  const affNorm = v => String(v || '').trim().toUpperCase();
+  const AFF_RE = /^[A-Z0-9]{3,12}$/;
   async function createAccount(name, pw) {
     const err = $('loginError');
+    const code = affNorm($('loginAff').value);
     const problem = !/^[A-Za-z0-9_-]{3,20}$/.test(name) ? SIGNUP_ERRORS.invalid
       : pw.length < 6 ? 'The password needs at least 6 characters.'
-      : pw !== $('loginPass2').value ? 'The two passwords do not match.' : '';
+      : pw !== $('loginPass2').value ? 'The two passwords do not match.'
+      : code && !AFF_RE.test(code) ? 'Affiliate codes have 3 to 12 letters or digits.' : '';
     if (problem) { err.textContent = problem; return; }
+    // Check the code before the account exists, so a typo doesn't cost the bonus.
+    if (code) {
+      const ok = await backend.affiliateCheck(code).catch(() => null);
+      if (ok === null) { err.textContent = 'Affiliate codes need the “Affiliate codes” part of supabase-setup.sql.'; return; }
+      if (!ok) { err.textContent = 'No player has that affiliate code. Check it, or leave the field empty.'; return; }
+    }
     const res = await backend.signUp(name, pw);
     if (res.status !== 'ok') { err.textContent = SIGNUP_ERRORS[res.status] || 'Could not create the account. Try again.'; return; }
+    let from = '';
+    if (code) {
+      try {
+        const r = await backend.affiliateRedeem(res.found.key, code);
+        from = r?.affiliate || '';
+        res.found.doc = (await backend.loadOwn(res.found.key)) || res.found.doc;
+      } catch {}
+    }
     setMode(false);
+    $('loginAff').value = '';
     enterGame(res.found);
     sound.chime();
-    toast('Account created', `Welcome, ${account.name}! You start with ${fmt(state.credits)} credits.`);
+    if (from) { toast('Affiliate bonus', `Thanks to ${from}'s code you start with ${fmt(state.credits)} credits!`); for (let k = 0; k < 40; k++) fxTop.confetti(CONFETTI); }
+    else toast('Account created', `Welcome, ${account.name}! You start with ${fmt(state.credits)} credits.`);
   }
 
   $('loginForm').addEventListener('submit', async e => {

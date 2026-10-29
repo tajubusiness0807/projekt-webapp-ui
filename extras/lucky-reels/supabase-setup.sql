@@ -2199,3 +2199,97 @@ begin
   return new;
 end;
 $$;
+
+
+-- ---------------------------------------------------------------------------
+-- Affiliate codes: run this part once (after "Sending credits"). Every player
+-- can pick one code of their own (3 to 12 letters or digits). Someone who
+-- creates an account with that code starts with 5,000 credits instead of 500,
+-- and the code's owner gets 5% of their current credits on top. Each new
+-- account can use one code, only in its first 30 minutes and not its own.
+
+alter table public.players add column if not exists affiliate_code text unique
+  check (affiliate_code ~ '^[A-Z0-9]{3,12}$');
+
+create table if not exists public.affiliate_uses (
+  id bigint generated always as identity primary key,
+  new_player uuid not null unique references public.players (id) on delete cascade,
+  new_name text not null,
+  affiliate uuid references public.players (id) on delete set null,
+  code text not null,
+  bonus bigint not null,
+  created_at timestamptz not null default now()
+);
+alter table public.affiliate_uses enable row level security;
+revoke all on public.affiliate_uses from anon, authenticated;
+grant select on public.affiliate_uses to authenticated;
+drop policy if exists "See your own affiliate uses" on public.affiliate_uses;
+create policy "See your own affiliate uses" on public.affiliate_uses
+  for select to authenticated using (auth.uid() = affiliate or auth.uid() = new_player);
+
+-- Is there a player with this code? (Asked on the sign-up screen, before the account exists.)
+create or replace function public.affiliate_check(code text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (select 1 from public.players where affiliate_code = upper(trim(code)) and not is_banned)
+$$;
+
+-- Pick or change my own code.
+create or replace function public.set_affiliate_code(code text)
+returns text
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  c text := upper(trim(code));
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  if c !~ '^[A-Z0-9]{3,12}$' then raise exception 'code must be 3 to 12 letters or digits'; end if;
+  if exists (select 1 from public.players where affiliate_code = c and id <> auth.uid()) then raise exception 'code taken'; end if;
+  update public.players set affiliate_code = c where id = auth.uid();
+  return c;
+exception when unique_violation then
+  raise exception 'code taken';
+end;
+$$;
+
+-- Use a code right after creating an account: 4,500 extra for me, 5% of their credits for the code's owner.
+create or replace function public.affiliate_redeem(code text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  c text := upper(trim(code));
+  me public.players;
+  aff public.players;
+  bonus bigint;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  if exists (select 1 from public.affiliate_uses where new_player = auth.uid()) then raise exception 'code already used'; end if;
+  if (select created_at from auth.users where id = auth.uid()) < now() - interval '30 minutes' then raise exception 'only for new accounts'; end if;
+  select * into aff from public.players where affiliate_code = c for update;
+  if aff.id is null or aff.is_banned then raise exception 'no such code'; end if;
+  if aff.id = auth.uid() then raise exception 'not your own code'; end if;
+  select * into me from public.players where id = auth.uid() for update;
+  if me.id is null or me.is_banned then raise exception 'not allowed'; end if;
+  bonus := floor(aff.credits * 0.05)::bigint;
+  update public.players set credits = credits + bonus, admin_rev = admin_rev + 1, updated_at = now() where id = aff.id;
+  update public.players set credits = credits + 4500, admin_rev = admin_rev + 1, updated_at = now() where id = me.id;
+  insert into public.affiliate_uses (new_player, new_name, affiliate, code, bonus) values (me.id, me.name, aff.id, c, bonus);
+  return jsonb_build_object('credits', me.credits + 4500, 'rev', me.admin_rev + 1, 'affiliate', aff.name);
+end;
+$$;
+
+revoke execute on function public.affiliate_check(text) from public;
+revoke execute on function public.set_affiliate_code(text) from public, anon;
+revoke execute on function public.affiliate_redeem(text) from public, anon;
+grant execute on function public.affiliate_check(text) to anon, authenticated;
+grant execute on function public.set_affiliate_code(text) to authenticated;
+grant execute on function public.affiliate_redeem(text) to authenticated;
