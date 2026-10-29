@@ -55,7 +55,6 @@ html[data-theme="night"] body { background: radial-gradient(ellipse at top, #101
 html[data-theme="night"] .pk-plate { background: linear-gradient(#1a1f2b, #0c0f16); }
 html[data-theme="night"] .lang-toggle, html[data-theme="night"] .theme-toggle.floating { background: #0b0e15e6; }
 html[data-theme="night"] .auto { box-shadow: 0 5px 0 #5a6172; }
-html[data-theme="night"] .mine-card { background: linear-gradient(#141824, #090b11); }
 html[data-theme="night"] .broke-bar { background: linear-gradient(90deg, #2a2312, #141824); }
 /* The Midnight Cabinet stays the bluest, brightest machine at night. */
 html[data-theme="night"] .cabinet.midnight {
@@ -469,7 +468,7 @@ details.paytable, details.bj-rules { background: var(--panel); border-radius: 10
 @media (max-width: 600px) { .back-btn { left: 10px; top: 10px; } }
 .gm { padding: 6px 16px; border-radius: 999px; background: var(--panel); color: var(--muted); font-weight: 600; font-size: 13px; }
 .gm[aria-selected="true"] { background: var(--accent); color: var(--ink); }
-.cabinet:not([data-mode="bj"]) .bj, .cabinet:not([data-mode="rl"]) .rl, .cabinet:not([data-mode="pk"]) .pk, .cabinet:not([data-mode="pl"]) .pl, .cabinet:not([data-mode="ck"]) .ck, .cabinet:not([data-mode="hr"]) .hr, .cabinet:not([data-mode="rk"]) .rk { display: none; }
+.cabinet:not([data-mode="bj"]) .bj, .cabinet:not([data-mode="rl"]) .rl, .cabinet:not([data-mode="pk"]) .pk, .cabinet:not([data-mode="pl"]) .pl, .cabinet:not([data-mode="ck"]) .ck, .cabinet:not([data-mode="hr"]) .hr, .cabinet:not([data-mode="rk"]) .rk, .cabinet:not([data-mode="jb"]) .jb { display: none; }
 .cabinet:not([data-mode="slots"]) :is(#window, #reelCtl, #tier, #message, .meters, .bet, .spin-row, #boosts, details.paytable) { display: none !important; }
 body.wide .layout { max-width: 980px; grid-template-columns: minmax(0, 1fr); }
 body.wide .account-bar { max-width: 980px; }
@@ -639,6 +638,7 @@ body.wide .account-bar { max-width: 980px; }
 .ck-chicken.win svg { animation: ckWin 0.7s ease-in-out 3; }
 @keyframes ckWin { 25% { transform: translateY(-20px) rotate(-12deg); } 50% { transform: none; } 75% { transform: translateY(-14px) rotate(12deg); } }
 .ck-view.shake { animation: mineShake 0.4s; }
+@keyframes mineShake { 20% { transform: translate(-6px, 3px); } 40% { transform: translate(6px, -3px); } 60% { transform: translate(-4px, 2px); } 80% { transform: translate(4px, -2px); } }
 .ck-btns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
 .ck-btns .spin:only-child, .ck-btns .spin.solo { grid-column: 1 / -1; }
 .ck-btns .spin { font-size: 22px; }
@@ -1383,11 +1383,11 @@ html[data-lang="de"] .reel.held::after { content: "GEHALTEN"; }
 .chat-pop .head b { color: var(--accent); }
 .chat-pop .tag { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; padding: 1px 6px; border-radius: 999px; background: var(--accent); color: var(--ink); }
 .chat-pop .text { font-size: 13px; line-height: 1.35; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-/* Gold mine */
+/* Out of credits: off to the burger job */
 .broke-bar { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; margin: 0; padding: 10px 12px; border-radius: 12px; background: linear-gradient(90deg, #3a2a12, #2a1d18); border: 2px dashed #e9a23b88; font-size: 13px; }
 .broke-bar b { color: var(--accent); }
 .broke-bar .chip-btn { padding: 8px 14px; background: var(--accent); color: var(--ink); }
-.lobby-mine { background: var(--accent); color: var(--ink); padding: 10px 16px; animation: popIn 0.4s cubic-bezier(.2, 1.6, .4, 1); }
+.lobby-job { background: var(--accent); color: var(--ink); padding: 10px 16px; animation: popIn 0.4s cubic-bezier(.2, 1.6, .4, 1); }
 .reload-now { background: var(--accent); color: var(--ink); }
 #reloadModal { z-index: 60; }
 .reload-info { font-weight: 400; color: var(--muted); line-height: 1.45; }
@@ -1415,44 +1415,6 @@ html[data-lang="de"] .reel.held::after { content: "GEHALTEN"; }
 @media (prefers-reduced-motion: reduce) { .pbadge, .pbadge.xl, .prestige-card::before, .prestige-btn, #prestigeModal.celebrate h2 { animation: none; } }
 .start-over-yes { background: var(--lose); color: var(--fg); }
 #startOverInfo { font-weight: 400; color: var(--muted); line-height: 1.45; }
-.mine-card { max-width: 440px; position: relative; background: linear-gradient(#2a1d18, #150f0c); }
-.mine-close { position: absolute; top: 12px; right: 12px; }
-.mine-cave {
-  position: relative; width: 100%;
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
-  padding: 12px; border-radius: 16px;
-  background: radial-gradient(circle at 50% 10%, #4a3626, #1d1410 70%);
-  box-shadow: inset 0 10px 30px #000c;
-}
-.mine-cave.shake { animation: mineShake 0.45s; }
-@keyframes mineShake { 20% { transform: translate(-6px, 3px); } 40% { transform: translate(6px, -3px); } 60% { transform: translate(-4px, 2px); } 80% { transform: translate(3px, -1px); } }
-.rock { position: relative; aspect-ratio: 1; padding: 0; border-radius: 14px; background: transparent; cursor: pointer; }
-.rock svg { width: 100%; height: 100%; display: block; transition: transform 0.1s; filter: drop-shadow(0 5px 3px #000a); }
-.rock:active svg { transform: scale(0.92); }
-.rock.hit svg { animation: rockHit 0.18s; }
-@keyframes rockHit { 50% { transform: rotate(-7deg) scale(0.93); } }
-.rock .crack { opacity: 0; transition: opacity 0.1s; }
-.rock[data-hp="2"] .c1, .rock[data-hp="1"] .c1, .rock[data-hp="1"] .c2 { opacity: 1; }
-.rock.open { cursor: default; }
-.rock .loot { position: absolute; inset: 14%; display: grid; place-items: center; animation: popIn 0.4s cubic-bezier(.2, 1.6, .4, 1); }
-.rock .loot svg { filter: drop-shadow(0 0 10px #ffd35588); }
-.rock.dud .loot svg { filter: none; opacity: 0.7; }
-.rock .float { position: absolute; left: 50%; top: 30%; translate: -50% 0; font: 700 15px var(--font-mono); color: var(--accent-hi); text-shadow: 0 2px 0 #000; pointer-events: none; animation: mineFloat 0.9s ease-out forwards; }
-.rock .float.bad { color: #ff7a80; }
-@keyframes mineFloat { to { transform: translateY(-34px); opacity: 0; } }
-.mine-pick { position: fixed; z-index: 60; width: 44px; height: 44px; pointer-events: none; transform-origin: 80% 80%; animation: pickSwing 0.22s ease-out forwards; }
-@keyframes pickSwing { from { transform: rotate(-55deg); } 60% { transform: rotate(12deg); } to { transform: rotate(0); opacity: 0; } }
-.mine-boom { position: absolute; inset: 0; border-radius: 16px; pointer-events: none; background: radial-gradient(circle, #fff2c4, #f08a3c 30%, transparent 65%); animation: mineBoom 0.6s ease-out forwards; }
-@keyframes mineBoom { from { opacity: 1; transform: scale(0.4); } to { opacity: 0; transform: scale(1.4); } }
-.mine-meter { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 8px; align-items: center; width: 100%; }
-.mine-cart { width: 34px; height: 24px; background: no-repeat center / contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 24'%3E%3Cpath d='M2 4h30l-4 13H6z' fill='%237a5236' stroke='%23e9a23b' stroke-width='1.5'/%3E%3Cpath d='M8 4l3-4h4l2 4M18 4l3-3 4 1 1 2' fill='%23f3c94b'/%3E%3Ccircle cx='10' cy='20' r='3.4' fill='%231d1714' stroke='%23c9b9a2' stroke-width='1.5'/%3E%3Ccircle cx='24' cy='20' r='3.4' fill='%231d1714' stroke='%23c9b9a2' stroke-width='1.5'/%3E%3C/svg%3E"); }
-.mine-meter.full .mine-cart { animation: cartRoll 0.8s ease-in-out infinite alternate; }
-@keyframes cartRoll { to { transform: translateX(6px) rotate(3deg); } }
-.mine-bar { height: 12px; border-radius: 6px; background: #0008; overflow: hidden; }
-.mine-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #b87618, #f3c94b); border-radius: 6px; transition: width 0.35s; }
-#mineVal { font: 600 13px var(--font-mono); color: var(--accent); }
-.mine-say { margin: 0; min-height: 40px; font-weight: 600; text-align: center; }
-@media (prefers-reduced-motion: reduce) { .mine-cave.shake, .rock.hit svg, .mine-pick, .mine-meter.full .mine-cart { animation: none; } }
 .chat-pop.gift-pop { border-color: var(--accent); background: linear-gradient(160deg, #3a2a12, var(--cabinet) 70%); align-items: center; }
 .gift-ico svg { width: 30px; height: 30px; display: block; }
 .send-box { display: grid; gap: 6px; width: 100%; padding: 12px; border-radius: 12px; background: var(--panel); border: 1px solid #e9a23b44; text-align: left; }
@@ -1836,6 +1798,117 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
 .lt-admin-draw li { margin: 2px 0; }
 .lt-admin-draw .note { margin: 4px 0 0; color: var(--muted); }
 
+/* ----- Lucky Burger: the free job ----- */
+.gp-free { background: #ffc72c33; color: #ffc72c; }
+.jb-pick { border-color: #ffc72c66; }
+.game-pick:hover .gp-jb .gp-burger, .game-pick:focus-visible .gp-jb .gp-burger { animation: jbBounce 0.6s ease-in-out infinite alternate; }
+.game-pick:hover .gp-jb .gp-coin, .game-pick:focus-visible .gp-jb .gp-coin { animation: jbCoin 1s ease-in infinite; }
+@keyframes jbBounce { to { transform: translateY(-4px); } }
+@keyframes jbCoin { from { transform: translateY(14px); opacity: 0; } 30% { opacity: 1; } to { transform: translateY(-10px); opacity: 0; } }
+.jb { display: grid; gap: 12px; --jr: #d62828; --jy: #ffc72c; }
+.jb-top { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 560px) { .jb-top { grid-template-columns: minmax(0, 1fr); } }
+.jb-badge { display: flex; gap: 12px; align-items: center; padding: 10px 14px; border-radius: 14px; background: linear-gradient(135deg, #d62828, #a4161a); color: #fff; box-shadow: inset 0 -3px 0 #0003; }
+.jb-badge > span:last-child { display: grid; min-width: 0; }
+.jb-badge b { font-size: 19px; line-height: 1.15; }
+.jb-badge small { font-size: 12px; opacity: 0.9; }
+.jb-badge small:last-child { font-family: var(--font-mono); color: var(--jy); opacity: 1; }
+.jb-badge.promo { animation: jbPromo 1.4s cubic-bezier(.2, 1.4, .4, 1); }
+@keyframes jbPromo { 20% { transform: scale(1.08) rotate(-1.5deg); box-shadow: 0 0 0 4px var(--jy), 0 0 40px #ffc72c; } }
+.jb-logo { flex: none; display: grid; place-items: center; width: 46px; height: 46px; border-radius: 12px; background: var(--jy); color: #a4161a; font: 18px Bungee, Impact, sans-serif; box-shadow: inset 0 -3px 0 #0002; }
+.jb-mood { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 12px; align-items: center; padding: 10px 14px; border-radius: 14px; background: var(--panel); }
+.jb-mood > span:nth-child(2) { display: grid; }
+.jb-mood small { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.jb-mood b { font-size: 16px; }
+.jb-face { grid-row: span 2; font-size: 34px; line-height: 1; }
+.jb-moodbar { height: 8px; border-radius: 4px; background: #0006; overflow: hidden; }
+.jb-moodbar i { display: block; height: 100%; width: 0; background: var(--win); border-radius: 4px; transition: width 0.25s, background 0.3s; }
+.jb-mood[data-m="meh"] .jb-moodbar i { background: #f2a516; }
+.jb-mood[data-m="bad"] .jb-moodbar i { background: var(--lose); }
+.jb-mood[data-m="bad"] .jb-face { animation: jbShake 0.5s infinite; }
+@keyframes jbShake { 25% { transform: rotate(-8deg); } 75% { transform: rotate(8deg); } }
+.jb-pay { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; font: 600 13px var(--font-mono); color: var(--accent); }
+.jb-paybar { height: 12px; border-radius: 6px; background: #0006; overflow: hidden; }
+.jb-paybar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #ffc72c, #ffe28a); border-radius: 6px; }
+.jb-stations { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 560px) { .jb-stations { grid-template-columns: minmax(0, 1fr); } }
+.jb-st { position: relative; display: grid; align-content: start; gap: 8px; min-height: 180px; padding: 10px; border-radius: 14px; background: #2a1e18; border: 2px solid #ffffff14; overflow: hidden; }
+.jb-st[data-st="counter"] { grid-column: 1 / -1; }
+.jb-st h4 { margin: 0; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--jy); }
+.jb-lock { display: none; margin: 0; }
+.jb-st[data-locked] { min-height: 0; opacity: 0.55; background: repeating-linear-gradient(45deg, #2a1e18 0 12px, #241914 12px 24px); }
+.jb-st[data-locked] > :not(h4):not(.jb-lock) { display: none; }
+.jb-st[data-locked] .jb-lock { display: block; padding: 6px 0 2px; font-size: 13px; color: var(--muted); }
+.jb-st[data-locked] .jb-lock::before { content: '🔒 '; }
+.jb-offnote { position: absolute; inset: 0; z-index: 2; display: grid; place-items: center; padding: 16px; border-radius: 14px; background: #120c09c4; font-size: 18px; font-weight: 700; text-align: center; color: #fff; backdrop-filter: blur(2px); }
+.jb-offnote[hidden] { display: none; }
+/* the floor: tiles and stains */
+.jb-floor { position: relative; height: 150px; border-radius: 10px; background: repeating-conic-gradient(#ece6da 0 25%, #cfc7b8 0 50%) 0 0 / 30px 30px; box-shadow: inset 0 4px 12px #0004; }
+.jb-spot { position: absolute; width: 52px; height: 44px; padding: 0; border: 0; translate: -50% -50%; rotate: var(--r); scale: var(--s, 1); cursor: pointer;
+  border-radius: 48% 52% 42% 58% / 58% 44% 56% 42%; background: radial-gradient(circle at 42% 40%, color-mix(in srgb, var(--c), #fff 18%) 0 30%, var(--c) 31% 62%, color-mix(in srgb, var(--c), #000 30%) 100%);
+  box-shadow: 18px 8px 0 -14px var(--c), -16px -10px 0 -15px var(--c), 4px 18px 0 -16px var(--c); transition: scale 0.15s; animation: jbIn 0.3s cubic-bezier(.2, 1.6, .4, 1); }
+.jb-spot.late { animation: jbBlink 0.5s ease-in-out infinite; }
+.jb-spot:active { filter: brightness(1.2); }
+@keyframes jbBlink { 50% { filter: brightness(1.4) drop-shadow(0 0 6px #ff3b3b); } }
+@keyframes jbIn { from { scale: 0.2; opacity: 0; } }
+.jb-spot.ok, .jb-job.ok, .jb-cust.ok { animation: jbOk 0.45s ease-out forwards; pointer-events: none; }
+.jb-spot.bad, .jb-job.bad, .jb-cust.bad { animation: jbBad 0.45s ease-out forwards; pointer-events: none; }
+@keyframes jbOk { to { opacity: 0; transform: translateY(-14px) scale(1.15); filter: brightness(2); } }
+@keyframes jbBad { 30% { transform: translateX(-6px); filter: grayscale(1) brightness(0.6); } to { opacity: 0; transform: translateX(8px); } }
+/* fryer and grill */
+.jb-slots { display: grid; gap: 8px; }
+.jb-job { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 6px 10px; align-items: center; padding: 8px; border-radius: 10px; background: #1a120e; animation: jbIn 0.3s cubic-bezier(.2, 1.6, .4, 1); }
+.jb-ico { grid-row: span 2; display: grid; place-items: center; font-size: 30px; }
+.jb-job.fry[data-state="a"] .jb-ico { animation: jbSizzle 0.25s linear infinite; }
+@keyframes jbSizzle { 50% { transform: translate(1px, -1px); } }
+.jb-patty { display: block; width: 34px; height: 22px; border-radius: 50%; background: var(--pc, #d98880); box-shadow: inset 0 -3px 0 #0003, 0 2px 0 #0005; transition: background 0.3s; }
+.jb-job.grill[data-state="b"] .jb-patty { animation: jbFlip 0.4s ease-out; }
+@keyframes jbFlip { 50% { transform: translateY(-12px) scaleY(0.2); } }
+.jb-cook { position: relative; height: 14px; border-radius: 7px; background: #0008; overflow: hidden; }
+.jb-job[data-state="order"] .jb-cook { opacity: 0.35; }
+.jb-zone { position: absolute; top: 0; bottom: 0; left: var(--z0); width: var(--zw); background: #7fd18b44; box-shadow: inset 0 0 0 2px #7fd18b; }
+.jb-fill { position: absolute; inset: 0 auto 0 0; width: 0; background: linear-gradient(90deg, #f6e27a, #e9a23b 70%, #8a3b10); }
+.jb-act { grid-column: 2; padding: 9px 8px; border-radius: 9px; background: var(--jy); color: #3a1d00; font-weight: 700; font-size: 14px; }
+.jb-job[data-state="order"] .jb-act { background: #fff6dc; }
+.jb-life { grid-column: 1 / -1; height: 4px; border-radius: 2px; background: #0006; overflow: hidden; }
+.jb-life i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #ff6b6b, #ffc72c); }
+.jb-life[hidden] { display: none; }
+/* counter: customers, tray and the items */
+.jb-queue { display: flex; flex-wrap: wrap; gap: 8px; min-height: 96px; }
+.jb-cust { flex: 1 1 130px; max-width: 220px; display: grid; justify-items: center; gap: 3px; padding: 8px 10px; border-radius: 12px; background: #fff8e6; color: #3a1d00; animation: jbIn 0.3s cubic-bezier(.2, 1.6, .4, 1); }
+.jb-cust.car { background: #dcecff; }
+.jb-cust small { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: #2b5a9c; }
+.jb-who { font-size: 30px; line-height: 1; }
+.jb-order { font-size: 20px; font-weight: 700; letter-spacing: 0.02em; }
+.jb-cust .jb-life { justify-self: stretch; }
+.jb-tray { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; justify-content: center; min-height: 48px; padding: 6px 10px; border-radius: 12px; background: #8a5a2b; box-shadow: inset 0 0 0 3px #6b4220; font-size: 26px; }
+.jb-tray small { font-size: 13px; color: #f3dcc0; }
+.jb-items { display: grid; grid-template-columns: repeat(auto-fit, minmax(66px, 1fr)); gap: 6px; }
+.jb-item { display: grid; justify-items: center; gap: 0; padding: 7px 4px; border-radius: 10px; background: #fffdf5; color: #3a1d00; font-size: 26px; line-height: 1.1; box-shadow: inset 0 -3px 0 #0002; transition: transform 0.1s; }
+.jb-item small { font-size: 11px; font-weight: 600; }
+.jb-item:active { transform: scale(0.92); }
+.jb-tray-btns { display: grid; grid-template-columns: 2fr 1fr; gap: 6px; }
+.jb-serve { padding: 11px; border-radius: 10px; background: var(--win); color: var(--ink); font-weight: 700; font-size: 15px; }
+.jb-clear { padding: 11px; border-radius: 10px; background: var(--panel); color: var(--fg); font-weight: 600; }
+.jb-shift { background: linear-gradient(180deg, #ffd24d, #ffc72c); color: #3a1d00; }
+.jb-shift.jb-end { background: var(--panel); color: var(--fg); }
+/* career */
+.jb-career { display: grid; gap: 10px; }
+.jb-next { display: grid; gap: 6px; font-size: 13px; }
+.jb-next small { color: var(--muted); }
+.jb-nextbar { height: 10px; border-radius: 5px; background: #0006; overflow: hidden; }
+.jb-nextbar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #d62828, #ffc72c); border-radius: 5px; transition: width 0.4s; }
+.jb-ladder { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+@media (max-width: 560px) { .jb-ladder { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.jb-ladder li { display: grid; gap: 1px; padding: 8px 10px; border-radius: 10px; background: var(--panel); font-size: 12px; color: var(--muted); }
+.jb-ladder li b { font-size: 13px; color: var(--fg); }
+.jb-ladder li span { font-family: var(--font-mono); color: var(--accent); }
+.jb-ladder li.done { opacity: 0.65; }
+.jb-ladder li.done b::after { content: ' ✓'; color: var(--win); }
+.jb-ladder li.cur { background: linear-gradient(135deg, #d62828, #a4161a); color: #ffe7b0; box-shadow: 0 0 0 2px var(--jy); }
+.jb-ladder li.cur b, .jb-ladder li.cur span { color: #fff; }
+@media (prefers-reduced-motion: reduce) { .jb-spot, .jb-spot.late, .jb-job, .jb-cust, .jb-badge.promo, .jb-mood[data-m="bad"] .jb-face { animation: none; } }
+
 #fx, #fxTop { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 #fxTop { z-index: 18; }
 .jp {
@@ -2203,7 +2276,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     <p class="lobby-hi">Hi <b id="lobbyName"></b>, what do you want to play?</p>
     <p class="lobby-credits">Credits <b id="lobbyCredits">0</b></p>
     <p class="lobby-online" id="lobbyOnline"></p>
-    <button type="button" class="chip-btn lobby-mine" id="lobbyMine" data-mine hidden>Out of credits? Go mining for 50</button>
+    <button type="button" class="chip-btn lobby-job" id="lobbyJob" data-job hidden>Out of credits? Work a shift at Lucky Burger</button>
     <section class="lotto-hero" id="lottoHero" aria-labelledby="ltLogo" hidden>
       <span class="lt-bulbs" aria-hidden="true"></span>
       <div class="lt-head">
@@ -2288,6 +2361,27 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         <span class="gp-title">Rocket</span>
         <span class="gp-desc">Board it, watch the multiplier climb and cash out before it blows. 200× is the moon.</span>
         <span class="gp-go">Play</span>
+      </button>
+      <button class="game-pick jb-pick" type="button" data-mode="jb">
+        <span class="gp-online gp-free">Free</span>
+        <svg class="gp-jb" viewBox="0 0 140 130" aria-hidden="true">
+          <rect x="10" y="12" width="120" height="106" rx="16" fill="#d62828"/>
+          <rect x="10" y="12" width="120" height="22" rx="11" fill="#ffc72c"/>
+          <path d="M10 34h120" stroke="#a4161a" stroke-width="3"/>
+          <text x="70" y="29" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="13" fill="#a4161a">LUCKY BURGER</text>
+          <g class="gp-burger">
+            <path d="M36 70q0-24 34-24t34 24z" fill="#e8a33d"/>
+            <g fill="#fff6d8"><ellipse cx="54" cy="57" rx="2.2" ry="1.4"/><ellipse cx="68" cy="53" rx="2.2" ry="1.4"/><ellipse cx="82" cy="57" rx="2.2" ry="1.4"/><ellipse cx="62" cy="63" rx="2.2" ry="1.4"/><ellipse cx="78" cy="63" rx="2.2" ry="1.4"/></g>
+            <path d="M33 72h74l-6 6H39z" fill="#5fb548"/>
+            <rect x="35" y="77" width="70" height="9" rx="4" fill="#ffd23f"/>
+            <rect x="34" y="84" width="72" height="11" rx="5" fill="#6b3416"/>
+            <path d="M36 95h68q0 10-12 10H48q-12 0-12-10z" fill="#e8a33d"/>
+          </g>
+          <g class="gp-coin"><circle cx="112" cy="54" r="9" fill="#ffc72c" stroke="#fff" stroke-width="2"/><text x="112" y="58" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="10" fill="#a4161a">+</text></g>
+        </svg>
+        <span class="gp-title">Lucky Burger</span>
+        <span class="gp-desc">The free job: keep busy, keep the boss happy, earn a wage. Work your way up from cleaner to store manager.</span>
+        <span class="gp-go">Go to work</span>
       </button>
       <button class="game-pick" type="button" data-mode="bj">
         <svg class="gp-bj" viewBox="0 0 140 130" aria-hidden="true">
@@ -2427,7 +2521,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       <h1>Lucky Reels</h1>
       <p id="marqueeSub">Three reels · one payline · play credits</p>
     </header>
-    <div class="broke-bar" id="brokeBar" hidden><span><b>Out of credits?</b> Dig 50 in the gold mine.</span><button type="button" class="chip-btn" data-mine>Go mining</button></div>
+    <div class="broke-bar" id="brokeBar" hidden><span><b>Out of credits?</b> Earn some at Lucky Burger, the free job.</span><button type="button" class="chip-btn" data-job>Go to work</button></div>
 
     <div class="window" id="window">
       <div class="reels" aria-hidden="true">
@@ -2597,6 +2691,33 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       <details class="bj-rules">
         <summary>Rocket rules</summary>
         <p class="note">One rocket for everyone. For 25 seconds you can board it with a bet (and, if you like, an automatic cash-out). Then it lifts off and the multiplier climbs faster and faster: about 2× after 5 seconds, 10× after 17 seconds. Cash out whenever you like and your bet pays that multiplier; if the rocket explodes first, the bet is gone. The higher it goes, the likelier the explosion: about 43% of rockets make it past 2×, one in eleven past 10×, and about one in eight blows up right on the pad. But one rocket in 300 is golden: you see it at liftoff, and it flies past 30× for sure. The few that reach 200× land on the moon and pay 200× to everyone still on board. Over the long run about 96% of bets come back if you hold every golden rocket to 30×. Space boards and cashes out.</p>
+      </details>
+    </section>
+
+    <section class="jb off" id="jb" aria-label="Lucky Burger">
+      <div class="jb-top">
+        <div class="jb-badge" id="jbBadge"><span class="jb-logo" aria-hidden="true">LB</span><span><small>Lucky Burger · your job</small><b id="jbPos">Cleaner</b><small id="jbWage">14 credits / 10 s</small></span></div>
+        <div class="jb-mood" id="jbMood" data-m="ok"><span class="jb-face" id="jbFace" aria-hidden="true">😴</span><span><small>The boss</small><b id="jbMoodTxt">Off duty</b></span><span class="jb-moodbar"><i id="jbMoodBar"></i></span></div>
+      </div>
+      <div class="jb-pay"><span class="jb-paybar"><i id="jbPayBar"></i></span><span id="jbPayTxt"></span></div>
+      <div class="jb-stations" id="jbStations">
+        <div class="jb-st" data-st="floor"><h4>🧽 Floor</h4><div class="jb-floor" id="jbFloor"></div><p class="jb-lock"></p></div>
+        <div class="jb-st" data-st="fryer"><h4>🍟 Fryer</h4><div class="jb-slots" id="jbFryer"></div><p class="jb-lock"></p></div>
+        <div class="jb-st" data-st="grill"><h4>🔥 Grill</h4><div class="jb-slots" id="jbGrill"></div><p class="jb-lock"></p></div>
+        <div class="jb-st" data-st="counter"><h4>🛎️ Counter &amp; drive-in</h4><div class="jb-queue" id="jbQueue"></div>
+          <div class="jb-tray" id="jbTray"></div><div class="jb-items" id="jbItems"></div>
+          <div class="jb-tray-btns"><button type="button" class="jb-serve" id="jbServe">Serve</button><button type="button" class="jb-clear" id="jbClear">Empty tray</button></div><p class="jb-lock"></p></div>
+        <div class="jb-offnote" id="jbOff">Press “Start shift” to clock in.</div>
+      </div>
+      <p class="message" id="jbMsg" role="status" aria-live="polite">Welcome to Lucky Burger!</p>
+      <button class="spin jb-shift" id="jbShift" type="button">Start shift</button>
+      <div class="jb-career">
+        <div class="jb-next"><span id="jbNextTxt"></span><span class="jb-nextbar"><i id="jbNextBar"></i></span><small id="jbStats"></small></div>
+        <ol class="jb-ladder" id="jbLadder"></ol>
+      </div>
+      <details class="bj-rules">
+        <summary>How the job works</summary>
+        <p class="note">Lucky Burger costs nothing. Start a shift and do the work that comes up: scrub stains off the floor, take the fries out when the bar is in the green, flip and serve the patties at the right moment, and put exactly what a customer ordered on the tray. Every 10 seconds you get your wage, but only if you did something in those 10 seconds and the boss is not angry. Finished jobs make the boss happier; things you let slip (a stain someone slips on, burnt food, a customer who walks out) make the boss angry. Paid time counts as time worked, and time worked brings promotions: from cleaner (14 credits every 10 seconds) up to store manager (250 credits every 10 seconds) after 9 hours of work. Higher positions run more stations at once and things go faster. A shift ends when you press End shift, leave the game, switch to another tab or do nothing for 45 seconds.</p>
       </details>
     </section>
 
@@ -2794,18 +2915,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       <button type="button" class="chip-btn" id="startOverNo">Cancel</button>
       <button type="button" class="chip-btn start-over-yes" id="startOverYes">Yes, start over</button>
     </div>
-  </div>
-</div>
-
-<div class="modal" id="mineModal" role="dialog" aria-modal="true" aria-labelledby="mineTitle" hidden>
-  <div class="modal-card mine-card">
-    <button class="chat-close mine-close" id="mineClose" type="button" aria-label="Leave the mine">×</button>
-    <div class="eyebrow">Gold mine</div>
-    <h2 id="mineTitle">Dig for 50 credits</h2>
-    <div class="mine-cave" id="mineCave"></div>
-    <div class="mine-meter"><span class="mine-cart" aria-hidden="true"></span><div class="mine-bar"><i id="mineBar"></i></div><b id="mineVal">0 / 50</b></div>
-    <p class="mine-say" id="mineSay" role="status">Tap the rocks to dig!</p>
-    <button class="spin" id="mineCash" type="button" hidden>Cash out 50 credits</button>
   </div>
 </div>
 
@@ -3215,6 +3324,26 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Lotto settings saved. Everyone sees them within seconds.': 'Lotto-Einstellungen gespeichert. Alle sehen sie in wenigen Sekunden.', 'The midday and evening draws need different hours.': 'Mittags- und Abendziehung brauchen verschiedene Stunden.',
     'Sales': 'Verkauf', 'on sale now': 'läuft gerade', 'not open yet': 'noch nicht offen', 'sales closed': 'Verkauf beendet', 'draw running': 'Ziehung läuft', 'paused': 'pausiert', 'drawn': 'gezogen',
     'No lotto tickets yet.': 'Noch keine Lose.', 'Last winners': 'Letzte Gewinner', 'No sending while lotto tickets are on sale.': 'Während des Losverkaufs kann man keine Credits senden.',
+    'Lucky Burger': 'Lucky Burger', 'Lucky Burger · the free job · earn credits by working': 'Lucky Burger · der Gratis-Job · Credits durch Arbeit', 'Free': 'Gratis', 'Go to work': 'Ab zur Arbeit', 'The free job: keep busy, keep the boss happy, earn a wage. Work your way up from cleaner to store manager.': 'Der Gratis-Job: Bleib fleißig, halt den Chef bei Laune und verdien Lohn. Arbeite dich von der Putzkraft zum Filialmanager hoch.',
+    'Out of credits? Work a shift at Lucky Burger': 'Keine Credits? Arbeite eine Schicht bei Lucky Burger', 'Earn some at Lucky Burger, the free job.': 'Verdien dir welche bei Lucky Burger, dem Gratis-Job.',
+    'Out of credits. Earn some at Lucky Burger!': 'Keine Credits mehr. Verdien dir welche bei Lucky Burger!', 'First Paycheck': 'Erster Lohn', 'Earn your first wage at Lucky Burger.': 'Verdien deinen ersten Lohn bei Lucky Burger.',
+    'Burger Boss': 'Burger-Boss', 'Work your way up to store manager at Lucky Burger.': 'Arbeite dich bei Lucky Burger zum Filialmanager hoch.',
+    'Cleaner': 'Putzkraft', 'Fry Cook': 'Pommes-Kraft', 'Grill Cook': 'Grillmeister', 'Cashier': 'Kassierer', 'Drive-in Crew': 'Drive-in-Kraft', 'Shift Lead': 'Schichtführer', 'Deputy Manager': 'Stellv. Filialleiter', 'Store Manager': 'Filialmanager',
+    'Burger': 'Burger', 'Fries': 'Pommes', 'Cola': 'Cola', 'Nuggets': 'Nuggets', 'Ice cream': 'Eis', 'Salad': 'Salat',
+    'Lucky Burger · your job': 'Lucky Burger · dein Job', 'The boss': 'Der Chef', 'Off duty': 'Feierabend', 'Loves your work': 'Begeistert von dir', 'Happy': 'Zufrieden', 'Watching you': 'Beobachtet dich', 'Angry: no wage!': 'Sauer: kein Lohn!',
+    '🧽 Floor': '🧽 Boden', '🍟 Fryer': '🍟 Fritteuse', '🔥 Grill': '🔥 Grill', '🛎️ Counter & drive-in': '🛎️ Theke & Drive-in', 'Serve': 'Servieren', 'Empty tray': 'Tablett leeren', 'Tray is empty': 'Tablett ist leer',
+    'Press “Start shift” to clock in.': 'Drück „Schicht starten“, um einzustempeln.', 'Welcome to Lucky Burger!': 'Willkommen bei Lucky Burger!', 'Start shift': 'Schicht starten', 'End shift': 'Schicht beenden',
+    'How the job works': 'So funktioniert der Job', 'Not your job any more': 'Nicht mehr dein Job', 'from the start': 'von Anfang an', 'Top of the ladder: you run the place!': 'Ganz oben: Dir gehört der Laden!',
+    'Stain': 'Fleck', 'Drop the basket': 'Korb rein', 'Put a patty on': 'Patty auflegen', 'Lift it out!': 'Raus damit!', 'Flip it!': 'Wenden!', 'Serve it!': 'Servieren!', 'Drive-in': 'Drive-in',
+    'Too early: soggy fries!': 'Zu früh: matschige Pommes!', 'Too early: the patty is still raw!': 'Zu früh: das Patty ist noch roh!', 'Too late: the fries are burnt!': 'Zu spät: die Pommes sind verbrannt!', 'Too late: the patty is burnt!': 'Zu spät: das Patty ist verbrannt!',
+    'Nobody ordered that! The tray goes back.': 'Das hat keiner bestellt! Das Tablett geht zurück.', 'Clocked in! Keep busy: the boss pays only while you work.': 'Eingestempelt! Bleib fleißig: Der Chef zahlt nur, solange du arbeitest.',
+    'Shift over.': 'Schicht vorbei.', 'The boss is not happy with you: no wage for these 10 seconds.': 'Der Chef ist unzufrieden: kein Lohn für diese 10 Sekunden.', 'You did nothing for 10 seconds: no wage.': 'Du hast 10 Sekunden nichts getan: kein Lohn.',
+    'Promotion!': 'Beförderung!', 'You left in the middle of the shift, so the shift is over.': 'Du bist mitten in der Schicht gegangen, also ist die Schicht vorbei.',
+    'The fries burnt in the fryer!': 'Die Pommes sind in der Fritteuse verbrannt!', 'A patty burnt on the grill!': 'Ein Patty ist auf dem Grill verbrannt!', 'A customer slipped on a stain!': 'Ein Kunde ist auf einem Fleck ausgerutscht!',
+    'A car drove off without its order!': 'Ein Auto ist ohne Bestellung weggefahren!', 'A customer walked out angry!': 'Ein Kunde ist wütend gegangen!', 'An order sat around too long!': 'Eine Bestellung lag zu lange herum!',
+    'You fell asleep on the job. Shift over.': 'Du bist bei der Arbeit eingeschlafen. Schicht vorbei.', 'Welcome back! Start a shift when you are ready.': 'Willkommen zurück! Starte eine Schicht, wenn du bereit bist.',
+    'Welcome to Lucky Burger! Start your first shift as a cleaner.': 'Willkommen bei Lucky Burger! Starte deine erste Schicht als Putzkraft.',
+    'Lucky Burger costs nothing. Start a shift and do the work that comes up: scrub stains off the floor, take the fries out when the bar is in the green, flip and serve the patties at the right moment, and put exactly what a customer ordered on the tray. Every 10 seconds you get your wage, but only if you did something in those 10 seconds and the boss is not angry. Finished jobs make the boss happier; things you let slip (a stain someone slips on, burnt food, a customer who walks out) make the boss angry. Paid time counts as time worked, and time worked brings promotions: from cleaner (14 credits every 10 seconds) up to store manager (250 credits every 10 seconds) after 9 hours of work. Higher positions run more stations at once and things go faster. A shift ends when you press End shift, leave the game, switch to another tab or do nothing for 45 seconds.': 'Lucky Burger kostet nichts. Starte eine Schicht und erledige, was anfällt: Flecken vom Boden schrubben, die Pommes rausholen, wenn der Balken im grünen Bereich ist, Pattys im richtigen Moment wenden und servieren und genau das aufs Tablett legen, was ein Kunde bestellt hat. Alle 10 Sekunden gibt es Lohn, aber nur, wenn du in diesen 10 Sekunden etwas getan hast und der Chef nicht sauer ist. Erledigte Aufgaben machen den Chef zufriedener; was du schleifen lässt (ein Fleck, auf dem jemand ausrutscht, verbranntes Essen, ein Kunde, der geht) macht ihn sauer. Bezahlte Zeit zählt als Arbeitszeit, und Arbeitszeit bringt Beförderungen: von der Putzkraft (14 Credits alle 10 Sekunden) bis zum Filialmanager (250 Credits alle 10 Sekunden) nach 9 Stunden Arbeit. Höhere Positionen betreuen mehr Stationen gleichzeitig, und alles geht schneller. Eine Schicht endet, wenn du „Schicht beenden“ drückst, das Spiel verlässt, in einen anderen Tab wechselst oder 45 Sekunden nichts tust.',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -3342,18 +3471,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Enter how many credits to send.': 'Gib ein, wie viele Credits du schicken willst.', 'Not enough credits for that.': 'Dafür reichen deine Credits nicht.',
     'That player cannot get credits right now.': 'Dieser Spieler kann gerade keine Credits bekommen.',
     'Sending credits needs the “Sending credits” part of supabase-setup.sql.': 'Zum Verschicken braucht die Datenbank den Teil „Sending credits“ aus supabase-setup.sql.',
-    'Gold mine': 'Goldmine', 'Dig for 50 credits': 'Grab dir 50 Credits', 'Leave the mine': 'Mine verlassen', 'Rock': 'Felsen',
-    'Tap the rocks to dig!': 'Tipp auf die Felsen zum Graben!', 'Cash out 50 credits': '50 Credits auszahlen',
-    'Out of credits?': 'Keine Credits mehr?', 'Dig 50 in the gold mine.': 'Grab dir 50 in der Goldmine.', 'Go mining': 'Ab in die Mine',
-    'Out of credits? Go mining for 50': 'Keine Credits? Ab in die Mine für 50', 'Out of credits. Dig 50 in the gold mine!': 'Keine Credits mehr. Grab dir 50 in der Goldmine!',
-    'The cart is full! Cash out your 50 credits.': 'Die Lore ist voll! Zahl dir deine 50 Credits aus.', 'Back from the mine': 'Zurück aus der Mine',
-    'Gold Digger': 'Goldgräber', 'Come back from the gold mine.': 'Komm aus der Goldmine zurück.',
-    'Shiny!': 'Glänzt!', 'Gold! The canary is proud of you.': 'Gold! Der Kanarienvogel ist stolz auf dich.', 'Ka-ching!': 'Ka-tsching!',
-    'A nugget the size of a walnut!': 'Ein Nugget so groß wie eine Walnuss!', 'Diggy diggy hole!': 'Diggy diggy hole!',
-    'A gem! Do not tell the other miners.': 'Ein Edelstein! Nicht den anderen Bergleuten erzählen.', 'Sparkly! Worth a lot.': 'Funkelt! Ist viel wert.', 'Ooh, a diamond!': 'Ooh, ein Diamant!',
-    'Just dirt. Very nice dirt, though.': 'Nur Erde. Aber sehr schöne Erde.', 'Nothing but pebbles.': 'Nur Kieselsteine.', 'Rocks all the way down.': 'Nur Steine, so weit das Auge reicht.',
-    'Is that… a potato?': 'Ist das … eine Kartoffel?', 'A potato. Lunch is sorted.': 'Eine Kartoffel. Mittagessen gesichert.',
-    'BOOM! There go my eyebrows.': 'BUMM! Da gehen meine Augenbrauen.', 'Who put TNT in there?!': 'Wer hat da TNT reingelegt?!', 'Kaboom! Some gold flew off.': 'Kawumm! Etwas Gold ist weggeflogen.',
+    'Out of credits?': 'Keine Credits mehr?', 'Ka-ching!': 'Ka-tsching!',
     'Plinko': 'Plinko', 'Plinko board': 'Plinko-Brett', 'Last results': 'Letzte Ergebnisse', 'New': 'Neu', 'Plinko rules': 'Plinko-Regeln',
     'Drop balls through the pins and hope for the edges.': 'Lass Kugeln durch die Pins fallen und hoff auf die Ränder.',
     'Pick a bet and drop a ball.': 'Wähl einen Einsatz und lass eine Kugel fallen.', 'Drop ball': 'Kugel los!',
@@ -3424,7 +3542,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['☀ Midday {a}', '☀ Mittag {a} Uhr'], ['☾ Evening {a}', '☾ Abend {a} Uhr'], ['{a} · German time', '{a} · deutsche Zeit'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['{a} credits / 10 s', '{a} Credits / 10 s'], ['{a} / 10 s', '{a} / 10 s'], ['{a} credits every 10 s while you work', '{a} Credits alle 10 s, solange du arbeitest'],
+    ['Next paycheck in {a} s', 'Nächster Lohn in {a} s'], ['Paycheck: +{a} credits!', 'Lohn: +{a} Credits!'], ['Unlocks as {a}', 'Ab {a}'], ['after {a}', 'nach {a}'],
+    ['Next: {a} ({b} credits / 10 s) · {c} of work to go', 'Nächste Stufe: {a} ({b} Credits / 10 s) · noch {c} Arbeit'], ['Worked {a} · earned {b} credits', 'Gearbeitet: {a} · verdient: {b} Credits'],
+    ['Shift over. You earned {a} credits this shift.', 'Schicht vorbei. Du hast in dieser Schicht {a} Credits verdient.'], ['You are now {a}: {b} credits every 10 seconds.', 'Du bist jetzt {a}: {b} Credits alle 10 Sekunden.'],
+    ['Promotion! You are now {a}.', 'Beförderung! Du bist jetzt {a}.'], ['☀ Midday {a}', '☀ Mittag {a} Uhr'], ['☾ Evening {a}', '☾ Abend {a} Uhr'], ['{a} · German time', '{a} · deutsche Zeit'],
     ['Tickets from {a}', 'Lose ab {a} Uhr'], ['On sale · closes in {a}', 'Verkauf läuft · endet in {a}'], ['Sales closed · draw in {a}', 'Verkauf beendet · Ziehung in {a}'], ['{a} tickets', '{a} Lose'],
     ['Buy ticket · {a}', 'Los kaufen · {a}'], ['Pay {a}?', '{a} zahlen?'], ['🎟 Your ticket · {a} credits', '🎟 Dein Los · {a} Credits'],
     ['Your ticket for {a} credits is in the drum. Draw at {b}!', 'Dein Los für {a} Credits ist in der Trommel. Ziehung um {b} Uhr!'], ['+{a} credits are on your balance.', '+{a} Credits sind auf deinem Konto.'],
@@ -3844,7 +3966,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     { id: 'longshot', name: 'Long Shot', desc: 'Win a horse bet at 10× odds or more.', reward: 2000, test: c => c?.horseOdds >= 10 },
     { id: 'plinko', name: 'Sky Drop', desc: 'Land a Plinko ball on 25× or more.', reward: 800, test: c => c?.plinkoMult >= 25 },
     { id: 'prestige', name: 'Prestigious', desc: 'Go Prestige for the first time.', reward: 2500, test: c => c?.prestige >= 1 },
-    { id: 'miner', name: 'Gold Digger', desc: 'Come back from the gold mine.', reward: 100, test: c => c?.mined },
+    { id: 'miner', name: 'First Paycheck', desc: 'Earn your first wage at Lucky Burger.', reward: 100, test: c => c?.jobPaid },
+    { id: 'jobBoss', name: 'Burger Boss', desc: 'Work your way up to store manager at Lucky Burger.', reward: 5000, test: c => c?.jobPos >= 7 },
     { id: 'bullseye', name: 'Bullseye', desc: 'Hit a single number in roulette.', reward: 500, test: c => c?.bullseye },
     { id: 'natural', name: 'Natural', desc: 'Get a blackjack.', reward: 300, test: c => c?.natural },
     { id: 'splitter', name: 'Splitter', desc: 'Win both hands after a split.', reward: 500, test: c => c?.splitBoth },
@@ -3872,6 +3995,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     hr: { bet: 100, kind: 'win', races: 0, wins: 0, won: 0, open: [], history: [] },
     rk: { bet: 100, auto: null, rounds: 0, wins: 0, open: [], history: [] },
     pk: { view: 'solo', solo: null, hands: 0, buyIn: 2000 },
+    // the burger job: seconds worked (paid), credits earned, shifts, the highest position reached so far
+    job: { worked: 0, earned: 0, shifts: 0, pos: 0 },
   });
   const state = fresh();
 
@@ -4510,7 +4635,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     } else if (win) {
       say(`Cherries pay ${fmt(win)}${tail}`, 'win');
     } else if (state.credits < 1 && !state.freeSpins) {
-      say('Out of credits. Dig 50 in the gold mine!', 'lose');
+      say('Out of credits. Earn some at Lucky Burger!', 'lose');
     } else if (starCount) {
       say(`No win, but +${starCount} bonus star${starCount > 1 ? 's' : ''}.`, 'bonus');
     } else {
@@ -5036,7 +5161,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   document.querySelectorAll('.bj-act').forEach(b => b.addEventListener('click', () => bjAct(b.dataset.bj)));
   document.addEventListener('keydown', e => {
     if (state.mode !== 'bj' || !account || !$('lobby').hidden || e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
-    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal, #profileModal, #mineModal') || !$('mineModal').hidden) return;
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal, #profileModal')) return;
     if (!$('gambleModal').hidden || !$('adminModal').hidden || !$('profileModal').hidden) return;
     const key = e.key.toLowerCase();
     const map = { h: 'hit', s: 'stand', d: 'double', p: 'split' };
@@ -5070,19 +5195,21 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     ck: 'Chicken · cross the road · play credits',
     hr: 'Horse racing · live for everyone · play credits',
     rk: 'Rocket · cash out before it blows · play credits',
+    jb: 'Lucky Burger · the free job · earn credits by working',
   };
   const gameBusy = () => busy || bjBusy || (typeof pkBusy === 'function' && pkBusy()) || (typeof plBusy === 'function' && plBusy()) || (typeof ckBusy === 'function' && ckBusy());
   function applyGameMode() {
     const bj = state.mode === 'bj';
     cabinet.dataset.mode = state.mode;
     cabinet.classList.toggle('mode-bj', bj);
-    document.body.classList.toggle('wide', state.mode === 'pk' || state.mode === 'hr' || state.mode === 'rk');
+    document.body.classList.toggle('wide', state.mode === 'pk' || state.mode === 'hr' || state.mode === 'rk' || state.mode === 'jb');
     $('marqueeSub').textContent = MODE_SUBS[state.mode];
     if (state.mode === 'rl') rlEnter();
     if (state.mode === 'pl' && typeof plEnter === 'function') plEnter();
     if (state.mode === 'ck' && typeof ckEnter === 'function') ckEnter();
     if (state.mode === 'hr' && typeof hrEnter === 'function') hrEnter();
     if (state.mode === 'rk' && typeof rkEnter === 'function') rkEnter();
+    if (state.mode === 'jb' && typeof jbEnter === 'function') jbEnter();
     if (state.mode === 'pk' && typeof pkEnter === 'function') pkEnter();
     if (bj) {
       renderBJTable(false);
@@ -5096,7 +5223,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     renderBroke();
     document.querySelectorAll('.game-pick').forEach(b => {
       b.querySelector('.gp-last')?.remove();
-      if (b.dataset.mode === state.mode && state.spins + state.bj.hands + state.rl.spins + state.pk.hands + state.pl.drops + state.ck.games + state.hr.races + state.rk.rounds > 0) b.insertAdjacentHTML('afterbegin', '<span class="gp-last">Last played</span>');
+      if (b.dataset.mode === state.mode && state.spins + state.bj.hands + state.rl.spins + state.pk.hands + state.pl.drops + state.ck.games + state.hr.races + state.rk.rounds + state.job.shifts > 0) b.insertAdjacentHTML('afterbegin', '<span class="gp-last">Last played</span>');
     });
     $('lobby').hidden = false;
     renderLotto();
@@ -5110,7 +5237,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     $('lobby').hidden = true;
     sound.chime();
     render();
-    ({ bj: $('bjDeal'), rl: $('rlSpin'), slots: $('spin'), pk: $('pkSit'), pl: $('plDrop'), ck: $('ckGo'), hr: $('hrBet'), rk: $('rkBet') }[state.mode])?.focus({ preventScroll: true });
+    ({ bj: $('bjDeal'), rl: $('rlSpin'), slots: $('spin'), pk: $('pkSit'), pl: $('plDrop'), ck: $('ckGo'), hr: $('hrBet'), rk: $('rkBet'), jb: $('jbShift') }[state.mode])?.focus({ preventScroll: true });
   }));
 
   $('backBtn').addEventListener('click', () => {
@@ -5777,7 +5904,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   $('rlSpin').addEventListener('click', () => rlSubmit(false));
   document.addEventListener('keydown', e => {
     if (state.mode !== 'rl' || !account || !$('lobby').hidden || e.code !== 'Space') return;
-    if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'SUMMARY'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal, #profileModal, #mineModal') || !$('mineModal').hidden) return;
+    if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'SUMMARY'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal, #profileModal')) return;
     e.preventDefault();
     rlSubmit(false);
   });
@@ -6073,7 +6200,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   $('plBet').addEventListener('input', () => { const v = Math.floor(Number($('plBet').value)); if (v >= 1) state.pl.bet = v; renderPLControls(); });
   document.addEventListener('keydown', e => {
     if (state.mode !== 'pl' || !account || !$('lobby').hidden || e.code !== 'Space') return;
-    if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'SUMMARY'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal, #profileModal, #mineModal') || !$('mineModal').hidden) return;
+    if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'SUMMARY'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal, #profileModal')) return;
     e.preventDefault();
     plDrop();
   });
@@ -6290,7 +6417,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   $('ckBet').addEventListener('input', () => { const v = Math.floor(Number($('ckBet').value)); if (v >= 1) state.ck.bet = v; renderCKControls(); });
   document.addEventListener('keydown', e => {
     if (state.mode !== 'ck' || !account || !$('lobby').hidden || e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
-    if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'SUMMARY'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal, #profileModal, #mineModal')) return;
+    if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'SUMMARY'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal, #profileModal')) return;
     if (e.code === 'Space') { e.preventDefault(); ckGo(); }
     else if (e.key.toLowerCase() === 'c') ckCashOut(false);
   });
@@ -7726,7 +7853,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   $('rkAuto').addEventListener('change', rkSetAuto);
   document.addEventListener('keydown', e => {
     if (state.mode !== 'rk' || !account || !$('lobby').hidden || e.code !== 'Space') return;
-    if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'SUMMARY'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal, #profileModal, #mineModal')) return;
+    if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'SUMMARY'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal, #profileModal')) return;
     e.preventDefault();
     const p = rkPhase(hrNow());
     if (p.phase === 'fly') rkCashOut(false); else if (p.phase === 'bet') rkPlace();
@@ -8349,7 +8476,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   $('pkRaise').addEventListener('click', () => pkMove('raise'));
   document.addEventListener('keydown', e => {
     if (state.mode !== 'pk' || !account || !$('lobby').hidden || e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
-    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal, #profileModal, #mineModal') || !$('mineModal').hidden) return;
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal, #profileModal')) return;
     const map = { f: 'fold', c: 'call', r: 'raise' };
     const act = map[e.key.toLowerCase()];
     if (act && !$('pkFold').disabled) { e.preventDefault(); pkMove(act); }
@@ -8648,121 +8775,21 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     }, k * 260);
   }
 
-  // ---------- Gold mine ----------
-  // When the credits run out: tap rocks, collect nuggets and gems, avoid the TNT, cash out a fixed 50.
-  const MINE_PAY = 50, MINE_LIMIT = 50;
-  const MINE_ROCK = hue => `<svg viewBox="0 0 64 64"><path d="M10 44l4-20 14-12 18 4 10 18-4 16-16 6-20-2z" fill="hsl(${hue} 14% 38%)" stroke="#1d1410" stroke-width="2.5" stroke-linejoin="round"/><path d="M14 26l12-10 16 3" fill="none" stroke="#fff3" stroke-width="3" stroke-linecap="round"/><path d="M22 48l10 4 12-4" fill="none" stroke="#0004" stroke-width="3" stroke-linecap="round"/><path class="crack c1" d="M30 14l-2 10 6 6-4 10" fill="none" stroke="#1d1410" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path class="crack c2" d="M34 30l10 2 4 8M28 24l-10 6-2 8" fill="none" stroke="#1d1410" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-  const MINE_LOOT = {
-    gold: '<svg viewBox="0 0 48 48"><path d="M8 32l6-12 10-4 12 4 6 10-4 8-14 3-12-3z" fill="#f3c94b" stroke="#b87618" stroke-width="2" stroke-linejoin="round"/><path d="M15 22l9-4 9 3" fill="none" stroke="#fff6" stroke-width="2.5" stroke-linecap="round"/></svg>',
-    gem: '<svg viewBox="0 0 48 48"><path d="M14 8h20l9 11-19 23L5 19z" fill="#4fe3ff" stroke="#1d7a99" stroke-width="2" stroke-linejoin="round"/><path d="M5 19h38M14 8l5 11 5-11 5 11 5-11M19 19l5 23 5-23" stroke="#1d7a99" stroke-width="1.5" fill="none"/></svg>',
-    dirt: '<svg viewBox="0 0 48 48"><ellipse cx="24" cy="34" rx="16" ry="6" fill="#6b4a32"/><circle cx="16" cy="30" r="4" fill="#7a5638"/><circle cx="30" cy="29" r="5" fill="#7a5638"/><circle cx="24" cy="33" r="3" fill="#5a3d28"/></svg>',
-    potato: '<svg viewBox="0 0 48 48"><ellipse cx="24" cy="26" rx="15" ry="11" fill="#c99a5b" stroke="#8a6232" stroke-width="2"/><circle cx="18" cy="24" r="1.5" fill="#8a6232"/><circle cx="28" cy="21" r="1.5" fill="#8a6232"/><circle cx="31" cy="30" r="1.5" fill="#8a6232"/></svg>',
-    tnt: '<svg viewBox="0 0 48 48"><rect x="12" y="14" width="24" height="28" rx="4" fill="#c8323a" stroke="#7a1a20" stroke-width="2"/><rect x="12" y="24" width="24" height="7" fill="#f6efe3"/><text x="24" y="30" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="7" fill="#1d1714">TNT</text><path d="M24 14q2-6 7-7" stroke="#1d1714" stroke-width="2" fill="none"/><circle cx="32" cy="6" r="3" fill="#f08a3c"/></svg>',
-  };
-  const MINE_LINES = {
-    gold: ['Shiny!', 'Gold! The canary is proud of you.', 'Ka-ching!', 'A nugget the size of a walnut!', 'Diggy diggy hole!'],
-    gem: ['A gem! Do not tell the other miners.', 'Sparkly! Worth a lot.', 'Ooh, a diamond!'],
-    dirt: ['Just dirt. Very nice dirt, though.', 'Nothing but pebbles.', 'Rocks all the way down.'],
-    potato: ['Is that… a potato?', 'A potato. Lunch is sorted.'],
-    tnt: ['BOOM! There go my eyebrows.', 'Who put TNT in there?!', 'Kaboom! Some gold flew off.'],
-  };
-  let mine = null;
-  const pickLine = kind => MINE_LINES[kind][randInt(MINE_LINES[kind].length)];
-  function mineLoot() {
-    const r = randInt(100);
-    if (r < 48) return { kind: 'gold', v: 4 + randInt(5) };
-    if (r < 62) return { kind: 'gem', v: 12 + randInt(7) };
-    if (r < 82) return { kind: 'dirt', v: 0 };
-    if (r < 90) return { kind: 'potato', v: 1 };
-    return { kind: 'tnt', v: -10 };
-  }
-  function mineFill() {
-    $('mineCave').innerHTML = Array.from({ length: 12 }, (_, i) =>
-      `<button type="button" class="rock" data-i="${i}" data-hp="${2 + randInt(3)}" aria-label="Rock">${MINE_ROCK(20 + randInt(30))}</button>`).join('');
-  }
-  function mineRender() {
-    const v = Math.min(MINE_PAY, mine.got);
-    $('mineBar').style.width = `${(v / MINE_PAY) * 100}%`;
-    $('mineVal').textContent = `${v} / ${MINE_PAY}`;
-    const full = mine.got >= MINE_PAY;
-    $('mineCash').hidden = !full;
-    document.querySelector('.mine-meter').classList.toggle('full', full);
-  }
-  function openMine() {
-    if (!account || state.credits >= MINE_LIMIT || gameBusy()) return;
-    mine = { got: 0 };
-    mineFill();
-    mineRender();
-    showMessage($('mineSay'), 'Tap the rocks to dig!', '');
-    $('lobby').hidden = true;
-    $('mineModal').hidden = false;
-    sound.chime();
-  }
-  function closeMine() {
-    $('mineModal').hidden = true;
-    mine = null;
-    render();
-  }
-  document.addEventListener('click', e => { if (e.target.closest('[data-mine]')) openMine(); });
-  $('mineClose').addEventListener('click', closeMine);
-  $('mineModal').addEventListener('keydown', e => { if (e.key === 'Escape') closeMine(); });
-  $('mineCave').addEventListener('click', e => {
-    const rock = e.target.closest('.rock');
-    if (!rock || !mine || rock.classList.contains('open') || mine.got >= MINE_PAY) return;
-    // the pickaxe swings at the tap
-    const pick = document.createElement('div');
-    pick.className = 'mine-pick';
-    pick.innerHTML = '<svg viewBox="0 0 48 48"><path d="M8 40L32 16" stroke="#8a6232" stroke-width="5" stroke-linecap="round"/><path d="M20 8q14-4 24 8-10-2-16 2z" fill="#c9b9a2" stroke="#5b6478" stroke-width="2" stroke-linejoin="round"/></svg>';
-    const rr = rock.getBoundingClientRect();
-    pick.style.left = `${rr.left + rr.width * 0.35}px`;
-    pick.style.top = `${rr.top - rr.height * 0.25}px`;
-    document.body.append(pick);
-    setTimeout(() => pick.remove(), 260);
-    rock.classList.remove('hit'); void rock.offsetWidth; rock.classList.add('hit');
-    fxTop.burst(rr.left + rr.width / 2, rr.top + rr.height / 2, 8, 30, 4, false);
-    const hp = Number(rock.dataset.hp) - 1;
-    rock.dataset.hp = hp;
-    sound.tone(240 + randInt(80), 0, 0.05, 'square', 0.04);
-    if (hp > 0) return;
-    // broken open
-    const loot = mineLoot();
-    rock.classList.add('open');
-    if (loot.v <= 0 && loot.kind !== 'tnt') rock.classList.add('dud');
-    rock.innerHTML = `<span class="loot">${MINE_LOOT[loot.kind]}</span>` + (loot.v ? `<span class="float${loot.v < 0 ? ' bad' : ''}">${loot.v > 0 ? '+' : ''}${loot.v}</span>` : '');
-    mine.got = Math.max(0, mine.got + loot.v);
-    if (loot.kind === 'tnt') {
-      const boom = document.createElement('div');
-      boom.className = 'mine-boom';
-      $('mineCave').append(boom);
-      setTimeout(() => boom.remove(), 650);
-      $('mineCave').classList.remove('shake'); void $('mineCave').offsetWidth; $('mineCave').classList.add('shake');
-      sound.boom();
-    } else if (loot.kind === 'gem') { sound.bigWin(); fxTop.coinBurst(rr.left + rr.width / 2, rr.top, 14, 7); }
-    else if (loot.kind === 'gold') sound.win();
-    else sound.tick();
-    showMessage($('mineSay'), mine.got >= MINE_PAY ? 'The cart is full! Cash out your 50 credits.' : pickLine(loot.kind), loot.kind === 'tnt' ? 'lose' : loot.v > 0 ? 'win' : '');
-    mineRender();
-    if (mine.got >= MINE_PAY) { sound.levelUp(); $('mineCash').focus(); }
-    // new rocks once the wall is dug out
-    if (mine.got < MINE_PAY && !$('mineCave').querySelector('.rock:not(.open)')) setTimeout(() => { if (mine) mineFill(); }, 700);
-  });
-  $('mineCash').addEventListener('click', () => {
-    if (!mine || mine.got < MINE_PAY) return;
-    state.credits = Math.min(MAX, state.credits + MINE_PAY);
-    state.mines = (state.mines || 0) + 1;
-    const b = $('mineCash').getBoundingClientRect();
-    fxTop.coinBurst(b.left + b.width / 2, b.top, 40, 10);
-    sound.bigWin();
-    toast('Back from the mine', `+${MINE_PAY} credits. Good luck!`);
-    checkAch({ mined: true });
-    closeMine();
-    render();
-  });
+  // Out of credits: a hint to the free burger job.
+  const BROKE_AT = 50;
   function renderBroke() {
-    const broke = !!account && state.credits < MINE_LIMIT;
-    $('brokeBar').hidden = !broke || gameBusy();
-    $('lobbyMine').hidden = !broke;
+    const broke = !!account && state.credits < BROKE_AT;
+    $('brokeBar').hidden = !broke || gameBusy() || state.mode === 'jb';
+    $('lobbyJob').hidden = !broke;
   }
+  document.addEventListener('click', e => {
+    if (!e.target.closest('[data-job]') || !account || gameBusy()) return;
+    state.mode = 'jb';
+    applyGameMode();
+    $('lobby').hidden = true;
+    sound.chime();
+    render();
+  });
 
   // ---------- Level rewards ----------
   const LEVEL_REWARD = 250;
@@ -9270,7 +9297,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     }
   });
   document.addEventListener('keydown', e => {
-    if (e.code === 'Space' && account && $('lobby').hidden && state.mode === 'slots' && !['BUTTON', 'SUMMARY', 'INPUT'].includes(e.target.tagName) && $('gambleModal').hidden && $('adminModal').hidden && $('profileModal').hidden && $('mineModal').hidden && $('startOverModal').hidden) { e.preventDefault(); play(); }
+    if (e.code === 'Space' && account && $('lobby').hidden && state.mode === 'slots' && !['BUTTON', 'SUMMARY', 'INPUT'].includes(e.target.tagName) && $('gambleModal').hidden && $('adminModal').hidden && $('profileModal').hidden && $('startOverModal').hidden) { e.preventDefault(); play(); }
   });
 
   // ---------- Accounts ----------
@@ -10206,11 +10233,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (Array.isArray(state.pl.pending) && state.pl.pending.length) state.credits = Math.min(MAX, state.credits + state.pl.pending.reduce((a, b) => a + (Number(b.pay) || 0), 0));
     state.pl.pending = [];
     state.pk = Object.assign(fresh().pk, saved.pk);
+    state.job = Object.assign(fresh().job, saved.job);
+    for (const k of ['worked', 'earned', 'shifts', 'pos']) state.job[k] = Math.max(0, Math.floor(Number(state.job[k]) || 0));
     if (state.pk.solo && !Array.isArray(state.pk.solo.seats)) state.pk.solo = null;
     if (typeof state.rl.bets !== 'object' || !state.rl.bets) state.rl.bets = {};
     if (!Array.isArray(state.bj.shoe)) state.bj.shoe = [];
     if (state.bj.round && !Array.isArray(state.bj.round.hands)) state.bj.round = null;
-    if (!['bj', 'rl', 'pk', 'pl', 'ck', 'hr', 'rk'].includes(state.mode)) state.mode = 'slots';
+    if (!['bj', 'rl', 'pk', 'pl', 'ck', 'hr', 'rk', 'jb'].includes(state.mode)) state.mode = 'slots';
     autoLeft = 0;
     pendingLevels.length = 0;
     held = [false, false, false];
@@ -10585,12 +10614,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Which game each online player has open, shown in the highscores and on the lobby cards.
   const GAME_INFO = {
     slots: ['🎰', 'Slots'], bj: ['🃏', 'Blackjack'], rl: ['🎡', 'Roulette'], pk: ['♠️', 'Poker'], pl: ['🔻', 'Plinko'],
-    ck: ['🐔', 'Chicken'], hr: ['🏇', 'Horse Racing'], rk: ['🚀', 'Rocket'], lobby: ['🏠', 'Lobby'], shop: ['🛍️', 'Shop'], mine: ['⛏️', 'Gold mine'],
+    ck: ['🐔', 'Chicken'], hr: ['🏇', 'Horse Racing'], rk: ['🚀', 'Rocket'], lobby: ['🏠', 'Lobby'], shop: ['🛍️', 'Shop'], jb: ['🍔', 'Lucky Burger'],
   };
   let playing = new Map(), presenceGame = null;
   function currentGame() {
     if (!account) return null;
-    if (!$('mineModal').hidden) return 'mine';
     if (!$('shopPage').hidden) return 'shop';
     if (!$('lobby').hidden) return 'lobby';
     return state.mode;
@@ -11952,6 +11980,294 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   $('lottoPreviewNoon').addEventListener('click', () => ltPreview('noon'));
   $('lottoPreviewEve').addEventListener('click', () => ltPreview('eve'));
   $('lottoReload').addEventListener('click', () => { ltFetchAt = 0; ltFetch(); });
+
+  // ---------- Lucky Burger: the free job ----------
+  // No bets here: clock in, keep the boss happy by doing the work that comes up, and get a wage every 10 seconds.
+  // Paid time counts as time worked, and time worked brings promotions up to store manager.
+  const JB_PAY_EVERY = 10000, JB_IDLE = 45000;
+  const JB_ALL = ['floor', 'fryer', 'grill', 'counter'];
+  const JB_POS = [
+    { name: 'Cleaner', wage: 14, at: 0, st: ['floor'], conc: 2, speed: 1 },
+    { name: 'Fry Cook', wage: 22, at: 15 * 60, st: ['floor', 'fryer'], conc: 2, speed: 1 },
+    { name: 'Grill Cook', wage: 34, at: 45 * 60, st: ['floor', 'fryer', 'grill'], conc: 3, speed: 1 },
+    { name: 'Cashier', wage: 50, at: 90 * 60, st: ['fryer', 'grill', 'counter'], conc: 3, speed: 0.95 },
+    { name: 'Drive-in Crew', wage: 72, at: 150 * 60, st: JB_ALL, conc: 3, speed: 0.9 },
+    { name: 'Shift Lead', wage: 105, at: 240 * 60, st: JB_ALL, conc: 4, speed: 0.85 },
+    { name: 'Deputy Manager', wage: 160, at: 360 * 60, st: JB_ALL, conc: 4, speed: 0.8 },
+    { name: 'Store Manager', wage: 250, at: 540 * 60, st: JB_ALL, conc: 5, speed: 0.75 },
+  ];
+  // id, icon, name, from which position on
+  const JB_ITEMS = [['burger', '🍔', 'Burger', 0], ['fries', '🍟', 'Fries', 0], ['cola', '🥤', 'Cola', 0], ['nuggets', '🍗', 'Nuggets', 4], ['ice', '🍦', 'Ice cream', 5], ['salad', '🥗', 'Salad', 6]];
+  const JB_SLOTS = { floor: 4, fryer: 2, grill: 3, counter: 3 };
+  const JB_KIND = { floor: 'clean', fryer: 'fry', grill: 'grill', counter: 'order' };
+  const JB_FACES = ['🧑', '👩', '👨', '🧓', '👧', '🧔', '👵', '👱'];
+  const JB_STAINS = ['#c0392b', '#6b3e1f', '#e0b100', '#7a8a2a', '#5a3a5c'];
+  const jbPosOf = worked => { let i = 0; JB_POS.forEach((p, k) => { if (worked >= p.at) i = k; }); return i; };
+  const jbIdx = () => jbPosOf(state.job.worked);
+  function jbDur(sec) {
+    const m = Math.ceil(Math.max(0, sec) / 60), h = Math.floor(m / 60);
+    return h ? `${h} h ${String(m % 60).padStart(2, '0')} min` : `${m} min`;
+  }
+  const jbNew = () => ({ on: false, mood: 60, tasks: [], next: 0, cycle: 0, done: 0, lastAct: 0, tray: [], seq: 0, paidShift: 0 });
+  let jb = jbNew();
+  const jbSay = (text, kind = '') => showMessage($('jbMsg'), text, kind);
+
+  function jbRender() {
+    const i = jbIdx(), pos = JB_POS[i], next = JB_POS[i + 1];
+    $('jb').classList.toggle('off', !jb.on);
+    $('jbOff').hidden = jb.on;
+    $('jbPos').textContent = pos.name;
+    $('jbWage').textContent = `${pos.wage} credits / 10 s`;
+    $('jbShift').textContent = jb.on ? 'End shift' : 'Start shift';
+    $('jbShift').classList.toggle('jb-end', jb.on);
+    document.querySelectorAll('#jbStations [data-st]').forEach(el => {
+      const st = el.dataset.st, open = pos.st.includes(st);
+      el.toggleAttribute('data-locked', !open);
+      const from = JB_POS.findIndex(p => p.st.includes(st));
+      el.querySelector('.jb-lock').textContent = from > i ? `Unlocks as ${JB_POS[from].name}` : 'Not your job any more';
+    });
+    const items = JB_ITEMS.filter(x => x[3] <= i).map(([id, ico, name]) => `<button type="button" class="jb-item" data-item="${id}"><span aria-hidden="true">${ico}</span><small>${name}</small></button>`).join('');
+    if ($('jbItems').dataset.html !== items) { $('jbItems').dataset.html = items; $('jbItems').innerHTML = items; }
+    jbRenderTray();
+    const ladder = JB_POS.map((p, k) => `<li class="${k < i ? 'done' : k === i ? 'cur' : ''}"><b>${p.name}</b><span>${p.wage} / 10 s</span><small>${k === 0 ? 'from the start' : `after ${jbDur(p.at)}`}</small></li>`).join('');
+    if ($('jbLadder').dataset.html !== ladder) { $('jbLadder').dataset.html = ladder; $('jbLadder').innerHTML = ladder; }
+    const w = state.job.worked;
+    $('jbNextTxt').textContent = next ? `Next: ${next.name} (${next.wage} credits / 10 s) · ${jbDur(next.at - w)} of work to go` : 'Top of the ladder: you run the place!';
+    $('jbNextBar').style.width = next ? `${Math.min(100, (w - pos.at) / (next.at - pos.at) * 100)}%` : '100%';
+    $('jbStats').textContent = `Worked ${jbDur(w)} · earned ${fmt(state.job.earned)} credits`;
+    jbRenderLive();
+  }
+  function jbRenderLive(now = performance.now()) {
+    const m = jb.mood, kind = m >= 75 ? 'great' : m >= 50 ? 'ok' : m >= 30 ? 'meh' : 'bad';
+    $('jbMood').dataset.m = jb.on ? kind : 'ok';
+    ltSet($('jbFace'), 'textContent', !jb.on ? '😴' : { great: '😄', ok: '🙂', meh: '🤨', bad: '😠' }[kind]);
+    ltSet($('jbMoodTxt'), 'textContent', !jb.on ? 'Off duty' : { great: 'Loves your work', ok: 'Happy', meh: 'Watching you', bad: 'Angry: no wage!' }[kind]);
+    $('jbMoodBar').style.width = `${jb.on ? m : 0}%`;
+    const p = jb.on ? Math.min(1, (now - jb.cycle) / JB_PAY_EVERY) : 0;
+    $('jbPayBar').style.width = `${p * 100}%`;
+    if (jb.on && !jb.payFlash) ltSet($('jbPayTxt'), 'textContent', `Next paycheck in ${Math.max(1, Math.ceil((1 - p) * 10))} s`);
+    if (!jb.on) ltSet($('jbPayTxt'), 'textContent', `${JB_POS[jbIdx()].wage} credits every 10 s while you work`);
+    for (const t of jb.tasks) {
+      const age = now - t.born;
+      if (t.lifeEl) t.lifeEl.style.width = `${Math.max(0, 1 - age / t.life) * 100}%`;
+      if (t.kind === 'clean') t.el.classList.toggle('late', age > t.life * 0.7);
+      if (t.fill) {
+        const q = t.state === 'order' ? 0 : Math.min(1, (now - t.t0) / t.dur);
+        t.fill.style.width = `${q * 100}%`;
+        if (t.kind === 'grill') t.el.style.setProperty('--pc', q < 0.4 ? '#d98880' : q < t.z1 ? '#a0522d' : '#3b2314');
+      }
+    }
+  }
+  function jbRenderTray() {
+    const html = jb.tray.length ? jb.tray.map(id => JB_ITEMS.find(x => x[0] === id)[1]).join(' ') : '<small>Tray is empty</small>';
+    if ($('jbTray').dataset.html !== html) { $('jbTray').dataset.html = html; $('jbTray').innerHTML = html; }
+  }
+
+  // ----- Tasks -----
+  function jbRemove(t, cls) {
+    jb.tasks = jb.tasks.filter(x => x !== t);
+    t.el.classList.add(cls);
+    t.el.disabled = true;
+    t.el.querySelectorAll('button').forEach(b => { b.disabled = true; });
+    setTimeout(() => t.el.remove(), 450);
+  }
+  function jbGood(t, gain = 16) {
+    jb.mood = Math.min(100, jb.mood + gain);
+    jb.done++;
+    jbRemove(t, 'ok');
+    const r = t.el.getBoundingClientRect();
+    fxTop.burst(r.left + r.width / 2, r.top + r.height / 2, 10, 50, 4, false);
+    sound.chip(); audio.coin();
+  }
+  function jbFail(t, text) {
+    jb.mood = Math.max(0, jb.mood - 22);
+    jbRemove(t, 'bad');
+    jbSay(text, 'lose');
+    sound.tease();
+  }
+  function jbSpawn(pos) {
+    const now = performance.now(), sp = pos.speed;
+    const free = pos.st.filter(st => jb.tasks.filter(t => t.st === st).length < JB_SLOTS[st]);
+    if (!free.length) return;
+    const st = free[randInt(free.length)], kind = JB_KIND[st];
+    const t = { id: ++jb.seq, st, kind, born: now, state: 'order' };
+    const el = document.createElement(kind === 'clean' ? 'button' : 'div');
+    t.el = el;
+    if (kind === 'clean') {
+      t.hp = t.max = 3 + randInt(3);
+      t.life = (8000 + randInt(3000)) * sp;
+      el.type = 'button';
+      el.className = 'jb-spot';
+      el.setAttribute('aria-label', 'Stain');
+      // a free spot on the floor, away from the other stains
+      let x, y, tries = 0;
+      do { x = 10 + Math.random() * 80; y = 16 + Math.random() * 68; } while (tries++ < 12 && jb.tasks.some(o => o.kind === 'clean' && Math.hypot(o.x - x, (o.y - y) * 0.6) < 18));
+      t.x = x; t.y = y;
+      el.style.left = x + '%'; el.style.top = y + '%';
+      el.style.setProperty('--c', JB_STAINS[randInt(JB_STAINS.length)]);
+      el.style.setProperty('--r', randInt(360) + 'deg');
+      el.addEventListener('click', () => jbScrub(t));
+      $('jbFloor').append(el);
+    } else if (kind === 'fry' || kind === 'grill') {
+      t.life = (kind === 'fry' ? 9000 : 8500) * sp;
+      t.dur = (kind === 'fry' ? 4200 : 3400) * sp;
+      t.z0 = kind === 'fry' ? 0.62 : 0.58; t.z1 = kind === 'fry' ? 0.86 : 0.84;
+      el.className = `jb-job ${kind}`;
+      el.dataset.state = 'order';
+      el.innerHTML = `<span class="jb-ico" aria-hidden="true">${kind === 'fry' ? '🍟' : '<i class="jb-patty"></i>'}</span>
+        <span class="jb-cook"><i class="jb-zone" style="--z0:${t.z0 * 100}%;--zw:${(t.z1 - t.z0) * 100}%"></i><i class="jb-fill"></i></span>
+        <button type="button" class="jb-act">${kind === 'fry' ? 'Drop the basket' : 'Put a patty on'}</button>
+        <span class="jb-life"><i></i></span>`;
+      t.fill = el.querySelector('.jb-fill'); t.lifeEl = el.querySelector('.jb-life i'); t.btn = el.querySelector('.jb-act');
+      t.btn.addEventListener('click', () => jbCook(t));
+      $(kind === 'fry' ? 'jbFryer' : 'jbGrill').append(el);
+    } else {
+      const i = jbIdx(), items = JB_ITEMS.filter(x => x[3] <= i), n = 1 + randInt(Math.min(4, 2 + Math.floor(i / 2)));
+      t.items = {};
+      for (let k = 0; k < n; k++) { const id = items[randInt(items.length)][0]; t.items[id] = (t.items[id] || 0) + 1; }
+      t.car = i >= 4 && Math.random() < 0.4;
+      t.life = (6000 + n * 2600) * sp * (t.car ? 0.8 : 1);
+      el.className = 'jb-cust' + (t.car ? ' car' : '');
+      el.innerHTML = `<span class="jb-who" aria-hidden="true">${t.car ? '🚗' : JB_FACES[randInt(JB_FACES.length)]}</span>${t.car ? '<small>Drive-in</small>' : ''}
+        <span class="jb-order">${Object.entries(t.items).map(([id, c]) => `${JB_ITEMS.find(x => x[0] === id)[1]}${c > 1 ? `×${c}` : ''}`).join(' ')}</span>
+        <span class="jb-life"><i></i></span>`;
+      t.lifeEl = el.querySelector('.jb-life i');
+      $('jbQueue').append(el);
+      audio.bell(1320, 0.04);
+    }
+    jb.tasks.push(t);
+  }
+  function jbAct() { jb.lastAct = performance.now(); }
+  function jbScrub(t) {
+    if (!jb.on || !jb.tasks.includes(t)) return;
+    jbAct();
+    t.hp--;
+    t.el.style.setProperty('--s', (0.45 + 0.55 * t.hp / t.max).toFixed(2));
+    audio.noise(0.08, { type: 'bandpass', freq: 2600 + Math.random() * 1200, q: 1.5, vol: 0.08 });
+    if (t.hp <= 0) jbGood(t, 14);
+  }
+  function jbCook(t) {
+    if (!jb.on || !jb.tasks.includes(t)) return;
+    jbAct();
+    const now = performance.now();
+    if (t.state === 'order') {
+      t.state = 'a'; t.t0 = now; t.el.dataset.state = 'a';
+      t.btn.textContent = t.kind === 'fry' ? 'Lift it out!' : 'Flip it!';
+      t.lifeEl.parentElement.hidden = true;
+      audio.noise(0.5, { type: 'highpass', freq: 3000, vol: 0.06, attack: 0.05 });
+      return;
+    }
+    const q = (now - t.t0) / t.dur;
+    if (q < t.z0) { jbFail(t, t.kind === 'fry' ? 'Too early: soggy fries!' : 'Too early: the patty is still raw!'); return; }
+    if (q > t.z1) { jbFail(t, t.kind === 'fry' ? 'Too late: the fries are burnt!' : 'Too late: the patty is burnt!'); return; }
+    if (t.kind === 'grill' && t.state === 'a') {
+      // the second side
+      t.state = 'b'; t.t0 = now; t.dur *= 0.9; t.el.dataset.state = 'b';
+      t.btn.textContent = 'Serve it!';
+      audio.noise(0.3, { type: 'lowpass', freq: 900, vol: 0.12 });
+      return;
+    }
+    jbGood(t, 18);
+  }
+  function jbServe() {
+    if (!jb.on || !jb.tray.length) return;
+    jbAct();
+    const tray = {};
+    for (const id of jb.tray) tray[id] = (tray[id] || 0) + 1;
+    const same = t => Object.keys(t.items).length === Object.keys(tray).length && Object.entries(t.items).every(([id, c]) => tray[id] === c);
+    const t = jb.tasks.filter(x => x.kind === 'order').sort((a, b) => a.born - b.born).find(same);
+    jb.tray = [];
+    jbRenderTray();
+    if (t) { jbGood(t, 14 + Object.values(t.items).reduce((a, c) => a + c, 0) * 3); audio.kaching(); }
+    else { jb.mood = Math.max(0, jb.mood - 8); jbSay('Nobody ordered that! The tray goes back.', 'lose'); sound.tease(); }
+  }
+  $('jbItems').addEventListener('click', e => {
+    const b = e.target.closest('[data-item]');
+    if (!b || !jb.on || jb.tray.length >= 8) return;
+    jbAct();
+    jb.tray.push(b.dataset.item);
+    jbRenderTray();
+    sound.tick();
+  });
+  $('jbServe').addEventListener('click', jbServe);
+  $('jbClear').addEventListener('click', () => { jbAct(); jb.tray = []; jbRenderTray(); });
+
+  // ----- Shift and pay -----
+  function jbStart() {
+    if (!account || jb.on) return;
+    jbClearDom();
+    const now = performance.now();
+    jb = { ...jbNew(), on: true, cycle: now, next: now + 400, lastAct: now };
+    state.job.shifts++;
+    jbSay('Clocked in! Keep busy: the boss pays only while you work.', 'win');
+    sound.chime();
+    jbRender();
+  }
+  function jbClearDom() { for (const id of ['jbFloor', 'jbFryer', 'jbGrill', 'jbQueue']) $(id).innerHTML = ''; }
+  function jbStop(text) {
+    if (!jb.on) return;
+    const paid = jb.paidShift;
+    jb.on = false;
+    jb.tasks = []; jb.tray = [];
+    jbClearDom();
+    jbSay(text || (paid ? `Shift over. You earned ${fmt(paid)} credits this shift.` : 'Shift over.'), paid ? 'win' : '');
+    jbRender();
+    persist();
+  }
+  $('jbShift').addEventListener('click', () => { if (jb.on) jbStop(); else jbStart(); });
+  function jbPayday() {
+    const i = jbIdx(), pos = JB_POS[i];
+    if (jb.mood >= 30 && jb.done > 0) {
+      state.credits = Math.min(MAX, state.credits + pos.wage);
+      state.job.worked += JB_PAY_EVERY / 1000;
+      state.job.earned += pos.wage;
+      jb.paidShift += pos.wage;
+      jb.payFlash = true;
+      $('jbPayTxt').textContent = `Paycheck: +${pos.wage} credits!`;
+      setTimeout(() => { jb.payFlash = false; }, 1800);
+      audio.coins(4);
+      const b = $('jbPayBar').getBoundingClientRect();
+      fxTop.coinBurst(b.right - 10, b.top, 10, 6);
+      const now = jbIdx();
+      checkAch({ jobPaid: true, jobPos: now });
+      if (now > state.job.pos) { state.job.pos = now; jbPromote(now); }
+      render();
+    } else {
+      jbSay(jb.done ? 'The boss is not happy with you: no wage for these 10 seconds.' : 'You did nothing for 10 seconds: no wage.', 'lose');
+      sound.lose();
+    }
+    jbRender();
+  }
+  function jbPromote(i) {
+    const p = JB_POS[i];
+    toast('Promotion!', `You are now ${p.name}: ${p.wage} credits every 10 seconds.`);
+    jbSay(`Promotion! You are now ${p.name}.`, 'win');
+    sound.fanfare();
+    fireworks(4);
+    const b = $('jbBadge');
+    b.classList.remove('promo'); void b.offsetWidth; b.classList.add('promo');
+  }
+  function jbTick() {
+    if (!jb.on) return;
+    if (!account || state.mode !== 'jb' || !$('lobby').hidden || !$('shopPage').hidden) { jbStop(); return; }
+    if (document.hidden) { jbStop('You left in the middle of the shift, so the shift is over.'); return; }
+    const now = performance.now(), pos = JB_POS[jbIdx()];
+    for (const t of [...jb.tasks]) {
+      const age = now - t.born;
+      if ((t.kind === 'fry' || t.kind === 'grill') && t.state !== 'order') {
+        if ((now - t.t0) / t.dur > 1) jbFail(t, t.kind === 'fry' ? 'The fries burnt in the fryer!' : 'A patty burnt on the grill!');
+      } else if (age > t.life) {
+        jbFail(t, t.kind === 'clean' ? 'A customer slipped on a stain!' : t.kind === 'order' ? (t.car ? 'A car drove off without its order!' : 'A customer walked out angry!') : 'An order sat around too long!');
+      }
+    }
+    if (jb.tasks.length) jb.mood = Math.max(0, jb.mood - 0.22 / pos.speed);
+    if (jb.tasks.length < pos.conc && now >= jb.next) { jbSpawn(pos); jb.next = now + (600 + Math.random() * 1600) * pos.speed; }
+    if (now - jb.cycle >= JB_PAY_EVERY) { jbPayday(); jb.cycle = now; jb.done = 0; }
+    if (jb.on && now - jb.lastAct > JB_IDLE) { jbStop('You fell asleep on the job. Shift over.'); return; }
+    jbRenderLive(now);
+  }
+  setInterval(jbTick, 100);
+  function jbEnter() { jbRender(); if (!jb.on) jbSay(state.job.shifts ? 'Welcome back! Start a shift when you are ready.' : 'Welcome to Lucky Burger! Start your first shift as a cleaner.'); }
 
   function renderAdminMsgs() {
     if (!adminUnlocked || $('adminModal').hidden) return;
