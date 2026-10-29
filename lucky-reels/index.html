@@ -5521,7 +5521,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     // Goodies: one ball in 40 is golden and pays double; slots under 1× pay 0.1× more.
     const gold = hasG('plGold') && randInt(40) === 0;
     const eff = (mult < 1 && hasG('plSoft') ? mult + 0.1 : mult) * (gold ? 2 : 1);
-    const pay = Math.min(MAX, Math.floor(bet * eff * settings.winMultiplier));
+    const pay = happyPay(bet, eff);
     const id = plNextId++;
     state.pl.bet = bet;
     state.credits -= bet;
@@ -5632,6 +5632,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // so every stopping point returns 96% on average and no strategy beats the house.
   const CK_LANES = 10, CK_EDGE = 0.96;
   const CK_SURVIVE = { easy: 0.92, medium: 0.84, hard: 0.75 };
+  // Happy hour from the admin menu multiplies the winnings, never the stake that comes back (as in blackjack and roulette).
+  const happyPay = (bet, m) => Math.min(MAX, Math.floor(m > 1 ? bet + bet * (m - 1) * settings.winMultiplier : bet * m));
   const ckMult = (k, diff = state.ck.diff) => k ? Math.floor((CK_EDGE / CK_SURVIVE[diff] ** k) * 100) / 100 : 1;
   const CK_CAR_COLORS = ['#e0414a', '#3d7bd9', '#f3c94b', '#7fd18b', '#a77bff', '#f6efe3', '#f08a3c'];
   const ckCarSvg = col => `<svg viewBox="0 0 42 70"><rect x="3" y="4" width="36" height="62" rx="10" fill="${col}" stroke="#0005" stroke-width="2"/><rect x="8" y="14" width="26" height="13" rx="4" fill="#bfe8ff"/><rect x="8" y="44" width="26" height="9" rx="3" fill="#9fcde8"/><rect x="6" y="60" width="8" height="4" rx="2" fill="#ffd35a"/><rect x="28" y="60" width="8" height="4" rx="2" fill="#ffd35a"/><rect x="1" y="16" width="3" height="10" rx="1.5" fill="#1d1714"/><rect x="38" y="16" width="3" height="10" rx="1.5" fill="#1d1714"/><rect x="1" y="46" width="3" height="10" rx="1.5" fill="#1d1714"/><rect x="38" y="46" width="3" height="10" rx="1.5" fill="#1d1714"/></svg>`;
@@ -5758,14 +5760,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (next >= CK_LANES) { ckCashOut(true); return; }
     sound.ping(next / CK_LANES);
     const m = ckMult(next, r.diff);
-    ckSay(`Lane ${next} made it! ×${m.toFixed(2)} · cash out ${fmt(Math.floor(r.bet * m * settings.winMultiplier))} or keep going.`, 'win');
+    ckSay(`Lane ${next} made it! ×${m.toFixed(2)} · cash out ${fmt(happyPay(r.bet, m))} or keep going.`, 'win');
     render();
   }
   function ckCashOut(crossed = false) {
     const r = ckRound();
     if (!r || !r.lane || ckAnim) return;
     const m = ckMult(r.lane, r.diff);
-    const pay = Math.min(MAX, Math.floor(r.bet * m * settings.winMultiplier));
+    const pay = happyPay(r.bet, m);
     state.credits = Math.min(MAX, state.credits + pay);
     if (hasG('ckFeather')) goodieBonus(pay * 0.03, 'ckFeather');
     state.lastWin = pay;
@@ -5800,7 +5802,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     cash.hidden = !r || !r.lane;
     if (r && r.lane) {
       const m = ckMult(r.lane, r.diff);
-      cash.innerHTML = `Cash out<small>${fmt(Math.floor(r.bet * m * settings.winMultiplier))} · ×${m.toFixed(2)}</small>`;
+      cash.innerHTML = `Cash out<small>${fmt(happyPay(r.bet, m))} · ×${m.toFixed(2)}</small>`;
       cash.disabled = ckAnim;
     }
   }
