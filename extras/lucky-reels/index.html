@@ -935,6 +935,11 @@ details summary { cursor: pointer; font-size: 11px; letter-spacing: 0.16em; text
 .mission .m-swap { background: none; color: var(--muted); text-decoration: underline; font-size: 12px; padding: 0; justify-self: end; }
 .mission .m-swap:hover { color: var(--fg); }
 .ach-box > summary { flex-wrap: wrap; row-gap: 8px; }
+.ach-shelf { display: grid; gap: 10px; }
+.ach-shelf[hidden] { display: none; }
+.ach-shelf .ach-grid { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+.ach-teaser { margin-left: 6px; }
+.ach-shelf .ach-bar { display: block; width: 100%; }
 .ach-bar { order: 5; flex-basis: 100%; height: 6px; border-radius: 3px; background: #0006; overflow: hidden; }
 .ach-bar i { display: block; height: 100%; width: 0; border-radius: 3px; background: linear-gradient(90deg, var(--accent), var(--accent-hi)); transition: width 0.6s; }
 .ach-grid { list-style: none; margin: 0 0 6px; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
@@ -2316,7 +2321,7 @@ html[data-theme="night"] .shop-page { background: repeating-linear-gradient(90de
 .shop-sign span { font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--muted); }
 .shop-credits { font: 600 12px var(--font-mono); color: var(--muted); text-align: right; }
 .shop-credits b { display: block; font-size: 18px; color: var(--accent); }
-.shop-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 5px; border-radius: 14px; background: #0008; max-width: 420px; width: 100%; justify-self: center; }
+.shop-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding: 5px; border-radius: 14px; background: #0008; max-width: 560px; width: 100%; justify-self: center; }
 .shop-tabs button { padding: 10px; border-radius: 10px; background: transparent; color: var(--muted); font: 400 15px var(--font-display); letter-spacing: 0.04em; }
 .shop-tabs button[aria-selected="true"] { background: var(--accent); color: var(--ink); box-shadow: 0 4px 0 #8a5a12; }
 .shop-rate { margin: 0; text-align: center; font-size: 13px; color: var(--muted); }
@@ -2657,8 +2662,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     <div class="shop-tabs" role="tablist" aria-label="Shelves">
       <button type="button" role="tab" data-shelf-tab="useful" aria-selected="true">Useful</button>
       <button type="button" role="tab" data-shelf-tab="cosmetic" aria-selected="false">Cosmetics</button>
+      <button type="button" role="tab" data-shelf-tab="ach" aria-selected="false">Achievements</button>
     </div>
     <div id="goodies"></div>
+    <section class="shelf ach-shelf" data-for="ach" hidden>
+      <h3 class="shelf-title">Achievements <span class="shop-owned" id="achCount"></span></h3>
+      <span class="ach-bar" aria-hidden="true"><i id="achBar"></i></span>
+      <ul class="ach-grid" id="achList"></ul>
+    </section>
   </div>
 </div>
 
@@ -3077,15 +3088,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
   <aside class="shop" aria-labelledby="shopTitle">
     <section class="board-wrap" aria-labelledby="boardTitle"><h2 class="board-title" id="boardTitle">Highscores</h2><table class="board" id="boardGame"></table></section>
-    <button type="button" class="shop-teaser" data-shop><span class="shop-title" id="shopTitle">Goodie Shop</span><span class="shop-owned" id="shopOwned"></span><span class="shop-open">Open ›</span></button>
+    <button type="button" class="shop-teaser" data-shop><span class="shop-title" id="shopTitle">Goodie Shop</span><span class="shop-owned" id="shopOwned"></span><span class="shop-owned ach-teaser" id="achTeaser" title="Achievements"></span><span class="shop-open">Open ›</span></button>
     <section class="missions" aria-labelledby="missionsTitle">
       <h3 id="missionsTitle">Missions</h3>
       <div id="missionList"></div>
     </section>
-    <details class="shop-box ach-box" id="achBox">
-      <summary><span class="shop-title">Achievements</span><span class="shop-owned" id="achCount"></span><span class="ach-bar" aria-hidden="true"><i id="achBar"></i></span></summary>
-      <ul class="ach-grid" id="achList"></ul>
-    </details>
   </aside>
 </div>
 
@@ -9532,8 +9539,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // ---------- Achievements ----------
   $('achList').innerHTML = ACH.map(a =>
     `<li id="ach-${a.id}"><span class="mark" aria-hidden="true"></span><b>${a.name}</b><small>${a.desc}</small><span class="rw">+${fmt(a.reward)}</span></li>`).join('');
-  try { $('achBox').open = localStorage.getItem('lucky-reels-ach-open') === '1'; } catch {}
-  $('achBox').addEventListener('toggle', () => { try { localStorage.setItem('lucky-reels-ach-open', $('achBox').open ? '1' : '0'); } catch {} });
 
   function renderAch() {
     let n = 0;
@@ -9545,6 +9550,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       li.firstChild.textContent = done ? '✓' : '?';
     }
     $('achCount').textContent = `${n} / ${ACH.length}`;
+    $('achTeaser').textContent = `🏆 ${n} / ${ACH.length}`;
     $('achBar').style.width = `${(n / ACH.length) * 100}%`;
   }
 
