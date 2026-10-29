@@ -4012,3 +4012,15 @@ begin
   return new;
 end;
 $$;
+
+
+-- ---------------------------------------------------------------------------
+-- Bet limits by level: run this part once (after "Stock market"). The limit per round now grows with the
+-- level alone, up to 100,000 at level 20; prestige no longer changes it.
+create or replace function public.lr_bet_limit(lv integer, pr integer)
+returns bigint
+language sql
+immutable
+as $$
+  select (array[500, 750, 1000, 1500, 2000, 3000, 4000, 5000, 6500, 8000, 10000, 12500, 15000, 20000, 25000, 32500, 40000, 55000, 75000, 100000]::bigint[])[least(20, greatest(1, coalesce(lv, 1)))]
+$$;

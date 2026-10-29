@@ -4157,11 +4157,12 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const STREAK_MAX = 5;
   const xpNeed = level => Math.floor(120 * level ** 1.4);
   const MAX_LEVEL = 20;
-  // The bet limit per round grows with level and prestige: it keeps balances from snowballing in a day
-  // and makes levelling up worth something. An admin's "highest bet" setting can lower it further.
-  const BET_LIMITS = [500, 750, 1000, 1500, 2000, 2500, 3000, 4000, 5000, 6000, 7500, 9000, 10000, 12500, 15000, 17500, 20000, 25000, 30000, 40000];
-  function levelLimit(level = state.level, prestige = state.prestige) {
-    return Math.floor(BET_LIMITS[Math.min(MAX_LEVEL, Math.max(1, level || 1)) - 1] * (1 + 0.25 * Math.min(4, Math.max(0, prestige || 0))));
+  // The bet limit per round grows with the level (prestige does not change it), up to 100,000 at level 20:
+  // it keeps balances from snowballing in a day and makes levelling up worth something.
+  // An admin's "highest bet" setting can lower it further.
+  const BET_LIMITS = [500, 750, 1000, 1500, 2000, 3000, 4000, 5000, 6500, 8000, 10000, 12500, 15000, 20000, 25000, 32500, 40000, 55000, 75000, 100000];
+  function levelLimit(level = state.level) {
+    return BET_LIMITS[Math.min(MAX_LEVEL, Math.max(1, level || 1)) - 1];
   }
   function betLimit() { return Math.min(levelLimit(), settings.maxBet || MAX); }
   function limitMsg() {
