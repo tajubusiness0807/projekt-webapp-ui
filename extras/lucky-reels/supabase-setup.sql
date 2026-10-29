@@ -3730,3 +3730,285 @@ end;
 $$;
 drop trigger if exists players_guard on public.players;
 create trigger players_guard before update on public.players for each row execute function public.players_guard();
+
+
+-- ---------------------------------------------------------------------------
+-- Stock market: run this part once (after "Economy rework"). Six shares, the same prices for everyone:
+-- every 5 minutes each share moves once, up with its own chance (the safe ones rise often but a little,
+-- the wild ones rarely but a lot), and on average a move is worth nothing either way, so the house
+-- only earns the 1% fee on every buy and sell. A share that falls below 5% of its starting price goes
+-- bankrupt (whoever holds it loses it); one that reaches 10x is taken over (whoever holds it gets paid
+-- out at that price, online or not). Then it starts again at its starting price.
+-- Portfolios live here in the database: buy, log out, play something else, come back.
+
+create table if not exists public.stocks (
+  id text primary key,
+  name text not null,
+  color text not null,
+  sort smallint not null,
+  p_up numeric not null,        -- chance to go up in a 5-minute step
+  up numeric not null,          -- factor when it goes up
+  down numeric not null,        -- factor when it goes down
+  news numeric not null default 0,   -- chance of breaking news in a step
+  news_size numeric not null default 0,
+  ipo numeric not null,         -- starting price (again after a bankruptcy or takeover)
+  price numeric not null,
+  prev numeric not null,
+  tick bigint not null,         -- the last 5-minute step drawn
+  gen integer not null default 1
+);
+alter table public.stocks enable row level security;
+revoke all on public.stocks from anon, authenticated;
+grant select on public.stocks to authenticated;
+drop policy if exists "Everyone sees the stocks" on public.stocks;
+create policy "Everyone sees the stocks" on public.stocks for select to authenticated using (true);
+
+-- down = (1 - p_up * up) / (1 - p_up): a step is worth exactly 1 on average. The two safe shares get a
+-- touch more (half their variance) so their price stays flat instead of slowly sagging.
+insert into public.stocks (id, name, color, sort, p_up, up, down, news, news_size, ipo, price, prev, tick) values
+  ('LBK',  'Lucky Bank',    '#4fa8e0', 1, 0.65, 1.005,  (1.0000231 - 0.65 * 1.005) / 0.35,  0,     0,    100, 100, 100, public.horse_now_ms() / 300000 - 96),
+  ('BRG',  'Burger Corp',   '#d62828', 2, 0.60, 1.0065, (1.000032 - 0.60 * 1.0065) / 0.40, 0,     0,     60,  60,  60, public.horse_now_ms() / 300000 - 96),
+  ('GLD',  'Golden Mines',  '#e9a23b', 3, 0.55, 1.011,  (1 - 0.55 * 1.011) / 0.45,          0.003, 0.15, 150, 150, 150, public.horse_now_ms() / 300000 - 96),
+  ('NEO',  'Neon Games',    '#a77bff', 4, 0.50, 1.015,  (1 - 0.50 * 1.015) / 0.50,          0.004, 0.15,  80,  80,  80, public.horse_now_ms() / 300000 - 96),
+  ('RKT',  'Rocket Labs',   '#7fd18b', 5, 0.42, 1.025,  (1 - 0.42 * 1.025) / 0.58,          0.005, 0.20,  40,  40,  40, public.horse_now_ms() / 300000 - 96),
+  ('MOON', 'Moon Coin',     '#f3c94b', 6, 0.30, 1.045,  (1 - 0.30 * 1.045) / 0.70,          0.006, 0.25,  10,  10,  10, public.horse_now_ms() / 300000 - 96)
+on conflict (id) do nothing;
+
+create table if not exists public.stock_prices (
+  stock text not null references public.stocks (id) on delete cascade,
+  tick bigint not null,
+  price numeric not null,
+  primary key (stock, tick)
+);
+alter table public.stock_prices enable row level security;
+revoke all on public.stock_prices from anon, authenticated;
+grant select on public.stock_prices to authenticated;
+drop policy if exists "Everyone sees the stock prices" on public.stock_prices;
+create policy "Everyone sees the stock prices" on public.stock_prices for select to authenticated using (true);
+
+create table if not exists public.stock_holdings (
+  player uuid not null references public.players (id) on delete cascade,
+  stock text not null references public.stocks (id) on delete cascade,
+  name text not null,
+  shares bigint not null check (shares > 0),
+  cost bigint not null,          -- what the shares cost, fees included
+  primary key (player, stock)
+);
+alter table public.stock_holdings enable row level security;
+revoke all on public.stock_holdings from anon, authenticated;
+grant select on public.stock_holdings to authenticated;
+drop policy if exists "Everyone sees who holds what" on public.stock_holdings;
+create policy "Everyone sees who holds what" on public.stock_holdings for select to authenticated using (true);
+
+-- Trades, breaking news, bankruptcies and takeovers: the feed on the page (and the player's own notes).
+create table if not exists public.stock_events (
+  id bigint generated always as identity primary key,
+  tick bigint not null,
+  stock text not null,
+  kind text not null check (kind in ('buy', 'sell', 'boom', 'crash', 'bust', 'takeover', 'lost', 'paid')),
+  player uuid references public.players (id) on delete cascade,
+  name text,
+  shares bigint,
+  price numeric,
+  total bigint,
+  seen boolean not null default false,
+  created_at timestamptz not null default now()
+);
+create index if not exists stock_events_mine on public.stock_events (player) where not seen;
+alter table public.stock_events enable row level security;
+revoke all on public.stock_events from anon, authenticated;
+
+-- Draws every 5-minute step that is due (after a long quiet spell only the last week).
+create or replace function public.stock_advance()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  cur bigint := public.horse_now_ms() / 300000;
+  s public.stocks;
+  f numeric;
+  ev text;
+begin
+  if not exists (select 1 from public.stocks where tick < cur) then return; end if;
+  perform pg_advisory_xact_lock(717171);
+  for s in select * from public.stocks where tick < cur order by sort for update loop
+    if s.tick < cur - 2016 then s.tick := cur - 2016; end if;
+    while s.tick < cur loop
+      s.tick := s.tick + 1;
+      f := case when random() < s.p_up then s.up else s.down end;
+      ev := null;
+      if s.news > 0 and random() < s.news then
+        if random() < 0.5 then f := f * (1 + s.news_size); ev := 'boom'; else f := f * (1 - s.news_size); ev := 'crash'; end if;
+      end if;
+      s.prev := s.price;
+      s.price := round(s.price * f, 4);
+      if ev is not null then insert into public.stock_events (tick, stock, kind, price) values (s.tick, s.id, ev, s.price); end if;
+      if s.price < s.ipo * 0.05 then
+        -- bankrupt: the shares are worth nothing, the company starts over
+        insert into public.stock_events (tick, stock, kind, player, name, shares, price, total)
+          select s.tick, s.id, 'lost', player, name, shares, s.price, 0 from public.stock_holdings where stock = s.id;
+        insert into public.stock_events (tick, stock, kind, price) values (s.tick, s.id, 'bust', s.price);
+        delete from public.stock_holdings where stock = s.id;
+        s.price := s.ipo; s.prev := s.ipo; s.gen := s.gen + 1;
+      elsif s.price >= s.ipo * 10 then
+        -- taken over at ten times the starting price: every holder is paid out right away
+        insert into public.stock_events (tick, stock, kind, player, name, shares, price, total)
+          select s.tick, s.id, 'paid', player, name, shares, s.price, floor(shares * s.price)::bigint from public.stock_holdings where stock = s.id;
+        update public.players p set credits = least(9007199254740991, p.credits + floor(h.shares * s.price)::bigint), admin_rev = p.admin_rev + 1, updated_at = now()
+          from public.stock_holdings h where h.stock = s.id and p.id = h.player;
+        insert into public.stock_events (tick, stock, kind, price) values (s.tick, s.id, 'takeover', s.price);
+        delete from public.stock_holdings where stock = s.id;
+        s.price := s.ipo; s.prev := s.ipo; s.gen := s.gen + 1;
+      end if;
+      insert into public.stock_prices (stock, tick, price) values (s.id, s.tick, s.price)
+        on conflict (stock, tick) do update set price = excluded.price;
+    end loop;
+    update public.stocks set price = s.price, prev = s.prev, tick = s.tick, gen = s.gen where id = s.id;
+  end loop;
+  delete from public.stock_prices where tick < cur - 600;
+  delete from public.stock_events where created_at < now() - interval '3 days' and (player is null or seen);
+end;
+$$;
+
+-- Everything the exchange page shows, and my notes about bankruptcies and takeovers.
+create or replace function public.stock_state()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  cur bigint;
+  notes jsonb;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  perform public.stock_advance();
+  cur := public.horse_now_ms() / 300000;
+  with n as (
+    update public.stock_events set seen = true where player = auth.uid() and not seen and kind in ('lost', 'paid')
+    returning stock, kind, shares, price, total
+  ) select coalesce(jsonb_agg(to_jsonb(n)), '[]') into notes from n;
+  return jsonb_build_object('now', public.horse_now_ms(), 'tick', cur, 'next_at', (cur + 1) * 300000,
+    'stocks', (select jsonb_agg(jsonb_build_object('id', s.id, 'name', s.name, 'color', s.color, 'p_up', s.p_up, 'up', s.up, 'down', s.down,
+        'ipo', s.ipo, 'price', s.price, 'prev', s.prev, 'gen', s.gen,
+        'hist', (select coalesce(jsonb_agg(x.price order by x.tick), '[]') from (select price, tick from public.stock_prices where stock = s.id order by tick desc limit 97) x))
+      order by s.sort) from public.stocks s),
+    'holders', (select coalesce(jsonb_agg(jsonb_build_object('player', h.player, 'name', h.name, 'stock', h.stock, 'shares', h.shares, 'cost', h.cost)), '[]')
+      from (select * from public.stock_holdings order by shares desc limit 400) h),
+    'feed', (select coalesce(jsonb_agg(jsonb_build_object('kind', e.kind, 'stock', e.stock, 'name', e.name, 'shares', e.shares, 'price', e.price, 'total', e.total, 'tick', e.tick, 'at', e.created_at) order by e.id desc), '[]')
+      from (select * from public.stock_events where kind <> 'lost' and kind <> 'paid' order by id desc limit 30) e),
+    'notes', notes);
+end;
+$$;
+
+-- Buy or sell at the current price. Buying: price plus 1% fee, at most one bet limit per order and
+-- 25 bet limits in one share. Selling: price minus 1% fee.
+create or replace function public.stock_trade(stock_id text, qty bigint, side text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  s public.stocks;
+  me public.players;
+  h public.stock_holdings;
+  total bigint;
+  lim bigint;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  if qty is null or qty < 1 or qty > 1000000000 then raise exception 'enter a number of shares'; end if;
+  if side not in ('buy', 'sell') then raise exception 'no such trade'; end if;
+  perform public.stock_advance();
+  select * into s from public.stocks where id = stock_id for update;
+  if s.id is null then raise exception 'no such share'; end if;
+  select * into me from public.players where id = auth.uid() for update;
+  if me is null or me.is_banned then raise exception 'not allowed'; end if;
+  if coalesce((select (data ->> 'maintenance')::boolean from public.settings where id = 1), false) and not me.is_admin then raise exception 'paused'; end if;
+  select * into h from public.stock_holdings where player = me.id and stock = s.id for update;
+  if side = 'buy' then
+    total := ceil(qty * s.price * 1.01)::bigint;
+    if me.credits < total then raise exception 'not enough credits'; end if;
+    if public.lr_over_limit(me, total) then raise exception 'over your bet limit'; end if;
+    lim := least(public.lr_bet_limit(me.level, me.prestige), coalesce(nullif((select (data ->> 'maxBet')::bigint from public.settings where id = 1), 0), 9007199254740991));
+    if coalesce(h.cost, 0) + total > lim * 25 then raise exception 'position too big'; end if;
+    update public.players set credits = credits - total, admin_rev = admin_rev + 1, updated_at = now() where id = me.id;
+    insert into public.stock_holdings (player, stock, name, shares, cost) values (me.id, s.id, me.name, qty, total)
+      on conflict (player, stock) do update set shares = public.stock_holdings.shares + qty, cost = public.stock_holdings.cost + total, name = excluded.name;
+    insert into public.stock_events (tick, stock, kind, player, name, shares, price, total, seen) values (s.tick, s.id, 'buy', me.id, me.name, qty, s.price, total, true);
+    return jsonb_build_object('credits', me.credits - total, 'rev', me.admin_rev + 1, 'total', total, 'price', s.price);
+  end if;
+  if h.player is null or h.shares < qty then raise exception 'not that many shares'; end if;
+  total := floor(qty * s.price * 0.99)::bigint;
+  if h.shares = qty then delete from public.stock_holdings where player = me.id and stock = s.id;
+  else update public.stock_holdings set shares = shares - qty, cost = cost - floor(cost * qty::numeric / shares)::bigint where player = me.id and stock = s.id;
+  end if;
+  update public.players set credits = least(9007199254740991, credits + total), admin_rev = admin_rev + 1, updated_at = now() where id = me.id;
+  insert into public.stock_events (tick, stock, kind, player, name, shares, price, total, seen) values (s.tick, s.id, 'sell', me.id, me.name, qty, s.price, total, true);
+  return jsonb_build_object('credits', me.credits + total, 'rev', me.admin_rev + 1, 'total', total, 'price', s.price);
+end;
+$$;
+
+revoke execute on function public.stock_advance() from public, anon, authenticated;
+revoke execute on function public.stock_state() from public, anon;
+revoke execute on function public.stock_trade(text, bigint, text) from public, anon;
+grant execute on function public.stock_state() to authenticated;
+grant execute on function public.stock_trade(text, bigint, text) to authenticated;
+
+-- The hard reset and a player's reset also empty the portfolios.
+create or replace function public.admin_hard_reset(tok uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  start_credits bigint := coalesce((select (data ->> 'startCredits')::bigint from public.settings where id = 1), 500);
+begin
+  perform public.admin_check(tok);
+  update public.players set
+    credits = start_credits, best = 0, level = 1, spins = 0, jackpots = 0, game = null, flair = null, prestige = 0,
+    trophies = '{}', capped_saves = 0, admin_rev = admin_rev + 1, updated_at = now()
+  where true;
+  delete from public.horse_bets where true;
+  delete from public.roulette_bets where true;
+  delete from public.rocket_bets where true;
+  if to_regclass('public.stock_holdings') is not null then
+    execute 'delete from public.stock_holdings where true';
+    execute 'delete from public.stock_events where player is not null';
+  end if;
+  if to_regclass('public.lotto_tickets') is not null then
+    execute 'delete from public.lotto_tickets where true';
+    execute 'delete from public.lotto_draws where true';
+  end if;
+  if to_regclass('public.poker_seats') is not null then
+    execute 'delete from public.poker_seats where true';
+    execute $q$update public.poker_tables set phase = 'waiting', board = '{}', deck = '{}', current_bet = 0,
+      to_act = -1, deadline = null, result = null where id = 1$q$;
+    execute 'update public.poker_pulse set rev = rev + 1, at = now() where id = 1';
+  end if;
+end;
+$$;
+revoke execute on function public.admin_hard_reset(uuid) from public, anon;
+grant execute on function public.admin_hard_reset(uuid) to authenticated;
+
+create or replace function public.players_clear_cosmetics()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+begin
+  if new.game is null and old.game is not null then
+    new.flair := null;
+    new.trophies := '{}';
+    delete from public.horse_bets where player = new.id and not claimed;
+    delete from public.roulette_bets where player = new.id and not claimed;
+    delete from public.rocket_bets where player = new.id and not claimed;
+    delete from public.lotto_tickets where player = new.id and not claimed;
+    delete from public.stock_holdings where player = new.id;
+  end if;
+  return new;
+end;
+$$;

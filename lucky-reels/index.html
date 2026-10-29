@@ -468,7 +468,7 @@ details.paytable, details.bj-rules { background: var(--panel); border-radius: 10
 @media (max-width: 600px) { .back-btn { left: 10px; top: 10px; } }
 .gm { padding: 6px 16px; border-radius: 999px; background: var(--panel); color: var(--muted); font-weight: 600; font-size: 13px; }
 .gm[aria-selected="true"] { background: var(--accent); color: var(--ink); }
-.cabinet:not([data-mode="bj"]) .bj, .cabinet:not([data-mode="rl"]) .rl, .cabinet:not([data-mode="pk"]) .pk, .cabinet:not([data-mode="pl"]) .pl, .cabinet:not([data-mode="ck"]) .ck, .cabinet:not([data-mode="hr"]) .hr, .cabinet:not([data-mode="rk"]) .rk, .cabinet:not([data-mode="jb"]) .jb, .cabinet:not([data-mode="cf"]) .cf { display: none; }
+.cabinet:not([data-mode="bj"]) .bj, .cabinet:not([data-mode="rl"]) .rl, .cabinet:not([data-mode="pk"]) .pk, .cabinet:not([data-mode="pl"]) .pl, .cabinet:not([data-mode="ck"]) .ck, .cabinet:not([data-mode="hr"]) .hr, .cabinet:not([data-mode="rk"]) .rk, .cabinet:not([data-mode="jb"]) .jb, .cabinet:not([data-mode="cf"]) .cf, .cabinet:not([data-mode="st"]) .st { display: none; }
 .cabinet:not([data-mode="slots"]) :is(#window, #reelCtl, #tier, #message, .meters, .bet, .spin-row, #boosts, details.paytable) { display: none !important; }
 body.wide .layout { max-width: 980px; grid-template-columns: minmax(0, 1fr); }
 body.wide .account-bar { max-width: 980px; }
@@ -689,10 +689,7 @@ body.wide .account-bar { max-width: 980px; }
   .lobby-games:has(> .lotto-hero:not([hidden])) { grid-template-columns: repeat(8, minmax(0, 1fr)); grid-auto-flow: row dense; }
   .lobby-games:has(> .lotto-hero:not([hidden])) > .game-pick { grid-column: span 2; }
   .lobby-games > .lotto-hero { grid-column: 3 / 7; grid-row: 2 / 4; align-content: center; }
-  /* the last row: the three games left over sit centred under the lotto */
-  .lobby-games:has(> .lotto-hero:not([hidden])) > .game-pick:nth-of-type(9) { grid-column: 2 / 4; grid-row: 4; }
-  .lobby-games:has(> .lotto-hero:not([hidden])) > .game-pick:nth-of-type(10) { grid-column: 4 / 6; grid-row: 4; }
-  .lobby-games:has(> .lotto-hero:not([hidden])) > .game-pick:nth-of-type(11) { grid-column: 6 / 8; grid-row: 4; }
+  /* twelve games: four on top, two on each side of the lotto, four below */
   .lobby-games:has(> .lotto-hero:not([hidden])) > .game-pick:last-of-type { width: auto; justify-self: stretch; }
 }
 .rl { display: grid; gap: 12px; }
@@ -1975,6 +1972,88 @@ body.cos-ckGold .ck-chicken svg { filter: sepia(1) saturate(5) hue-rotate(-8deg)
 .pk-coach[hidden] { display: none; }
 .rk-pilot { display: flex; gap: 8px; align-items: center; justify-content: center; font-size: 13px; color: var(--muted); }
 .rk-pilot[hidden] { display: none; }
+/* ----- Stock market ----- */
+.game-pick:hover .gp-st .gp-st-line, .game-pick:focus-visible .gp-st .gp-st-line { stroke-dasharray: 160; animation: gpDraw 1.4s ease-out infinite; }
+@keyframes gpDraw { from { stroke-dashoffset: 160; } }
+.st { display: grid; gap: 12px; --up: #7fd18b; --down: #ff7a80; }
+.st .up { color: var(--up); } .st .down { color: var(--down); }
+.st-top { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; }
+.st-brand { display: flex; gap: 10px; align-items: center; }
+.st-brand > span:last-child { display: grid; }
+.st-brand b { font-family: Bungee, Impact, sans-serif; font-size: 20px; color: var(--accent); }
+.st-brand small { font-size: 12px; color: var(--muted); }
+.st-logo { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 12px; background: #101826; box-shadow: inset 0 0 0 2px #2c3a52; font-size: 22px; }
+.st-clockbox { display: grid; gap: 4px; min-width: 190px; font: 600 13px var(--font-mono); color: var(--accent); text-align: right; }
+.st-bar { height: 6px; border-radius: 3px; background: #0006; overflow: hidden; }
+.st-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #4fa8e0, #7fd18b); }
+.st-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+@media (max-width: 640px) { .st-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.st-kpis > div { display: grid; gap: 2px; padding: 10px 12px; border-radius: 12px; background: var(--panel); }
+.st-kpis small { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.st-kpis b { font: 600 18px var(--font-mono); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.st-off { margin: 0; padding: 12px; border-radius: 12px; background: var(--panel); color: var(--muted); text-align: center; }
+.st-off[hidden] { display: none; }
+.st-main { display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.25fr); gap: 12px; align-items: start; }
+.st-main > *, .st-bottom > * { min-width: 0; }
+@media (max-width: 760px) { .st-main { grid-template-columns: minmax(0, 1fr); } }
+.st-list { display: grid; gap: 6px; }
+.st-row { display: grid; grid-template-columns: 10px minmax(0, 1fr) 64px auto 34px; gap: 10px; align-items: center; padding: 9px 10px; border-radius: 12px; background: var(--panel); color: var(--fg); text-align: left; border: 2px solid transparent; transition: border-color 0.15s, transform 0.15s; }
+.st-row:hover { transform: translateX(2px); }
+.st-row.sel { border-color: var(--c); background: color-mix(in srgb, var(--c) 10%, var(--panel)); }
+.st-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--c); box-shadow: 0 0 8px var(--c); }
+.st-tk { display: grid; min-width: 0; }
+.st-tk b { font: 600 14px var(--font-mono); }
+.st-tk small { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.st-spark { width: 64px; height: 28px; }
+.st-px { display: grid; justify-items: end; font-variant-numeric: tabular-nums; }
+.st-px b { font: 600 14px var(--font-mono); }
+.st-px small { font: 600 11px var(--font-mono); }
+.st-own { justify-self: end; min-width: 30px; padding: 2px 6px; border-radius: 999px; background: var(--c); color: #111; font: 700 11px var(--font-mono); text-align: center; overflow: hidden; text-overflow: ellipsis; }
+.st-own.none { background: transparent; }
+.st-detail { display: grid; gap: 10px; padding: 12px; border-radius: 14px; background: #101826; box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--c, #2c3a52) 45%, #101826); }
+.st-d-head { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; }
+.st-d-head .st-dot { align-self: center; }
+.st-d-head b { font-size: 18px; }
+.st-ticker { font: 600 12px var(--font-mono); color: var(--muted); }
+.st-price { margin-left: auto; font: 600 24px var(--font-mono); font-variant-numeric: tabular-nums; }
+@media (max-width: 480px) { .st-price { font-size: 20px; } .st-row { grid-template-columns: 10px minmax(0, 1fr) 48px auto 30px; gap: 8px; } .st-spark { width: 48px; } }
+.st-chg { font: 600 13px var(--font-mono); }
+.st-chart { position: relative; height: 200px; }
+.st-chart svg { width: 100%; height: 100%; display: block; }
+.st-axis { position: absolute; right: 6px; font: 600 10px var(--font-mono); color: var(--muted); pointer-events: none; }
+.st-axis.hi { top: 2px; } .st-axis.lo { bottom: 2px; } .st-axis.span { left: 6px; right: auto; bottom: 2px; }
+.st-facts { display: flex; flex-wrap: wrap; gap: 6px; }
+.st-facts span { padding: 3px 9px; border-radius: 999px; background: #ffffff0d; font-size: 12px; color: #c9d4e6; }
+.st-trade { display: grid; gap: 8px; }
+.st-qty { display: flex; flex-wrap: wrap; gap: 6px; }
+.st-qty > * { flex: none; }
+.st-qty [data-stq="minus"], .st-qty [data-stq="plus"] { width: 40px; }
+.st-qty input { flex: 1 1 70px; width: 70px; min-width: 0; padding: 8px 10px; border-radius: 10px; border: 1px solid #ffffff22; background: #0008; color: var(--fg); font: 600 16px var(--font-mono); text-align: center; }
+.st-cost { margin: 0; font-size: 13px; color: var(--muted); text-align: center; }
+.st-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.st-detail > *, .st-trade > * { min-width: 0; }
+.st-btns .spin { min-width: 0; padding-inline: 6px; font-size: clamp(15px, 4.6vw, 22px); }
+.st-facts span { max-width: 100%; }
+.st-buy { background: linear-gradient(180deg, #8fe39a, #4fbf63); color: #0d2b14; }
+.st-sell { background: linear-gradient(180deg, #ff9aa0, #e0565e); color: #2b0d10; }
+.st-sellall { justify-self: center; font-size: 13px; }
+.st-sellall[hidden] { display: none; }
+.st-pos { display: flex; flex-wrap: wrap; gap: 6px 14px; justify-content: center; padding: 8px; border-radius: 10px; background: #ffffff08; font-size: 13px; }
+.st-bottom { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 760px) { .st-bottom { grid-template-columns: minmax(0, 1fr); } }
+.st-panel { padding: 12px; border-radius: 14px; background: var(--panel); min-width: 0; }
+.st-panel h4 { margin: 0 0 8px; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+.st-panel h5 { margin: 8px 0 4px; font-size: 12px; color: var(--muted); font-weight: 600; }
+.st-hold { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.st-hold li { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto auto; gap: 8px; align-items: center; font-size: 13px; padding: 3px 4px; border-radius: 8px; }
+.st-hold li.me { background: #e9a23b1a; }
+.st-hold .av { width: 22px; height: 22px; font-size: 11px; }
+.st-hold b { font-family: var(--font-mono); }
+.st-nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.st-feed { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; max-height: 360px; overflow: auto; }
+.st-feed li { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 8px; align-items: center; font-size: 13px; padding: 4px; border-radius: 8px; }
+.st-feed li small { color: var(--muted); font-size: 11px; white-space: nowrap; }
+.st-feed li.k-bust, .st-feed li.k-takeover { background: #ffffff0a; }
 #fx, #fxTop { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 #fxTop { z-index: 18; }
 .jp {
@@ -2428,6 +2507,21 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         <span class="gp-desc">Board it, watch the multiplier climb and cash out before it blows. 200× is the moon.</span>
         <span class="gp-go">Play</span>
       </button>
+      <button class="game-pick" type="button" data-mode="st">
+        <span class="gp-online gp-live" id="stBadge">Live</span>
+        <svg class="gp-st" viewBox="0 0 140 130" aria-hidden="true">
+          <rect x="10" y="14" width="120" height="100" rx="14" fill="#101826" stroke="#2c3a52" stroke-width="2"/>
+          <path d="M22 44h96M22 70h96M22 96h96" stroke="#ffffff12" stroke-width="1.5"/>
+          <path class="gp-st-area" d="M22 92l16-10 14 6 16-22 14 8 16-26 20 4V104H22z" fill="#7fd18b22"/>
+          <path class="gp-st-line" d="M22 92l16-10 14 6 16-22 14 8 16-26 20 4" fill="none" stroke="#7fd18b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="118" cy="52" r="6" fill="#7fd18b" stroke="#101826" stroke-width="2"/>
+          <g font-family="Bungee, Impact, sans-serif" font-size="10"><rect x="20" y="22" width="34" height="14" rx="4" fill="#4fa8e0"/><text x="37" y="32" text-anchor="middle" fill="#fff">LBK</text>
+          <rect x="60" y="22" width="40" height="14" rx="4" fill="#f3c94b"/><text x="80" y="32" text-anchor="middle" fill="#1d1714">MOON</text></g>
+        </svg>
+        <span class="gp-title">Stock Market</span>
+        <span class="gp-desc">Six shares, one price for everyone, new prices every 5 minutes. Buy, log out, come back rich (or not).</span>
+        <span class="gp-go">Trade</span>
+      </button>
       <button class="game-pick jb-pick" type="button" data-mode="jb">
         <span class="gp-online gp-free">Free</span>
         <svg class="gp-jb" viewBox="0 0 140 130" aria-hidden="true">
@@ -2827,6 +2921,44 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       <details class="bj-rules">
         <summary>Coin flip rules</summary>
         <p class="note">Pick heads (crown) or tails (star), set a bet and flip. If the coin shows your side the stake doubles, and you choose: cash out, or let it ride and flip again for ×4, ×8, ×16 and so on. One wrong side and everything on the coin is gone. You may switch sides between flips. Ten wins in a row (×1,024) is the most a coin can carry: then it pays out by itself. Once in 10,000 flips (0.01%) the coin lands on its edge: then the stake on the coin is multiplied by 10, whichever side you picked. Space flips the coin.</p>
+      </details>
+    </section>
+
+    <section class="st" id="st" aria-label="Stock market">
+      <div class="st-top">
+        <div class="st-brand"><span class="st-logo" aria-hidden="true">📈</span><span><b>Lucky Exchange</b><small>One market for everyone · new prices every 5 minutes</small></span></div>
+        <div class="st-clockbox"><span id="stClock">Next prices in 5:00</span><span class="st-bar"><i id="stBar"></i></span></div>
+      </div>
+      <div class="st-kpis">
+        <div><small>Credits</small><b id="stCash">0</b></div>
+        <div><small>Portfolio value</small><b id="stValue">0</b></div>
+        <div><small>Profit / loss</small><b id="stPL">–</b></div>
+        <div><small>Bet limit per order</small><b id="stLimit">0</b></div>
+      </div>
+      <p class="st-off" id="stOff">Loading the exchange…</p>
+      <div class="st-main">
+        <div class="st-list" id="stList" role="listbox" aria-label="Shares"></div>
+        <div class="st-detail" id="stDetail">
+          <div class="st-d-head"><span class="st-dot" aria-hidden="true"></span><b id="stName">–</b><span class="st-ticker" id="stTicker"></span><span class="st-price" id="stPrice"></span><span class="st-chg" id="stChg"></span></div>
+          <div class="st-chart" id="stChart"></div>
+          <div class="st-facts" id="stFacts"></div>
+          <div class="st-trade">
+            <div class="st-qty"><button type="button" class="chip-btn" data-stq="minus" aria-label="Fewer shares">−</button><input id="stQty" type="number" min="1" step="1" inputmode="numeric" value="10" aria-label="Number of shares"><button type="button" class="chip-btn" data-stq="plus" aria-label="More shares">+</button><button type="button" class="chip-btn" data-stq="max">Max</button><button type="button" class="chip-btn" data-stq="all">All mine</button></div>
+            <p class="st-cost" id="stCost"></p>
+            <div class="st-btns"><button type="button" class="spin st-buy" id="stBuy">Buy</button><button type="button" class="spin st-sell" id="stSell">Sell</button></div>
+            <button type="button" class="link-btn st-sellall" id="stSellAll" hidden>Sell all of this share</button>
+          </div>
+          <div class="st-pos" id="stPos"></div>
+        </div>
+      </div>
+      <p class="message" id="stMsg" role="status" aria-live="polite">Pick a share, buy some and watch it move every 5 minutes.</p>
+      <div class="st-bottom">
+        <div class="st-panel"><h4>Who holds what</h4><div id="stHolders"></div></div>
+        <div class="st-panel"><h4>News &amp; trades</h4><ol class="st-feed" id="stFeed"></ol></div>
+      </div>
+      <details class="bj-rules">
+        <summary>How the exchange works</summary>
+        <p class="note">Six shares are traded, at the same prices for everyone. Every 5 minutes each share takes one step: up with its own chance (shown next to the chart), otherwise down. The safe shares rise often but only a little; the wild ones rarely, but then a lot. Now and then breaking news moves a share by much more. Buying costs the price plus a 1% fee, selling brings the price minus 1%. One order can cost at most your bet limit, and you can put at most 25 times your bet limit into one share. If a share falls below 5% of its starting price, the company goes bankrupt and its shares are lost; if it reaches 10 times its starting price, it is taken over and every holder is paid out at that price, even while offline. Then the share starts over at its starting price. Your shares stay in your portfolio while you play other games or log out.</p>
       </details>
     </section>
 
@@ -3507,6 +3639,16 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Employee Badge': 'Mitarbeiter-Abzeichen', 'Lucky Burger: every paycheck is 10% bigger.': 'Lucky Burger: Jeder Lohn ist 10 % höher.',
     'Night School': 'Abendschule', 'Lucky Burger: worked time counts 25% more towards your next promotion.': 'Lucky Burger: Gearbeitete Zeit zählt 25 % mehr für die nächste Beförderung.',
     'Coin Flip': 'Münzwurf',
+    'Stock Market': 'Börse', 'Trade': 'Handeln', 'Six shares, one price for everyone, new prices every 5 minutes. Buy, log out, come back rich (or not).': 'Sechs Aktien, ein Kurs für alle, neue Kurse alle 5 Minuten. Kaufen, ausloggen, reich zurückkommen (oder nicht).',
+    'Lucky Exchange': 'Lucky Börse', 'One market for everyone · new prices every 5 minutes': 'Ein Markt für alle · neue Kurse alle 5 Minuten', 'Portfolio value': 'Depotwert', 'Profit / loss': 'Gewinn / Verlust',
+    'Bet limit per order': 'Limit pro Kauf', 'Loading the exchange…': 'Börse wird geladen…', 'Shares': 'Aktien', 'Price chart': 'Kursverlauf', 'Fewer shares': 'Weniger Stück', 'More shares': 'Mehr Stück',
+    'Number of shares': 'Anzahl Stück', 'All mine': 'Alle meine', 'Buy': 'Kaufen', 'Sell': 'Verkaufen', 'Sell all of this share': 'Alles von dieser Aktie verkaufen', 'Sell all?': 'Alles verkaufen?',
+    'Pick a share, buy some and watch it move every 5 minutes.': 'Wähl eine Aktie, kauf ein paar Stück und schau zu, wie sie sich alle 5 Minuten bewegt.', 'Who holds what': 'Wer hält was', 'News & trades': 'News & Handel',
+    'How the exchange works': 'So funktioniert die Börse', 'very low': 'sehr gering', 'low': 'gering', 'medium': 'mittel', 'high': 'hoch', 'very high': 'sehr hoch',
+    'Biggest portfolios': 'Größte Depots', 'Nobody holds this share yet.': 'Noch hält niemand diese Aktie.', 'No portfolios yet.': 'Noch keine Depots.', 'Nothing happened yet.': 'Noch ist nichts passiert.', 'just now': 'gerade eben',
+    'The stock market needs the “Stock market” part of supabase-setup.sql.': 'Die Börse braucht den Abschnitt „Stock market“ aus supabase-setup.sql.', 'Takeover!': 'Übernahme!', 'Bankrupt': 'Pleite',
+    'You do not have that many shares.': 'So viele Aktien hast du nicht.',
+    'Six shares are traded, at the same prices for everyone. Every 5 minutes each share takes one step: up with its own chance (shown next to the chart), otherwise down. The safe shares rise often but only a little; the wild ones rarely, but then a lot. Now and then breaking news moves a share by much more. Buying costs the price plus a 1% fee, selling brings the price minus 1%. One order can cost at most your bet limit, and you can put at most 25 times your bet limit into one share. If a share falls below 5% of its starting price, the company goes bankrupt and its shares are lost; if it reaches 10 times its starting price, it is taken over and every holder is paid out at that price, even while offline. Then the share starts over at its starting price. Your shares stay in your portfolio while you play other games or log out.': 'Sechs Aktien werden gehandelt, zu denselben Kursen für alle. Alle 5 Minuten macht jede Aktie einen Schritt: mit ihrer eigenen Chance nach oben (steht neben dem Chart), sonst nach unten. Die sicheren Aktien steigen oft, aber nur ein wenig; die wilden selten, dann aber kräftig. Ab und zu bewegt eine Eilmeldung eine Aktie viel stärker. Kaufen kostet den Kurs plus 1 % Gebühr, Verkaufen bringt den Kurs minus 1 %. Ein Kauf darf höchstens dein Einsatzlimit kosten, und in eine Aktie kannst du höchstens das 25-Fache deines Einsatzlimits stecken. Fällt eine Aktie unter 5 % ihres Startkurses, geht die Firma pleite und die Aktien sind weg; erreicht sie das 10-Fache, wird sie übernommen und jeder Aktionär zu diesem Kurs ausbezahlt, auch offline. Danach startet die Aktie wieder beim Startkurs. Deine Aktien bleiben im Depot, während du andere Spiele spielst oder ausgeloggt bist.',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -3705,7 +3847,20 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['Your bet limit is {a} (level {b}). Every level raises it.', 'Dein Einsatzlimit ist {a} (Level {b}). Jedes Level erhöht es.'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
+    ['Rises in {a} of steps', 'Steigt in {a} der Schritte'], ['Usually {a} or {b}', 'Meist {a} oder {b}'], ['Swings: {a}', 'Schwankung: {a}'],
+    ['Start {a} · bankrupt below {b} · takeover at {c}', 'Start {a} · Pleite unter {b} · Übernahme ab {c}'],
+    ['Buy {a} for {b} · sell {c} for {d} (1% fee each way)', 'Kauf {a} für {b} · Verkauf {c} für {d} (je 1 % Gebühr)'],
+    ['You hold', 'Du hältst'], ['Paid', 'Bezahlt'], ['Worth', 'Wert'], ['You hold none. Max right now:', 'Du hältst keine. Gerade maximal:'],
+    ['{a} holders', '{a}-Aktionäre'], ['{a} shares', '{a} Aktien'], ['{a} share', '{a} Aktie'],
+    ['bought {a} {b} at {c}', 'kaufte {a} {b} zu {c}'], ['sold {a} {b} at {c}', 'verkaufte {a} {b} zu {c}'],
+    ['{a}: big news, the price jumps!', '{a}: große Neuigkeiten, der Kurs springt!'], ['{a}: bad news, the price drops!', '{a}: schlechte Nachrichten, der Kurs fällt!'],
+    ['{a} went bankrupt. It starts over at {b}.', '{a} ist pleite. Neustart bei {b}.'], ['Takeover! {a} was bought out at {b}: every holder got paid.', 'Übernahme! {a} wurde zu {b} aufgekauft: Jeder Aktionär wurde ausbezahlt.'],
+    ['{a} min ago', 'vor {a} Min.'], ['{a} h ago', 'vor {a} Std.'],
+    ['{a} was taken over: your {b} shares paid {c} credits.', '{a} wurde übernommen: Deine {b} Aktien brachten {c} Credits.'], ['{a} went bankrupt: your {b} shares are gone.', '{a} ist pleite: Deine {b} Aktien sind weg.'],
+    ['Not enough credits: {a} {b} cost {c}.', 'Nicht genug Credits: {a} {b} kosten {c}.'], ['{a} One order may cost at most that much.', '{a} So viel darf ein Kauf höchstens kosten.'],
+    ['You can hold at most {a} credits (what you paid) in one share.', 'In einer Aktie kannst du höchstens {a} Credits (Kaufpreis) halten.'],
+    ['Bought {a} {b} at {c} for {d} credits.', '{a} {b} zu {c} für {d} Credits gekauft.'], ['Sold {a} {b} at {c} for {d} credits.', '{a} {b} zu {c} für {d} Credits verkauft.'], ['Your bet limit is {a} (level {b}). Every level raises it.', 'Dein Einsatzlimit ist {a} (Level {b}). Jedes Level erhöht es.'],
     ['Bet per spin · limit {a}', 'Einsatz pro Dreh · Limit {a}'], ['Bet limit {a}', 'Einsatzlimit {a}'], ['+{a} credits · bet limit now {b}', '+{a} Credits · Einsatzlimit jetzt {b}'],
     ['Tip: {a}', 'Tipp: {a}'], ['Coach: hand {a} · you need {b} to call · calling pays', 'Coach: Hand {a} · zum Mitgehen brauchst du {b} · Mitgehen lohnt sich'],
     ['Coach: hand {a} · you need {b} to call · close call', 'Coach: Hand {a} · zum Mitgehen brauchst du {b} · knappe Sache'], ['Coach: hand {a} · you need {b} to call · folding is safer', 'Coach: Hand {a} · zum Mitgehen brauchst du {b} · Aussteigen ist sicherer'],
@@ -3860,7 +4015,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const enText = new WeakMap(), deText = new WeakMap();
   const I18N_ATTRS = ['placeholder', 'title', 'aria-label'];
   // Never translate what players typed: chat messages and the like.
-  const I18N_SKIP = 'script, style, textarea, .lt-name, .news-title, .news-text, .msg .text, .chat-pop .text, .admin-msg span, .announce .ann-run, .pk-who b, .board .name, .neon-name, .hr-name, .hr-list .name, .ticket-subj, .ticket-body, .ticket-reply, .ticket-meta .name';
+  const I18N_SKIP = 'script, style, textarea, .lt-name, .st-nm, .news-title, .news-text, .msg .text, .chat-pop .text, .admin-msg span, .announce .ann-run, .pk-who b, .board .name, .neon-name, .hr-name, .hr-list .name, .ticket-subj, .ticket-body, .ticket-reply, .ticket-meta .name';
   function trText(node) {
     const raw = node.data;
     if (deText.get(node) === raw || !/[A-Za-z]/.test(raw)) return;
@@ -4213,6 +4368,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     // the burger job: seconds worked (paid), credits earned, shifts, the highest position reached so far
     job: { worked: 0, earned: 0, shifts: 0, pos: 0 },
     cf: { bet: 10, side: 'heads', flips: 0, history: [], round: null },
+    st: { sel: 'LBK', trades: 0 },
   });
   const state = fresh();
 
@@ -5439,13 +5595,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     rk: 'Rocket · cash out before it blows · play credits',
     jb: 'Lucky Burger · the free job · earn credits by working',
     cf: 'Coin flip · heads or tails · play credits',
+    st: 'Stock market · one market for everyone · play credits',
   };
   const gameBusy = () => busy || bjBusy || (typeof pkBusy === 'function' && pkBusy()) || (typeof plBusy === 'function' && plBusy()) || (typeof ckBusy === 'function' && ckBusy()) || !!cfBusy;
   function applyGameMode() {
     const bj = state.mode === 'bj';
     cabinet.dataset.mode = state.mode;
     cabinet.classList.toggle('mode-bj', bj);
-    document.body.classList.toggle('wide', state.mode === 'pk' || state.mode === 'hr' || state.mode === 'rk' || state.mode === 'jb');
+    document.body.classList.toggle('wide', state.mode === 'pk' || state.mode === 'hr' || state.mode === 'rk' || state.mode === 'jb' || state.mode === 'st');
     $('marqueeSub').textContent = MODE_SUBS[state.mode];
     if (state.mode === 'rl') rlEnter();
     if (state.mode === 'pl' && typeof plEnter === 'function') plEnter();
@@ -5454,6 +5611,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (state.mode === 'rk' && typeof rkEnter === 'function') rkEnter();
     if (state.mode === 'jb' && typeof jbEnter === 'function') jbEnter();
     if (state.mode === 'cf' && typeof cfEnter === 'function') cfEnter();
+    if (state.mode === 'st' && typeof stEnter === 'function') stEnter();
     if (state.mode === 'pk' && typeof pkEnter === 'function') pkEnter();
     if (bj) {
       renderBJTable(false);
@@ -5468,7 +5626,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     renderBroke();
     document.querySelectorAll('.game-pick').forEach(b => {
       b.querySelector('.gp-last')?.remove();
-      if (b.dataset.mode === state.mode && state.spins + state.bj.hands + state.rl.spins + state.pk.hands + state.pl.drops + state.ck.games + state.hr.races + state.rk.rounds + state.job.shifts + state.cf.flips > 0) b.insertAdjacentHTML('afterbegin', '<span class="gp-last">Last played</span>');
+      if (b.dataset.mode === state.mode && state.spins + state.bj.hands + state.rl.spins + state.pk.hands + state.pl.drops + state.ck.games + state.hr.races + state.rk.rounds + state.job.shifts + state.cf.flips + (state.st.trades || 0) > 0) b.insertAdjacentHTML('afterbegin', '<span class="gp-last">Last played</span>');
     });
     $('lobby').hidden = false;
     renderLotto();
@@ -5482,7 +5640,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     $('lobby').hidden = true;
     sound.chime();
     render();
-    ({ bj: $('bjDeal'), rl: $('rlSpin'), slots: $('spin'), pk: $('pkSit'), pl: $('plDrop'), ck: $('ckGo'), hr: $('hrBet'), rk: $('rkBet'), jb: $('jbShift'), cf: $('cfFlip') }[state.mode])?.focus({ preventScroll: true });
+    ({ bj: $('bjDeal'), rl: $('rlSpin'), slots: $('spin'), pk: $('pkSit'), pl: $('plDrop'), ck: $('ckGo'), hr: $('hrBet'), rk: $('rkBet'), jb: $('jbShift'), cf: $('cfFlip'), st: $('stBuy') }[state.mode])?.focus({ preventScroll: true });
   }));
 
   $('backBtn').addEventListener('click', () => {
@@ -9644,6 +9802,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (state.mode === 'pl' && typeof renderPLControls === 'function') renderPLControls();
     if (state.mode === 'ck' && typeof renderCKControls === 'function') renderCKControls();
     if (state.mode === 'cf' && typeof renderCFControls === 'function') renderCFControls();
+    if (state.mode === 'st' && typeof renderST === 'function') renderST();
     persist();
   }
 
@@ -9912,6 +10071,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       roulette: localRoulette(),
       rocket: localRocket(),
       lotto: localLotto(store),
+      stocks: localStocks(store),
       presence: cb => store.presence(cb),
       setOnline: me => store.setOnline(me),
       dmWatch: cb => store.dmWatch(cb),
@@ -10441,6 +10601,12 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         async claim() { const { data, error } = await sb.rpc('rocket_claim'); if (error) throw error; return data; },
         async rig(id) { const { error } = await sb.rpc('admin_rig_rocket', { round: id }); if (error) throw error; },
       },
+      // Stock market: the database draws the prices and keeps the portfolios.
+      stocks: {
+        shared: true,
+        async state() { const { data, error } = await sb.rpc('stock_state'); if (error) throw error; return data; },
+        async trade(id, qty, side) { const { data, error } = await sb.rpc('stock_trade', { stock_id: id, qty, side }); if (error) throw error; return data; },
+      },
       // Lotto: the database sells the tickets, draws the one winner and pays the pot.
       lotto: {
         shared: true,
@@ -10692,6 +10858,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     state.pk = Object.assign(fresh().pk, saved.pk);
     state.job = Object.assign(fresh().job, saved.job);
     state.cf = Object.assign(fresh().cf, saved.cf);
+    state.st = Object.assign(fresh().st, saved.st);
     if (!['heads', 'tails'].includes(state.cf.side)) state.cf.side = 'heads';
     state.cf.history = (Array.isArray(state.cf.history) ? state.cf.history : []).filter(h => h && ['heads', 'tails', 'edge'].includes(h.r)).slice(0, 14);
     // older saves: a coin still in the air paid out as "pending"
@@ -10705,7 +10872,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (typeof state.rl.bets !== 'object' || !state.rl.bets) state.rl.bets = {};
     if (!Array.isArray(state.bj.shoe)) state.bj.shoe = [];
     if (state.bj.round && !Array.isArray(state.bj.round.hands)) state.bj.round = null;
-    if (!['bj', 'rl', 'pk', 'pl', 'ck', 'hr', 'rk', 'jb', 'cf'].includes(state.mode)) state.mode = 'slots';
+    if (!['bj', 'rl', 'pk', 'pl', 'ck', 'hr', 'rk', 'jb', 'cf', 'st'].includes(state.mode)) state.mode = 'slots';
     autoLeft = 0;
     pendingLevels.length = 0;
     held = [false, false, false];
@@ -11081,7 +11248,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Which game each online player has open, shown in the highscores and on the lobby cards.
   const GAME_INFO = {
     slots: ['🎰', 'Slots'], bj: ['🃏', 'Blackjack'], rl: ['🎡', 'Roulette'], pk: ['♠️', 'Poker'], pl: ['🔻', 'Plinko'],
-    ck: ['🐔', 'Chicken'], hr: ['🏇', 'Horse Racing'], rk: ['🚀', 'Rocket'], lobby: ['🏠', 'Lobby'], shop: ['🛍️', 'Shop'], jb: ['🍔', 'Lucky Burger'], cf: ['🪙', 'Coin Flip'],
+    ck: ['🐔', 'Chicken'], hr: ['🏇', 'Horse Racing'], rk: ['🚀', 'Rocket'], lobby: ['🏠', 'Lobby'], shop: ['🛍️', 'Shop'], jb: ['🍔', 'Lucky Burger'], cf: ['🪙', 'Coin Flip'], st: ['📈', 'Stock Market'],
   };
   let playing = new Map(), presenceGame = null;
   function currentGame() {
@@ -12814,6 +12981,320 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       renderNewsAdmin();
     });
   });
+
+  // ---------- Stock market ----------
+  // Six shares with one price for everyone. Every 5 minutes each share takes one step: up with its own chance,
+  // otherwise down, and on average a step is worth nothing either way; the 1% fee on buying and selling is the
+  // house's share. Below 5% of the starting price a company goes bankrupt (the shares are lost), at 10× it is
+  // taken over (holders are paid out); then it starts over. Portfolios live in the database.
+  const ST_TICK = 300000, ST_FEE = 0.01, ST_POS_LIMITS = 25;
+  const ST_LIST = [
+    // id, name, colour, chance up, up factor, news chance, news size, start price, mean of a step
+    ['LBK', 'Lucky Bank', '#4fa8e0', 0.65, 1.005, 0, 0, 100, 1.0000231],
+    ['BRG', 'Burger Corp', '#d62828', 0.60, 1.0065, 0, 0, 60, 1.000032],
+    ['GLD', 'Golden Mines', '#e9a23b', 0.55, 1.011, 0.003, 0.15, 150, 1],
+    ['NEO', 'Neon Games', '#a77bff', 0.50, 1.015, 0.004, 0.15, 80, 1],
+    ['RKT', 'Rocket Labs', '#7fd18b', 0.42, 1.025, 0.005, 0.20, 40, 1],
+    ['MOON', 'Moon Coin', '#f3c94b', 0.30, 1.045, 0.006, 0.25, 10, 1],
+  ].map(([id, name, color, p, up, news, size, ipo, mean]) => ({ id, name, color, p_up: p, up, down: (mean - p * up) / (1 - p), news, size, ipo }));
+  // Without the online database: the same rules, drawn from the step number, so every browser sees the same prices.
+  function localStocks(store) {
+    const EPOCH = Math.floor(Date.UTC(2026, 9, 1) / ST_TICK);
+    const c = { tick: EPOCH, price: ST_LIST.map(s => s.ipo), prev: ST_LIST.map(s => s.ipo), gen: ST_LIST.map(() => 1), hist: ST_LIST.map(() => []), feed: [], ends: {} };
+    function walk(to) {
+      for (let t = c.tick + 1; t <= to; t++) {
+        ST_LIST.forEach((s, i) => {
+          const rng = hrRng(t, 31 + i);
+          let f = rng() < s.p_up ? s.up : s.down, ev = null;
+          if (s.news && rng() < s.news) { if (rng() < 0.5) { f *= 1 + s.size; ev = 'boom'; } else { f *= 1 - s.size; ev = 'crash'; } }
+          c.prev[i] = c.price[i];
+          c.price[i] = Math.round(c.price[i] * f * 10000) / 10000;
+          const at = t * ST_TICK;
+          if (ev) c.feed.push({ kind: ev, stock: s.id, price: c.price[i], tick: t, at });
+          if (c.price[i] < s.ipo * 0.05 || c.price[i] >= s.ipo * 10) {
+            const kind = c.price[i] < s.ipo * 0.05 ? 'bust' : 'takeover';
+            c.ends[`${s.id}:${c.gen[i]}`] = { kind, price: c.price[i] };
+            c.feed.push({ kind, stock: s.id, price: c.price[i], tick: t, at });
+            c.price[i] = c.prev[i] = s.ipo; c.gen[i]++;
+          }
+          c.hist[i].push(c.price[i]);
+          if (c.hist[i].length > 97) c.hist[i].shift();
+        });
+        if (c.feed.length > 60) c.feed.splice(0, c.feed.length - 60);
+      }
+      c.tick = Math.max(c.tick, to);
+    }
+    const holdings = () => Array.isArray(rawSettings.stockHoldings) ? rawSettings.stockHoldings : [];
+    const trades = () => Array.isArray(rawSettings.stockTrades) ? rawSettings.stockTrades : [];
+    return {
+      shared: false,
+      async state() {
+        const now = Date.now(), cur = Math.floor(now / ST_TICK);
+        walk(cur);
+        // my holdings in a company that went bankrupt or was taken over since
+        const notes = [], keep = [];
+        for (const h of holdings()) {
+          const i = ST_LIST.findIndex(s => s.id === h.stock), end = c.ends[`${h.stock}:${h.gen}`];
+          if (i < 0) continue;
+          if (h.gen < c.gen[i] && end) {
+            if (h.player === account.id) notes.push(end.kind === 'takeover' ? { kind: 'paid', stock: h.stock, shares: h.shares, price: end.price, total: Math.floor(h.shares * end.price) } : { kind: 'lost', stock: h.stock, shares: h.shares, price: end.price, total: 0 });
+            else keep.push(h);
+          } else keep.push(h);
+        }
+        if (notes.length) { rawSettings.stockHoldings = keep; await store.saveSettings({ stockHoldings: keep }); }
+        const feed = [...c.feed.map(e => ({ ...e, at: new Date(e.at).toISOString() })), ...trades()].sort((a, b) => Date.parse(b.at) - Date.parse(a.at)).slice(0, 30);
+        return { now, tick: cur, next_at: (cur + 1) * ST_TICK, notes, feed,
+          stocks: ST_LIST.map((s, i) => ({ ...s, price: c.price[i], prev: c.prev[i], gen: c.gen[i], hist: c.hist[i].slice() })),
+          holders: holdings().filter(h => { const i = ST_LIST.findIndex(s => s.id === h.stock); return i >= 0 && h.gen === c.gen[i]; }) };
+      },
+      async trade(id, qty, side) {
+        const cur = Math.floor(Date.now() / ST_TICK); walk(cur);
+        const i = ST_LIST.findIndex(s => s.id === id), price = c.price[i];
+        if (i < 0) throw new Error('no such share');
+        const list = holdings().slice(), k = list.findIndex(h => h.player === account.id && h.stock === id && h.gen === c.gen[i]), h = k >= 0 ? { ...list[k] } : null;
+        let total;
+        if (side === 'buy') {
+          total = Math.ceil(qty * price * (1 + ST_FEE));
+          if (total > state.credits) throw new Error('not enough credits');
+          if (total > betLimit()) throw new Error('over your bet limit');
+          if ((h?.cost || 0) + total > betLimit() * ST_POS_LIMITS) throw new Error('position too big');
+          const nh = h ? { ...h, shares: h.shares + qty, cost: h.cost + total } : { player: account.id, name: account.name, stock: id, shares: qty, cost: total, gen: c.gen[i] };
+          if (k >= 0) list[k] = nh; else list.push(nh);
+        } else {
+          if (!h || h.shares < qty) throw new Error('not that many shares');
+          total = Math.floor(qty * price * (1 - ST_FEE));
+          if (h.shares === qty) list.splice(k, 1); else list[k] = { ...h, shares: h.shares - qty, cost: h.cost - Math.floor(h.cost * qty / h.shares) };
+        }
+        const tr = [...trades(), { kind: side, stock: id, name: account.name, shares: qty, price, total, tick: cur, at: new Date().toISOString() }].slice(-30);
+        rawSettings.stockHoldings = list; rawSettings.stockTrades = tr;
+        await store.saveSettings({ stockHoldings: list, stockTrades: tr });
+        return { credits: null, rev: null, total, price };
+      },
+    };
+  }
+
+  let stS = null, stFetching = false, stFetchAt = 0, stTickSeen = -1, stBusy = false, stMissing = false;
+  const fmtP = n => Number(n).toLocaleString('en-US', n >= 1000 ? { maximumFractionDigits: 0 } : { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const stPct = x => `${x >= 0 ? '+' : '−'}${Math.abs(x * 100).toFixed(Math.abs(x) < 0.1 ? 2 : 1)}%`;
+  const stSay = (text, kind = '') => showMessage($('stMsg'), text, kind);
+  const stCur = () => stS?.stocks.find(s => s.id === state.st.sel) || stS?.stocks[0];
+  const stMine = id => stS?.holders.find(h => h.stock === id && h.player === account?.id);
+  function stNorm(r) {
+    const n = v => Number(v) || 0;
+    return {
+      tick: n(r.tick), nextAt: n(r.next_at),
+      stocks: (r.stocks || []).map(s => ({ id: s.id, name: s.name, color: s.color, pUp: n(s.p_up), up: n(s.up), down: n(s.down), ipo: n(s.ipo), price: n(s.price), prev: n(s.prev), gen: n(s.gen), hist: (s.hist || []).map(Number) })),
+      holders: (r.holders || []).map(h => ({ player: h.player, name: String(h.name || '?'), stock: h.stock, shares: n(h.shares), cost: n(h.cost) })),
+      feed: (r.feed || []).map(e => ({ kind: e.kind, stock: e.stock, name: e.name || '', shares: n(e.shares), price: n(e.price), total: n(e.total), at: Date.parse(e.at) || Date.now() })),
+    };
+  }
+  async function stFetch() {
+    if (!backend?.stocks || stFetching || !account) return;
+    stFetching = true; stFetchAt = Date.now();
+    try {
+      const t0 = Date.now();
+      const r = await backend.stocks.state();
+      if (backend.stocks.shared && Number.isFinite(Number(r?.now))) { const off = Number(r.now) - (t0 + Date.now()) / 2; hrOffset = hrOffsetSet ? hrOffset * 0.7 + off * 0.3 : off; hrOffsetSet = true; }
+      const prevTick = stS?.tick;
+      stS = stNorm(r);
+      stMissing = false;
+      if (prevTick != null && stS.tick !== prevTick && state.mode === 'st' && $('lobby').hidden) { sound.tick(); audio.bell(1568, 0.03); }
+      // bankruptcies and takeovers of my shares, also while I was away
+      let paidHere = 0;
+      for (const x of r.notes || []) {
+        const s = stS.stocks.find(y => y.id === x.stock), name = s?.name || x.stock;
+        if (x.kind === 'paid') {
+          paidHere += Number(x.total) || 0;
+          toast('Takeover!', `${name} was taken over: your ${fmt(x.shares)} shares paid ${fmt(x.total)} credits.`);
+          sound.bigWin();
+        } else {
+          toast('Bankrupt', `${name} went bankrupt: your ${fmt(x.shares)} shares are gone.`);
+          sound.lose();
+        }
+      }
+      if (paidHere) { if (backend.stocks.shared) refreshOwn(); else { state.credits = Math.min(MAX, state.credits + paidHere); lastSaved = ''; persist(); render(); } }
+    } catch (e) {
+      if (e?.code === 'PGRST202' || /could not find the function/i.test(e?.message || '')) stMissing = true;
+    }
+    stFetching = false;
+    renderST();
+  }
+  function stSpark(hist, color, w = 100, h = 30) {
+    if (hist.length < 2) return '';
+    const lo = Math.min(...hist), hi = Math.max(...hist), span = hi - lo || hi * 0.01 || 1;
+    const pts = hist.map((v, i) => `${(i / (hist.length - 1) * w).toFixed(1)},${(h - 2 - (v - lo) / span * (h - 4)).toFixed(1)}`).join(' ');
+    return `<svg class="st-spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.6" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>`;
+  }
+  function stChart(s) {
+    const hist = s.hist.length ? s.hist : [s.price];
+    const W = 600, H = 220, pad = 8, lo0 = Math.min(...hist), hi0 = Math.max(...hist), m = (hi0 - lo0) * 0.12 || hi0 * 0.02 || 1;
+    const lo = Math.max(0, lo0 - m), hi = hi0 + m, y = v => H - pad - (v - lo) / (hi - lo) * (H - pad * 2);
+    const x = i => pad + i / Math.max(1, hist.length - 1) * (W - pad * 2);
+    const line = hist.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+    const up = hist[hist.length - 1] >= hist[0], col = up ? '#7fd18b' : '#ff7a80';
+    const grid = [0.25, 0.5, 0.75].map(f => `<line x1="0" x2="${W}" y1="${(pad + f * (H - pad * 2)).toFixed(1)}" y2="${(pad + f * (H - pad * 2)).toFixed(1)}" stroke="#ffffff10"/>`).join('');
+    const ipo = s.ipo >= lo && s.ipo <= hi ? `<line x1="0" x2="${W}" y1="${y(s.ipo).toFixed(1)}" y2="${y(s.ipo).toFixed(1)}" stroke="#ffffff40" stroke-dasharray="4 5"/>` : '';
+    const last = hist.length - 1;
+    return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Price chart">
+      <defs><linearGradient id="stFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="${col}" stop-opacity=".35"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></linearGradient></defs>
+      ${grid}${ipo}
+      <polygon points="${x(0).toFixed(1)},${H} ${line} ${x(last).toFixed(1)},${H}" fill="url(#stFill)"/>
+      <polyline points="${line}" fill="none" stroke="${col}" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>
+      <circle cx="${x(last).toFixed(1)}" cy="${y(hist[last]).toFixed(1)}" r="5" fill="${col}" stroke="#0008" stroke-width="2"/>
+    </svg>
+    <span class="st-axis hi">${fmtP(hi0)}</span><span class="st-axis lo">${fmtP(lo0)}</span><span class="st-axis span">8 h</span>`;
+  }
+  const stVol = s => { const v = Math.sqrt(s.pUp * (s.up - 1) ** 2 + (1 - s.pUp) * (s.down - 1) ** 2); return v < 0.009 ? 'very low' : v < 0.016 ? 'low' : v < 0.02 ? 'medium' : v < 0.03 ? 'high' : 'very high'; };
+  function stMaxBuy(s) {
+    const mine = stMine(s.id), room = Math.min(state.credits, betLimit(), betLimit() * ST_POS_LIMITS - (mine?.cost || 0));
+    return Math.max(0, Math.floor(room / (s.price * (1 + ST_FEE))));
+  }
+  function renderST() {
+    if (!$('st') || state.mode !== 'st') return;
+    $('stOff').hidden = !stMissing && !!stS;
+    $('stOff').textContent = stMissing ? 'The stock market needs the “Stock market” part of supabase-setup.sql.' : 'Loading the exchange…';
+    if (!stS) return;
+    const mineAll = stS.holders.filter(h => h.player === account?.id);
+    const priceOf = id => stS.stocks.find(s => s.id === id)?.price || 0;
+    const value = mineAll.reduce((a, h) => a + h.shares * priceOf(h.stock), 0), cost = mineAll.reduce((a, h) => a + h.cost, 0);
+    ltSet($('stCash'), 'textContent', fmt(state.credits));
+    ltSet($('stValue'), 'textContent', fmt(Math.floor(value)));
+    ltSet($('stPL'), 'textContent', mineAll.length ? `${value - cost >= 0 ? '+' : '−'}${fmt(Math.abs(Math.round(value - cost)))} (${stPct(cost ? value / cost - 1 : 0)})` : '–');
+    $('stPL').className = mineAll.length ? (value >= cost ? 'up' : 'down') : '';
+    ltSet($('stLimit'), 'textContent', fmt(betLimit()));
+    // the list
+    const list = stS.stocks.map(s => {
+      const ch = s.prev ? s.price / s.prev - 1 : 0, mine = stMine(s.id);
+      return `<button type="button" class="st-row${s.id === state.st.sel ? ' sel' : ''}" data-st="${s.id}" style="--c:${s.color}">
+        <span class="st-dot" aria-hidden="true"></span><span class="st-tk"><b>${s.id}</b><small>${s.name}</small></span>
+        ${stSpark(s.hist.slice(-48), s.color)}
+        <span class="st-px"><b>${fmtP(s.price)}</b><small class="${ch >= 0 ? 'up' : 'down'}">${ch >= 0 ? '▲' : '▼'} ${stPct(ch).replace(/^[+−]/, '')}</small></span>
+        ${mine ? `<span class="st-own" title="${fmt(mine.shares)}">${fmt(mine.shares)}</span>` : '<span class="st-own none"></span>'}
+      </button>`;
+    }).join('');
+    if ($('stList').dataset.html !== list) { $('stList').dataset.html = list; $('stList').innerHTML = list; }
+    // the selected share
+    const s = stCur(), mine = stMine(s.id), ch = s.prev ? s.price / s.prev - 1 : 0, day = s.hist.length ? s.price / s.hist[0] - 1 : 0;
+    $('stDetail').style.setProperty('--c', s.color);
+    ltSet($('stName'), 'textContent', s.name);
+    ltSet($('stTicker'), 'textContent', s.id);
+    ltSet($('stPrice'), 'textContent', fmtP(s.price));
+    ltSet($('stChg'), 'textContent', `${stPct(ch)} · 8 h ${stPct(day)}`);
+    $('stChg').className = 'st-chg ' + (ch >= 0 ? 'up' : 'down');
+    const chart = stChart(s);
+    if ($('stChart').dataset.html !== chart) { $('stChart').dataset.html = chart; $('stChart').innerHTML = chart; }
+    const facts = `<span>Rises in ${Math.round(s.pUp * 100)}% of steps</span><span>Usually ${stPct(s.up - 1)} or ${stPct(s.down - 1)}</span><span>Swings: ${stVol(s)}</span><span>Start ${fmtP(s.ipo)} · bankrupt below ${fmtP(s.ipo * 0.05)} · takeover at ${fmtP(s.ipo * 10)}</span>`;
+    if ($('stFacts').dataset.html !== facts) { $('stFacts').dataset.html = facts; $('stFacts').innerHTML = facts; }
+    const qty = Math.max(1, Math.floor(Number($('stQty').value)) || 1);
+    if (document.activeElement !== $('stQty') && String(qty) !== $('stQty').value) $('stQty').value = qty;
+    const buyCost = Math.ceil(qty * s.price * (1 + ST_FEE)), sellGet = Math.floor(qty * s.price * (1 - ST_FEE));
+    ltSet($('stCost'), 'textContent', `Buy ${fmt(qty)} for ${fmt(buyCost)} · sell ${fmt(qty)} for ${fmt(sellGet)} (1% fee each way)`);
+    $('stBuy').disabled = stBusy || !account || buyCost > state.credits || buyCost > betLimit();
+    $('stSell').disabled = stBusy || !mine || mine.shares < qty;
+    $('stSellAll').hidden = !mine;
+    ltSet($('stPos'), 'innerHTML', mine
+      ? `<span>You hold <b>${fmt(mine.shares)}</b></span><span>Paid <b>${fmt(mine.cost)}</b></span><span>Worth <b>${fmt(Math.floor(mine.shares * s.price))}</b></span><span class="${mine.shares * s.price >= mine.cost ? 'up' : 'down'}">${stPct(mine.cost ? mine.shares * s.price / mine.cost - 1 : 0)}</span>`
+      : `<span>You hold none. Max right now: <b>${fmt(stMaxBuy(s))}</b></span>`);
+    // who holds what
+    const holders = stS.holders.filter(h => h.stock === s.id).sort((a, b) => b.shares - a.shares).slice(0, 12);
+    const by = new Map();
+    for (const h of stS.holders) { const o = by.get(h.player) || { name: h.name, player: h.player, value: 0, n: 0 }; o.value += h.shares * priceOf(h.stock); o.n++; by.set(h.player, o); }
+    const top = [...by.values()].sort((a, b) => b.value - a.value).slice(0, 10);
+    const hold = `<h5>${s.id} holders</h5>${holders.length ? `<ol class="st-hold">${holders.map(h => `<li${h.player === account?.id ? ' class="me"' : ''}>${avatarHtml(h.player, h.name)}<span class="st-nm">${esc(h.name)}</span><span>${fmt(h.shares)}</span><b>${fmt(Math.floor(h.shares * s.price))}</b></li>`).join('')}</ol>` : '<p class="note">Nobody holds this share yet.</p>'}
+      <h5>Biggest portfolios</h5>${top.length ? `<ol class="st-hold">${top.map(o => `<li${o.player === account?.id ? ' class="me"' : ''}>${avatarHtml(o.player, o.name)}<span class="st-nm">${esc(o.name)}</span><span>${o.n} ${o.n === 1 ? 'share' : 'shares'}</span><b>${fmt(Math.floor(o.value))}</b></li>`).join('')}</ol>` : '<p class="note">No portfolios yet.</p>'}`;
+    if ($('stHolders').dataset.html !== hold) { $('stHolders').dataset.html = hold; $('stHolders').innerHTML = hold; }
+    const nameOfSt = id => stS.stocks.find(x => x.id === id)?.name || id;
+    const feed = stS.feed.slice(0, 18).map(e => {
+      const nm = nameOfSt(e.stock), ago = stAgo(e.at);
+      const text = e.kind === 'buy' ? `<span class="st-nm">${esc(e.name)}</span> <span>bought ${fmt(e.shares)} ${e.stock} at ${fmtP(e.price)}</span>`
+        : e.kind === 'sell' ? `<span class="st-nm">${esc(e.name)}</span> <span>sold ${fmt(e.shares)} ${e.stock} at ${fmtP(e.price)}</span>`
+        : e.kind === 'boom' ? `<b class="up">${nm}: big news, the price jumps!</b>`
+        : e.kind === 'crash' ? `<b class="down">${nm}: bad news, the price drops!</b>`
+        : e.kind === 'bust' ? `<b class="down">${nm} went bankrupt. It starts over at ${fmtP(stS.stocks.find(x => x.id === e.stock)?.ipo || 0)}.</b>`
+        : `<b class="up">Takeover! ${nm} was bought out at ${fmtP(e.price)}: every holder got paid.</b>`;
+      return `<li class="k-${e.kind}"><span class="st-dot" style="--c:${stS.stocks.find(x => x.id === e.stock)?.color || '#888'}"></span><span>${text}</span><small>${ago}</small></li>`;
+    }).join('') || '<li class="note">Nothing happened yet.</li>';
+    if ($('stFeed').dataset.html !== feed) { $('stFeed').dataset.html = feed; $('stFeed').innerHTML = feed; }
+    stClock();
+  }
+  function stAgo(at) {
+    const m = Math.max(0, Math.round((Date.now() + hrOffset - at) / 60000));
+    return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : `${Math.floor(m / 60)} h ago`;
+  }
+  function stClock() {
+    if (!stS) return;
+    const left = Math.max(0, stS.nextAt - hrNow());
+    const txt = `Next prices in ${Math.floor(left / 60000)}:${String(Math.floor(left / 1000) % 60).padStart(2, '0')}`;
+    ltSet($('stClock'), 'textContent', txt);
+    $('stBar').style.width = `${(1 - left / ST_TICK) * 100}%`;
+    const badge = $('stBadge');
+    if (badge) ltSet(badge, 'textContent', `Live · ${Math.floor(left / 60000)}:${String(Math.floor(left / 1000) % 60).padStart(2, '0')}`);
+  }
+  async function stTrade(side, all = false) {
+    const s = stCur();
+    if (!s || stBusy || !account) return;
+    if (settings.maintenance && !account.isAdmin) { stSay('The game is paused by an admin. Try again later.', 'lose'); return; }
+    const mine = stMine(s.id);
+    const qty = all ? mine?.shares || 0 : Math.max(1, Math.floor(Number($('stQty').value)) || 1);
+    if (!qty) return;
+    if (side === 'buy') {
+      const cost = Math.ceil(qty * s.price * (1 + ST_FEE));
+      if (cost > state.credits) { stSay(`Not enough credits: ${fmt(qty)} ${s.id} cost ${fmt(cost)}.`, 'lose'); return; }
+      if (cost > betLimit()) { stSay(`${limitMsg()} One order may cost at most that much.`, 'lose'); return; }
+    }
+    stBusy = true; renderST();
+    try {
+      await flush();
+      quietCreditsUntil = Date.now() + 8000;
+      const res = await backend.stocks.trade(s.id, qty, side);
+      const total = Number(res?.total) || 0;
+      serverCredits(res, side === 'buy' ? -total : total);
+      state.st.trades = (state.st.trades || 0) + 1;
+      gainXp(3);
+      lastSaved = '';
+      persist(); render();
+      sound.chip(); side === 'sell' ? audio.kaching() : audio.coins(3);
+      const b = $(side === 'buy' ? 'stBuy' : 'stSell').getBoundingClientRect();
+      if (side === 'sell') fxTop.coinBurst(b.left + b.width / 2, b.top, 16, 7);
+      stSay(side === 'buy' ? `Bought ${fmt(qty)} ${s.id} at ${fmtP(Number(res?.price) || s.price)} for ${fmt(total)} credits.` : `Sold ${fmt(qty)} ${s.id} at ${fmtP(Number(res?.price) || s.price)} for ${fmt(total)} credits.`, 'win');
+      while (pendingLevels.length) levelUp(pendingLevels.shift());
+      stFetchAt = 0; await stFetch();
+    } catch (e) {
+      const m = e?.message || '';
+      stSay(/limit/.test(m) ? `${limitMsg()} One order may cost at most that much.` : /too big/.test(m) ? `You can hold at most ${fmt(betLimit() * ST_POS_LIMITS)} credits (what you paid) in one share.`
+        : /credits/.test(m) ? 'Not enough credits for that.' : /many shares/.test(m) ? 'You do not have that many shares.' : /paused/.test(m) ? 'The game is paused by an admin. Try again later.'
+        : e?.code === 'PGRST202' || /could not find the function/i.test(m) ? 'The stock market needs the “Stock market” part of supabase-setup.sql.' : 'That did not work. Check the connection and try again.', 'lose');
+      stFetchAt = 0; stFetch();
+    }
+    stBusy = false;
+    renderST();
+  }
+  $('stList').addEventListener('click', e => {
+    const b = e.target.closest('[data-st]');
+    if (!b) return;
+    state.st.sel = b.dataset.st;
+    sound.tick();
+    renderST(); persist();
+  });
+  $('stBuy').addEventListener('click', () => stTrade('buy'));
+  $('stSell').addEventListener('click', () => stTrade('sell'));
+  $('stSellAll').addEventListener('click', e => { if (confirmed(e.currentTarget, 'Sell all?')) stTrade('sell', true); });
+  $('stQty').addEventListener('input', renderST);
+  document.querySelectorAll('[data-stq]').forEach(b => b.addEventListener('click', () => {
+    const s = stCur(), cur = Math.max(1, Math.floor(Number($('stQty').value)) || 1), mine = stMine(s?.id);
+    const v = { minus: Math.max(1, cur - (cur > 10 ? 10 : 1)), plus: cur + (cur >= 10 ? 10 : 1), max: Math.max(1, stMaxBuy(s)), all: Math.max(1, mine?.shares || 1) }[b.dataset.stq];
+    $('stQty').value = v;
+    sound.chip();
+    renderST();
+  }));
+  function stEnter() { stFetchAt = 0; stFetch(); renderST(); }
+  setInterval(() => {
+    if (!account || !backend?.stocks) return;
+    const inGame = state.mode === 'st' && $('lobby').hidden;
+    const due = stS && hrNow() >= stS.nextAt + 1500;
+    if (due || Date.now() - stFetchAt > (inGame ? 15000 : 60000)) stFetch();
+    if (inGame || !$('lobby').hidden) stClock();
+  }, 1000);
 
   function renderAdminMsgs() {
     if (!adminUnlocked || $('adminModal').hidden) return;
