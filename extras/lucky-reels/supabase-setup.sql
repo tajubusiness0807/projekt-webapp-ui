@@ -2637,3 +2637,28 @@ grant execute on function public.open_ticket_count() to authenticated;
 grant execute on function public.admin_tickets(uuid) to authenticated;
 grant execute on function public.admin_ticket_update(uuid, bigint, text, text) to authenticated;
 grant execute on function public.admin_ticket_delete(uuid, bigint) to authenticated;
+
+
+-- ---------------------------------------------------------------------------
+-- Titles: run this part once (after "Admin security"). An admin can give a
+-- player a title that shows next to their name everywhere, for now
+-- "Bug Abuser". Only the admin menu can set or remove it.
+
+alter table public.players add column if not exists title text check (title is null or title in ('bugabuser'));
+
+create or replace function public.admin_set_title(tok uuid, target uuid, new_title text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.admin_check(tok);
+  if new_title is not null and new_title not in ('bugabuser') then raise exception 'unknown title'; end if;
+  update public.players set title = new_title where id = target;
+  if not found then raise exception 'no such player'; end if;
+end;
+$$;
+
+revoke execute on function public.admin_set_title(uuid, uuid, text) from public, anon;
+grant execute on function public.admin_set_title(uuid, uuid, text) to authenticated;

@@ -1820,6 +1820,10 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
 .rl-others b { margin-left: 2px; font: 700 8px/1 var(--font-mono); color: #fff2c4; }
 .rl-others.bump { animation: popIn 0.3s cubic-bezier(.2, 1.6, .4, 1); }
 .rl-cell.side.vert .rl-others { right: 50%; translate: 50% 0; }
+/* Titles */
+.p-title { display: inline-flex; align-items: center; gap: 3px; margin-left: 6px; padding: 1px 7px 1px 5px; border-radius: 5px; vertical-align: 1px; font: 700 9px/14px var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
+.p-title.t-bugabuser { color: #1d1714; background: linear-gradient(90deg, #1d1714 0 3px, #f3c94b 3px 5px, #1d1714 5px 7px, #f3c94b 7px calc(100% - 7px), #1d1714 calc(100% - 7px) calc(100% - 5px), #f3c94b calc(100% - 5px) calc(100% - 3px), #1d1714 calc(100% - 3px)); padding: 1px 10px 1px 9px; box-shadow: 0 0 0 1px #1d1714, 0 0 8px #e0414a88; }
+.p-title.t-bugabuser span { font-size: 10px; }
 /* Game goodies */
 .gg { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; }
 .cabinet:not([data-mode="slots"]) .gg[data-gg="slots"] { display: none; }
@@ -2951,6 +2955,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Affiliate codes need the “Affiliate codes” part of supabase-setup.sql.': 'Affiliate-Codes brauchen den Abschnitt „Affiliate codes“ aus supabase-setup.sql.',
     'No player has that affiliate code. Check it, or leave the field empty.': 'Diesen Affiliate-Code hat niemand. Prüf ihn oder lass das Feld leer.',
     'player': 'Spieler', 'players': 'Spieler',
+    'New title': 'Neuer Titel', 'Remove “Bug Abuser”': '„Bug Abuser“ entfernen', 'Give this player the title Bug Abuser': 'Diesem Spieler den Titel Bug Abuser geben', 'Take the title away again': 'Den Titel wieder wegnehmen',
+    'Took advantage of a bug instead of reporting it.': 'Hat einen Fehler ausgenutzt, statt ihn zu melden.',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -3160,7 +3166,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['{a} times!', '{a}-fach!'], ['Reply to {a}…', 'Antwort an {a}…'], ['Your ticket “{a}” is now: {b}', 'Dein Ticket „{a}“ ist jetzt: {b}'], ['Goodies {a} ›', 'Goodies {a} ›'], ['Bonus for {a}', 'Bonus für {a}'], ["Thanks to {a}'s code you start with {b} credits!", 'Dank des Codes von {a} startest du mit {b} Credits!'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['An admin gave you the title “{a}”.', 'Ein Admin hat dir den Titel „{a}“ gegeben.'], ['{a} is now marked as Bug Abuser.', '{a} ist jetzt als Bug Abuser markiert.'], ['{a} is no longer marked as Bug Abuser.', '{a} ist nicht mehr als Bug Abuser markiert.'], ['{a} times!', '{a}-fach!'], ['Reply to {a}…', 'Antwort an {a}…'], ['Your ticket “{a}” is now: {b}', 'Dein Ticket „{a}“ ist jetzt: {b}'], ['Goodies {a} ›', 'Goodies {a} ›'], ['Bonus for {a}', 'Bonus für {a}'], ["Thanks to {a}'s code you start with {b} credits!", 'Dank des Codes von {a} startest du mit {b} Credits!'],
     ['joined with your affiliate code: +{a} credits!', 'hat sich mit deinem Affiliate-Code angemeldet: +{a} Credits!'], ['Your code is {a}. Share it with friends!', 'Dein Code ist {a}. Teil ihn mit Freunden!'],
     ['{a} player joined with your code · +{b} credits earned', '{a} Spieler hat sich mit deinem Code angemeldet · +{b} Credits verdient'], ['{a} players joined with your code · +{b} credits earned', '{a} Spieler haben sich mit deinem Code angemeldet · +{b} Credits verdient'], ['Golden rocket! This one flies past {a} for sure.', 'Goldene Rakete! Die fliegt garantiert über {a}.'], ['bet {a}', 'Einsatz {a}'], ['auto {a}', 'auto {a}'],
     ["You're on board with {a}. Auto cash-out at {b}.", 'Du bist mit {a} an Bord. Auto-Auszahlung bei {b}.'], ["You're on board with {a}. Cash out before it blows!", 'Du bist mit {a} an Bord. Zahl aus, bevor sie explodiert!'],
@@ -3399,6 +3405,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     { id: 'comeback', name: 'Comeback Kid', desc: 'Came back from zero credits.', color: '#3fd1a4', glyph: '↑' },
   ];
   const MEDAL_IDS = MEDALS.map(m => m.id);
+  // Titles an admin can hand out; they show next to the name everywhere.
+  const TITLES = [{ id: 'bugabuser', name: 'Bug Abuser', icon: '🐞', desc: 'Took advantage of a bug instead of reporting it.' }];
+  const TITLE_IDS = TITLES.map(t => t.id);
   const medalSvg = m => `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M8 1h6l4 10h-6z" fill="#c8323a"/><path d="M24 1h-6l-4 10h6z" fill="#3d7bd9"/><circle cx="16" cy="20.5" r="10" fill="${m.color}" stroke="#0007" stroke-width="1.5"/><circle cx="16" cy="20.5" r="7.2" fill="none" stroke="#fff8" stroke-width="1"/><text x="16" y="25" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="700" fill="#1d1714">${m.glyph}</text></svg>`;
   const cabIcon = (body, edge, glow) => `<svg viewBox="0 0 48 48"><rect x="9" y="4" width="30" height="40" rx="6" fill="${body}" stroke="${edge}" stroke-width="2.5"/><rect x="13" y="13" width="22" height="13" rx="2" fill="#f6efe3"/><path d="M17 19.5h4M22 19.5h4M27 19.5h4" stroke="#c8323a" stroke-width="3" stroke-linecap="round"/><circle cx="17" cy="8.5" r="1.6" fill="${glow}"/><circle cx="24" cy="8.5" r="1.6" fill="${glow}"/><circle cx="31" cy="8.5" r="1.6" fill="${glow}"/><rect x="15" y="32" width="18" height="5" rx="2.5" fill="${glow}"/><path d="M39 22h3v-8" stroke="#c9b9a2" stroke-width="2" fill="none"/><circle cx="42" cy="13" r="2.6" fill="#c8323a"/></svg>`;
   const nameIcon = (a, b, c) => `<svg viewBox="0 0 48 48"><rect x="4" y="12" width="40" height="24" rx="6" fill="#1d1714" stroke="${b}" stroke-width="2"/><text x="24" y="30" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="14" fill="${a}" stroke="${c}" stroke-width=".6">Aa</text><circle cx="9" cy="17" r="1.3" fill="${b}"/><circle cx="39" cy="31" r="1.3" fill="${b}"/></svg>`;
@@ -8997,6 +9006,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     medals: Array.isArray(p.medals) ? p.medals.filter(m => MEDAL_IDS.includes(m)) : [],
     prestige: Math.max(0, Math.min(99, Number(p.prestige) || 0)),
     trophies: Array.isArray(p.trophies) ? p.trophies.filter(t => t === '' || TROPHY_IDS.includes(t)) : [],
+    title: TITLE_IDS.includes(p.title) ? p.title : null,
     affCode: typeof (p.affCode ?? p.affiliate_code) === 'string' ? (p.affCode ?? p.affiliate_code) : null, admin: !!(p.admin ?? p.is_admin), banned: !!(p.banned ?? p.is_banned), adminRev: Number(p.adminRev ?? p.admin_rev) || 0,
   }));
   const adminChanged = () => Object.assign(new Error('changed by an admin'), { code: 'admin_changed' });
@@ -9079,6 +9089,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         },
         setBanned: (id, value) => store.save(id, { banned: value }),
         setMedals: (id, medals) => store.save(id, { medals }),
+        setTitle: (id, title) => store.save(id, { title }),
         async setLevel(id, level) {
           const doc = await store.load(id);
           await store.save(id, { level, adminRev: (Number(doc?.adminRev) || 0) + 1 });
@@ -9375,6 +9386,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     let hasPrestige = !(await sb.from('players').select('prestige').limit(1)).error;
     let hasTrophies = !(await sb.from('players').select('trophies').limit(1)).error;
     const hasAffiliate = !(await sb.from('players').select('affiliate_code').limit(1)).error;
+    const hasTitle = !(await sb.from('players').select('title').limit(1)).error;
     const adminCols = adminSchema ? ',is_admin,is_banned,admin_rev' : '';
     // New accounts are only offered when Supabase confirms them on the spot: the made-up addresses can't receive mail.
     let canSignUp = false;
@@ -9520,6 +9532,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         reset: id => adminRpc('admin_update_player', { target: id, new_credits: null, reset: true, set_banned: null }),
         setBanned: (id, value) => adminRpc('admin_update_player', { target: id, new_credits: null, reset: false, set_banned: value }),
         setMedals: (id, medals) => adminRpc('admin_set_medals', { target: id, new_medals: medals }),
+        setTitle: (id, title) => adminRpc('admin_set_title', { target: id, new_title: title }),
         setLevel: (id, level) => adminRpc('admin_set_level', { target: id, new_level: level }),
         setAdmin: (id, make, pw) => adminRpc('admin_set_admin', { target: id, make, new_pw: pw ?? null }),
         deletePlayer: id => adminRpc('admin_delete_player', { target: id }),
@@ -9701,7 +9714,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       },
       watch(cb) {
         const pull = async () => {
-          let { data, error } = await sb.from('players').select(`id,name,credits,best,level${hasJackpots ? ',jackpots' : ''}${hasFlair ? ',flair' : ''}${hasProfile ? ',avatar,medals' : ''}${hasPrestige ? ',prestige' : ''}${hasTrophies ? ',trophies' : ''}${hasAffiliate ? ',affiliate_code' : ''}${adminCols}`);
+          let { data, error } = await sb.from('players').select(`id,name,credits,best,level${hasJackpots ? ',jackpots' : ''}${hasFlair ? ',flair' : ''}${hasProfile ? ',avatar,medals' : ''}${hasPrestige ? ',prestige' : ''}${hasTrophies ? ',trophies' : ''}${hasAffiliate ? ',affiliate_code' : ''}${hasTitle ? ',title' : ''}${adminCols}`);
           if (error && hasJackpots) {
             hasJackpots = false;
             ({ data } = await sb.from('players').select(`id,name,credits,best,level${adminCols}`));
@@ -9734,6 +9747,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const jackpotFlash = new Map();
   const seenJackpots = new Map();
   let boardPrimed = false;
+  let seenTitle;
   function onPlayers(list) {
     for (const p of list) {
       const prev = seenJackpots.get(p.id);
@@ -9741,6 +9755,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       seenJackpots.set(p.id, p.jackpots);
     }
     boardPrimed = true;
+    const meNow = account && list.find(p => p.id === account.id);
+    if (meNow && seenTitle !== undefined && meNow.title !== seenTitle && meNow.title) { const t = TITLES.find(x => x.id === meNow.title); toast('New title', `An admin gave you the title “${t?.name || meNow.title}”.`); }
+    if (meNow) seenTitle = meNow.title;
     players = list;
     if (account) checkNewMedals();
     const mine = account && list.find(p => p.id === account.id);
@@ -9927,7 +9944,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     seenMedals = null;
     setTimeout(checkGifts, 1200);
     hrClaimSoon = true; hrBetsFor = -1; hrBetList = [];
-    affMine = null; affStats = null; affStatsAt = 0;
+    affMine = null; affStats = null; affStatsAt = 0; seenTitle = undefined;
     myTickets = []; setTimeout(ticketTick, 2500);
     rlClaimSoon = true; rlCur = { id: -1, result: null }; rlTableFor = -1; rlAnimFor = -1;
     rkClaimSoon = true; rkCur = null; rkBets = []; rkBetsFor = -1;
@@ -9986,7 +10003,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const nameHtml = (id, name) => {
     const flair = id === account?.id ? myFlair() : players.find(p => p.id === id)?.flair;
     const cls = flair === 'neon' ? 'neon-name' : NAME_FLAIRS.includes(flair) ? 'name-' + flair : '';
-    return (cls ? `<span class="${cls}">${esc(name)}</span>` : esc(name)) + prestigeBadge(prestigeOf(id));
+    const t = TITLES.find(x => x.id === players.find(p => p.id === id)?.title);
+    return (cls ? `<span class="${cls}">${esc(name)}</span>` : esc(name)) + prestigeBadge(prestigeOf(id)) +
+      (t ? `<span class="p-title t-${t.id}" title="${esc(t.desc)}"><span aria-hidden="true">${t.icon}</span>${esc(t.name)}</span>` : '');
   };
   const byName = (a, b) => a.name.localeCompare(b.name);
   const trophiesOf = id => id === account?.id ? myTrophies() : players.find(p => p.id === id)?.trophies || [];
@@ -10830,7 +10849,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       : a.name.localeCompare(b.name));
     // Rebuilding swaps out the buttons and inputs, which would swallow a click or a half-typed amount,
     // so only rebuild when players or their flags change and otherwise refresh the numbers in place.
-    const sig = rows.map(p => `${p.id}:${p.name}:${p.admin}:${p.banned}:${p.medals.join(',')}:${p.prestige}:${p.avatar}:${online.has(p.id)}`).join('|') + '|' + account?.id + '|' + sortBy;
+    const sig = rows.map(p => `${p.id}:${p.name}:${p.admin}:${p.banned}:${p.medals.join(',')}:${p.prestige}:${p.avatar}:${p.title}:${online.has(p.id)}`).join('|') + '|' + account?.id + '|' + sortBy;
     if (!force && table.dataset.sig === sig) {
       for (const p of rows) {
         const tr = table.querySelector(`tr[data-pid="${CSS.escape(p.id)}"]`);
@@ -10858,6 +10877,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         <td class="lvl"><span class="p-field-label">Level</span><div class="credit-edit level-edit"><input class="level-in" type="number" inputmode="numeric" min="1" max="${MAX_LEVEL}" value="${p.level}" aria-label="Level for ${esc(p.name)}"><button class="abtn" data-act="level">Set</button></div></td>
         <td class="p-acts"><div class="acts">
           <button class="abtn" data-act="medals">Medals</button>
+          <button class="abtn${p.title === 'bugabuser' ? ' warn' : ''}" data-act="title" title="${p.title === 'bugabuser' ? 'Take the title away again' : 'Give this player the title Bug Abuser'}">${p.title === 'bugabuser' ? 'Remove “Bug Abuser”' : '🐞 Bug Abuser'}</button>
           <button class="abtn" data-act="admin"${me ? ' disabled' : ''}>${p.admin ? 'Remove admin' : 'Make admin'}</button>
           <span class="gap"></span>
           <button class="abtn warn" data-act="reset">Reset</button>
@@ -10906,6 +10926,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       const acts = btn.closest('.acts');
       acts.innerHTML = `<div class="medal-pick">${MEDALS.map(m => `<button type="button" data-medal="${m.id}" aria-pressed="${p.medals.includes(m.id)}" title="${esc(m.desc)}">${medalSvg(m)}${esc(m.name)}</button>`).join('')}</div>` +
         '<button class="abtn ok" data-act="medals-ok">Save medals</button><button class="abtn" data-act="admin-cancel">Cancel</button>';
+    } else if (act === 'title') {
+      const give = p.title !== 'bugabuser';
+      adminDo(give ? `${p.name} is now marked as Bug Abuser.` : `${p.name} is no longer marked as Bug Abuser.`, () => backend.admin.setTitle(p.id, give ? 'bugabuser' : null));
     } else if (act === 'medals-ok') {
       const list = [...tr.querySelectorAll('[data-medal][aria-pressed="true"]')].map(b => b.dataset.medal);
       adminDo(list.length ? `${p.name} now has ${list.length} medal${list.length > 1 ? 's' : ''}.` : `${p.name} has no medals now.`, () => backend.admin.setMedals(p.id, list));
