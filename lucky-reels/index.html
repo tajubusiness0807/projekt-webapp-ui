@@ -3032,7 +3032,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       </div>
       <details class="bj-rules">
         <summary>Blackjack rules</summary>
-        <p class="note">Get closer to 21 than the dealer without going over. Number cards count their value, J, Q and K count 10, an ace counts 1 or 11. A blackjack (ace plus a ten-card as your first two cards) pays 3 to 2; other wins pay 1 to 1, a tie returns your bet. The dealer draws to 16 and stands on every 17. Double: double your bet for exactly one more card. Split: two cards of the same value become two hands with their own bet (once per round; split aces get one card each). Six decks, freshly shuffled for every hand. Keys: H hit, S stand, D double, P split, Space deal.</p>
+        <p class="note">Get closer to 21 than the dealer without going over. Number cards count their value, J, Q and K count 10, an ace counts 1 or 11. A blackjack (ace plus a ten-card as your first two cards) pays 3 to 2; other wins pay 1 to 1, a tie returns your bet. The dealer draws to 16 and stands on every 17. Double: double your bet for exactly one more card. Split: two cards of the same value become two hands with their own bet (once per round; split aces get one card each). Six decks, shuffled when a quarter is left. Keys: H hit, S stand, D double, P split, Space deal.</p>
       </details>
     </section>
 
@@ -3479,8 +3479,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Face-down card': 'Verdeckte Karte', 'card back': 'Kartenrückseite', 'Bust.': 'Überkauft.', 'BUST': 'ÜBER', 'LOSE': 'VERLOREN', 'PUSH': 'UNENTSCHIEDEN', 'WIN': 'GEWONNEN', 'BLACKJACK': 'BLACKJACK',
     'Not enough credits to double the bets.': 'Nicht genug Credits, um die Einsätze zu verdoppeln.', 'Not enough credits to repeat the last bet.': 'Nicht genug Credits, um den letzten Einsatz zu wiederholen.',
     'Not enough credits for another chip.': 'Nicht genug Credits für einen weiteren Chip.', 'Blackjack rules': 'Blackjack-Regeln',
-    'Get closer to 21 than the dealer without going over. Number cards count their value, J, Q and K count 10, an ace counts 1 or 11. A blackjack (ace plus a ten-card as your first two cards) pays 3 to 2; other wins pay 1 to 1, a tie returns your bet. The dealer draws to 16 and stands on every 17. Double: double your bet for exactly one more card. Split: two cards of the same value become two hands with their own bet (once per round; split aces get one card each). Six decks, freshly shuffled for every hand. Keys: H hit, S stand, D double, P split, Space deal.':
-      'Komm näher an 21 als der Dealer, ohne drüber zu gehen. Zahlenkarten zählen ihren Wert, B, D und K zählen 10, ein Ass zählt 1 oder 11. Ein Blackjack (Ass plus Zehnerkarte als erste zwei Karten) zahlt 3 zu 2; andere Gewinne zahlen 1 zu 1, bei Gleichstand gibt es den Einsatz zurück. Der Dealer zieht bis 16 und hält bei jeder 17. Verdoppeln: doppelter Einsatz für genau eine weitere Karte. Teilen: Zwei Karten mit gleichem Wert werden zwei Hände mit eigenem Einsatz (einmal pro Runde; geteilte Asse bekommen je eine Karte). Sechs Decks, für jede Hand frisch gemischt. Tasten: H Karte, S halten, D verdoppeln, P teilen, Leertaste austeilen.',
+    'Get closer to 21 than the dealer without going over. Number cards count their value, J, Q and K count 10, an ace counts 1 or 11. A blackjack (ace plus a ten-card as your first two cards) pays 3 to 2; other wins pay 1 to 1, a tie returns your bet. The dealer draws to 16 and stands on every 17. Double: double your bet for exactly one more card. Split: two cards of the same value become two hands with their own bet (once per round; split aces get one card each). Six decks, shuffled when a quarter is left. Keys: H hit, S stand, D double, P split, Space deal.':
+      'Komm näher an 21 als der Dealer, ohne drüber zu gehen. Zahlenkarten zählen ihren Wert, B, D und K zählen 10, ein Ass zählt 1 oder 11. Ein Blackjack (Ass plus Zehnerkarte als erste zwei Karten) zahlt 3 zu 2; andere Gewinne zahlen 1 zu 1, bei Gleichstand gibt es den Einsatz zurück. Der Dealer zieht bis 16 und hält bei jeder 17. Verdoppeln: doppelter Einsatz für genau eine weitere Karte. Teilen: Zwei Karten mit gleichem Wert werden zwei Hände mit eigenem Einsatz (einmal pro Runde; geteilte Asse bekommen je eine Karte). Sechs Decks, gemischt wenn ein Viertel übrig ist. Tasten: H Karte, S halten, D verdoppeln, P teilen, Leertaste austeilen.',
     // Roulette
     'Roulette wheel': 'Roulette-Rad', 'Last numbers': 'Letzte Zahlen', 'On the table:': 'Auf dem Tisch:', 'No more bets!': 'Nichts geht mehr!',
     'Pick a chip, place it on the table, then spin.': 'Wähl einen Chip, setz ihn auf den Tisch, dann dreh.', 'Place a chip on the table first.': 'Setz zuerst einen Chip auf den Tisch.',
@@ -3649,6 +3649,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'The stock market needs the “Stock market” part of supabase-setup.sql.': 'Die Börse braucht den Abschnitt „Stock market“ aus supabase-setup.sql.', 'Takeover!': 'Übernahme!', 'Bankrupt': 'Pleite',
     'You do not have that many shares.': 'So viele Aktien hast du nicht.',
     'Six shares are traded, at the same prices for everyone. Every 5 minutes each share takes one step: up with its own chance (shown next to the chart), otherwise down. The safe shares rise often but only a little; the wild ones rarely, but then a lot. Now and then breaking news moves a share by much more. Buying costs the price plus a 1% fee, selling brings the price minus 1%. One order can cost at most your bet limit, and you can put at most 25 times your bet limit into one share. If a share falls below 5% of its starting price, the company goes bankrupt and its shares are lost; if it reaches 10 times its starting price, it is taken over and every holder is paid out at that price, even while offline. Then the share starts over at its starting price. Your shares stay in your portfolio while you play other games or log out.': 'Sechs Aktien werden gehandelt, zu denselben Kursen für alle. Alle 5 Minuten macht jede Aktie einen Schritt: mit ihrer eigenen Chance nach oben (steht neben dem Chart), sonst nach unten. Die sicheren Aktien steigen oft, aber nur ein wenig; die wilden selten, dann aber kräftig. Ab und zu bewegt eine Eilmeldung eine Aktie viel stärker. Kaufen kostet den Kurs plus 1 % Gebühr, Verkaufen bringt den Kurs minus 1 %. Ein Kauf darf höchstens dein Einsatzlimit kosten, und in eine Aktie kannst du höchstens das 25-Fache deines Einsatzlimits stecken. Fällt eine Aktie unter 5 % ihres Startkurses, geht die Firma pleite und die Aktien sind weg; erreicht sie das 10-Fache, wird sie übernommen und jeder Aktionär zu diesem Kurs ausbezahlt, auch offline. Danach startet die Aktie wieder beim Startkurs. Deine Aktien bleiben im Depot, während du andere Spiele spielst oder ausgeloggt bist.',
+    'This flight is over. The next rocket is being fuelled.': 'Dieser Flug ist vorbei. Die nächste Rakete wird betankt.',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -5382,10 +5383,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (!bet) { bjSay('Tap the chips to place a bet first.', 'lose'); return; }
     if (bet > state.credits) { bjSay(`Not enough credits for a ${fmt(bet)} bet.`, 'lose'); return; }
     bjBusy = true;
-    // Every hand comes from a freshly shuffled shoe, like a shuffling machine: counting cards does not help.
-    const low = state.bj.shoe.length < (BJ_DECKS * 52) / 4;
-    state.bj.shoe = bjShuffle();
-    if (low) {
+    if (state.bj.shoe.length < (BJ_DECKS * 52) / 4) {
+      state.bj.shoe = bjShuffle();
       bjSay('Shuffling a fresh shoe…', 'hot');
       $('shoe').classList.add('shuffling');
       for (let k = 0; k < 6; k++) setTimeout(() => sound.card(), k * 90);
@@ -7813,6 +7812,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     };
   }
 
+  let rkLate = -1, rkEnterMsg = false;
   let rkCur = null, rkFetching = false, rkFetchAt = 0, rkReady = null, rkBets = [], rkBetsFor = -1, rkBetsAt = 0;
   let rkBusyBet = false, rkCashing = false, rkClaiming = false, rkClaimSoon = true, rkAutoTried = -1, rkSeen = {};
   const rkMine = () => rkBetsFor === rkCur?.id ? rkBets.find(b => !b.player || b.player === account?.id) : null;
@@ -7825,6 +7825,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       if (backend.rocket.shared && Number.isFinite(Number(r?.now))) { const off = Number(r.now) - (t0 + Date.now()) / 2; hrOffset = hrOffsetSet ? hrOffset * 0.7 + off * 0.3 : off; hrOffsetSet = true; }
       const next = { id: Number(r.id), betStart: Number(r.bet_start), launch: Number(r.launch), crash: r.crash == null ? null : Number(r.crash), crashAt: r.crash_at == null ? null : Number(r.crash_at), nextStart: r.next_start == null ? null : Number(r.next_start), golden: !!r.golden };
       const wasGold = rkCur?.id === next.id && rkCur.golden;
+      // Came in after the end (or this page only now learns it): show the result, but skip the explosion and its sound.
+      if (next.crash != null && (rkCur?.id !== next.id || rkCur.crash == null) && hrNow() - next.crashAt > 1500) rkLate = next.id;
+      if (rkEnterMsg && state.mode === 'rk') {
+        rkEnterMsg = false;
+        const ph = (next.launch > hrNow()) ? 'bet' : next.crash != null && hrNow() >= next.crashAt ? 'done' : 'fly';
+        rkLastPhase = ph === 'bet' ? 'bet' : ph === 'fly' ? 'fly' : next.crash >= RK_CAP ? 'moon' : 'boom';
+        rkSay(ph === 'bet' ? 'Bet and board the rocket before liftoff. The higher it flies, the more it pays.' : ph === 'fly' ? 'The rocket is in the air. Board the next one.' : 'This flight is over. The next rocket is being fuelled.');
+      }
       if (!rkCur || next.id !== rkCur.id) { rkCur = next; rkBets = []; rkBetsFor = -1; rkScene.reset(); renderRK(); rkLoadBets(); }
       else Object.assign(rkCur, next);
       // A golden rocket shows itself at liftoff: it will make it past 30×.
@@ -7858,7 +7866,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (!r) return { phase: 'wait', m: 1 };
     if (now < r.launch) return { phase: 'bet', m: 1, left: r.launch - now };
     const crashed = r.crash != null && now >= r.crashAt;
-    if (crashed) return { phase: r.crash >= RK_CAP ? 'moon' : 'boom', m: r.crash, since: now - r.crashAt };
+    if (crashed) return { phase: r.crash >= RK_CAP ? 'moon' : 'boom', m: r.crash, since: r.id === rkLate ? Math.max(8000, now - r.crashAt) : now - r.crashAt };
     return { phase: 'fly', m: rkMult(now - r.launch), t: now - r.launch };
   }
   const rkAutoValue = () => { const v = Number(String($('rkAuto').value).replace(',', '.')); return v >= 1.01 ? Math.min(RK_CAP, Math.floor(v * 100) / 100) : null; };
@@ -8303,6 +8311,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (!(state.mode === 'rk' && account && $('lobby').hidden && $('shopPage').hidden && !document.hidden)) { rkFrameOn = false; return; }
     const now = hrNow(), p = rkDraw(now);
     if (p.phase !== rkLastPhase) {
+      if (p.phase === 'bet' && rkLastPhase && rkLastPhase !== 'wait') rkSay('Bet and board the rocket before liftoff. The higher it flies, the more it pays.');
       if (p.phase === 'fly' && rkLastPhase === 'bet') { sound.rumble(); audio.whoosh(); audio.noise(1.2, { type: 'lowpass', freq: 200, to: 900, vol: 0.3, attack: 0.05 }); rkSay('Liftoff! Cash out before it blows.', 'hot'); voice.say('Liftoff!', { urgent: true, rocket: true }); }
       if (p.phase === 'boom' && p.since < 3000) {
         sound.boom(); sound.thunder(); audio.boom();
@@ -8376,12 +8385,15 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   function rkEnter() {
     if (document.activeElement !== $('rkBet')) $('rkBet').value = state.rk.bet;
     if (document.activeElement !== $('rkAuto')) $('rkAuto').value = state.rk.auto ? state.rk.auto.toFixed(2) : '';
+    // An old picture of the round (from before we left) would flash up first: wait for the fresh one.
+    if (rkCur && performance.now() - rkFetchAt > 3000) { rkCur = null; rkBets = []; rkBetsFor = -1; }
+    rkEnterMsg = !rkCur;
     rkResize();
     renderRK();
     renderRKClock(hrNow());
     const p = rkPhase(hrNow());
     rkLastPhase = p.phase;
-    if (rkReady !== false) rkSay(p.phase === 'bet' ? 'Bet and board the rocket before liftoff. The higher it flies, the more it pays.' : 'The rocket is in the air. Board the next one.');
+    if (rkReady !== false && !rkEnterMsg) rkSay(p.phase === 'bet' ? 'Bet and board the rocket before liftoff. The higher it flies, the more it pays.' : p.phase === 'fly' ? 'The rocket is in the air. Board the next one.' : 'This flight is over. The next rocket is being fuelled.');
     rkFetch();
     if (!rkFrameOn) { rkFrameOn = true; requestAnimationFrame(rkFrame); }
   }
