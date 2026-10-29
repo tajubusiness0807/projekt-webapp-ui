@@ -4211,3 +4211,24 @@ end;
 $$;
 revoke execute on function public.admin_rig_lotto(text) from public, anon;
 grant execute on function public.admin_rig_lotto(text) to authenticated;
+
+
+-- ---------------------------------------------------------------------------
+-- Rocket cheat: golden rocket: run this part once (after "Admin cheats switch"). The admin secret code
+-- makes the next rocket a golden one (it surely flies past 30×) instead of sending it straight to the moon.
+create or replace function public.admin_rig_rocket(round bigint)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  c numeric := least(200, floor(30 / (1 - random()) * 100) / 100);
+begin
+  if not public.admin_me() then raise exception 'not allowed'; end if;
+  if not coalesce((select (data ->> 'cheats')::boolean from public.settings where id = 1), true) then raise exception 'cheats are off'; end if;
+  update public.rocket_rounds set golden = true, crash = c, crash_at = launch + round(40000 * ln(c) / ln(200)),
+      next_start = launch + round(40000 * ln(c) / ln(200)) + case when c >= 200 then 9000 else 5000 end
+    where id = round and public.horse_now_ms() < launch;
+end;
+$$;

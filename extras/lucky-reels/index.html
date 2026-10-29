@@ -7935,9 +7935,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const key = () => 'lucky-reels-rk-' + (account?.id || '');
     const read = () => { try { return JSON.parse(localStorage.getItem(key()) || '[]'); } catch { return []; } };
     const write = l => { try { localStorage.setItem(key(), JSON.stringify(l.slice(-60))); } catch {} };
-    const goldOf = id => hrRng(id, 997)() < RK_GOLD_CHANCE;
+    // the admin secret code makes the rocket golden (it flies past 30× for sure, but not always to the moon)
+    const goldOf = id => !!rigs()[id] || hrRng(id, 997)() < RK_GOLD_CHANCE;
     const rigs = () => { try { return JSON.parse(localStorage.getItem('lucky-reels-rk-rig') || '{}'); } catch { return {}; } };
-    const crashOf = id => rigs()[id] ? RK_CAP : goldOf(id) ? Math.min(RK_CAP, Math.floor(RK_GOLD / (1 - hrRng(id, 999)()) * 100) / 100) : Math.min(RK_CAP, Math.max(1, Math.floor(RK_EDGE / (1 - hrRng(id, 999)()) * 100) / 100));
+    const crashOf = id => goldOf(id) ? Math.min(RK_CAP, Math.floor(RK_GOLD / (1 - hrRng(id, 999)()) * 100) / 100) : Math.min(RK_CAP, Math.max(1, Math.floor(RK_EDGE / (1 - hrRng(id, 999)()) * 100) / 100));
     const round = id => { const bs = id * P, c = crashOf(id); return { id, bet_start: bs, launch: bs + RK_BET, crash: c, golden: goldOf(id), crash_at: bs + RK_BET + Math.round(rkTimeFor(c)), next_start: (id + 1) * P }; };
     const settle = b => {
       if (b.payout != null) return;
