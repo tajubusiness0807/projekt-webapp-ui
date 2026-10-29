@@ -1835,7 +1835,21 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
 .jb-stations { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 @media (max-width: 560px) { .jb-stations { grid-template-columns: minmax(0, 1fr); } }
 .jb-st { position: relative; display: grid; align-content: start; gap: 8px; min-height: 180px; padding: 10px; border-radius: 14px; background: #2a1e18; border: 2px solid #ffffff14; overflow: hidden; }
-.jb-st[data-st="counter"] { grid-column: 1 / -1; }
+.jb-st[data-st="counter"], .jb-st.jb-wide { grid-column: 1 / -1; }
+.jb-st[hidden] { display: none; }
+.jb-card { display: grid; gap: 8px; padding: 10px; border-radius: 12px; background: #fff8e6; color: #3a1d00; animation: jbIn 0.3s cubic-bezier(.2, 1.6, .4, 1); }
+.jb-card.office { background: #eef3ff; color: #1d2a44; }
+.jb-card .jb-who { font-size: 26px; }
+.jb-card .jb-q { margin: 0; font-weight: 700; font-size: 15px; }
+.jb-answers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.jb-answers.two { grid-template-columns: 1fr 1fr; }
+@media (max-width: 560px) { .jb-answers { grid-template-columns: minmax(0, 1fr); } .jb-answers.two { grid-template-columns: 1fr 1fr; } }
+.jb-ans { padding: 9px 8px; border-radius: 9px; background: #fff; color: inherit; font-weight: 600; font-size: 13px; box-shadow: inset 0 0 0 2px #0001, inset 0 -3px 0 #0002; }
+.jb-ans:hover { background: #ffc72c; }
+.jb-card.ok, .jb-card.bad { pointer-events: none; }
+.jb-card.ok { animation: jbOk 0.45s ease-out forwards; } .jb-card.bad { animation: jbBad 0.45s ease-out forwards; }
+.jb-job.stock .jb-zone { z-index: 1; background: #ffc72c33; box-shadow: inset 0 0 0 2px #ffc72c; }
+.jb-job.stock .jb-fill { background: linear-gradient(90deg, #e0453a, #7fd18b 40%, #7fd18b); }
 .jb-st h4 { margin: 0; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--jy); }
 .jb-lock { display: none; margin: 0; }
 .jb-st[data-locked] { min-height: 0; opacity: 0.55; background: repeating-linear-gradient(45deg, #2a1e18 0 12px, #241914 12px 24px); }
@@ -2887,6 +2901,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         <div class="jb-st" data-st="counter"><h4>🛎️ Counter &amp; drive-in</h4><div class="jb-queue" id="jbQueue"></div>
           <div class="jb-tray" id="jbTray"></div><div class="jb-items" id="jbItems"></div>
           <div class="jb-tray-btns"><button type="button" class="jb-serve" id="jbServe">Serve</button><button type="button" class="jb-clear" id="jbClear">Empty tray</button></div><p class="jb-lock"></p></div>
+        <div class="jb-st jb-wide" data-st="crew"><h4>👥 Crew</h4><div class="jb-slots" id="jbCrew"></div></div>
+        <div class="jb-st" data-st="stock"><h4>📦 Storage</h4><div class="jb-slots" id="jbStock"></div></div>
+        <div class="jb-st" data-st="office"><h4>📋 Office</h4><div class="jb-slots" id="jbOffice"></div></div>
         <div class="jb-offnote" id="jbOff">Press “Start shift” to clock in.</div>
       </div>
       <p class="message" id="jbMsg" role="status" aria-live="polite">Welcome to Lucky Burger!</p>
@@ -2897,7 +2914,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       </div>
       <details class="bj-rules">
         <summary>How the job works</summary>
-        <p class="note">Lucky Burger costs nothing. Start a shift and do the work that comes up: scrub stains off the floor, take the fries out when the bar is in the green, flip and serve the patties at the right moment, and put exactly what a customer ordered on the tray. Every 10 seconds you get your wage, but only if you did something in those 10 seconds and the boss is not angry. The happier the boss, the bigger the paycheck: from 80% up to 120% of the wage. Finished jobs make the boss happier; things you let slip (a stain someone slips on, burnt food, a customer who walks out) make the boss angry. Paid time counts as time worked, and time worked brings promotions: from cleaner (14 credits every 10 seconds) up to store manager (250 credits every 10 seconds) after 9 hours of work. Higher positions run more stations at once and things go faster. A shift ends when you press End shift, leave the game, switch to another tab or do nothing for 45 seconds.</p>
+        <p class="note">Lucky Burger costs nothing. Start a shift and do the work that comes up: scrub stains off the floor, take the fries out when the bar is in the green, flip and serve the patties at the right moment, put exactly what a customer ordered on the tray, and later as a boss give the crew the right answer, reorder stock when the shelf is low (yellow) and approve only reports whose numbers match. Every position has its own jobs. Every 10 seconds you get your wage, but only if you did something in those 10 seconds and the boss is not angry. The happier the boss, the bigger the paycheck: from 80% up to 120% of the wage. Finished jobs make the boss happier; things you let slip (a stain someone slips on, burnt food, a customer who walks out) make the boss angry. Paid time counts as time worked, and time worked brings promotions: from cleaner (14 credits every 10 seconds) up to store manager (250 credits every 10 seconds) after 9 hours of work. Higher positions pay more and bring new kinds of work. A shift ends when you press End shift, leave the game, switch to another tab or do nothing for 45 seconds.</p>
       </details>
     </section>
 
@@ -3621,7 +3638,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'A car drove off without its order!': 'Ein Auto ist ohne Bestellung weggefahren!', 'A customer walked out angry!': 'Ein Kunde ist wütend gegangen!', 'An order sat around too long!': 'Eine Bestellung lag zu lange herum!',
     'You fell asleep on the job. Shift over.': 'Du bist bei der Arbeit eingeschlafen. Schicht vorbei.', 'Welcome back! Start a shift when you are ready.': 'Willkommen zurück! Starte eine Schicht, wenn du bereit bist.',
     'Welcome to Lucky Burger! Start your first shift as a cleaner.': 'Willkommen bei Lucky Burger! Starte deine erste Schicht als Putzkraft.',
-    'Lucky Burger costs nothing. Start a shift and do the work that comes up: scrub stains off the floor, take the fries out when the bar is in the green, flip and serve the patties at the right moment, and put exactly what a customer ordered on the tray. Every 10 seconds you get your wage, but only if you did something in those 10 seconds and the boss is not angry. The happier the boss, the bigger the paycheck: from 80% up to 120% of the wage. Finished jobs make the boss happier; things you let slip (a stain someone slips on, burnt food, a customer who walks out) make the boss angry. Paid time counts as time worked, and time worked brings promotions: from cleaner (14 credits every 10 seconds) up to store manager (250 credits every 10 seconds) after 9 hours of work. Higher positions run more stations at once and things go faster. A shift ends when you press End shift, leave the game, switch to another tab or do nothing for 45 seconds.': 'Lucky Burger kostet nichts. Starte eine Schicht und erledige, was anfällt: Flecken vom Boden schrubben, die Pommes rausholen, wenn der Balken im grünen Bereich ist, Pattys im richtigen Moment wenden und servieren und genau das aufs Tablett legen, was ein Kunde bestellt hat. Alle 10 Sekunden gibt es Lohn, aber nur, wenn du in diesen 10 Sekunden etwas getan hast und der Chef nicht sauer ist. Je zufriedener der Chef, desto mehr Lohn: von 80 % bis 120 % des Lohns. Erledigte Aufgaben machen den Chef zufriedener; was du schleifen lässt (ein Fleck, auf dem jemand ausrutscht, verbranntes Essen, ein Kunde, der geht) macht ihn sauer. Bezahlte Zeit zählt als Arbeitszeit, und Arbeitszeit bringt Beförderungen: von der Putzkraft (14 Credits alle 10 Sekunden) bis zum Filialmanager (250 Credits alle 10 Sekunden) nach 9 Stunden Arbeit. Höhere Positionen betreuen mehr Stationen gleichzeitig, und alles geht schneller. Eine Schicht endet, wenn du „Schicht beenden“ drückst, das Spiel verlässt, in einen anderen Tab wechselst oder 45 Sekunden nichts tust.',
+    'Lucky Burger costs nothing. Start a shift and do the work that comes up: scrub stains off the floor, take the fries out when the bar is in the green, flip and serve the patties at the right moment, put exactly what a customer ordered on the tray, and later as a boss give the crew the right answer, reorder stock when the shelf is low (yellow) and approve only reports whose numbers match. Every position has its own jobs. Every 10 seconds you get your wage, but only if you did something in those 10 seconds and the boss is not angry. The happier the boss, the bigger the paycheck: from 80% up to 120% of the wage. Finished jobs make the boss happier; things you let slip (a stain someone slips on, burnt food, a customer who walks out) make the boss angry. Paid time counts as time worked, and time worked brings promotions: from cleaner (14 credits every 10 seconds) up to store manager (250 credits every 10 seconds) after 9 hours of work. Higher positions pay more and bring new kinds of work. A shift ends when you press End shift, leave the game, switch to another tab or do nothing for 45 seconds.': 'Lucky Burger kostet nichts. Starte eine Schicht und erledige, was anfällt: Flecken vom Boden schrubben, die Pommes rausholen, wenn der Balken im grünen Bereich ist, Pattys im richtigen Moment wenden und servieren, genau das aufs Tablett legen, was ein Kunde bestellt hat, und später als Chef dem Team die richtige Antwort geben, Ware nachbestellen, wenn das Regal knapp wird (gelb), und nur Berichte freigeben, deren Zahlen übereinstimmen. Jede Position hat ihre eigenen Aufgaben. Alle 10 Sekunden gibt es Lohn, aber nur, wenn du in diesen 10 Sekunden etwas getan hast und der Chef nicht sauer ist. Je zufriedener der Chef, desto mehr Lohn: von 80 % bis 120 % des Lohns. Erledigte Aufgaben machen den Chef zufriedener; was du schleifen lässt (ein Fleck, auf dem jemand ausrutscht, verbranntes Essen, ein Kunde, der geht) macht ihn sauer. Bezahlte Zeit zählt als Arbeitszeit, und Arbeitszeit bringt Beförderungen: von der Putzkraft (14 Credits alle 10 Sekunden) bis zum Filialmanager (250 Credits alle 10 Sekunden) nach 9 Stunden Arbeit. Höhere Positionen zahlen mehr und bringen neue Aufgaben. Eine Schicht endet, wenn du „Schicht beenden“ drückst, das Spiel verlässt, in einen anderen Tab wechselst oder 45 Sekunden nichts tust.',
     'Coin Flip': 'Münzwurf', 'Coin flip': 'Münzwurf', 'Heads or tails: double it, then double again, and again. And once in 10,000 flips the coin lands on its edge: ×10.': 'Kopf oder Zahl: verdoppeln, nochmal verdoppeln, und nochmal. Und einmal in 10.000 Würfen landet die Münze auf der Kante: ×10.',
     'Pick a side, set your bet and flip.': 'Wähl eine Seite, setz deinen Einsatz und wirf.', '👑 Heads': '👑 Kopf', '⭐ Tails': '⭐ Zahl', 'Your side': 'Deine Seite', 'Bet per flip': 'Einsatz pro Wurf',
     'Flip': 'Werfen', 'Flipping…': 'Fliegt…', 'Coin flip rules': 'Münzwurf-Regeln', 'Last flips': 'Letzte Würfe', 'Edge': 'Kante', 'Heads': 'Kopf', 'Tails': 'Zahl', 'HEADS': 'KOPF', 'TAILS': 'ZAHL',
@@ -3675,6 +3692,66 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'The timed hard reset is cancelled.': 'Der geplante Hard Reset ist abgebrochen.', 'Hard reset now…': 'Hard Reset läuft…',
     'Admin cheats on': 'Admin-Cheats an', 'The admin secret code works in every game except the stock market. Off: nobody can use it.': 'Der Admin-Geheimcode wirkt in allen Spielen außer der Börse. Aus: Niemand kann ihn benutzen.',
     'My profile': 'Mein Profil', 'Your profile and settings': 'Dein Profil und deine Einstellungen', 'Night Mode': 'Nachtmodus', 'The whole casino in a darker night look. Switch it on and off here.': 'Das ganze Casino im dunkleren Nacht-Look. Hier an- und ausschalten.',
+    'The fryer is overloaded!': 'Die Fritteuse ist überlastet!',
+    'Send someone to the fryer': 'Jemanden an die Fritteuse schicken',
+    'Close the counter': 'Die Theke schließen',
+    'Turn the music up': 'Die Musik lauter drehen',
+    'The floor by the door is wet.': 'Der Boden an der Tür ist nass.',
+    'Put up a warning sign': 'Ein Warnschild aufstellen',
+    'Ignore it': 'Ignorieren',
+    'Open more doors': 'Mehr Türen öffnen',
+    'A customer wants to see the manager.': 'Ein Kunde will den Chef sprechen.',
+    'Go over and stay friendly': 'Hingehen und freundlich bleiben',
+    'Hide in the kitchen': 'In der Küche verstecken',
+    'Hand them a mop': 'Ihm einen Wischmopp geben',
+    'I need a break after five hours.': 'Ich brauche nach fünf Stunden eine Pause.',
+    'Yes, take 15 minutes': 'Ja, nimm dir 15 Minuten',
+    'No breaks today': 'Heute keine Pausen',
+    'Work the grill instead': 'Arbeite stattdessen am Grill',
+    'We are out of cups at the drive-in.': 'Am Drive-in sind die Becher alle.',
+    'Bring cups from storage': 'Becher aus dem Lager holen',
+    'Serve drinks in bags': 'Getränke in Tüten ausgeben',
+    'Close the drive-in': 'Den Drive-in schließen',
+    'The new trainee is lost.': 'Der neue Azubi ist verloren.',
+    'Show them the cleaning plan': 'Ihm den Putzplan zeigen',
+    'Send them home': 'Ihn nach Hause schicken',
+    'Let them run the grill alone': 'Ihn allein den Grill machen lassen',
+    'The ice cream machine is broken again.': 'Die Eismaschine ist schon wieder kaputt.',
+    'Call the repair service': 'Den Reparaturdienst rufen',
+    'Hit it with a ladle': 'Mit der Kelle draufhauen',
+    'Sell it as soup': 'Als Suppe verkaufen',
+    'Two people want the same shift.': 'Zwei wollen dieselbe Schicht.',
+    'Check the schedule together': 'Gemeinsam den Plan anschauen',
+    'Flip a coin': 'Eine Münze werfen',
+    'Give both the day off': 'Beiden freigeben',
+    'The fire alarm is beeping: low battery.': 'Der Rauchmelder piept: Batterie leer.',
+    'Change the battery': 'Die Batterie wechseln',
+    'Pull the alarm out': 'Den Melder abreißen',
+    'Wait until it stops': 'Warten, bis es aufhört',
+    'A child lost its toy in the play area.': 'Ein Kind hat sein Spielzeug in der Spielecke verloren.',
+    'Help look for it': 'Beim Suchen helfen',
+    'Close the play area': 'Die Spielecke schließen',
+    'Sell them a new one': 'Ein neues verkaufen',
+    '👥 Crew': '👥 Team',
+    '📦 Storage': '📦 Lager',
+    '📋 Office': '📋 Büro',
+    '✔ Approve': '✔ Freigeben',
+    '✘ Reject': '✘ Ablehnen',
+    'Cash report': 'Kassenbericht',
+    'Register': 'Kasse',
+    'Delivery note': 'Lieferschein',
+    'Order': 'Bestellung',
+    'Timesheet': 'Stundenzettel',
+    'Rota': 'Dienstplan',
+    'Stock count': 'Inventur',
+    'System': 'System',
+    'Wrong call: that report was not right.': 'Falsch entschieden: Der Bericht war nicht in Ordnung.',
+    'Bad decision: the crew is not happy.': 'Schlechte Entscheidung: Das Team ist unzufrieden.',
+    'Too early: the storage room is overflowing!': 'Zu früh: Das Lager quillt über!',
+    'Nobody answered: the crew had to guess.': 'Keiner hat geantwortet: Das Team musste raten.',
+    'A report was left lying around.': 'Ein Bericht blieb liegen.',
+    'Higher positions pay more and bring new kinds of work.': 'Höhere Positionen zahlen mehr und bringen neue Aufgaben.',
+    'buns': 'Brötchen', 'potatoes': 'Kartoffeln', 'cups': 'Becher', 'ketchup': 'Ketchup', 'napkins': 'Servietten', 'patties': 'Pattys',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -3873,7 +3950,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['Hard reset in {a} · {b}', 'Hard Reset in {a} · {b}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a} · {b}', 'Hard Reset in {a} · {b}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
     ['Rises in {a} of steps', 'Steigt in {a} der Schritte'], ['Usually {a} or {b}', 'Meist {a} oder {b}'], ['Swings: {a}', 'Schwankung: {a}'],
     ['Start {a} · bankrupt below {b} · takeover at {c}', 'Start {a} · Pleite unter {b} · Übernahme ab {c}'],
     ['Buy {a} for {b} · sell {c} for {d} (1% fee each way)', 'Kauf {a} für {b} · Verkauf {c} für {d} (je 1 % Gebühr)'],
@@ -12690,20 +12767,36 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Paid time counts as time worked, and time worked brings promotions up to store manager.
   const JB_PAY_EVERY = 10000, JB_IDLE = 45000;
   const JB_ALL = ['floor', 'fryer', 'grill', 'counter'];
+  // Every position has its own jobs: who moves up leaves the old work to the new people.
   const JB_POS = [
     { name: 'Cleaner', wage: 14, at: 0, st: ['floor'], conc: 2, speed: 1 },
     { name: 'Fry Cook', wage: 22, at: 15 * 60, st: ['floor', 'fryer'], conc: 2, speed: 1 },
-    { name: 'Grill Cook', wage: 34, at: 45 * 60, st: ['floor', 'fryer', 'grill'], conc: 3, speed: 1 },
-    { name: 'Cashier', wage: 50, at: 90 * 60, st: ['fryer', 'grill', 'counter'], conc: 3, speed: 0.95 },
-    { name: 'Drive-in Crew', wage: 72, at: 150 * 60, st: JB_ALL, conc: 3, speed: 0.9 },
-    { name: 'Shift Lead', wage: 105, at: 240 * 60, st: JB_ALL, conc: 4, speed: 0.85 },
-    { name: 'Deputy Manager', wage: 160, at: 360 * 60, st: JB_ALL, conc: 4, speed: 0.8 },
-    { name: 'Store Manager', wage: 250, at: 540 * 60, st: JB_ALL, conc: 5, speed: 0.75 },
+    { name: 'Grill Cook', wage: 34, at: 45 * 60, st: ['fryer', 'grill'], conc: 2, speed: 1 },
+    { name: 'Cashier', wage: 50, at: 90 * 60, st: ['counter'], conc: 2, speed: 1 },
+    { name: 'Drive-in Crew', wage: 72, at: 150 * 60, st: ['counter'], conc: 3, speed: 1 },
+    { name: 'Shift Lead', wage: 105, at: 240 * 60, st: ['crew', 'stock'], conc: 2, speed: 1 },
+    { name: 'Deputy Manager', wage: 160, at: 360 * 60, st: ['stock', 'office'], conc: 2, speed: 1 },
+    { name: 'Store Manager', wage: 250, at: 540 * 60, st: ['crew', 'stock', 'office'], conc: 3, speed: 1 },
   ];
+  // Shift lead and up: the crew comes with problems, one answer is the right one.
+  const JB_CREW = [
+    ['The fryer is overloaded!', 'Send someone to the fryer', 'Close the counter', 'Turn the music up'],
+    ['The floor by the door is wet.', 'Put up a warning sign', 'Ignore it', 'Open more doors'],
+    ['A customer wants to see the manager.', 'Go over and stay friendly', 'Hide in the kitchen', 'Hand them a mop'],
+    ['I need a break after five hours.', 'Yes, take 15 minutes', 'No breaks today', 'Work the grill instead'],
+    ['We are out of cups at the drive-in.', 'Bring cups from storage', 'Serve drinks in bags', 'Close the drive-in'],
+    ['The new trainee is lost.', 'Show them the cleaning plan', 'Send them home', 'Let them run the grill alone'],
+    ['The ice cream machine is broken again.', 'Call the repair service', 'Hit it with a ladle', 'Sell it as soup'],
+    ['Two people want the same shift.', 'Check the schedule together', 'Flip a coin', 'Give both the day off'],
+    ['The fire alarm is beeping: low battery.', 'Change the battery', 'Pull the alarm out', 'Wait until it stops'],
+    ['A child lost its toy in the play area.', 'Help look for it', 'Close the play area', 'Sell them a new one'],
+  ];
+  const JB_STOCK = [['🍞', 'Buns'], ['🥔', 'Potatoes'], ['🥤', 'Cups'], ['🥫', 'Ketchup'], ['🧻', 'Napkins'], ['🥩', 'Patties']];
+  const JB_REPORTS = [['Cash report', 'Register'], ['Delivery note', 'Order'], ['Timesheet', 'Rota'], ['Stock count', 'System']];
   // id, icon, name, from which position on
   const JB_ITEMS = [['burger', '🍔', 'Burger', 0], ['fries', '🍟', 'Fries', 0], ['cola', '🥤', 'Cola', 0], ['nuggets', '🍗', 'Nuggets', 4], ['ice', '🍦', 'Ice cream', 5], ['salad', '🥗', 'Salad', 6]];
-  const JB_SLOTS = { floor: 4, fryer: 2, grill: 3, counter: 3 };
-  const JB_KIND = { floor: 'clean', fryer: 'fry', grill: 'grill', counter: 'order' };
+  const JB_SLOTS = { floor: 4, fryer: 2, grill: 3, counter: 3, crew: 2, stock: 3, office: 2 };
+  const JB_KIND = { floor: 'clean', fryer: 'fry', grill: 'grill', counter: 'order', crew: 'crew', stock: 'stock', office: 'office' };
   const JB_FACES = ['🧑', '👩', '👨', '🧓', '👧', '🧔', '👵', '👱'];
   const JB_STAINS = ['#c0392b', '#6b3e1f', '#e0b100', '#7a8a2a', '#5a3a5c'];
   const jbPosOf = worked => { let i = 0; JB_POS.forEach((p, k) => { if (worked >= p.at) i = k; }); return i; };
@@ -12724,12 +12817,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     $('jbWage').textContent = `${pos.wage} credits / 10 s`;
     $('jbShift').textContent = jb.on ? 'End shift' : 'Start shift';
     $('jbShift').classList.toggle('jb-end', jb.on);
-    document.querySelectorAll('#jbStations [data-st]').forEach(el => {
-      const st = el.dataset.st, open = pos.st.includes(st);
-      el.toggleAttribute('data-locked', !open);
-      const from = JB_POS.findIndex(p => p.st.includes(st));
-      el.querySelector('.jb-lock').textContent = from > i ? `Unlocks as ${JB_POS[from].name}` : 'Not your job any more';
-    });
+    // only the stations of this position are on screen
+    document.querySelectorAll('#jbStations [data-st]').forEach(el => { el.hidden = !pos.st.includes(el.dataset.st); });
     const items = JB_ITEMS.filter(x => x[3] <= i).map(([id, ico, name]) => `<button type="button" class="jb-item" data-item="${id}"><span aria-hidden="true">${ico}</span><small>${name}</small></button>`).join('');
     if ($('jbItems').dataset.html !== items) { $('jbItems').dataset.html = items; $('jbItems').innerHTML = items; }
     jbRenderTray();
@@ -12757,7 +12846,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       if (t.kind === 'clean') t.el.classList.toggle('late', age > t.life * 0.7);
       if (t.fill) {
         const q = t.state === 'order' ? 0 : Math.min(1, (now - t.t0) / t.dur);
-        t.fill.style.width = `${q * 100}%`;
+        t.fill.style.width = `${(t.drain ? 1 - q : q) * 100}%`;
         if (t.kind === 'grill') t.el.style.setProperty('--pc', q < 0.4 ? '#d98880' : q < t.z1 ? '#a0522d' : '#3b2314');
       }
     }
@@ -12826,6 +12915,45 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       t.fill = el.querySelector('.jb-fill'); t.lifeEl = el.querySelector('.jb-life i'); t.btn = el.querySelector('.jb-act');
       t.btn.addEventListener('click', () => jbCook(t));
       $(kind === 'fry' ? 'jbFryer' : 'jbGrill').append(el);
+    } else if (kind === 'crew') {
+      const [q, right, ...wrong] = JB_CREW[randInt(JB_CREW.length)];
+      const answers = [[right, true], ...wrong.map(w => [w, false])].sort(() => Math.random() - 0.5);
+      t.life = 13000 * sp;
+      el.className = 'jb-card crew';
+      el.innerHTML = `<span class="jb-who" aria-hidden="true">${JB_FACES[randInt(JB_FACES.length)]}</span><p class="jb-q">${q}</p>
+        <span class="jb-answers">${answers.map(([a, ok]) => `<button type="button" class="jb-ans" data-ok="${ok ? 1 : 0}">${a}</button>`).join('')}</span>
+        <span class="jb-life"><i></i></span>`;
+      t.lifeEl = el.querySelector('.jb-life i');
+      el.querySelectorAll('.jb-ans').forEach(b => b.addEventListener('click', () => jbDecide(t, b.dataset.ok === '1', 'crew')));
+      $('jbCrew').append(el);
+      audio.bell(988, 0.03);
+    } else if (kind === 'stock') {
+      // the shelf empties: reorder when it is low (yellow), not too early and not too late
+      const [ico, name] = JB_STOCK[randInt(JB_STOCK.length)];
+      t.state = 'a'; t.t0 = now; t.dur = (9000 + randInt(3000)) * sp; t.drain = true; t.what = name;
+      t.z0 = 0.65; t.z1 = 0.95;
+      if (hasG('jbTimer')) t.z0 = 0.56;
+      el.className = 'jb-job stock';
+      el.dataset.state = 'a';
+      el.innerHTML = `<span class="jb-ico" aria-hidden="true">${ico}</span>
+        <span class="jb-cook"><i class="jb-zone" style="--z0:${(1 - t.z1) * 100}%;--zw:${(t.z1 - t.z0) * 100}%"></i><i class="jb-fill"></i></span>
+        <button type="button" class="jb-act">Reorder ${name.toLowerCase()}</button>`;
+      t.fill = el.querySelector('.jb-fill'); t.btn = el.querySelector('.jb-act');
+      t.btn.addEventListener('click', () => jbCook(t));
+      $('jbStock').append(el);
+    } else if (kind === 'office') {
+      // a report to sign: approve when both numbers match, reject when they do not
+      const [a, b] = JB_REPORTS[randInt(JB_REPORTS.length)], v = 100 + randInt(1900), same = Math.random() < 0.5;
+      const w = same ? v : (Math.random() < 0.5 ? v + (1 + randInt(9)) * (randInt(2) ? 1 : 10) : Number(String(v).split('').reverse().join('')) || v + 7);
+      t.life = 12000 * sp;
+      el.className = 'jb-card office';
+      el.innerHTML = `<span class="jb-who" aria-hidden="true">📋</span><p class="jb-q"><b>${a}</b>: ${fmt(v)} · <b>${b}</b>: ${fmt(w === v && !same ? v + 3 : w)}</p>
+        <span class="jb-answers two"><button type="button" class="jb-ans" data-ok="${same ? 1 : 0}">✔ Approve</button><button type="button" class="jb-ans" data-ok="${same ? 0 : 1}">✘ Reject</button></span>
+        <span class="jb-life"><i></i></span>`;
+      t.lifeEl = el.querySelector('.jb-life i');
+      el.querySelectorAll('.jb-ans').forEach(x => x.addEventListener('click', () => jbDecide(t, x.dataset.ok === '1', 'office')));
+      $('jbOffice').append(el);
+      audio.noise(0.15, { type: 'highpass', freq: 3500, vol: 0.05 });
     } else {
       const i = jbIdx(), items = JB_ITEMS.filter(x => x[3] <= i), n = 1 + randInt(Math.min(4, 2 + Math.floor(i / 2)));
       t.items = {};
@@ -12843,6 +12971,12 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     jb.tasks.push(t);
   }
   function jbAct() { jb.lastAct = performance.now(); }
+  function jbDecide(t, ok, kind) {
+    if (!jb.on || !jb.tasks.includes(t)) return;
+    jbAct();
+    if (ok) jbGood(t, 18);
+    else jbFail(t, kind === 'office' ? 'Wrong call: that report was not right.' : 'Bad decision: the crew is not happy.');
+  }
   function jbScrub(t) {
     if (!jb.on || !jb.tasks.includes(t)) return;
     jbAct();
@@ -12863,6 +12997,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       return;
     }
     const q = (now - t.t0) / t.dur;
+    if (t.kind === 'stock') {
+      if (q < t.z0) jbFail(t, 'Too early: the storage room is overflowing!');
+      else jbGood(t, 16);
+      return;
+    }
     if (q < t.z0) { jbFail(t, t.kind === 'fry' ? 'Too early: soggy fries!' : 'Too early: the patty is still raw!'); return; }
     if (q > t.z1) { jbFail(t, t.kind === 'fry' ? 'Too late: the fries are burnt!' : 'Too late: the patty is burnt!'); return; }
     if (t.kind === 'grill' && t.state === 'a') {
@@ -12911,7 +13050,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     sound.chime();
     jbRender();
   }
-  function jbClearDom() { for (const id of ['jbFloor', 'jbFryer', 'jbGrill', 'jbQueue']) $(id).innerHTML = ''; }
+  function jbClearDom() { for (const id of ['jbFloor', 'jbFryer', 'jbGrill', 'jbQueue', 'jbCrew', 'jbStock', 'jbOffice']) $(id).innerHTML = ''; }
   function jbStop(text) {
     if (!jb.on) return;
     const paid = jb.paidShift;
@@ -12964,10 +13103,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const now = performance.now(), pos = JB_POS[jbIdx()];
     for (const t of [...jb.tasks]) {
       const age = now - t.born;
-      if ((t.kind === 'fry' || t.kind === 'grill') && t.state !== 'order') {
-        if ((now - t.t0) / t.dur > 1) jbFail(t, t.kind === 'fry' ? 'The fries burnt in the fryer!' : 'A patty burnt on the grill!');
+      if ((t.kind === 'fry' || t.kind === 'grill' || t.kind === 'stock') && t.state !== 'order') {
+        if ((now - t.t0) / t.dur > 1) jbFail(t, t.kind === 'stock' ? `We ran out of ${t.what.toLowerCase()}!` : t.kind === 'fry' ? 'The fries burnt in the fryer!' : 'A patty burnt on the grill!');
       } else if (age > t.life) {
-        jbFail(t, t.kind === 'clean' ? 'A customer slipped on a stain!' : t.kind === 'order' ? (t.car ? 'A car drove off without its order!' : 'A customer walked out angry!') : 'An order sat around too long!');
+        jbFail(t, t.kind === 'crew' ? 'Nobody answered: the crew had to guess.' : t.kind === 'office' ? 'A report was left lying around.' : t.kind === 'clean' ? 'A customer slipped on a stain!' : t.kind === 'order' ? (t.car ? 'A car drove off without its order!' : 'A customer walked out angry!') : 'An order sat around too long!');
       }
     }
     if (jb.tasks.length) jb.mood = Math.max(0, jb.mood - 0.22 / pos.speed);
