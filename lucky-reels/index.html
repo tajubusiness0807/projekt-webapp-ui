@@ -1615,6 +1615,7 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
   width: min(300px, calc(100vw - 24px));
   pointer-events: none;
 }
+@media (min-width: 601px) { body.has-reset .toasts { top: calc(var(--tbb, 40px) + 8px); } }
 @media (max-width: 600px) {
   .toasts { top: auto; bottom: calc(80px + env(safe-area-inset-bottom, 0px)); right: auto; left: 50%; translate: -50% 0; }
 }
@@ -2093,19 +2094,61 @@ body.cos-ckGold .ck-chicken svg { filter: sepia(1) saturate(5) hue-rotate(-8deg)
 .st-feed li small { color: var(--muted); font-size: 11px; white-space: nowrap; }
 .st-feed li.k-bust, .st-feed li.k-takeover { background: #ffffff0a; }
 /* The countdown to a timed hard reset */
-.reset-timer { position: fixed; top: 0; left: 0; right: 0; z-index: 44; padding: calc(6px + env(safe-area-inset-top, 0px)) 16px 6px; min-height: 32px;
-  background: #1d1410f2; border-bottom: 2px solid var(--accent); color: var(--fg); font: 600 13px var(--font-mono); text-align: center; pointer-events: none; }
-body.has-announce .reset-timer { top: calc(58px + env(safe-area-inset-top, 0px)); padding-top: 6px; }
-body.has-reset { padding-top: calc(40px + env(safe-area-inset-top, 0px)); }
-body.has-reset .lobby, body.has-reset .login { padding-top: calc(48px + env(safe-area-inset-top, 0px)); }
-body.has-reset.has-announce, body.has-reset.has-announce .lobby, body.has-reset.has-announce .login { padding-top: calc(104px + env(safe-area-inset-top, 0px)); }
+.top-bars { position: fixed; top: 0; left: 0; right: 0; z-index: 44; padding-top: env(safe-area-inset-top, 0px); background: #1d1410f2; border-bottom: 2px solid var(--accent); pointer-events: none; }
+.top-bars[hidden] { display: none; }
+body.has-announce .top-bars { top: calc(58px + env(safe-area-inset-top, 0px)); padding-top: 0; }
+.reset-timer { padding: 6px 16px; min-height: 32px; color: var(--fg); font: 600 13px var(--font-mono); text-align: center; }
+/* --tbb: where the strip ends, measured by the page */
+body.has-reset { padding-top: calc(var(--tbb, 40px) + 6px); }
+body.has-reset .lobby, body.has-reset .login, body.has-reset.has-announce, body.has-reset.has-announce .lobby, body.has-reset.has-announce .login { padding-top: calc(var(--tbb, 40px) + 14px); }
 .reset-timer[hidden] { display: none; }
-.reset-timer.soon { border-color: var(--lose); color: #ffd0d3; animation: resetFlash 1s ease-in-out infinite; }
+.reset-timer.soon { color: #ffd0d3; box-shadow: inset 0 -2px var(--lose); animation: resetFlash 1s ease-in-out infinite; }
 @keyframes resetFlash { 50% { background: #5a1418f2; } }
 .reset-timer.final { font-size: 18px; }
 @media (max-width: 520px) { .reset-when { display: none; } }
-body.has-reset .modal, body.has-reset .shop-page { padding-top: calc(44px + env(safe-area-inset-top, 0px)); }
-body.has-reset .profile-card { max-height: calc(100dvh - 76px); }
+body.has-reset .modal, body.has-reset .shop-page { padding-top: calc(var(--tbb, 40px) + 10px); }
+body.has-reset .profile-card { max-height: calc(100dvh - var(--tbb, 40px) - 42px); }
+/* Events: the bar at the top, the lobby tags, the shop sale and the admin tab */
+.event-bar { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 32px; padding: 6px 16px; border-radius: 0;
+  background: linear-gradient(90deg, #2a1d3df2, #3d2558f2 50%, #2a1d3df2); color: var(--fg); font: 600 13px var(--font-mono); white-space: nowrap; overflow: hidden; pointer-events: auto; }
+.event-bar[hidden] { display: none; }
+.event-bar:hover { filter: brightness(1.15); }
+.event-bar.live { background: linear-gradient(90deg, #4a2c10f2, #7a4f14f2 50%, #4a2c10f2); background-size: 200% 100%; animation: evShine 6s linear infinite; }
+@keyframes evShine { to { background-position: -200% 0; } }
+.event-bar + .reset-timer:not([hidden]) { border-top: 1px solid #ffffff1f; }
+.event-bar .ev-t { flex: none; max-width: 45vw; overflow: hidden; text-overflow: ellipsis; color: #fff; }
+.ev-left { flex: none; color: var(--accent); }
+.event-bar.live .ev-left { color: #ffe08a; }
+.ev-left::before, .ev-fx::before { content: "·"; margin-right: 6px; color: var(--muted); }
+.ev-fx { flex: 0 1000 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; color: var(--muted); font-weight: 500; }
+.ev-fx:empty { display: none; }
+.ev-ico { flex: none; }
+@media (max-width: 520px) { .event-bar { font-size: 12px; padding-inline: 10px; } }
+@media (prefers-reduced-motion: reduce) { .event-bar.live { animation: none; } }
+.gp-ev { position: absolute; top: 10px; right: 12px; padding: 2px 8px; border-radius: 999px; background: linear-gradient(90deg, #e9a23b, #ffd36b); color: #1d1410; font: 700 11px var(--font-mono); box-shadow: 0 0 12px #e9a23b88; }
+.gp-ev[hidden] { display: none; }
+.ware[data-sale]:not([data-sale=""])::after { content: attr(data-sale); position: absolute; top: 2px; right: 6px; z-index: 2; padding: 2px 7px; border-radius: 999px; background: var(--lose); color: #fff; font: 700 11px var(--font-mono); transform: rotate(6deg); box-shadow: 0 4px 10px #0008; }
+.ev-modal .news-card { border-color: #ffd36b; box-shadow: 0 0 0 4px #ffd36b33, 0 0 60px -10px #e9a23b, 0 30px 70px -20px #000; }
+.ev-pop { border-color: #ffd36b; box-shadow: 0 10px 30px #000a, 0 0 20px #ffd36b55; }
+.ev-pop b { color: #ffd36b; }
+.ev-pop > span { font-size: 22px; }
+.ev-form-head, .ev-head { margin: 4px 0 0; font-size: 15px; }
+#evForm .setting { align-content: start; }
+.ev-mults { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; }
+.ev-mult { display: grid; gap: 3px; font-size: 12px; color: var(--muted); }
+.ev-mult input { width: 100%; }
+#evForm textarea { width: 100%; resize: vertical; font: inherit; padding: 10px 12px; border-radius: 10px; border: 1px solid #ffffff22; background: #0006; color: var(--fg); }
+.ev-list { display: grid; gap: 8px; margin: 10px 0 12px; }
+.ev-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 12px; background: #ffffff0a; border: 1px solid #ffffff18; }
+.ev-row.running { border-color: #ffd36b; background: #e9a23b1a; }
+.ev-row.over { opacity: 0.55; }
+.ev-row .ev-ico { font-size: 24px; }
+.ev-info { display: grid; gap: 2px; min-width: 0; }
+.ev-info .ev-t { overflow-wrap: anywhere; }
+.ev-info small { color: var(--muted); font-size: 12px; }
+.ev-row.running .ev-st { color: #ffd36b; font-weight: 700; }
+.ev-btns { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+@media (max-width: 560px) { .ev-row { grid-template-columns: auto minmax(0, 1fr); } .ev-btns { grid-column: 1 / -1; justify-content: flex-start; } }
 .profile-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: #e9a23b1f; border: 1.5px solid var(--accent); color: var(--accent); font-weight: 700; font-size: 13px; }
 .profile-pill:hover { background: var(--accent); color: var(--ink); }
 .profile-settings { display: grid; gap: 8px; width: 100%; margin-top: 12px; padding-top: 12px; border-top: 1px solid #ffffff14; }
@@ -3256,7 +3299,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
 <div class="modal" id="newsModal" role="alertdialog" aria-modal="true" aria-labelledby="newsTitle" hidden>
   <div class="modal-card news-card">
-    <div class="eyebrow">News</div>
+    <div class="eyebrow" id="newsEyebrow">News</div>
     <h2 id="newsTitle" class="news-title"></h2>
     <p class="news-text" id="newsText"></p>
     <p class="news-meta" id="newsMeta"></p>
@@ -3314,7 +3357,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   </div>
 </div>
 <canvas id="fxTop" aria-hidden="true"></canvas>
-<div class="reset-timer" id="resetTimer" role="status" hidden><span aria-hidden="true">⏳</span> <span id="resetTimerText"></span><span class="reset-when" id="resetTimerWhen"></span></div>
+<div class="top-bars" id="topBars" hidden>
+  <button type="button" class="event-bar" id="eventBar" title="Event details" hidden><span class="ev-ico" id="eventBarIco" aria-hidden="true"></span><b class="ev-t" id="eventBarTitle"></b><span class="ev-left" id="eventBarLeft"></span><span class="ev-fx" id="eventBarFx"></span></button>
+  <div class="reset-timer" id="resetTimer" role="status" hidden><span aria-hidden="true">⏳</span> <span id="resetTimerText"></span><span class="reset-when" id="resetTimerWhen"></span></div>
+</div>
 <div class="lt-show" id="ltShow" role="dialog" aria-modal="true" aria-labelledby="ltShowKind" data-kind="noon" hidden>
   <canvas id="ltCv" aria-hidden="true"></canvas>
   <div class="lt-show-head"><span class="lt-show-kind" id="ltShowKind">Midday Lotto</span><span class="lt-show-pot">Pot <b id="ltShowPot">0</b></span></div>
@@ -3335,6 +3381,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       <div class="tabs" role="tablist">
         <button class="tab" role="tab" data-tab="players" aria-selected="true">Players</button>
         <button class="tab" role="tab" data-tab="game" aria-selected="false">Game settings</button>
+        <button class="tab" role="tab" data-tab="events" aria-selected="false">Events</button>
         <button class="tab" role="tab" data-tab="tickets" aria-selected="false">Tickets<i class="tab-badge" id="ticketTabBadge" hidden></i></button>
         <button class="tab" role="tab" data-tab="lotto" aria-selected="false">Lotto</button>
         <button class="tab" role="tab" data-tab="aff" aria-selected="false">Affiliates</button>
@@ -3452,6 +3499,35 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           </div>
         </form>
         <p class="admin-note">Changes reach everyone within seconds. Payout settings change the odds shown in the paytable too.</p>
+      </section>
+
+      <section class="admin-section" data-pane="events" hidden>
+        <form id="evForm" class="settings-grid" autocomplete="off" novalidate>
+          <h3 class="ev-form-head setting wide" id="evFormHead">New event</h3>
+          <input type="hidden" name="id">
+          <label class="setting wide"><span class="label">Title</span><input name="title" maxlength="60" placeholder="e.g. Lucky Weekend"></label>
+          <label class="setting wide"><span class="label">Description</span><textarea name="desc" maxlength="600" rows="3" placeholder="What is going on? Players read it in the pop-up and when they tap the event bar."></textarea></label>
+          <label class="setting"><span class="label">Icon</span><select name="icon" id="evIcon"></select></label>
+          <label class="setting"><span class="label">Starts</span><input name="start" type="datetime-local"></label>
+          <label class="setting"><span class="label">Ends</span><input name="end" type="datetime-local"></label>
+          <label class="setting"><span class="label">Announce (hours before)</span><input name="announce" type="number" min="0" max="168" step="0.5" inputmode="decimal"><small>From then on everyone sees a countdown at the top. 0 = only while it runs.</small></label>
+          <div class="setting wide"><span class="label">Win multipliers</span><div class="ev-mults" id="evMults"></div><small>What a win brings on top of the bet is multiplied. Empty or 1 = normal. "All games" counts for every game and stacks with a single game and the happy hour.</small></div>
+          <label class="setting"><span class="label">XP multiplier</span><input name="xp" type="number" min="1" max="5" step="0.25" placeholder="1" inputmode="decimal"><small>At most ×5.</small></label>
+          <label class="setting"><span class="label">Lucky Burger wage multiplier</span><input name="wage" type="number" min="1" max="10" step="0.25" placeholder="1" inputmode="decimal"></label>
+          <label class="setting"><span class="label">Goodie discount (%)</span><input name="discount" type="number" min="0" max="90" step="5" placeholder="0" inputmode="numeric"><small>Every goodie in the shop is that much cheaper.</small></label>
+          <label class="setting"><span class="label">Gift at the start (credits)</span><input name="gift" type="number" min="0" max="1000000" step="100" placeholder="0" inputmode="numeric"><small>Every player gets it once, the first time they are online while the event runs.</small></label>
+          <label class="setting check"><input type="checkbox" name="popup"><span>Pop-up at the start</span><small>Everyone gets a pop-up with the description and the boosts once and presses “Got it”, also whoever comes online later.</small></label>
+          <label class="setting check"><input type="checkbox" name="popupAnn"><span>Pop-up when it is announced</span><small>One more pop-up as soon as the countdown starts.</small></label>
+          <label class="setting check"><input type="checkbox" name="fireworks"><span>Fireworks at the start</span><small>For everyone who has the game open when it starts.</small></label>
+          <div class="admin-row setting wide">
+            <button class="abtn ok" type="submit" id="evSave">Save event</button>
+            <button class="abtn" type="button" id="evPreview">Preview the pop-up</button>
+            <button class="abtn" type="button" id="evNew">Empty form</button>
+          </div>
+        </form>
+        <h3 class="ev-head">Planned and running events</h3>
+        <div class="ev-list" id="evList"></div>
+        <p class="admin-note">Events switch on and off by themselves at the set times on every page, also if no admin is online. Times are your local time. Several events at the same time stack. Ended events stay in the list for a week.</p>
       </section>
 
       <section class="admin-section" data-pane="security" hidden>
@@ -3846,6 +3922,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'buns': 'Brötchen', 'potatoes': 'Kartoffeln', 'cups': 'Becher', 'ketchup': 'Ketchup', 'napkins': 'Servietten', 'patties': 'Pattys',
     '🛠 Admin menu': '🛠 Admin-Menü',
     'Write a ticket: ideas, bugs or wishes for the admins': 'Ticket schreiben: Ideen, Fehler oder Wünsche an die Admins', 'Support ticket': 'Support-Ticket',
+    'Events': 'Events', 'Event': 'Event', 'Event: live now!': 'Event: jetzt live!', 'Event: coming up': 'Event: demnächst', 'Event details': 'Event-Details', 'Event boost': 'Event-Boost', 'All games': 'Alle Spiele', 'Lucky Burger wage': 'Lucky-Burger-Lohn', 'Goodies': 'Goodies', 'Gift': 'Geschenk', 'New event': 'Neues Event', 'Edit event': 'Event bearbeiten', 'Title': 'Titel', 'Description': 'Beschreibung', 'Icon': 'Symbol', 'Starts': 'Beginn', 'Ends': 'Ende', 'e.g. Lucky Weekend': 'z. B. Glückswochenende', 'What is going on? Players read it in the pop-up and when they tap the event bar.': 'Was ist los? Die Spieler lesen es im Pop-up und wenn sie auf die Event-Leiste tippen.', 'Announce (hours before)': 'Ankündigen (Stunden vorher)', 'From then on everyone sees a countdown at the top. 0 = only while it runs.': 'Ab dann sehen alle oben einen Countdown. 0 = nur während es läuft.', 'Win multipliers': 'Gewinn-Multiplikatoren', 'What a win brings on top of the bet is multiplied. Empty or 1 = normal. "All games" counts for every game and stacks with a single game and the happy hour.': 'Was ein Gewinn über den Einsatz hinaus bringt, wird multipliziert. Leer oder 1 = normal. „Alle Spiele“ gilt für jedes Spiel und stapelt sich mit einem einzelnen Spiel und der Happy Hour.', 'XP multiplier': 'XP-Multiplikator', 'At most ×5.': 'Höchstens ×5.', 'Lucky Burger wage multiplier': 'Lucky-Burger-Lohn-Multiplikator', 'Goodie discount (%)': 'Goodie-Rabatt (%)', 'Every goodie in the shop is that much cheaper.': 'Jedes Goodie im Shop ist um so viel günstiger.', 'Gift at the start (credits)': 'Geschenk zum Start (Credits)', 'Every player gets it once, the first time they are online while the event runs.': 'Jeder Spieler bekommt es einmal, sobald er während des Events online ist.', 'Pop-up at the start': 'Pop-up zum Start', 'Everyone gets a pop-up with the description and the boosts once and presses “Got it”, also whoever comes online later.': 'Alle bekommen einmal ein Pop-up mit Beschreibung und Boosts und drücken „Verstanden“, auch wer erst später online kommt.', 'Pop-up when it is announced': 'Pop-up bei der Ankündigung', 'One more pop-up as soon as the countdown starts.': 'Ein weiteres Pop-up, sobald der Countdown beginnt.', 'Fireworks at the start': 'Feuerwerk zum Start', 'For everyone who has the game open when it starts.': 'Für alle, die das Spiel beim Start offen haben.', 'Save event': 'Event speichern', 'Save changes': 'Änderungen speichern', 'Preview the pop-up': 'Pop-up-Vorschau', 'Empty form': 'Formular leeren', 'Planned and running events': 'Geplante und laufende Events', 'Events switch on and off by themselves at the set times on every page, also if no admin is online. Times are your local time. Several events at the same time stack. Ended events stay in the list for a week.': 'Events schalten sich zu den eingestellten Zeiten auf jeder Seite von selbst an und aus, auch wenn kein Admin online ist. Die Zeiten sind deine Ortszeit. Mehrere Events gleichzeitig stapeln sich. Beendete Events bleiben eine Woche in der Liste.', 'No events yet.': 'Noch keine Events.', 'over': 'vorbei', 'running now': 'läuft gerade', 'announced': 'angekündigt', 'planned': 'geplant', 'no boosts': 'keine Boosts', 'Edit': 'Bearbeiten', 'End now': 'Jetzt beenden', 'Start now': 'Jetzt starten', 'Start it now?': 'Jetzt starten?', 'End it now?': 'Jetzt beenden?', 'Give the event a title.': 'Gib dem Event einen Titel.', 'The end has to be after the start.': 'Das Ende muss nach dem Beginn liegen.', 'That end time is already over.': 'Dieses Ende liegt schon in der Vergangenheit.', 'Event saved. Everyone sees it within seconds.': 'Event gespeichert. Alle sehen es in wenigen Sekunden.', 'The event runs now.': 'Das Event läuft jetzt.', 'The event is over.': 'Das Event ist vorbei.', 'Event deleted.': 'Event gelöscht.',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -4044,7 +4121,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['1st place', '1. Platz'], ['2nd place', '2. Platz'], ['3rd place', '3. Platz'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['ends in {a}', 'endet in {a}'], ['starts in {a}', 'beginnt in {a}'], ['Event gift: +{a} credits!', 'Event-Geschenk: +{a} Credits!'], ['event ×{a}', 'Event ×{a}'], ['1st place', '1. Platz'], ['2nd place', '2. Platz'], ['3rd place', '3. Platz'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
     ['Rises in {a} of steps', 'Steigt in {a} der Schritte'], ['Usually {a} or {b}', 'Meist {a} oder {b}'], ['Swings: {a}', 'Schwankung: {a}'],
     ['Start {a} · bankrupt below {b} · takeover at {c}', 'Start {a} · Pleite unter {b} · Übernahme ab {c}'],
     ['Buy {a} for {b} · sell {c} for {d} (1% fee each way)', 'Kauf {a} für {b} · Verkauf {c} für {d} (je 1 % Gebühr)'],
@@ -4212,7 +4289,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const enText = new WeakMap(), deText = new WeakMap();
   const I18N_ATTRS = ['placeholder', 'title', 'aria-label'];
   // Never translate what players typed: chat messages and the like.
-  const I18N_SKIP = 'script, style, textarea, .lt-name, .st-nm, .news-title, .news-text, .msg .text, .chat-pop .text, .admin-msg span, .announce .ann-run, .pk-who b, .board .name, .neon-name, .hr-name, .hr-list .name, .ticket-subj, .ticket-body, .ticket-reply, .ticket-meta .name';
+  const I18N_SKIP = 'script, style, textarea, .lt-name, .st-nm, .news-title, .news-text, .msg .text, .chat-pop .text, .admin-msg span, .announce .ann-run, .pk-who b, .board .name, .neon-name, .hr-name, .hr-list .name, .ticket-subj, .ticket-body, .ticket-reply, .ticket-meta .name, .ev-t';
   function trText(node) {
     const raw = node.data;
     if (deText.get(node) === raw || !/[A-Za-z]/.test(raw)) return;
@@ -5094,7 +5171,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
   function gainXp(n) {
     if (state.level >= MAX_LEVEL) { state.xp = xpNeed(MAX_LEVEL); return; }
-    state.xp += n;
+    const evXp = Math.min(5, evFactor('xp'));
+    state.xp += evXp > 1 ? Math.round(n * evXp) : n;
     while (state.level < MAX_LEVEL && state.xp >= xpNeed(state.level)) {
       state.xp -= xpNeed(state.level);
       state.level++;
@@ -5152,7 +5230,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const line = lineSymbol(...syms);
     const base = payout(...syms);
     const sMult = base ? streakMult() : 1;
-    const mult = base * (free ? FREE_MULT : 1) * sMult * settings.winMultiplier;
+    const mult = base * (free ? FREE_MULT : 1) * sMult * winMult('slots');
     const bolt = state.owned.lightning && base && randInt(1000) < LIGHTNING_CHANCE ? pickLightning() : 0;
     const win = Math.min(MAX, Math.floor(mult * bet * (bolt || 1)));
     const ratio = win / bet;
@@ -5196,6 +5274,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (base && sMult > 1) extras.push(`streak ×${sMult.toFixed(2)}`);
     if (free && base) extras.push(`bonus ×${FREE_MULT}`);
     if (base && settings.winMultiplier !== 1) extras.push(`happy hour ×${settings.winMultiplier}`);
+    if (base && evMult('slots') > 1) extras.push(`event ${evX(evMult('slots'))}`);
     if (bolt) extras.push(`lightning ×${bolt}`);
     const tail = extras.length ? ` (${extras.join(', ')})` : '';
     const jackpot = line === 'seven';
@@ -5275,7 +5354,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (base) {
       const bet = lastBet;
       const sMult = streakMult();
-      const win = Math.min(MAX, Math.floor(base * bet * sMult * settings.winMultiplier));
+      const win = Math.min(MAX, Math.floor(base * bet * sMult * winMult('slots')));
       state.credits = Math.min(MAX, state.credits + win);
       state.lastWin = win;
       state.best = Math.max(state.best, win);
@@ -5715,7 +5794,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       else if (t === d) { h.result = 'push'; h.win = h.bet; }
       else { h.result = 'lose'; h.win = 0; }
       // Happy hour from the admin menu multiplies the winnings, not the returned stake.
-      if (h.win > h.bet) h.win = h.bet + (h.win - h.bet) * settings.winMultiplier;
+      if (h.win > h.bet) h.win = h.bet + (h.win - h.bet) * winMult('bj');
       h.win = Math.min(MAX, Math.floor(h.win));
       back += h.win;
       if (h.result === 'win' || h.result === 'blackjack') wins++;
@@ -6447,6 +6526,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       goodieBonus(straightBonus, 'rlStraight');
       goodieBonus(outsideBonus, 'rlOutside');
       goodieBonus(zeroBonus, 'rlZero');
+      eventBonus(rows.reduce((a, b) => a + Math.max(0, b.payout - b.total), 0), 'rl');
       const rounds = new Set(rows.map(b => b.round_id));
       state.rl.open = state.rl.open.filter(r => !rounds.has(r) && r >= Math.floor(hrNow() / RL_PERIOD) - 1);
       if (rows.length) {
@@ -6710,7 +6790,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const gold = hasG('plGold') && randInt(60) === 0;
     const edgeSlot = slot === 0 || slot === R;
     const eff = (mult < 1 && hasG('plSoft') ? mult * 1.03 : mult) * (edgeSlot && hasG('plBump') ? 1.05 : 1) * (gold ? 2 : 1);
-    const pay = happyPay(bet, eff);
+    const pay = happyPay(bet, eff, 'pl');
     const id = plNextId++;
     state.pl.bet = bet;
     state.credits -= bet;
@@ -6822,7 +6902,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const CK_LANES = 10, CK_EDGE = 0.95;
   const CK_SURVIVE = { easy: 0.92, medium: 0.84, hard: 0.75 };
   // Happy hour from the admin menu multiplies the winnings, never the stake that comes back (as in blackjack and roulette).
-  const happyPay = (bet, m) => Math.min(MAX, Math.floor(m > 1 ? bet + bet * (m - 1) * settings.winMultiplier : bet * m));
+  const happyPay = (bet, m, game) => Math.min(MAX, Math.floor(m > 1 ? bet + bet * (m - 1) * winMult(game) : bet * m));
   const ckMult = (k, diff = state.ck.diff) => k ? Math.floor((CK_EDGE / CK_SURVIVE[diff] ** k) * 100) / 100 : 1;
   const CK_CAR_COLORS = ['#e0414a', '#3d7bd9', '#f3c94b', '#7fd18b', '#a77bff', '#f6efe3', '#f08a3c'];
   const ckCarSvg = col => `<svg viewBox="0 0 42 70"><rect x="3" y="4" width="36" height="62" rx="10" fill="${col}" stroke="#0005" stroke-width="2"/><rect x="8" y="14" width="26" height="13" rx="4" fill="#bfe8ff"/><rect x="8" y="44" width="26" height="9" rx="3" fill="#9fcde8"/><rect x="6" y="60" width="8" height="4" rx="2" fill="#ffd35a"/><rect x="28" y="60" width="8" height="4" rx="2" fill="#ffd35a"/><rect x="1" y="16" width="3" height="10" rx="1.5" fill="#1d1714"/><rect x="38" y="16" width="3" height="10" rx="1.5" fill="#1d1714"/><rect x="1" y="46" width="3" height="10" rx="1.5" fill="#1d1714"/><rect x="38" y="46" width="3" height="10" rx="1.5" fill="#1d1714"/></svg>`;
@@ -6949,14 +7029,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (next >= CK_LANES) { ckCashOut(true); return; }
     sound.ping(next / CK_LANES);
     const m = ckMult(next, r.diff);
-    ckSay(`Lane ${next} made it! ×${m.toFixed(2)} · cash out ${fmt(happyPay(r.bet, m))} or keep going.`, 'win');
+    ckSay(`Lane ${next} made it! ×${m.toFixed(2)} · cash out ${fmt(happyPay(r.bet, m, 'ck'))} or keep going.`, 'win');
     render();
   }
   function ckCashOut(crossed = false) {
     const r = ckRound();
     if (!r || !r.lane || ckAnim) return;
     const m = ckMult(r.lane, r.diff);
-    const pay = happyPay(r.bet, m);
+    const pay = happyPay(r.bet, m, 'ck');
     state.credits = Math.min(MAX, state.credits + pay);
     if (hasG('ckFeather')) goodieBonus(pay * 0.02, 'ckFeather');
     state.lastWin = pay;
@@ -6991,7 +7071,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     cash.hidden = !r || !r.lane;
     if (r && r.lane) {
       const m = ckMult(r.lane, r.diff);
-      cash.innerHTML = `Cash out<small>${fmt(happyPay(r.bet, m))} · ×${m.toFixed(2)}</small>`;
+      cash.innerHTML = `Cash out<small>${fmt(happyPay(r.bet, m, 'ck'))} · ×${m.toFixed(2)}</small>`;
       cash.disabled = ckAnim;
     }
   }
@@ -7040,7 +7120,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const cfSay = (text, kind = '') => showMessage($('cfMsg'), text, kind);
   // A won flip can ride: the stake stays on the coin and doubles with every win (×2, ×4, ×8, …) until you cash out or lose.
   const cfRound = () => state.cf.round;
-  const cfPayOf = r => happyPay(r.bet, r.mult);
+  const cfPayOf = r => happyPay(r.bet, r.mult, 'cf');
   function renderCFControls() {
     const r = cfRound();
     document.querySelectorAll('#cfPick [data-side]').forEach(b => { b.setAttribute('aria-pressed', String(b.dataset.side === state.cf.side)); b.disabled = cfBusy; });
@@ -7050,7 +7130,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const bet = Math.floor(Number($('cfBet').value));
     const f = $('cfFlip'), cash = $('cfCash'), ico = state.cf.side === 'heads' ? '👑' : '⭐';
     f.disabled = !account || cfBusy || (r && r.wins >= CF_MAX_WINS) || (!r && !(bet >= 1 && bet <= state.credits && bet <= betLimit()));
-    f.innerHTML = cfBusy ? 'Flipping…' : r ? `Flip again<small>${ico} ×${fmt(r.mult * 2)} · ${fmt(happyPay(r.bet, r.mult * 2))}</small>` : `Flip<small>${ico} wins ${fmt(happyPay(Math.max(1, bet || 1), 2))}</small>`;
+    f.innerHTML = cfBusy ? 'Flipping…' : r ? `Flip again<small>${ico} ×${fmt(r.mult * 2)} · ${fmt(happyPay(r.bet, r.mult * 2, 'cf'))}</small>` : `Flip<small>${ico} wins ${fmt(happyPay(Math.max(1, bet || 1), 2, 'cf'))}</small>`;
     cash.hidden = !r || cfBusy;
     if (r) cash.innerHTML = `Cash out<small>${fmt(cfPayOf(r))} · ×${fmt(r.mult)}</small>`;
     $('cfStreak').hidden = !r;
@@ -7135,7 +7215,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     state.cf.history = [{ r: res, w: won }, ...state.cf.history].slice(0, 14);
     gainXp(3);
     const box = $('cfStage').getBoundingClientRect(), cx = box.left + box.width / 2, cy = box.top + box.height * 0.55;
-    const now = won ? happyPay(r.bet, mult) : 0;
+    const now = won ? happyPay(r.bet, mult, 'cf') : 0;
     if (edge) {
       cfBigText(`ON THE EDGE! ×${CF_EDGE}`, 'edge');
       cfSay(`The coin landed on its edge! 1 in ${fmt(CF_EDGE_IN)}: ×${fmt(mult)} · ${fmt(now)} on the coin. Cash out or keep going!`, 'win');
@@ -7675,6 +7755,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       if (hasG('hrSaddle')) goodieBonus(bets.filter(b => !b.payout).reduce((a, b) => a + b.amount * 0.02, 0), 'hrSaddle');
       goodieBonus(bets.filter(b => b.payout > 0 && b.kind === 'win' && hasG('hrCrop')).reduce((a, b) => a + b.payout * 0.06, 0), 'hrCrop');
       goodieBonus(bets.filter(b => b.payout > 0 && b.kind === 'place' && hasG('hrBino')).reduce((a, b) => a + b.payout * 0.06, 0), 'hrBino');
+      eventBonus(bets.reduce((a, b) => a + Math.max(0, b.payout - b.amount), 0), 'hr');
       const races = new Set(bets.map(b => b.race_id));
       state.hr.open = state.hr.open.filter(r => !races.has(r) && r >= Math.floor(hrNow() / HR_PERIOD) - 1);
       if (bets.length) {
@@ -8120,6 +8201,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       serverCredits(res, pay);
       audio.kaching();
       if (hasG('rkTurbo')) goodieBonus(pay * 0.02, 'rkTurbo');
+      eventBonus(pay - mine.amount, 'rk');
       mine.cashed = m; mine.payout = pay; mine.claimed = true;
       state.rk.open = state.rk.open.filter(r => r !== rkCur.id);
       rkWin(mine.amount, m, pay, auto);
@@ -8162,6 +8244,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       // Goodies: auto cash-outs and moon landings pay 2% more; a parachute gives 2% back after an explosion.
       if (hasG('rkTurbo')) goodieBonus(rows.reduce((a, b) => a + b.payout * 0.02, 0), 'rkTurbo');
       if (hasG('rkChute')) goodieBonus(rows.filter(b => !b.payout).reduce((a, b) => a + b.amount * 0.02, 0), 'rkChute');
+      eventBonus(rows.reduce((a, b) => a + Math.max(0, b.payout - b.amount), 0), 'rk');
       const ids = new Set(rows.map(b => b.round_id));
       state.rk.open = state.rk.open.filter(r => !ids.has(r) && r >= (rkCur?.id ?? 0) - 1);
       for (const b of rows) if (b.payout > 0) {
@@ -9840,7 +9923,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       render();
       return;
     }
-    const price = g.price();
+    const price = priceOf(g);
     if (state.credits < price) return;
     if (g.kind === 'level') {
       if (state.owned[g.id] >= g.max) return;
@@ -9866,12 +9949,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     for (const g of GOODIES) {
       goodieEls[g.id].btn.closest('.ware').classList.toggle('owned', g.kind !== 'level' && !!state.owned[g.id]);
       goodieEls[g.id].btn.closest('.ware').classList.toggle('on', g.kind === 'cosmetic' && cosOn(g.id));
+      const sale = evDiscount(), forSale = g.kind === 'level' ? state.owned[g.id] < g.max : !state.owned[g.id];
+      goodieEls[g.id].btn.closest('.ware').dataset.sale = sale && forSale ? `−${Math.round(sale * 100)}%` : '';
       const { btn, status } = goodieEls[g.id];
       if (g.kind === 'level') {
         const lv = state.owned[g.id];
         const maxed = lv >= g.max;
-        btn.textContent = maxed ? 'Maxed' : fmt(g.price());
-        btn.disabled = maxed || busy || state.credits < g.price();
+        btn.textContent = maxed ? 'Maxed' : fmt(priceOf(g));
+        btn.disabled = maxed || busy || state.credits < priceOf(g);
         status.textContent = `Level ${lv} of ${g.max}`;
       } else if (g.kind === 'cosmetic' && state.owned[g.id]) {
         const on = cosOn(g.id);
@@ -9881,8 +9966,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         status.textContent = on ? 'On' : 'Off';
       } else {
         const owned = state.owned[g.id];
-        btn.textContent = owned ? 'Owned' : fmt(g.price());
-        btn.disabled = owned || busy || state.credits < g.price();
+        btn.textContent = owned ? 'Owned' : fmt(priceOf(g));
+        btn.disabled = owned || busy || state.credits < priceOf(g);
         status.textContent = owned ? 'Active' : '';
       }
     }
@@ -10126,7 +10211,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   $('startOverYes').addEventListener('click', () => {
     closeStartOver();
     if (gameBusy()) return;
-    Object.assign(state, fresh(), { sound: state.sound, adminRev: state.adminRev, credits: settings.startCredits, mode: state.mode, avatar: state.avatar, giftSeen: state.giftSeen, newsSeen: state.newsSeen, prestige: state.prestige });
+    Object.assign(state, fresh(), { sound: state.sound, adminRev: state.adminRev, credits: settings.startCredits, mode: state.mode, avatar: state.avatar, giftSeen: state.giftSeen, newsSeen: state.newsSeen, evSeen: state.evSeen, prestige: state.prestige });
     bjShown.clear();
     renderBJTable(false);
     pendingLevels.length = 0;
@@ -12067,6 +12152,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     adminSay('');
     if (name === 'players') renderAdminPlayers(true);
     if (name === 'game') { fillSettingsForm(); renderNewsAdmin(); renderResetAdmin(); }
+    if (name === 'events') { if (!$('evForm').elements.title.value) evFill(null); renderAdminEvents(); }
     if (name === 'chat') renderAdminMsgs();
     if (name === 'aff') loadAdminAffiliates();
     if (name === 'tickets') loadAdminTickets();
@@ -12922,7 +13008,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     $('jb').classList.toggle('off', !jb.on);
     $('jbOff').hidden = jb.on;
     $('jbPos').textContent = pos.name;
-    $('jbWage').textContent = `${pos.wage} credits / 10 s`;
+    $('jbWage').textContent = `${Math.round(pos.wage * evFactor('wage'))} credits / 10 s`;
     $('jbShift').textContent = jb.on ? 'End shift' : 'Start shift';
     $('jbShift').classList.toggle('jb-end', jb.on);
     // only the stations of this position are on screen
@@ -13174,7 +13260,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const i = jbIdx(), pos = JB_POS[i];
     if (jb.mood >= 30 && jb.done > 0) {
       // Good work pays: the happier the boss, the bigger the paycheck (80% to 120% of the wage), +10% with the badge.
-      const pay = Math.round(pos.wage * (0.8 + 0.4 * jb.mood / 100) * (hasG('jbBadge') ? 1.1 : 1));
+      const pay = Math.round(pos.wage * (0.8 + 0.4 * jb.mood / 100) * (hasG('jbBadge') ? 1.1 : 1) * evFactor('wage'));
       state.credits = Math.min(MAX, state.credits + pay);
       state.job.worked += JB_PAY_EVERY / 1000 * (hasG('jbSchool') ? 1.25 : 1);
       state.job.earned += pay;
@@ -13245,6 +13331,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const at = Number(n.at);
     $('newsMeta').textContent = at ? `From the team · ${new Date(at).toLocaleString(lang === 'de' ? 'de-DE' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' })}` : 'From the team';
     $('newsModal').dataset.id = n.id;
+    ltSet($('newsEyebrow'), 'textContent', 'News');
     $('newsModal').hidden = false;
     sound.chime();
     $('newsOk').focus();
@@ -13261,7 +13348,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   });
   // a pop-up that was removed while it was open goes away
   setInterval(() => {
-    if (!$('newsModal').hidden && newsNow()?.id !== $('newsModal').dataset.id) $('newsModal').hidden = true;
+    if (!$('newsModal').hidden && !$('newsModal').dataset.ev && newsNow()?.id !== $('newsModal').dataset.id) $('newsModal').hidden = true;
     checkNews();
   }, 1500);
   function renderNewsAdmin() {
@@ -13618,10 +13705,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   }
   async function resetTick() {
     const at = resetAt(), box = $('resetTimer');
-    document.body.classList.toggle('has-reset', !!at);
-    if (!at) { box.hidden = true; return; }
+    if (!at) { box.hidden = true; syncTopBars(); return; }
     const left = at - (Date.now() + (hrOffsetSet ? hrOffset : 0));
     box.hidden = false;
+    syncTopBars();
     box.classList.toggle('soon', left < 60000);
     box.classList.toggle('final', left < 10000);
     const when = new Date(at).toLocaleString(lang === 'de' ? 'de-DE' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
@@ -13662,6 +13749,248 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       rawSettings.resetAt = 0;
       renderResetAdmin();
     });
+  });
+
+  // ----- Events: an admin plans a time window and what it boosts. Every page reads it from the settings,
+  // announces it ahead of time in the top bar and switches the boosts on and off by itself at the planned times. -----
+  const EV_GAMES = [['all', 'All games'], ['slots', 'Slots'], ['bj', 'Blackjack'], ['rl', 'Roulette'], ['pl', 'Plinko'], ['ck', 'Chicken'], ['hr', 'Horse Racing'], ['rk', 'Rocket'], ['cf', 'Coin Flip']];
+  const EV_ICONS = ['🎉', '🍀', '🔥', '⚡', '💎', '🚀', '🏆', '🎰', '🎃', '🎄', '🐰', '🌙', '☀️', '🎁'];
+  const EV_GIFT_MAX = 1000000;
+  function evClock() { try { return Date.now() + (hrOffsetSet ? hrOffset : 0); } catch { return Date.now(); } }
+  function evNum(v, lo, hi) { const n = Number(v); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : lo; }
+  function evList() {
+    let list;
+    try { list = rawSettings?.events; } catch { return []; }
+    return Array.isArray(list) ? list.filter(e => e && e.id && Number(e.start) > 0 && Number(e.end) > Number(e.start)) : [];
+  }
+  function evActive() { const list = evList(), now = list.length ? evClock() : 0; return list.filter(e => now >= e.start && now < e.end); }
+  const evAnnounceAt = e => e.start - evNum(e.announce ?? 24, 0, 168) * 3600000;
+  // The boost of one game from every running event; they stack.
+  function evMult(game) {
+    let m = 1;
+    for (const e of evActive()) { const x = e.fx?.mult || {}; m *= evNum(x.all || 1, 1, 10) * evNum(x[game] || 1, 1, 10); }
+    return Math.min(20, m);
+  }
+  function evFactor(key) { return Math.min(10, evActive().reduce((m, e) => m * evNum(e.fx?.[key] || 1, 1, 10), 1)); }
+  function evDiscount() { return Math.max(0, ...evActive().map(e => evNum(e.fx?.discount || 0, 0, 90))) / 100; }
+  // A game's win multiplier: the admin's happy hour times the running events.
+  function winMult(game) { return settings.winMultiplier * evMult(game); }
+  function priceOf(g) { const d = evDiscount(); return d ? Math.max(1, Math.floor(g.price() * (1 - d))) : g.price(); }
+  // Horses, roulette and the rocket pay in the database; the event's share of a win comes on top here, like a goodie.
+  function eventBonus(profit, game) {
+    const extra = Math.floor((profit || 0) * (evMult(game) - 1));
+    if (!(extra > 0)) return 0;
+    state.credits = Math.min(MAX, state.credits + extra);
+    const e = evActive()[0];
+    const el = document.createElement('div');
+    el.className = 'gb-pop ev-pop';
+    el.innerHTML = `<span aria-hidden="true">${esc(e?.icon || '🎉')}</span><b>+${fmt(extra)}</b><small class="ev-t">${esc(e?.title || 'Event')}</small>`;
+    document.body.append(el);
+    setTimeout(() => el.remove(), 2200);
+    persist();
+    return extra;
+  }
+  function evX(v) { return '×' + String(+Number(v).toFixed(2)).replace('.', lang === 'de' ? ',' : '.'); }
+  function evSummary(e) {
+    const out = [], fx = e.fx || {}, m = fx.mult || {};
+    for (const [id, name] of EV_GAMES) if (evNum(m[id] || 1, 1, 10) > 1) out.push(`${i18n(name)} ${evX(evNum(m[id], 1, 10))}`);
+    if (evNum(fx.xp || 1, 1, 10) > 1) out.push(`XP ${evX(evNum(fx.xp, 1, 10))}`);
+    if (evNum(fx.wage || 1, 1, 10) > 1) out.push(`${i18n('Lucky Burger wage')} ${evX(evNum(fx.wage, 1, 10))}`);
+    if (evNum(fx.discount || 0, 0, 90) > 0) out.push(`${i18n('Goodies')} −${evNum(fx.discount, 0, 90)}%`);
+    if (evNum(fx.gift || 0, 0, EV_GIFT_MAX) > 0) out.push(`${i18n('Gift')} +${fmt(evNum(fx.gift, 0, EV_GIFT_MAX))}`);
+    return out;
+  }
+  const evWhen = ms => new Date(ms).toLocaleString(lang === 'de' ? 'de-DE' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  // seen pop-ups and collected gifts, in the save and on this device
+  const EV_LS = () => 'lucky-reels-ev-' + (account?.id || '');
+  function evSeen(k) {
+    if (state.evSeen?.[k]) return true;
+    try { return JSON.parse(localStorage.getItem(EV_LS()) || '[]').includes(k); } catch { return false; }
+  }
+  function evSeenSet(k) {
+    state.evSeen = { ...(state.evSeen || {}), [k]: 1 };
+    try {
+      const ids = new Set(evList().flatMap(e => ['g:', 's:', 'a:'].map(p => p + e.id)));
+      const list = JSON.parse(localStorage.getItem(EV_LS()) || '[]').filter(x => ids.has(x));
+      list.push(k);
+      localStorage.setItem(EV_LS(), JSON.stringify(list));
+    } catch {}
+    lastSaved = '';
+    persist();
+  }
+  // The event pop-up borrows the news pop-up. kind: 'live', 'soon' or '' (opened from the bar).
+  function showEventPopup(e, key, kind = '') {
+    const modal = $('newsModal');
+    if (!modal.hidden) return false;
+    ltSet($('newsEyebrow'), 'textContent', kind === 'live' ? 'Event: live now!' : kind === 'soon' ? 'Event: coming up' : 'Event');
+    $('newsTitle').textContent = `${e.icon || '🎉'} ${e.title}`;
+    const fx = evSummary(e);
+    $('newsText').textContent = [e.desc || '', fx.join('\n')].filter(Boolean).join('\n\n');
+    $('newsText').hidden = !$('newsText').textContent;
+    $('newsMeta').textContent = `${evWhen(e.start)} – ${evWhen(e.end)}`;
+    modal.dataset.id = '';
+    modal.dataset.ev = '1';
+    modal.dataset.evkey = key || '';
+    modal.classList.add('ev-modal');
+    modal.hidden = false;
+    sound.chime();
+    $('newsOk').focus();
+    return true;
+  }
+  $('newsOk').addEventListener('click', () => {
+    const modal = $('newsModal'), k = modal.dataset.evkey;
+    modal.dataset.ev = ''; modal.dataset.evkey = '';
+    modal.classList.remove('ev-modal');
+    if (k) evSeenSet(k);
+  });
+  // The event and the hard reset countdown share one strip at the top; the page makes room for it.
+  function syncTopBars() {
+    const wrap = $('topBars'), any = !$('eventBar').hidden || !$('resetTimer').hidden;
+    wrap.hidden = !any;
+    document.body.classList.toggle('has-reset', any);
+    const h = any ? Math.ceil(wrap.getBoundingClientRect().bottom) : 0;
+    if (h !== syncTopBars.h) { syncTopBars.h = h; document.documentElement.style.setProperty('--tbb', h + 'px'); }
+  }
+  let evWasLive = null;
+  function evTick() {
+    const bar = $('eventBar'), list = evList(), now = evClock();
+    const live = list.filter(e => now >= e.start && now < e.end).sort((a, b) => a.end - b.end);
+    const soon = list.filter(e => now < e.start && now >= evAnnounceAt(e)).sort((a, b) => a.start - b.start);
+    const e = live[0] || soon[0];
+    bar.hidden = !e;
+    if (e) {
+      ltSet($('eventBarIco'), 'textContent', e.icon || '🎉');
+      ltSet($('eventBarTitle'), 'textContent', e.title + (live.length > 1 ? ` +${live.length - 1}` : ''));
+      ltSet($('eventBarLeft'), 'textContent', live[0] ? `ends in ${resetLeft(e.end - now)}` : `starts in ${resetLeft(e.start - now)}`);
+      ltSet($('eventBarFx'), 'textContent', evSummary(e).join(' · '));
+      bar.dataset.id = e.id;
+      bar.classList.toggle('live', !!live[0]);
+    }
+    syncTopBars();
+    // When the running events change: the lobby tiles show their boost, prices and texts follow.
+    const sig = live.map(x => x.id + JSON.stringify(x.fx || {})).join('|') + lang;
+    if (sig !== evTick.sig) {
+      evTick.sig = sig;
+      document.querySelectorAll('.game-pick[data-mode]').forEach(tile => {
+        const mode = tile.dataset.mode, m = mode === 'jb' ? evFactor('wage') : EV_GAMES.some(([id]) => id === mode) ? evMult(mode) : 1;
+        let tag = tile.querySelector('.gp-ev');
+        if (m > 1 && !tag) { tag = document.createElement('span'); tag.className = 'gp-ev'; tag.setAttribute('aria-label', 'Event boost'); tile.append(tag); }
+        if (tag) { tag.hidden = !(m > 1); tag.textContent = `${live[0]?.icon || '🎉'} ${evX(m)}`; }
+      });
+      if (account) render();
+    }
+    if (adminUnlocked && !$('adminModal').hidden && !document.querySelector('[data-pane="events"]').hidden) {
+      const st = list.map(x => x.id + (now >= x.end ? 'o' : now >= x.start ? 'r' : now >= evAnnounceAt(x) ? 'a' : 'p')).join();
+      if (st !== evTick.st) { evTick.st = st; renderAdminEvents(); }
+    }
+    // the start: fireworks for everyone who has the game open
+    if (evWasLive && account) for (const x of live) if (!evWasLive.has(x.id) && x.fireworks) { fireworks(8); sound.bigWin(); break; }
+    evWasLive = new Set(live.map(x => x.id));
+    if (!account) return;
+    // once per player: the gift, the start pop-up and, if wanted, the announcement pop-up
+    for (const x of live) {
+      const gift = Math.floor(evNum(x.fx?.gift || 0, 0, EV_GIFT_MAX));
+      if (gift > 0 && !evSeen('g:' + x.id)) {
+        state.credits = Math.min(MAX, state.credits + gift);
+        evSeenSet('g:' + x.id);
+        toast(`${x.icon || '🎉'} ${x.title}`, `Event gift: +${fmt(gift)} credits!`);
+        audio.kaching();
+        render();
+      }
+    }
+    if (!$('newsModal').hidden || !$('reloadModal').hidden || (typeof ltShow !== 'undefined' && ltShow.open)) return;
+    const pop = live.find(x => x.popup !== false && !evSeen('s:' + x.id));
+    if (pop) { showEventPopup(pop, 's:' + pop.id, 'live'); return; }
+    const ann = soon.find(x => x.popupAnn && !evSeen('a:' + x.id));
+    if (ann) showEventPopup(ann, 'a:' + ann.id, 'soon');
+  }
+  setInterval(evTick, 1000);
+  $('eventBar').addEventListener('click', () => { const e = evList().find(x => x.id === $('eventBar').dataset.id); if (e) showEventPopup(e, ''); });
+  addEventListener('resize', syncTopBars);
+
+  // ----- Admin: the events tab -----
+  $('evMults').innerHTML = EV_GAMES.map(([id, name]) => `<label class="ev-mult"><span>${name}</span><input name="m_${id}" type="number" min="1" max="10" step="0.25" placeholder="1" inputmode="decimal"></label>`).join('');
+  $('evIcon').innerHTML = EV_ICONS.map(i => `<option value="${i}">${i}</option>`).join('');
+  const toLocalInput = ms => { const d = new Date(ms); d.setSeconds(0, 0); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); };
+  function evFill(e) {
+    const f = $('evForm').elements;
+    f.id.value = e?.id || '';
+    f.title.value = e?.title || '';
+    f.desc.value = e?.desc || '';
+    f.icon.value = e?.icon || '🎉';
+    const start = e?.start || Math.ceil((Date.now() + 3600000) / 3600000) * 3600000;
+    f.start.value = toLocalInput(start);
+    f.end.value = toLocalInput(e?.end || start + 2 * 3600000);
+    f.announce.value = e?.announce ?? 24;
+    f.popup.checked = e ? e.popup !== false : true;
+    f.popupAnn.checked = !!e?.popupAnn;
+    f.fireworks.checked = e ? !!e.fireworks : true;
+    for (const [id] of EV_GAMES) f['m_' + id].value = e?.fx?.mult?.[id] > 1 ? e.fx.mult[id] : '';
+    for (const k of ['xp', 'wage']) f[k].value = e?.fx?.[k] > 1 ? e.fx[k] : '';
+    for (const k of ['discount', 'gift']) f[k].value = e?.fx?.[k] > 0 ? e.fx[k] : '';
+    ltSet($('evSave'), 'textContent', e ? 'Save changes' : 'Save event');
+    ltSet($('evFormHead'), 'textContent', e ? 'Edit event' : 'New event');
+  }
+  function evFromForm() {
+    const f = $('evForm').elements;
+    const n = (k, lo, hi) => { const s = String(f[k].value).trim().replace(',', '.'), v = Number(s); return s !== '' && Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : null; };
+    const mult = {};
+    for (const [id] of EV_GAMES) { const v = n('m_' + id, 1, 10); if (v > 1) mult[id] = v; }
+    const fx = { mult };
+    for (const k of ['xp', 'wage']) { const v = n(k, 1, k === 'xp' ? 5 : 10); if (v > 1) fx[k] = v; }
+    const d = n('discount', 0, 90); if (d > 0) fx.discount = Math.round(d);
+    const g = n('gift', 0, EV_GIFT_MAX); if (g > 0) fx.gift = Math.floor(g);
+    return { id: f.id.value || Date.now().toString(36) + Math.random().toString(36).slice(2, 6), title: f.title.value.trim().slice(0, 60), desc: f.desc.value.replace(/\r/g, '').trim().slice(0, 600),
+      icon: f.icon.value || '🎉', start: new Date(f.start.value).getTime(), end: new Date(f.end.value).getTime(), announce: n('announce', 0, 168) ?? 24,
+      popup: f.popup.checked, popupAnn: f.popupAnn.checked, fireworks: f.fireworks.checked, fx };
+  }
+  function renderAdminEvents() {
+    const now = evClock(), label = { over: 'over', running: 'running now', announced: 'announced', planned: 'planned' };
+    const rows = evList().slice().sort((a, b) => (b.end > now) - (a.end > now) || a.start - b.start).map(e => {
+      const st = now >= e.end ? 'over' : now >= e.start ? 'running' : now >= evAnnounceAt(e) ? 'announced' : 'planned', fx = evSummary(e);
+      return `<div class="ev-row ${st}"><span class="ev-ico" aria-hidden="true">${esc(e.icon || '🎉')}</span><div class="ev-info"><b class="ev-t">${esc(e.title)}</b>
+        <small><span class="ev-st">${label[st]}</span> · ${esc(evWhen(e.start))} – ${esc(evWhen(e.end))}</small>
+        <small class="ev-fxl">${fx.length ? esc(fx.join(' · ')) : esc(i18n('no boosts'))}</small></div>
+        <span class="ev-btns"><button type="button" class="abtn" data-ev-edit="${esc(e.id)}">Edit</button>${st === 'running' ? `<button type="button" class="abtn" data-ev-stop="${esc(e.id)}">End now</button>` : st !== 'over' ? `<button type="button" class="abtn ok" data-ev-go="${esc(e.id)}">Start now</button>` : ''}<button type="button" class="abtn warn" data-ev-del="${esc(e.id)}">Delete</button></span></div>`;
+    }).join('');
+    $('evList').innerHTML = rows || '<p class="admin-note">No events yet.</p>';
+  }
+  async function evSaveList(list, msg) {
+    const now = Date.now(), keep = list.filter(e => e.end > now - 7 * 86400000).slice(-30);
+    let ok = false;
+    await adminDo(msg, async () => {
+      await backend.admin.saveSettings({ events: keep });
+      rawSettings.events = keep;
+      ok = true;
+      renderAdminEvents();
+      evTick();
+    });
+    return ok;
+  }
+  $('evForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const ev = evFromForm();
+    if (!ev.title) { adminSay('Give the event a title.', false); return; }
+    if (!(ev.start > 0 && ev.end > ev.start)) { adminSay('The end has to be after the start.', false); return; }
+    if (ev.end <= Date.now()) { adminSay('That end time is already over.', false); return; }
+    if (await evSaveList(evList().filter(x => x.id !== ev.id).concat(ev), 'Event saved. Everyone sees it within seconds.')) evFill(null);
+  });
+  $('evNew').addEventListener('click', () => { evFill(null); adminSay(''); });
+  $('evPreview').addEventListener('click', () => {
+    const ev = evFromForm();
+    if (!ev.title) ev.title = i18n('Event');
+    if (!(ev.end > ev.start)) ev.end = ev.start + 3600000;
+    $('adminModal').hidden = true;
+    showEventPopup(ev, '', 'live');
+  });
+  $('evList').addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    const now = Date.now();
+    if (b.dataset.evEdit) { evFill(evList().find(x => x.id === b.dataset.evEdit)); $('evForm').scrollIntoView({ block: 'start', behavior: 'smooth' }); }
+    if (b.dataset.evGo && confirmed(b, 'Start it now?')) evSaveList(evList().map(x => x.id === b.dataset.evGo ? { ...x, start: now, end: Math.max(x.end, now + 3600000) } : x), 'The event runs now.');
+    if (b.dataset.evStop && confirmed(b, 'End it now?')) evSaveList(evList().map(x => x.id === b.dataset.evStop ? { ...x, end: now } : x), 'The event is over.');
+    if (b.dataset.evDel && confirmed(b, 'Delete?')) evSaveList(evList().filter(x => x.id !== b.dataset.evDel), 'Event deleted.');
   });
 
   function renderAdminMsgs() {
