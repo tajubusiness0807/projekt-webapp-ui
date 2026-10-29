@@ -3109,7 +3109,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     <div class="spin-row">
       <button class="spin" id="spin">Spin</button>
       <button class="gamble" id="gamble" hidden>Gamble</button>
-      <button class="auto" id="auto" hidden>Auto ×10</button>
+      <button class="auto" id="auto" hidden>Auto spin</button>
     </div>
     <div class="boosts" id="boosts"></div>
 
@@ -3514,7 +3514,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Three sevens pay 8× more per level. Stack up to three.': 'Drei Siebenen zahlen 8× mehr pro Stufe. Bis zu dreimal stapelbar.',
     'Three cherries pay 3.5× instead of 3×.': 'Drei Kirschen zahlen 3,5× statt 3×.',
     'Get 2% of your bet back on every losing spin.': 'Bekomm 2 % deines Einsatzes bei jedem verlorenen Spin zurück.',
-    'Unlocks Auto ×10: ten spins in a row.': 'Schaltet Auto ×10 frei: zehn Spins am Stück.',
+    'Unlocks Auto spin: the machine spins by itself until you stop it.': 'Schaltet Auto-Spin frei: Der Automat dreht von selbst, bis du ihn stoppst.', 'Auto spin': 'Auto-Spin', 'Stop auto spin': 'Auto-Spin stoppen',
     'Plates the machine in gold. Purely for show.': 'Vergoldet die Maschine. Rein zur Show.',
     'Your name glows in rainbow neon for everyone: highscores, chat and the online list.': 'Dein Name leuchtet für alle in Regenbogen-Neon: Highscores, Chat und Online-Liste.',
     'On 1% of your slot wins lightning strikes and multiplies the win ×2, ×3, ×5 or even ×10.': 'Bei 1 % deiner Slot-Gewinne schlägt ein Blitz ein und multipliziert den Gewinn ×2, ×3, ×5 oder sogar ×10.',
@@ -4383,7 +4383,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     { id: 'goldCherry', kind: 'perm', name: 'Golden Cherries', desc: 'Three cherries pay 3.5× instead of 3×.', price: () => 1500 },
     { id: 'piggy', kind: 'perm', name: 'Piggy Bank', desc: 'Get 2% of your bet back on every losing spin.', price: () => 3000 },
     { id: 'starPlus', kind: 'perm', name: 'Star Collector', desc: 'Every free spins bonus gives one free spin more.', price: () => 30000 },
-    { id: 'autospin', kind: 'perm', name: 'Auto-Spin Lever', desc: 'Unlocks Auto ×10: ten spins in a row.', price: () => 1000 },
+    { id: 'autospin', kind: 'perm', name: 'Auto-Spin Lever', desc: 'Unlocks Auto spin: the machine spins by itself until you stop it.', price: () => 1000 },
     // Cosmetics sit on a shelf; within a group only one can be switched on at a time.
     { id: 'gold', kind: 'cosmetic', shelf: 'cabinet', group: 'cabinet', name: 'Gold Cabinet', desc: 'Plates the machine in gold.', price: () => 25000 },
     { id: 'midnight', kind: 'cosmetic', shelf: 'cabinet', group: 'cabinet', name: 'Midnight Cabinet', desc: 'A deep-blue machine with glowing cyan trim.', price: () => 30000 },
@@ -9515,12 +9515,12 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
   async function autoSpin() {
     if (autoLeft) { autoLeft = 0; render(); return; }
-    autoLeft = 10;
+    // Spins on and on until it is stopped, the credits run out or the player leaves the slots.
+    autoLeft = Infinity;
     render();
-    while (autoLeft > 0 && (state.freeSpins > 0 || state.credits >= spinCost())) {
-      autoLeft--;
+    while (autoLeft > 0 && account && state.mode === 'slots' && $('lobby').hidden && $('shopPage').hidden && (state.freeSpins > 0 || state.credits >= spinCost())) {
       const r = await play();
-      if (r === 'jackpot' || r === null) break;
+      if (r === null) break;
       await sleep(300);
     }
     autoLeft = 0;
@@ -9891,7 +9891,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
     const auto = $('auto');
     auto.hidden = !state.owned.autospin;
-    auto.textContent = autoLeft ? `Stop (${autoLeft})` : 'Auto ×10';
+    auto.textContent = autoLeft ? 'Stop auto spin' : 'Auto spin';
     auto.classList.toggle('running', autoLeft > 0);
     auto.disabled = !autoLeft && (busy || (!free && state.credits < cost));
     for (const id of ['gold', 'midnight', 'ruby', 'emerald', 'bubblegum', 'carbon']) cabinet.classList.toggle(id, cosOn(id));
