@@ -1497,3 +1497,239 @@ create trigger players_clear_cosmetics before update on public.players
   for each row execute function public.players_clear_cosmetics();
 
 update public.players set trophies = '{}' where game is null and trophies <> '{}';
+
+
+-- ---------------------------------------------------------------------------
+-- Horse racing: run this part once (after "Shop: name styles and trophies").
+-- Every 3 minutes one race for everyone: 2 minutes to bet, then the race.
+-- The database sets the odds, takes the bets, draws the finishing order when
+-- betting closes and pays the winners, so nobody can peek or cheat. The page
+-- only shows the race. Keep the timing numbers in step with the page
+-- (HR_PERIOD and HR_BET in index.html).
+
+create table if not exists public.horse_races (
+  id bigint primary key,                     -- race number: milliseconds since 1970 / 180000
+  weights double precision[] not null,       -- strength of horses 1 to 6
+  win_odds numeric[] not null,
+  place_odds numeric[] not null,
+  finish smallint[],                         -- horse numbers in finishing order, set when betting closes
+  created_at timestamptz not null default now()
+);
+alter table public.horse_races enable row level security;
+revoke all on public.horse_races from anon, authenticated;
+
+create table if not exists public.horse_bets (
+  id bigint generated always as identity primary key,
+  race_id bigint not null,
+  player uuid not null references public.players (id) on delete cascade,
+  name text not null,
+  horse smallint not null check (horse between 1 and 6),
+  kind text not null check (kind in ('win', 'place')),
+  amount bigint not null check (amount > 0),
+  odds numeric not null,
+  payout bigint,                             -- null until the race is decided
+  claimed boolean not null default false,
+  created_at timestamptz not null default now()
+);
+create index if not exists horse_bets_race on public.horse_bets (race_id);
+create index if not exists horse_bets_open on public.horse_bets (player) where not claimed;
+alter table public.horse_bets enable row level security;
+revoke all on public.horse_bets from anon, authenticated;
+grant select on public.horse_bets to authenticated;
+drop policy if exists "Everyone sees the bets" on public.horse_bets;
+create policy "Everyone sees the bets" on public.horse_bets for select to authenticated using (true);
+
+create or replace function public.horse_now_ms()
+returns bigint language sql volatile as $$ select floor(extract(epoch from clock_timestamp()) * 1000)::bigint $$;
+
+-- The field for a race: six random strengths, and odds that keep 92% for the players.
+create or replace function public.horse_make(race bigint)
+returns public.horse_races
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  r public.horse_races;
+  w double precision[] := '{}';
+  tot double precision := 0;
+  p double precision;
+  q double precision;
+  wo numeric[] := '{}';
+  po numeric[] := '{}';
+begin
+  select * into r from public.horse_races where id = race;
+  if found then return r; end if;
+  for i in 1..6 loop
+    w := w || exp((random() - 0.5) * 2.4);
+    tot := tot + w[i];
+  end loop;
+  for i in 1..6 loop
+    p := w[i] / tot;
+    -- Chance to finish first or second.
+    q := p;
+    for j in 1..6 loop
+      if j <> i then q := q + (w[j] / tot) * w[i] / (tot - w[j]); end if;
+    end loop;
+    wo := wo || greatest(1.1, floor(0.92 / p * 10) / 10)::numeric;
+    po := po || greatest(1.05, floor(0.92 / q * 100) / 100)::numeric;
+  end loop;
+  insert into public.horse_races (id, weights, win_odds, place_odds) values (race, w, wo, po)
+    on conflict (id) do nothing;
+  -- Old races and bets go after about four days.
+  delete from public.horse_bets where race_id < race - 2000 and claimed;
+  delete from public.horse_races where id < race - 2000;
+  select * into r from public.horse_races where id = race;
+  return r;
+end;
+$$;
+
+-- Draws the finishing order (stronger horses win more often) and settles the bets. Runs once per race.
+create or replace function public.horse_settle(race bigint)
+returns smallint[]
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  r public.horse_races;
+  left_ smallint[] := '{1,2,3,4,5,6}';
+  fin smallint[] := '{}';
+  tot double precision;
+  x double precision;
+  pick smallint;
+begin
+  perform public.horse_make(race);
+  select * into r from public.horse_races where id = race for update;
+  if r.finish is not null then return r.finish; end if;
+  while cardinality(left_) > 0 loop
+    tot := 0;
+    foreach pick in array left_ loop tot := tot + r.weights[pick]; end loop;
+    x := random() * tot;
+    foreach pick in array left_ loop
+      x := x - r.weights[pick];
+      exit when x <= 0;
+    end loop;
+    fin := fin || pick;
+    left_ := array_remove(left_, pick);
+  end loop;
+  update public.horse_races set finish = fin where id = race;
+  update public.horse_bets set payout = case
+      when (kind = 'win' and horse = fin[1]) or (kind = 'place' and horse in (fin[1], fin[2])) then floor(amount * odds)::bigint
+      else 0 end
+    where race_id = race and payout is null;
+  return fin;
+end;
+$$;
+
+-- What the page asks for: the field and odds, the server clock, and the finishing order once betting is closed.
+create or replace function public.horse_race(race bigint default null)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+  cur bigint := now_ms / 180000;
+  r public.horse_races;
+  fin smallint[];
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  race := coalesce(race, cur);
+  if race > cur or race < cur - 1000 then raise exception 'no such race'; end if;
+  r := public.horse_make(race);
+  if now_ms >= race * 180000 + 120000 then fin := public.horse_settle(race); end if;
+  return jsonb_build_object('id', race, 'now', now_ms, 'weights', to_jsonb(r.weights), 'win', to_jsonb(r.win_odds),
+    'place', to_jsonb(r.place_odds), 'finish', to_jsonb(fin));
+end;
+$$;
+
+-- A bet on the race that is open right now. Takes the credits at once; returns the odds and the new balance.
+create or replace function public.horse_bet(race bigint, horse_no integer, bet_kind text, amount bigint)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+  me public.players;
+  r public.horse_races;
+  o numeric;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  if race <> now_ms / 180000 or now_ms >= race * 180000 + 120000 then raise exception 'betting closed'; end if;
+  if horse_no is null or horse_no < 1 or horse_no > 6 or bet_kind not in ('win', 'place') then raise exception 'no such bet'; end if;
+  if amount is null or amount < 1 then raise exception 'bet at least 1'; end if;
+  select * into me from public.players where id = auth.uid() for update;
+  if me is null or me.is_banned then raise exception 'not allowed'; end if;
+  if me.credits < amount then raise exception 'not enough credits'; end if;
+  if (select count(*) from public.horse_bets where race_id = race and player = me.id) >= 12 then raise exception 'too many bets'; end if;
+  r := public.horse_make(race);
+  o := case when bet_kind = 'win' then r.win_odds[horse_no] else r.place_odds[horse_no] end;
+  update public.players set credits = credits - amount, admin_rev = admin_rev + 1, updated_at = now() where id = me.id;
+  insert into public.horse_bets (race_id, player, name, horse, kind, amount, odds) values (race, me.id, me.name, horse_no, bet_kind, amount, o);
+  return jsonb_build_object('odds', o, 'credits', me.credits - amount, 'rev', me.admin_rev + 1);
+end;
+$$;
+
+-- Collects every finished bet of mine: winnings go onto my balance. Returns the bets and the new balance.
+create or replace function public.horse_claim()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+  race bigint;
+  won bigint;
+  rows_ jsonb;
+  me public.players;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  for race in select distinct race_id from public.horse_bets
+      where player = auth.uid() and not claimed and race_id * 180000 + 120000 <= now_ms loop
+    perform public.horse_settle(race);
+  end loop;
+  select * into me from public.players where id = auth.uid() for update;
+  if me is null then raise exception 'not allowed'; end if;
+  with c as (
+    update public.horse_bets set claimed = true
+    where player = me.id and not claimed and payout is not null
+    returning race_id, horse, kind, amount, odds, payout
+  )
+  select coalesce(sum(payout), 0), coalesce(jsonb_agg(to_jsonb(c)), '[]') into won, rows_ from c;
+  if won > 0 then
+    update public.players set credits = credits + won, admin_rev = admin_rev + 1, updated_at = now() where id = me.id;
+    return jsonb_build_object('bets', rows_, 'credits', me.credits + won, 'rev', me.admin_rev + 1);
+  end if;
+  return jsonb_build_object('bets', rows_, 'credits', me.credits, 'rev', me.admin_rev);
+end;
+$$;
+
+revoke execute on function public.horse_make(bigint) from public, anon, authenticated;
+revoke execute on function public.horse_settle(bigint) from public, anon, authenticated;
+revoke execute on function public.horse_race(bigint) from public, anon;
+revoke execute on function public.horse_bet(bigint, integer, text, bigint) from public, anon;
+revoke execute on function public.horse_claim() from public, anon;
+grant execute on function public.horse_race(bigint) to authenticated;
+grant execute on function public.horse_bet(bigint, integer, text, bigint) to authenticated;
+grant execute on function public.horse_claim() to authenticated;
+
+-- A reset or hard reset also drops a player's bets that were not collected yet.
+create or replace function public.players_clear_cosmetics()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+begin
+  if new.game is null and old.game is not null then
+    new.flair := null;
+    new.trophies := '{}';
+    delete from public.horse_bets where player = new.id and not claimed;
+  end if;
+  return new;
+end;
+$$;

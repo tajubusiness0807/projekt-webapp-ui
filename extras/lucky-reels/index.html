@@ -455,7 +455,7 @@ details.paytable, details.bj-rules { background: var(--panel); border-radius: 10
 @media (max-width: 600px) { .back-btn { left: 10px; top: 10px; } }
 .gm { padding: 6px 16px; border-radius: 999px; background: var(--panel); color: var(--muted); font-weight: 600; font-size: 13px; }
 .gm[aria-selected="true"] { background: var(--accent); color: var(--ink); }
-.cabinet:not([data-mode="bj"]) .bj, .cabinet:not([data-mode="rl"]) .rl, .cabinet:not([data-mode="pk"]) .pk, .cabinet:not([data-mode="pl"]) .pl, .cabinet:not([data-mode="ck"]) .ck { display: none; }
+.cabinet:not([data-mode="bj"]) .bj, .cabinet:not([data-mode="rl"]) .rl, .cabinet:not([data-mode="pk"]) .pk, .cabinet:not([data-mode="pl"]) .pl, .cabinet:not([data-mode="ck"]) .ck, .cabinet:not([data-mode="hr"]) .hr { display: none; }
 .cabinet:not([data-mode="slots"]) :is(#window, #reelCtl, #tier, #message, .meters, .bet, .spin-row, #boosts, details.paytable) { display: none !important; }
 body.wide .layout { max-width: 980px; grid-template-columns: minmax(0, 1fr); }
 body.wide .account-bar { max-width: 980px; }
@@ -1708,6 +1708,79 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
   .float, .tier, .tier-title, .toast, .modal, .modal-card, .reel.wild, .card.flip, .chat-panel, .jp-badge { animation: none; }
   .jp-flash, .float { opacity: 0; }
 }
+/* Horse racing */
+.hr { display: grid; gap: 12px; }
+.hr-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.hr-race { font: 400 16px var(--font-display); color: var(--accent); letter-spacing: 0.04em; }
+.hr-phase { padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; background: #7fd18b26; color: var(--win); }
+.hr-phase[data-phase="live"] { background: #e0414a33; color: #ff8a8f; animation: hrLive 1s ease-in-out infinite alternate; }
+.hr-phase[data-phase="done"] { background: #e9a23b33; color: var(--accent-hi); }
+@keyframes hrLive { to { box-shadow: 0 0 14px #e0414a88; } }
+.hr-clock { margin-left: auto; font: 700 18px var(--font-mono); color: var(--fg); }
+.hr-bar { height: 6px; border-radius: 3px; background: var(--track); overflow: hidden; }
+.hr-bar span { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, var(--win), var(--accent)); transition: width 0.5s linear; }
+.hr-view { position: relative; height: clamp(230px, 38vw, 360px); border-radius: 16px; overflow: hidden; border: 3px solid #1d1714; box-shadow: inset 0 0 0 2px #ffffff14, 0 14px 30px -14px #000; background: #4f9a45; }
+.hr-view canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.hr-overlay { position: absolute; inset: auto 10px 10px; display: grid; gap: 6px; padding: 12px; border-radius: 14px; background: #120d0bdd; border: 2px solid var(--accent); box-shadow: 0 10px 30px #000a; animation: hrPop 0.45s cubic-bezier(.2, 1.4, .4, 1); }
+.hr-overlay.won { border-color: var(--win); box-shadow: 0 0 30px #7fd18b66, 0 10px 30px #000a; }
+@keyframes hrPop { from { transform: translateY(30px) scale(0.9); opacity: 0; } }
+.hr-podium { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; align-items: end; }
+.hr-step { display: grid; justify-items: center; gap: 3px; padding: 8px 4px; border-radius: 10px; background: #ffffff10; text-align: center; font-size: 12px; min-width: 0; }
+.hr-step.s1 { order: 2; background: linear-gradient(#f3c94b44, #ffffff10); padding-top: 14px; }
+.hr-step.s2 { order: 1; }
+.hr-step.s3 { order: 3; }
+.hr-step .hr-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.hr-place { font: 400 18px var(--font-display); color: var(--accent); }
+.hr-step.s1 .hr-place { font-size: 24px; color: #f3c94b; }
+.hr-step small { color: var(--muted); font-family: var(--font-mono); }
+.hr-yours { margin: 0; text-align: center; font-weight: 700; }
+.hr-overlay.won .hr-yours { color: var(--win); }
+.hr-num { display: inline-grid; place-items: center; flex: none; width: 22px; height: 22px; border-radius: 6px; background: var(--silk); color: var(--silk-t); font: 700 12px var(--font-mono); box-shadow: inset 0 0 0 1.5px #0004; }
+.hr-cols { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+.hr-left, .hr-right { display: grid; gap: 10px; min-width: 0; }
+.hr-kind button { font-size: 13px; }
+.hr-field { display: grid; gap: 6px; }
+.hr-horse { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "num name act" "num form act" "num odds act"; align-items: center; column-gap: 10px; row-gap: 1px; padding: 8px 10px; border-radius: 12px; background: var(--panel); border: 2px solid transparent; }
+.hr-horse > .hr-num { grid-area: num; width: 32px; height: 32px; font-size: 15px; border-radius: 8px; }
+.hr-horse > .hr-name { grid-area: name; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hr-form { grid-area: form; font-size: 11px; color: #f3c94b; letter-spacing: 1px; }
+.hr-form i { font-style: normal; color: #ffffff22; }
+.hr-form em { margin-left: 6px; padding: 0 6px; border-radius: 999px; background: #f3c94b22; font-style: normal; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; vertical-align: 1px; }
+.hr-odds { grid-area: odds; display: flex; gap: 10px; font-size: 11px; color: var(--muted); }
+.hr-odds b { color: var(--fg); font-family: var(--font-mono); }
+.hr-betbtn { grid-area: act; padding: 9px 10px; font-size: 12px; white-space: nowrap; background: var(--accent); color: var(--ink); font-weight: 700; }
+.hr-betbtn:disabled { background: var(--chrome); color: var(--muted); }
+.hr-pos { grid-area: act; font: 400 22px var(--font-display); color: var(--muted); }
+.hr-horse.placed { border-color: #7fd18b66; }
+.hr-horse.first { border-color: #f3c94b; box-shadow: 0 0 18px -4px #f3c94b88; }
+.hr-horse.first .hr-pos { color: #f3c94b; }
+.hr-h { margin: 0; font: 400 14px var(--font-display); color: var(--accent); letter-spacing: 0.04em; }
+.hr-h span { font: 600 11px var(--font-mono); color: var(--muted); margin-left: 6px; }
+.hr-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; max-height: 220px; overflow-y: auto; }
+.hr-list li { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 8px; background: var(--panel); font-size: 12px; }
+.hr-list li .name { min-width: 0; max-width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hr-list li.empty { color: var(--muted); justify-content: center; }
+.hr-res { margin-left: auto; font-family: var(--font-mono); }
+.hr-paid { color: var(--win); }
+.hr-lost { color: var(--muted); }
+.hr-hist { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 11px; color: var(--muted); }
+.hr-hist-t { width: 100%; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; }
+.hr-hist-i { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px 3px 3px; border-radius: 999px; background: var(--panel); }
+.hr-hist-i .hr-num { width: 18px; height: 18px; font-size: 10px; border-radius: 50%; }
+.hr-hist-i .hr-name { color: var(--fg); font-weight: 600; }
+.hr-setup { padding: 12px; border-radius: 10px; background: var(--panel); }
+.gp-hr { width: min(150px, 100%); height: auto; }
+.gp-live { background: #e0414a2e; color: #ff8a8f; }
+.gp-live::before { content: ""; display: inline-block; width: 6px; height: 6px; margin-right: 5px; border-radius: 50%; background: #ff5a5f; vertical-align: 1px; animation: hrLive 0.8s ease-in-out infinite alternate; }
+@media (max-width: 700px) { .hr-cols { grid-template-columns: minmax(0, 1fr); } }
+.hr-pick .gp-title { font-size: clamp(16px, 5vw, 1em); overflow-wrap: anywhere; }
+@media (max-width: 600px) {
+  .hr-horse { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "num name pos" "num form pos" "num odds pos" "bet bet bet"; }
+  .hr-betbtn { grid-area: bet; width: 100%; margin-top: 6px; }
+  .hr-pos { grid-area: pos; }
+  .hr-view { height: 240px; }
+}
+@media (prefers-reduced-motion: reduce) { .hr-phase[data-phase="live"], .gp-live::before, .hr-overlay { animation: none; } }
 /* Shop page */
 .shop-page {
   position: fixed; inset: 0; z-index: 38; overflow-y: auto;
@@ -1843,6 +1916,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         <span class="gp-desc">Spin the reels: wilds, free spins, lightning and jackpots.</span>
         <span class="gp-go">Play</span>
       </button>
+      <button class="game-pick hr-pick" type="button" data-mode="hr">
+        <span class="gp-online gp-live" id="hrBadge">Live</span>
+        <canvas class="gp-hr" id="hrLobbyCv" width="280" height="230" aria-hidden="true"></canvas>
+        <span class="gp-title">Horse Racing</span>
+        <span class="gp-desc">One race for everyone every 3 minutes. Bet, watch live, cash in.</span>
+        <span class="gp-go">Play</span>
+      </button>
       <button class="game-pick" type="button" data-mode="bj">
         <svg class="gp-bj" viewBox="0 0 140 130" aria-hidden="true">
           <ellipse cx="70" cy="118" rx="58" ry="10" fill="#11553a"/>
@@ -1895,7 +1975,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         <span class="gp-go">Play</span>
       </button>
       <button class="game-pick" type="button" data-mode="ck">
-        <span class="gp-online">New</span>
         <svg class="gp-ck" viewBox="0 0 140 130" aria-hidden="true">
           <rect x="8" y="20" width="124" height="90" rx="10" fill="#3a3640"/>
           <path d="M38 24v82M70 24v82M102 24v82" stroke="#f6efe3" stroke-width="2.5" stroke-dasharray="9 8" opacity=".55"/>
@@ -2069,6 +2148,47 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       <details class="bj-rules">
         <summary>Chicken rules</summary>
         <p class="note">Put down a bet and send the chicken across ten lanes of traffic, one hop at a time. Every lane it survives raises the multiplier; cash out whenever you like, or risk the next hop. Get hit and the bet is gone. Easy: about 1 in 12 hops ends badly, Medium about 1 in 6, Hard about 1 in 4, and the payouts grow to match. Over the long run about 96% of bets come back, whenever you cash out. Keys: Space hops, C cashes out.</p>
+      </details>
+    </section>
+
+    <section class="hr" id="hr" aria-label="Horse racing">
+      <div class="hr-top">
+        <span class="hr-race" id="hrRace">Race</span>
+        <span class="hr-phase" id="hrPhase" data-phase="bet">Betting open</span>
+        <span class="hr-clock" id="hrClock"></span>
+      </div>
+      <div class="hr-bar"><span id="hrBar"></span></div>
+      <div class="hr-view" id="hrView">
+        <canvas id="hrCanvas" aria-label="Race track"></canvas>
+        <div class="hr-overlay" id="hrOverlay" hidden></div>
+      </div>
+      <p class="message" id="hrMsg" role="status" aria-live="polite">Pick a horse and place your bet before the gates open.</p>
+      <div class="hr-cols">
+        <div class="hr-left">
+          <div class="pl-seg hr-kind" id="hrKind" role="group" aria-label="Bet type">
+            <button type="button" data-kind="win">Win</button><button type="button" data-kind="place">Place · 1st or 2nd</button>
+          </div>
+          <div class="pl-bet">
+            <button class="chip-btn" type="button" data-hrb="half" aria-label="Halve bet">½</button>
+            <input id="hrBet" type="number" min="1" step="1" inputmode="numeric" aria-label="Bet per horse">
+            <button class="chip-btn" type="button" data-hrb="double" aria-label="Double bet">×2</button>
+            <button class="chip-btn" type="button" data-hrb="max">Max</button>
+          </div>
+          <div class="hr-field" id="hrField"></div>
+        </div>
+        <div class="hr-right">
+          <h4 class="hr-h">Your bets</h4>
+          <ul class="hr-list" id="hrMine"></ul>
+          <div id="hrAllBox">
+            <h4 class="hr-h">All bets <span id="hrPool"></span></h4>
+            <ul class="hr-list" id="hrAll"></ul>
+          </div>
+          <div class="hr-hist" id="hrHist"></div>
+        </div>
+      </div>
+      <details class="bj-rules">
+        <summary>Horse racing rules</summary>
+        <p class="note">Every three minutes six horses race, the same race for everyone. For two minutes you can bet on as many horses as you like (up to 12 bets per race). Win pays if your horse comes first; Place pays if it comes first or second, at lower odds. The odds are fixed when you bet: the favourite pays least, the outsiders most. When betting closes the gates open and everybody watches the race live; winnings land on your balance as soon as the race is over, even if you left the page. Over the long run about 92% of bets come back.</p>
       </details>
     </section>
 
@@ -2554,6 +2674,25 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Private chats are not set up yet. Ask the person who runs the game to run the private-chat setup.': 'Private Chats sind noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, sie einzurichten.',
     'The message did not go through. Try again.': 'Die Nachricht ging nicht durch. Versuch es nochmal.', 'Chat is switched off for players': 'Der Chat ist für Spieler abgeschaltet',
     'Someone': 'Jemand', 'Actions': 'Aktionen',
+    'Horse Racing': 'Pferderennen', 'Horse racing': 'Pferderennen', 'Live': 'Live', 'Race': 'Rennen', 'Race track': 'Rennbahn',
+    'One race for everyone every 3 minutes. Bet, watch live, cash in.': 'Alle 3 Minuten ein Rennen für alle. Wetten, live zuschauen, abkassieren.',
+    'Horse racing · live for everyone · play credits': 'Pferderennen · live für alle · Spiel-Credits',
+    'Betting open': 'Wetten offen', 'At the gates': 'In den Boxen', 'Race on!': 'Rennen läuft!', 'Result': 'Ergebnis', 'Next race': 'Nächstes Rennen',
+    'Win': 'Sieg', 'Place · 1st or 2nd': 'Platz · 1. oder 2.', 'Place': 'Platz', 'Bet type': 'Wettart', 'Bet per horse': 'Einsatz pro Pferd',
+    'Your bets': 'Deine Wetten', 'All bets': 'Alle Wetten', 'Recent winners': 'Letzte Sieger', 'Favourite': 'Favorit',
+    'No bets yet on this race.': 'Noch keine Wetten auf dieses Rennen.', 'Nobody has bet yet.': 'Noch hat niemand gewettet.',
+    'Loading the field…': 'Lade das Starterfeld…', 'Horse racing rules': 'Pferderennen-Regeln',
+    'Every three minutes six horses race, the same race for everyone. For two minutes you can bet on as many horses as you like (up to 12 bets per race). Win pays if your horse comes first; Place pays if it comes first or second, at lower odds. The odds are fixed when you bet: the favourite pays least, the outsiders most. When betting closes the gates open and everybody watches the race live; winnings land on your balance as soon as the race is over, even if you left the page. Over the long run about 92% of bets come back.': 'Alle drei Minuten laufen sechs Pferde, für alle dasselbe Rennen. Zwei Minuten lang kannst du auf so viele Pferde setzen, wie du willst (bis zu 12 Wetten pro Rennen). Sieg zahlt, wenn dein Pferd Erster wird; Platz zahlt bei Platz 1 oder 2, zu niedrigeren Quoten. Die Quote steht fest, sobald du wettest: Der Favorit zahlt am wenigsten, Außenseiter am meisten. Wenn die Wetten schließen, öffnen sich die Boxen und alle sehen das Rennen live; Gewinne landen auf deinem Konto, sobald das Rennen vorbei ist, auch wenn du die Seite verlassen hast. Auf lange Sicht kommen etwa 92 % der Einsätze zurück.',
+    'Pick a horse and place your bet before the gates open.': 'Wähl ein Pferd und setz, bevor sich die Boxen öffnen.',
+    'The race is on. Bets for the next race open soon.': 'Das Rennen läuft. Die Wetten fürs nächste Rennen öffnen gleich.',
+    'Betting is closed for this race.': 'Die Wetten für dieses Rennen sind geschlossen.', 'That is the most bets for one race (12).': 'Mehr Wetten gehen pro Rennen nicht (12).',
+    'Horse racing needs the “Horse racing” part of supabase-setup.sql.': 'Pferderennen braucht den Abschnitt „Horse racing“ aus supabase-setup.sql.',
+    'Horse racing needs the “Horse racing” part of supabase-setup.sql. Ask the person who runs the game to run it.': 'Pferderennen braucht den Abschnitt „Horse racing“ aus supabase-setup.sql. Bitte die Person, die das Spiel betreibt, ihn auszuführen.',
+    "And they're off!": 'Und sie sind gestartet!', "They're off!": 'Gestartet!', 'Into the final stretch!': 'Ab in die Zielgerade!', 'Photo finish!': 'Fotofinish!',
+    'FINISH': 'ZIEL', 'Waiting for the result…': 'Warte auf das Ergebnis…', 'Live · race running': 'Live · Rennen läuft',
+    'No luck this time.': 'Diesmal kein Glück.', 'You had no bet on this race.': 'Du hattest keine Wette auf dieses Rennen.',
+    'Your race has started. Tap to watch!': 'Dein Rennen hat begonnen. Tippen zum Zuschauen!',
+    'Day at the Races': 'Tag auf der Rennbahn', 'Win a horse racing bet.': 'Gewinne eine Pferdewette.', 'Long Shot': 'Außenseiter-Coup', 'Win a horse bet at 10× odds or more.': 'Gewinne eine Pferdewette mit Quote 10× oder mehr.',
     'Open ›': 'Öffnen ›', 'Back': 'Zurück', 'Shelves': 'Regale', 'Useful': 'Nützlich', 'Lucky Reels · since today': 'Lucky Reels · seit heute', 'Shop': 'Shop',
     'Power-ups, machine colours, name styles and trophies.': 'Power-ups, Automatenfarben, Namensstile und Trophäen.',
     'Machine colours': 'Automatenfarben', 'Name styles': 'Namensstile', 'Trophies': 'Trophäen', 'Effects': 'Effekte',
@@ -2677,7 +2816,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   };
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
-    ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'], ['Trophies ({a})', 'Trophäen ({a})'],
+    ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next race {a}', 'Nächstes Rennen {a}'], ['Live · bets close in {a}', 'Live · Wetten schließen in {a}'], ['Live · next race in {a}', 'Live · nächstes Rennen in {a}'],
+    ['{a} takes the lead!', '{a} übernimmt die Führung!'], ['Halfway: {a} ahead of {b}.', 'Halbzeit: {a} vor {b}.'],
+    ['Photo finish! {a} wins by a nose!', 'Fotofinish! {a} gewinnt um eine Nasenlänge!'], ['{a} wins!', '{a} gewinnt!'],
+    ['{a} on {b} to win. Good luck!', '{a} auf {b} (Sieg). Viel Glück!'], ['{a} on {b} to place. Good luck!', '{a} auf {b} (Platz). Viel Glück!'],
+    ['You won {a} credits!', 'Du hast {a} Credits gewonnen!'], ['Your bet came in: +{a} credits!', 'Deine Wette ist aufgegangen: +{a} Credits!'],
+    ['Bet {a} · {b}', 'Setzen {a} · {b}'], ['Win · {a}', 'Sieg · {a}'], ['Place · {a}', 'Platz · {a}'],
+    ['{a} · {b} players', '{a} · {b} Spieler'], ['{a} of 5', '{a} von 5'], ['Trophies ({a})', 'Trophäen ({a})'],
     ['Lane {a} made it! ×{b} · cash out {c} or keep going.', 'Spur {a} geschafft! ×{b} · {c} auszahlen oder weiter.'], ['Splat! Hit in lane {a}. The {b} is gone.', 'Platsch! In Spur {a} erwischt. Die {b} sind weg.'],
     ['Made it across! ×{a} · +{b}', 'Geschafft, ganz rüber! ×{a} · +{b}'], ['Cashed out at lane {a}: ×{b} · +{c}', 'In Spur {a} ausgezahlt: ×{b} · +{c}'],
     ['Back in lane {a}. Cash out or keep going.', 'Zurück in Spur {a}. Auszahlen oder weiter.'], ['Cash out{a}', 'Auszahlen{a}'],
@@ -2793,7 +2939,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const enText = new WeakMap(), deText = new WeakMap();
   const I18N_ATTRS = ['placeholder', 'title', 'aria-label'];
   // Never translate what players typed: chat messages and the like.
-  const I18N_SKIP = 'script, style, textarea, .msg .text, .chat-pop .text, .admin-msg span, .announce .ann-run, .pk-who b, .board .name, .neon-name';
+  const I18N_SKIP = 'script, style, textarea, .msg .text, .chat-pop .text, .admin-msg span, .announce .ann-run, .pk-who b, .board .name, .neon-name, .hr-name, .hr-list .name';
   function trText(node) {
     const raw = node.data;
     if (deText.get(node) === raw || !/[A-Za-z]/.test(raw)) return;
@@ -3037,6 +3183,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     { id: 'shark', name: 'Card Shark', desc: 'Win a poker pot.', reward: 300, test: c => c?.pokerWin },
     { id: 'royalty', name: 'Royalty', desc: 'Win a poker pot with a straight flush.', reward: 2000, test: c => c?.pokerSF },
     { id: 'chicken', name: 'Why Did the Chicken…', desc: 'Get the chicken across all ten lanes.', reward: 600, test: c => c?.chickenCrossed },
+    { id: 'horses', name: 'Day at the Races', desc: 'Win a horse racing bet.', reward: 300, test: c => c?.horseWin },
+    { id: 'longshot', name: 'Long Shot', desc: 'Win a horse bet at 10× odds or more.', reward: 2000, test: c => c?.horseOdds >= 10 },
     { id: 'plinko', name: 'Sky Drop', desc: 'Land a Plinko ball on 25× or more.', reward: 800, test: c => c?.plinkoMult >= 25 },
     { id: 'prestige', name: 'Prestigious', desc: 'Go Prestige for the first time.', reward: 2500, test: c => c?.prestige >= 1 },
     { id: 'miner', name: 'Gold Digger', desc: 'Come back from the gold mine.', reward: 100, test: c => c?.mined },
@@ -3064,6 +3212,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     rl: { bets: {}, last: {}, history: [], spins: 0 },
     pl: { bet: 10, rows: 12, risk: 'medium', drops: 0, history: [], pending: [] },
     ck: { bet: 10, diff: 'medium', games: 0, round: null },
+    hr: { bet: 100, kind: 'win', races: 0, wins: 0, won: 0, open: [], history: [] },
     pk: { view: 'solo', solo: null, hands: 0, buyIn: 2000 },
   });
   const state = fresh();
@@ -4240,17 +4389,19 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     pk: "Texas Hold'em · solo or online · play credits",
     pl: 'Plinko · real bounces · play credits',
     ck: 'Chicken · cross the road · play credits',
+    hr: 'Horse racing · live for everyone · play credits',
   };
   const gameBusy = () => busy || bjBusy || rlBusy || (typeof pkBusy === 'function' && pkBusy()) || (typeof plBusy === 'function' && plBusy()) || (typeof ckBusy === 'function' && ckBusy());
   function applyGameMode() {
     const bj = state.mode === 'bj';
     cabinet.dataset.mode = state.mode;
     cabinet.classList.toggle('mode-bj', bj);
-    document.body.classList.toggle('wide', state.mode === 'pk');
+    document.body.classList.toggle('wide', state.mode === 'pk' || state.mode === 'hr');
     $('marqueeSub').textContent = MODE_SUBS[state.mode];
     if (state.mode === 'rl') rlEnter();
     if (state.mode === 'pl' && typeof plEnter === 'function') plEnter();
     if (state.mode === 'ck' && typeof ckEnter === 'function') ckEnter();
+    if (state.mode === 'hr' && typeof hrEnter === 'function') hrEnter();
     if (state.mode === 'pk' && typeof pkEnter === 'function') pkEnter();
     if (bj) {
       renderBJTable(false);
@@ -4264,7 +4415,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     renderBroke();
     document.querySelectorAll('.game-pick').forEach(b => {
       b.querySelector('.gp-last')?.remove();
-      if (b.dataset.mode === state.mode && state.spins + state.bj.hands + state.rl.spins + state.pk.hands + state.pl.drops + state.ck.games > 0) b.insertAdjacentHTML('afterbegin', '<span class="gp-last">Last played</span>');
+      if (b.dataset.mode === state.mode && state.spins + state.bj.hands + state.rl.spins + state.pk.hands + state.pl.drops + state.ck.games + state.hr.races > 0) b.insertAdjacentHTML('afterbegin', '<span class="gp-last">Last played</span>');
     });
     $('lobby').hidden = false;
     document.querySelector(`.game-pick[data-mode="${state.mode}"]`)?.focus();
@@ -4275,7 +4426,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     $('lobby').hidden = true;
     sound.chime();
     render();
-    ({ bj: $('bjDeal'), rl: $('rlSpin'), slots: $('spin'), pk: $('pkSit'), pl: $('plDrop'), ck: $('ckGo') }[state.mode])?.focus({ preventScroll: true });
+    ({ bj: $('bjDeal'), rl: $('rlSpin'), slots: $('spin'), pk: $('pkSit'), pl: $('plDrop'), ck: $('ckGo'), hr: $('hrBet') }[state.mode])?.focus({ preventScroll: true });
   }));
 
   $('backBtn').addEventListener('click', () => {
@@ -5065,6 +5216,705 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     else if (e.key.toLowerCase() === 'c') ckCashOut(false);
   });
   addEventListener('resize', () => { if (state.mode === 'ck') ckPlace(false); });
+
+  // ---------- Horse racing ----------
+  // One race for everyone every three minutes: two minutes to bet, three seconds at the gates, then the race.
+  // With the online database the server sets the odds, takes the bets, draws the finishing order when betting
+  // closes and pays out; every page shows the same race at the same moment from the server clock.
+  // The odds keep about 92% for the players. Timing must match the "Horse racing" part of supabase-setup.sql.
+  const HR_PERIOD = 180000, HR_BET = 120000, HR_GATE = 3000, HR_N = 6, HR_DIST = 600;
+  const HR_SILKS = [
+    { body: '#e0414a', trim: '#ffffff', text: '#ffffff' }, { body: '#f6efe3', trim: '#1d1714', text: '#1d1714' },
+    { body: '#3d7bd9', trim: '#ffffff', text: '#ffffff' }, { body: '#f3c94b', trim: '#1d1714', text: '#1d1714' },
+    { body: '#3fae5a', trim: '#ffffff', text: '#ffffff' }, { body: '#2a2430', trim: '#f3c94b', text: '#f3c94b' },
+  ];
+  const HR_COATS = [
+    { coat: '#8a4b2a', dark: '#2a1a12', mane: '#1d120c' }, { coat: '#b5652e', dark: '#7a3e1a', mane: '#8a4520' },
+    { coat: '#2f2622', dark: '#17110e', mane: '#0f0b09' }, { coat: '#b9b4ac', dark: '#6e6a64', mane: '#7c7772' },
+    { coat: '#d9a95a', dark: '#9a7032', mane: '#f3e3bf' }, { coat: '#6b3a22', dark: '#24150d', mane: '#140c08' },
+  ];
+  const HR_NAMES = ['Thunder Hoof', 'Golden Carrot', 'Midnight Express', 'Lucky Clover', 'Turbo Tom', 'Silver Arrow', 'Sir Gallops',
+    'Dancing Queen', 'Rocket Mane', 'Hay Fever', 'Black Pearl', 'Sunny Boy', 'Wild Comet', 'Lady Luck', 'Peppermint', 'Iron Duke',
+    'Donnerhuf', 'Fritz Flitzer', 'Blue Velvet', 'Crazy Daisy', 'Jackpot Jack', 'Cherry Bomb', 'Seven Seas', 'Neon Dream'];
+  // Small seeded random numbers: names, coats and the look of each race are the same on every page.
+  function hrRng(a, b = 0) {
+    let s = (Math.imul(a | 0, 2654435761) ^ Math.imul(b + 1, 40503) ^ Math.floor(a / 4294967296)) >>> 0;
+    return () => { s = (s + 0x6D2B79F5) >>> 0; let t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  }
+  const hrLook = id => {
+    const rng = hrRng(id, 1), pool = [...HR_NAMES], coats = [];
+    const names = Array.from({ length: HR_N }, () => pool.splice(Math.floor(rng() * pool.length), 1)[0]);
+    for (let i = 0; i < HR_N; i++) coats.push(HR_COATS[Math.floor(rng() * HR_COATS.length)]);
+    return { names, coats };
+  };
+  // Odds from the strengths, the same way the database does it.
+  function hrOdds(w) {
+    const tot = w.reduce((a, b) => a + b, 0);
+    const win = [], place = [];
+    w.forEach((wi, i) => {
+      const p = wi / tot;
+      let q = p;
+      w.forEach((wj, j) => { if (j !== i) q += (wj / tot) * wi / (tot - wj); });
+      win.push(Math.max(1.1, Math.floor(0.92 / p * 10) / 10));
+      place.push(Math.max(1.05, Math.floor(0.92 / q * 100) / 100));
+    });
+    return { win, place };
+  }
+  function hrDraw(w, rng) {
+    const left = w.map((_, i) => i + 1), fin = [];
+    while (left.length) {
+      let x = rng() * left.reduce((a, h) => a + w[h - 1], 0), k = 0;
+      for (; k < left.length - 1; k++) { x -= w[left[k] - 1]; if (x <= 0) break; }
+      fin.push(left.splice(k, 1)[0]);
+    }
+    return fin;
+  }
+  // Without the online database: the race is worked out in the page (bets stay in this browser).
+  function localHorse() {
+    const key = () => 'lucky-reels-hr-' + (account?.id || '');
+    const read = () => { try { return JSON.parse(localStorage.getItem(key()) || '[]'); } catch { return []; } };
+    const write = l => { try { localStorage.setItem(key(), JSON.stringify(l.slice(-80))); } catch {} };
+    const field = id => { const rng = hrRng(id, 11); const weights = Array.from({ length: HR_N }, () => Math.exp((rng() - 0.5) * 2.4)); return { weights, ...hrOdds(weights) }; };
+    const finishOf = (id, w) => hrDraw(w, hrRng(id, 77));
+    return {
+      shared: false,
+      async available() { return true; },
+      async race(id) {
+        const now = Date.now();
+        id ??= Math.floor(now / HR_PERIOD);
+        const f = field(id);
+        return { id, now, ...f, finish: now >= id * HR_PERIOD + HR_BET ? finishOf(id, f.weights) : null };
+      },
+      async bet(id, horse, kind, amount) {
+        const now = Date.now();
+        if (id !== Math.floor(now / HR_PERIOD) || now >= id * HR_PERIOD + HR_BET) throw Object.assign(new Error('closed'), { code: 'hr_closed' });
+        const list = read();
+        if (list.filter(b => b.race_id === id).length >= 12) throw Object.assign(new Error('many'), { code: 'hr_many' });
+        const f = field(id), odds = (kind === 'win' ? f.win : f.place)[horse - 1];
+        list.push({ race_id: id, player: account.id, name: account.name, horse, kind, amount, odds, payout: null, claimed: false });
+        write(list);
+        return { odds, credits: null, rev: null };
+      },
+      async bets(id) { return read().filter(b => b.race_id === id); },
+      async claim() {
+        const now = Date.now(), list = read(), out = [];
+        for (const b of list) {
+          if (b.claimed || now < b.race_id * HR_PERIOD + HR_BET) continue;
+          const fin = finishOf(b.race_id, field(b.race_id).weights);
+          b.payout = (b.kind === 'win' ? fin[0] === b.horse : fin.slice(0, 2).includes(b.horse)) ? Math.floor(b.amount * b.odds) : 0;
+          b.claimed = true;
+          out.push(b);
+        }
+        write(list);
+        return { bets: out, credits: null, rev: null };
+      },
+    };
+  }
+
+  let hrOffset = 0, hrOffsetSet = false;
+  const hrNow = () => Date.now() + hrOffset;
+  const hrRaces = new Map();
+  let hrFetching = 0, hrLastFetch = 0, hrBetsFor = -1, hrBetList = [], hrBetsAt = 0, hrPlacing = false, hrClaiming = false, hrReady = null;
+  let hrSaid = {}, hrFrameOn = false, hrCam = null, hrDust = [], hrFlash = 0, hrLastGallop = 0, hrPopped = {};
+  const hrPhaseOf = now => {
+    const id = Math.floor(now / HR_PERIOD), e = now - id * HR_PERIOD;
+    return { id, e, phase: e < HR_BET ? 'bet' : e < HR_BET + HR_GATE ? 'gate' : 'race', run: (e - HR_BET - HR_GATE) / 1000 };
+  };
+  // Load a race's field (and later its finishing order) from the backend.
+  async function hrFetch(id) {
+    if (!backend?.horse || hrFetching || !account) return;
+    hrFetching = id; hrLastFetch = performance.now();
+    try {
+      const t0 = Date.now();
+      const r = await backend.horse.race(id);
+      if (r && Number.isFinite(Number(r.now)) && backend.horse.shared) { const off = Number(r.now) - (t0 + Date.now()) / 2; hrOffset = hrOffsetSet ? hrOffset * 0.7 + off * 0.3 : off; hrOffsetSet = true; }
+      const id2 = Number(r.id), have = hrRaces.get(id2);
+      const race = have || { id: id2, ...hrLook(id2) };
+      race.weights = r.weights.map(Number); race.win = r.win.map(Number); race.place = r.place.map(Number);
+      if (Array.isArray(r.finish) && r.finish.length === HR_N && !race.finish) { race.finish = r.finish.map(Number); race.plan = hrPlan(race); }
+      hrRaces.set(id2, race);
+      for (const k of hrRaces.keys()) if (k < id2 - 12) hrRaces.delete(k);
+      hrReady = true;
+    } catch (e) {
+      if (e?.code === 'PGRST202' || /could not find the function/i.test(e?.message || '')) hrReady = false;
+    }
+    hrFetching = 0;
+  }
+  // How the race unfolds, from its finishing order: finish times a fraction of a second apart and a running
+  // style per horse (fast starters, closers), so the lead can change hands on the way.
+  function hrPlan(race) {
+    const rng = hrRng(race.id, 5), T = [], shape = [];
+    let t = 22.5 + rng() * 2;
+    race.finish.forEach((h, k) => { if (k) t += 0.05 + rng() ** 2 * (k === 1 ? 0.5 : 0.85); T[h - 1] = t; });
+    for (let i = 0; i < HR_N; i++) shape.push([(rng() * 2 - 1) * 0.09, (rng() * 2 - 1) * 0.05, (rng() * 2 - 1) * 0.035]);
+    return { T, shape, last: t, margin: T[race.finish[1] - 1] - T[race.finish[0] - 1] };
+  }
+  // Metres run by horse i after t seconds.
+  function hrDistAt(plan, i, t) {
+    if (t <= 0) return 0;
+    const T = plan.T[i];
+    if (t >= T) { const v = HR_DIST / T; return HR_DIST + v * 1.8 * (1 - Math.exp(-(t - T) / 1.8)); }
+    const u = t / T, c = 1.1 / T;
+    const s = (u - c * (1 - Math.exp(-u / c))) / (1 - c * (1 - Math.exp(-1 / c)));
+    const [b1, b2, b3] = plan.shape[i];
+    const g = s + b1 * Math.sin(Math.PI * s) / Math.PI + b2 * Math.sin(2 * Math.PI * s) / (2 * Math.PI) + b3 * Math.sin(3 * Math.PI * s) / (3 * Math.PI);
+    return g * HR_DIST;
+  }
+  const hrName = (race, h) => race?.names[h - 1] || `#${h}`;
+  const hrHorseLabel = (race, h) => `<span class="hr-num" style="--silk:${HR_SILKS[h - 1].body};--silk-t:${HR_SILKS[h - 1].text}">${h}</span><b class="hr-name">${esc(hrName(race, h))}</b>`;
+
+  // ----- Drawing -----
+  const hrCv = $('hrCanvas'), hrCtx = hrCv.getContext('2d');
+  let hrW = 0, hrH = 0;
+  function hrResize() {
+    const r = $('hrView').getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1);
+    hrW = Math.max(200, r.width); hrH = Math.max(150, r.height);
+    hrCv.width = Math.round(hrW * dpr); hrCv.height = Math.round(hrH * dpr);
+    hrCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  // A side view of a galloping horse with its jockey; (x, y) is the ground under the horse's middle.
+  function hrHorse(c, x, y, s, phase, coat, silk, num, moving) {
+    c.save();
+    c.translate(x, y);
+    c.scale(s, s);
+    const bob = moving ? -Math.abs(Math.sin(phase * Math.PI * 2)) * 3 : Math.sin(phase * Math.PI * 2) * 0.6;
+    c.lineCap = 'round'; c.lineJoin = 'round';
+    // shadow
+    c.fillStyle = '#0000002e';
+    c.beginPath(); c.ellipse(0, 1, 46, 5, 0, 0, Math.PI * 2); c.fill();
+    const leg = (hx, hy, off, fore, far) => {
+      const a = phase + off;
+      const swing = moving ? Math.sin(a * Math.PI * 2) * (fore ? 0.75 : 0.65) : (fore ? 0.05 : -0.05);
+      const bend = moving ? Math.max(0, Math.cos(a * Math.PI * 2 + (fore ? 0.6 : -0.4))) * (fore ? 1.5 : -1.1) : 0;
+      const l1 = 22, l2 = 21;
+      const kx = hx + Math.sin(swing) * l1, ky = hy + Math.cos(swing) * l1;
+      const a2 = swing + bend * 0.7;
+      const fx = kx + Math.sin(a2) * l2, fy = ky + Math.cos(a2) * l2;
+      c.strokeStyle = far ? coat.dark : coat.coat;
+      c.lineWidth = 7; c.beginPath(); c.moveTo(hx, hy); c.lineTo(kx, ky); c.stroke();
+      c.strokeStyle = far ? coat.dark : coat.dark;
+      c.lineWidth = 4.5; c.beginPath(); c.moveTo(kx, ky); c.lineTo(fx, fy); c.stroke();
+      c.fillStyle = '#1a1310'; c.beginPath(); c.ellipse(fx + 1.5, fy, 3.6, 2.4, a2 * 0.5, 0, Math.PI * 2); c.fill();
+    };
+    c.translate(0, bob);
+    // far legs
+    leg(-28, -36, 0.1, false, true);
+    leg(26, -36, 0.55, true, true);
+    // tail
+    const wave = Math.sin(phase * Math.PI * 2 + 1) * (moving ? 6 : 2);
+    c.strokeStyle = coat.mane; c.lineWidth = 6;
+    c.beginPath(); c.moveTo(-42, -48); c.quadraticCurveTo(-58, -46 + wave * 0.4, -70, (moving ? -44 : -30) + wave); c.stroke();
+    c.lineWidth = 3; c.beginPath(); c.moveTo(-44, -46); c.quadraticCurveTo(-60, -40 + wave * 0.5, -68, (moving ? -36 : -22) + wave); c.stroke();
+    // body
+    c.fillStyle = coat.coat;
+    c.beginPath(); c.ellipse(0, -44, 34, 13, 0, 0, Math.PI * 2); c.fill();
+    c.beginPath(); c.arc(-27, -46, 14, 0, Math.PI * 2); c.fill();
+    c.beginPath(); c.arc(24, -45, 13, 0, Math.PI * 2); c.fill();
+    // neck and head (stretched forward when galloping)
+    const nod = moving ? Math.sin(phase * Math.PI * 2 + 0.8) * 0.08 : Math.sin(phase * Math.PI * 2) * 0.03;
+    c.save();
+    c.translate(28, -50);
+    c.rotate((moving ? -0.55 : -0.95) + nod);
+    c.beginPath(); c.moveTo(-8, 8); c.lineTo(-6, -8); c.lineTo(30, -7); c.lineTo(30, 6); c.closePath(); c.fill();
+    c.fillStyle = coat.mane;
+    c.beginPath(); c.moveTo(-6, -8); c.quadraticCurveTo(12, -14, 28, -8); c.lineTo(24, -5); c.quadraticCurveTo(10, -9, -4, -4); c.closePath(); c.fill();
+    c.translate(30, 0);
+    c.rotate(moving ? 0.95 : 1.35);
+    c.fillStyle = coat.coat;
+    c.beginPath(); c.moveTo(-7, -6); c.lineTo(20, -4); c.quadraticCurveTo(25, 0, 20, 4.5); c.lineTo(-6, 7); c.closePath(); c.fill();
+    c.fillStyle = coat.dark;
+    c.beginPath(); c.arc(21, 0, 3, 0, Math.PI * 2); c.fill();
+    c.fillStyle = '#111'; c.beginPath(); c.arc(3, -2.5, 1.7, 0, Math.PI * 2); c.fill();
+    c.fillStyle = coat.coat; c.beginPath(); c.moveTo(-6, -5); c.lineTo(-10, -12); c.lineTo(-2, -6); c.fill();
+    // bridle
+    c.strokeStyle = '#3a1f12'; c.lineWidth = 1.4; c.beginPath(); c.moveTo(-3, -6); c.lineTo(0, 7); c.moveTo(0, 2); c.lineTo(18, 3); c.stroke();
+    c.restore();
+    // saddle cloth with the number
+    c.fillStyle = silk.body; c.strokeStyle = silk.trim; c.lineWidth = 1.5;
+    c.beginPath(); c.roundRect(-14, -56, 22, 15, 3); c.fill(); c.stroke();
+    c.fillStyle = silk.text; c.font = '700 11px Figtree, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText(String(num), -3, -48.5);
+    // near legs
+    leg(-24, -36, 0, false, false);
+    leg(30, -36, 0.45, true, false);
+    // jockey, crouched forward
+    const jb = moving ? Math.sin(phase * Math.PI * 4) * 1.2 : 0;
+    c.translate(0, jb);
+    c.strokeStyle = '#f6efe3'; c.lineWidth = 5;
+    c.beginPath(); c.moveTo(-2, -58); c.lineTo(8, -54); c.lineTo(4, -46); c.stroke();
+    c.fillStyle = silk.body; c.strokeStyle = silk.trim; c.lineWidth = 1.5;
+    c.beginPath(); c.moveTo(-6, -60); c.quadraticCurveTo(4, (moving ? -76 : -82), 18, (moving ? -70 : -78)); c.lineTo(20, (moving ? -64 : -72)); c.quadraticCurveTo(6, -60, -2, -54); c.closePath(); c.fill(); c.stroke();
+    c.strokeStyle = silk.body; c.lineWidth = 3.5;
+    c.beginPath(); c.moveTo(14, (moving ? -68 : -75)); c.lineTo(30, -60); c.stroke();
+    c.strokeStyle = '#2a1a12'; c.lineWidth = 1; c.beginPath(); c.moveTo(30, -60); c.lineTo(46, -56); c.stroke();
+    c.fillStyle = '#f0c9a0'; c.beginPath(); c.arc(22, moving ? -74 : -83, 4.5, 0, Math.PI * 2); c.fill();
+    c.fillStyle = silk.body; c.beginPath(); c.arc(22, moving ? -76 : -85, 5, Math.PI, 0); c.fill();
+    c.fillStyle = silk.trim; c.fillRect(22, moving ? -77 : -86, 6, 1.6);
+    c.restore();
+  }
+  const hrNight = () => document.documentElement.dataset.theme === 'night';
+  function hrScene(now) {
+    const c = hrCtx, W = hrW, H = hrH, night = hrNight();
+    const { id, e, phase, run } = hrPhaseOf(now);
+    const race = hrRaces.get(id);
+    const running = phase === 'race' && race?.plan;
+    const ppm = Math.max(9, W / 36);
+    const trackTop = H * 0.43, trackBot = H * 0.92;
+    // distances, standings
+    const dist = Array.from({ length: HR_N }, (_, i) => running ? hrDistAt(race.plan, i, run) : 0);
+    const lead = Math.max(...dist);
+    // camera: start gates in view before the start, then follow the leader until the finish line comes into view
+    const viewM = W / ppm;
+    let target = running ? Math.min(lead - viewM * 0.66, HR_DIST - viewM * 0.6) : -viewM * 0.3;
+    if (hrCam === null || !running || Math.abs(target - hrCam) > 60) hrCam = target;
+    else hrCam += (target - hrCam) * 0.25;
+    const cam = hrCam;
+    const sx = m => (m - cam) * ppm;
+    // sky
+    const sky = c.createLinearGradient(0, 0, 0, H * 0.45);
+    if (night) { sky.addColorStop(0, '#0b1430'); sky.addColorStop(1, '#2b3a6a'); } else { sky.addColorStop(0, '#6fbfe9'); sky.addColorStop(1, '#d4ecf6'); }
+    c.fillStyle = sky; c.fillRect(0, 0, W, H);
+    if (night) { c.fillStyle = '#ffffffaa'; for (let k = 0; k < 40; k++) { const r = hrRng(k, 3); c.fillRect(((r() * W * 3 - cam * ppm * 0.03) % W + W) % W, r() * H * 0.22, 1.4, 1.4); } }
+    else { c.fillStyle = '#ffffffcc'; for (let k = 0; k < 5; k++) { const r = hrRng(k, 4); const cx = ((r() * W * 2 - cam * ppm * 0.05 + now / 400) % (W + 200) + W + 200) % (W + 200) - 100, cy = 14 + r() * H * 0.12; c.beginPath(); c.ellipse(cx, cy, 34, 9, 0, 0, Math.PI * 2); c.ellipse(cx + 18, cy - 6, 20, 9, 0, 0, Math.PI * 2); c.fill(); } }
+    // hills
+    c.fillStyle = night ? '#1b2a3e' : '#7fb06a';
+    c.beginPath(); c.moveTo(0, H * 0.36);
+    for (let x = 0; x <= W; x += 10) c.lineTo(x, H * 0.3 + Math.sin((x + cam * ppm * 0.12) / 90) * 8 + Math.sin((x + cam * ppm * 0.12) / 37) * 4);
+    c.lineTo(W, H * 0.45); c.lineTo(0, H * 0.45); c.fill();
+    // grandstand with the crowd (it jumps while the race is on)
+    const gp = 0.45, segW = 260, gy = H * 0.17, gh = H * 0.2;
+    const off = cam * ppm * gp;
+    for (let k = Math.floor(off / segW) - 1; k <= Math.floor((off + W) / segW) + 1; k++) {
+      const x0 = k * segW - off;
+      c.fillStyle = night ? '#3a3346' : '#efe6d6'; c.fillRect(x0, gy, segW - 6, gh);
+      c.fillStyle = night ? '#5a2430' : '#c8323a'; c.beginPath(); c.moveTo(x0 - 6, gy + 2); c.lineTo(x0 + segW / 2, gy - 12); c.lineTo(x0 + segW, gy + 2); c.fill();
+      c.fillStyle = night ? '#ffe9a8' : '#f3c94b'; c.fillRect(x0 + segW / 2 - 1, gy - 26, 2, 14);
+      c.fillStyle = ['#e0414a', '#3d7bd9', '#3fae5a'][((k % 3) + 3) % 3]; c.fillRect(x0 + segW / 2 + 1, gy - 26, 10, 6);
+      const r = hrRng(k, 9);
+      for (let row = 0; row < 3; row++) for (let p = 0; p < 18; p++) {
+        const px = x0 + 10 + p * ((segW - 24) / 18) + row * 4, jump = (running || phase === 'gate') ? Math.max(0, Math.sin(now / 140 + p * 1.7 + row + k)) * 3 : 0;
+        const py = gy + 10 + row * (gh / 3.6) - jump;
+        c.fillStyle = ['#e0414a', '#3d7bd9', '#f3c94b', '#7fd18b', '#a77bff', '#f6efe3', '#ff8fb8'][Math.floor(r() * 7)];
+        c.fillRect(px - 3, py + 3, 6, 6);
+        c.fillStyle = '#f0c9a0'; c.beginPath(); c.arc(px, py, 2.6, 0, Math.PI * 2); c.fill();
+      }
+    }
+    // turf with mowing stripes
+    c.fillStyle = night ? '#1f4a2c' : '#4f9a45'; c.fillRect(0, H * 0.38, W, H);
+    for (let m = Math.floor(cam / 8) * 8; m < cam + viewM + 8; m += 16) { c.fillStyle = night ? '#245433' : '#58a74d'; c.fillRect(sx(m), trackTop - 4, 8 * ppm, H * 0.955 - trackTop + 4); }
+    // outer rail, distance poles
+    c.fillStyle = '#ffffff'; c.fillRect(0, trackTop - 16, W, 3);
+    for (let m = Math.floor(cam / 3) * 3; m < cam + viewM + 3; m += 3) c.fillRect(sx(m), trackTop - 16, 2, 14);
+    c.font = `700 ${Math.round(Math.max(10, H * 0.04))}px Figtree, sans-serif`; c.textAlign = 'center'; c.textBaseline = 'alphabetic';
+    for (let m = 100; m < HR_DIST; m += 100) {
+      const x = sx(m); if (x < -40 || x > W + 40) continue;
+      c.fillStyle = '#ffffff'; c.fillRect(x - 1.5, trackTop - 40, 3, 26);
+      c.fillStyle = '#1d1714'; c.beginPath(); c.roundRect(x - 18, trackTop - 56, 36, 18, 4); c.fill();
+      c.fillStyle = '#f3c94b'; c.fillText(String(HR_DIST - m), x, trackTop - 43);
+    }
+    // finish line and post
+    const fx = sx(HR_DIST);
+    if (fx > -60 && fx < W + 60) {
+      const cell = Math.max(5, ppm * 0.35);
+      for (let y = trackTop - 4, r2 = 0; y < trackBot + 6; y += cell, r2++) for (let k = 0; k < 2; k++) { c.fillStyle = (r2 + k) % 2 ? '#1d1714' : '#ffffff'; c.fillRect(fx + k * cell - cell, y, cell, cell); }
+      c.fillStyle = '#ffffff'; c.fillRect(fx - 2, trackTop - 70, 4, 56);
+      c.fillStyle = '#e0414a'; c.beginPath(); c.arc(fx, trackTop - 74, 10, 0, Math.PI * 2); c.fill();
+      const fs = Math.round(Math.max(11, H * 0.045));
+      c.font = `400 ${fs}px Bungee, Impact, sans-serif`; c.textBaseline = 'middle';
+      const tw = c.measureText(i18n('FINISH')).width;
+      c.fillStyle = '#1d1714'; c.beginPath(); c.roundRect(fx - tw / 2 - 8, trackTop - 104 - fs / 2, tw + 16, fs + 10, 6); c.fill();
+      c.fillStyle = '#ffffff'; c.fillText(i18n('FINISH'), fx, trackTop - 99);
+    }
+    // horses, far lane first
+    const laneY = i => trackTop + (i + 0.6) / HR_N * (trackBot - trackTop);
+    const laneS = i => (0.72 + 0.28 * i / (HR_N - 1)) * ppm * 2.6 / 105 * 1.35;
+    const gateX = sx(-1.5);
+    for (let i = 0; i < HR_N; i++) {
+      const y = laneY(i), s = laneS(i);
+      const d = running ? dist[i] : -2.2;
+      const x = sx(d);
+      if (x < -120 || x > W + 140) continue;
+      const moving = running && run > 0.05;
+      const speed = moving ? HR_DIST / race.plan.T[i] : 0;
+      const ph = moving ? d / 6.2 + i * 0.13 : now / 1400 + i * 0.3;
+      const look = race || hrLook(id);
+      hrHorse(c, x, y, s, ph % 1, look.coats[i], HR_SILKS[i], i + 1, moving);
+      if (moving && speed && d < HR_DIST + 20 && Math.random() < 0.6) hrDust.push({ x: d - 1.2, y, s, life: 1, vx: -(0.6 + Math.random()), vy: -Math.random() * 14 });
+    }
+    // start gates (open once the race is on)
+    if (gateX > -80 && gateX < W + 80) {
+      c.fillStyle = '#2d6b3f'; c.fillRect(gateX - 6, trackTop - 34, 12, trackBot - trackTop + 40);
+      c.fillStyle = '#e9e2d4'; c.fillRect(gateX - 10, trackTop - 40, 20, 8);
+      for (let i = 0; i <= HR_N; i++) {
+        const y = trackTop + i / HR_N * (trackBot - trackTop);
+        c.fillStyle = '#2d6b3f'; c.fillRect(gateX - 3, y - 26, 34, 4);
+        if (!running) { c.fillStyle = '#3d8a52'; c.fillRect(gateX + 28, y - 26 + 4, 4, (trackBot - trackTop) / HR_N); }
+      }
+    }
+    // dust
+    hrDust = hrDust.filter(p => (p.life -= 0.045) > 0);
+    for (const p of hrDust) {
+      p.x += p.vx * 0.05; p.y += p.vy * 0.02;
+      c.fillStyle = `rgba(226, 205, 160, ${p.life * 0.32})`;
+      c.beginPath(); c.arc(sx(p.x), p.y - 2, (1 - p.life) * 14 * p.s + 1.5, 0, Math.PI * 2); c.fill();
+    }
+    if (hrDust.length > 220) hrDust.splice(0, hrDust.length - 220);
+    // inner rail in the foreground
+    c.fillStyle = '#ffffff'; c.fillRect(0, H * 0.955, W, 4);
+    for (let m = Math.floor(cam / 2.5) * 2.5; m < cam + viewM + 3; m += 2.5) c.fillRect(sx(m) * 1.0, H * 0.955, 3, H);
+    // progress strip: every horse on a line from start to finish
+    const px0 = 14, px1 = W - 14, py = 12;
+    c.fillStyle = '#0008'; c.beginPath(); c.roundRect(px0 - 8, py - 7, px1 - px0 + 16, 14, 7); c.fill();
+    c.fillStyle = '#ffffff55'; c.fillRect(px0, py - 1, px1 - px0, 2);
+    c.fillStyle = '#f6efe3'; c.fillRect(px1 - 1, py - 5, 2, 10);
+    const order = dist.map((d, i) => [d, i]).sort((a, b) => a[0] - b[0]);
+    for (const [d, i] of order) {
+      const x = px0 + Math.min(1, d / HR_DIST) * (px1 - px0);
+      c.fillStyle = HR_SILKS[i].body; c.strokeStyle = HR_SILKS[i].trim; c.lineWidth = 1.5;
+      c.beginPath(); c.arc(x, py, 5, 0, Math.PI * 2); c.fill(); c.stroke();
+    }
+    // live standings
+    if (running && run > 0.5) {
+      const st = dist.map((d, i) => [d, i]).sort((a, b) => b[0] - a[0]);
+      const bw = Math.min(30, (W - 28) / HR_N - 4);
+      st.forEach(([, i], k) => {
+        const x = 14 + k * (bw + 4), y = 26;
+        c.fillStyle = '#000a'; c.beginPath(); c.roundRect(x, y, bw, 22, 5); c.fill();
+        c.fillStyle = HR_SILKS[i].body; c.beginPath(); c.roundRect(x + 2, y + 2, bw - 4, 18, 4); c.fill();
+        c.fillStyle = HR_SILKS[i].text; c.font = '700 12px Figtree, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(String(i + 1), x + bw / 2, y + 11.5);
+      });
+    }
+    // big texts: countdown, gates, photo finish
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    const big = (text, size, col = '#fff2c4') => { c.font = `400 ${size}px Bungee, Impact, sans-serif`; c.lineWidth = Math.max(3, size / 9); c.strokeStyle = '#1d1714'; c.strokeText(text, W / 2, H * 0.55); c.fillStyle = col; c.fillText(text, W / 2, H * 0.55); };
+    if (phase === 'gate') { const n = Math.ceil((HR_BET + HR_GATE - e) / 1000); big(String(n), Math.min(110, H * 0.4)); }
+    else if (phase === 'bet' && HR_BET - e < 10000) big(String(Math.ceil((HR_BET - e) / 1000)), Math.min(70, H * 0.25), '#ffffff');
+    else if (running && run < 1.2) big(i18n("They're off!"), Math.min(56, W / 10));
+    if (running && race.plan && run > race.plan.T[race.finish[0] - 1] && run < race.plan.T[race.finish[0] - 1] + 2.2 && race.plan.margin < 0.12) big(i18n('Photo finish!'), Math.min(48, W / 12), '#ffffff');
+    if (hrFlash > 0) { c.fillStyle = `rgba(255,255,255,${hrFlash})`; c.fillRect(0, 0, W, H); hrFlash = Math.max(0, hrFlash - 0.06); }
+    if (phase === 'race' && !race?.plan) { c.fillStyle = '#0007'; c.fillRect(0, H * 0.45, W, 40); c.fillStyle = '#fff'; c.font = '600 14px Figtree, sans-serif'; c.fillText(i18n('Waiting for the result…'), W / 2, H * 0.45 + 20); }
+    return { running, dist, run, race, phase };
+  }
+
+  // ----- Game flow -----
+  let hrLastLead = 0, hrLastRace = -1;
+  function hrFrame() {
+    if (!(state.mode === 'hr' && account && $('lobby').hidden && $('shopPage').hidden && !document.hidden)) { hrFrameOn = false; return; }
+    const now = hrNow();
+    const v = hrScene(now);
+    // commentary and sounds that go with the picture
+    if (v.running) {
+      const race = v.race, said = hrSaid[race.id] || (hrSaid[race.id] = {});
+      const order = v.dist.map((d, i) => [d, i + 1]).sort((a, b) => b[0] - a[0]);
+      const leader = order[0][1];
+      if (v.run < 3 && !said.off && v.run > 0) { said.off = 1; hrSay("And they're off!", 'hot'); sound.chime(); sound.rumble(); }
+      if (v.run > 3 && leader !== hrLastLead && order[0][0] < HR_DIST && order[0][0] - order[1][0] > 0.4 && !(said.leadAt > v.run - 1.6)) { said.leadAt = v.run; hrSay(`${hrName(race, leader)} takes the lead!`, 'hot'); }
+      if (order[0][0] > HR_DIST / 2 && !said.half) { said.half = 1; hrSay(`Halfway: ${hrName(race, order[0][1])} ahead of ${hrName(race, order[1][1])}.`, 'hot'); }
+      if (order[0][0] > HR_DIST - 150 && !said.stretch) { said.stretch = 1; hrSay('Into the final stretch!', 'hot'); sound.rumble(); }
+      const tw = race.plan.T[race.finish[0] - 1];
+      if (v.run >= tw && !said.won) {
+        said.won = 1;
+        hrFlash = race.plan.margin < 0.12 ? 0.85 : 0.35;
+        hrSay(race.plan.margin < 0.12 ? `Photo finish! ${hrName(race, race.finish[0])} wins by a nose!` : `${hrName(race, race.finish[0])} wins!`, 'win');
+        const mine = hrMine(race.id);
+        const won = mine.some(b => hrPays(race, b));
+        if (won) { sound.bigWin(); for (let k = 0; k < 50; k++) fxTop.confetti(CONFETTI); fireworks(6); } else sound.win();
+      }
+      if (v.run >= race.plan.last + 0.8 && !said.done) { said.done = 1; renderHR(); }
+      hrLastLead = leader;
+      if (state.sound && v.run < race.plan.last + 1 && performance.now() - hrLastGallop > 95) {
+        hrLastGallop = performance.now();
+        sound.tone(70 + Math.random() * 60, 0, 0.05, 'triangle', 0.035 + Math.min(0.03, v.run / 800));
+      }
+    } else hrLastLead = 0;
+    requestAnimationFrame(hrFrame);
+  }
+  function hrStartFrames() {
+    if (hrFrameOn) return;
+    hrFrameOn = true;
+    hrResize();
+    requestAnimationFrame(hrFrame);
+  }
+  function hrSay(text, kind = '') { showMessage($('hrMsg'), text, kind); }
+  const hrMine = id => hrBetsFor === id ? hrBetList.filter(b => !b.player || b.player === account?.id) : [];
+  const hrPays = (race, b) => race.finish && (b.kind === 'win' ? race.finish[0] === b.horse : race.finish.slice(0, 2).includes(b.horse));
+  async function hrLoadBets(id) {
+    if (!backend?.horse || !account) return;
+    hrBetsAt = performance.now();
+    try {
+      const list = await backend.horse.bets(id);
+      if (Array.isArray(list)) { hrBetList = list.map(b => ({ ...b, horse: Number(b.horse), amount: Number(b.amount), odds: Number(b.odds) })); hrBetsFor = id; }
+    } catch {}
+    if (state.mode === 'hr') renderHRBets();
+  }
+  // Collect finished bets: winnings come onto the balance with a pop-up.
+  async function hrClaim() {
+    if (!backend?.horse || !account || hrClaiming) return;
+    hrClaiming = true;
+    try {
+      await flush();
+      const res = await backend.horse.claim();
+      const bets = (res?.bets || []).map(b => ({ ...b, horse: Number(b.horse), amount: Number(b.amount), odds: Number(b.odds), payout: Number(b.payout) || 0, race_id: Number(b.race_id) }));
+      const won = bets.reduce((a, b) => a + b.payout, 0);
+      if (res?.rev != null) {
+        const rev = Number(res.rev);
+        if (rev === (state.adminRev || 0) + 1) state.credits = Math.min(MAX, state.credits + won);
+        else if (rev > (state.adminRev || 0)) state.credits = Number(res.credits) || 0;
+        state.adminRev = Math.max(state.adminRev || 0, rev);
+      } else state.credits = Math.min(MAX, state.credits + won);
+      const races = new Set(bets.map(b => b.race_id));
+      state.hr.open = state.hr.open.filter(r => !races.has(r) && r >= Math.floor(hrNow() / HR_PERIOD) - 1);
+      if (bets.length) {
+        if (won > 0) {
+          const best = bets.reduce((a, b) => (b.payout > 0 && b.odds > a ? b.odds : a), 0);
+          state.hr.wins++;
+          state.hr.won += won;
+          state.lastWin = won;
+          state.best = Math.max(state.best, won - bets.filter(b => b.payout > 0).reduce((a, b) => a + b.amount, 0));
+          gainXp(6);
+          checkAch({ horseWin: true, horseOdds: best, win: won });
+          const el = document.createElement('button');
+          el.type = 'button';
+          el.className = 'chat-pop gift-pop';
+          el.innerHTML = `<span class="gift-ico" aria-hidden="true">${SHOP_ICONS.horseshoe}</span><span class="body"><span class="head"><b>${i18n('Horse racing')}</b></span><span class="note">${i18n(`Your bet came in: +${fmt(won)} credits!`)}</span></span>`;
+          el.addEventListener('click', () => hrOpen());
+          showPop(el, 6500);
+          if (state.mode !== 'hr') sound.win();
+        }
+        persist();
+        render();
+        while (pendingLevels.length) levelUp(pendingLevels.shift());
+      }
+    } catch {}
+    hrClaiming = false;
+  }
+  function hrOpen() {
+    if (!account || gameBusy()) return;
+    $('lobby').hidden = true;
+    $('shopPage').hidden = true;
+    state.mode = 'hr';
+    applyGameMode();
+    render();
+  }
+  // Runs twice a second on every page that is signed in, whatever game is open.
+  let hrClaimSoon = true;
+  function hrTick() {
+    if (!account || !backend?.horse) return;
+    const now = hrNow(), { id, e, phase } = hrPhaseOf(now);
+    const race = hrRaces.get(id);
+    const watching = state.mode === 'hr' && $('lobby').hidden && $('shopPage').hidden;
+    if (hrReady !== false || watching) {
+      if (!race && performance.now() - hrLastFetch > 3000) hrFetch(id);
+      else if (race && phase !== 'bet' && !race.finish && performance.now() - hrLastFetch > 900) hrFetch(id);
+    }
+    if (watching && hrReady !== false) {
+      if (hrBetsFor !== id || (phase === 'bet' && performance.now() - hrBetsAt > (backend.horse.shared ? 4000 : 1500))) { if (performance.now() - hrBetsAt > 1200) hrLoadBets(id); }
+    }
+    // A new race: forget the last one's bet list, tell the player if their race starts while they're elsewhere.
+    if (id !== hrLastRace) { hrLastRace = id; if (watching) renderHR(); }
+    if (phase === 'race' && state.hr.open.includes(id) && !watching && !hrPopped[id] && e < HR_BET + HR_GATE + 8000) {
+      hrPopped[id] = 1;
+      const el = document.createElement('button');
+      el.type = 'button';
+      el.className = 'chat-pop gift-pop';
+      el.innerHTML = `<span class="gift-ico" aria-hidden="true">${SHOP_ICONS.horseshoe}</span><span class="body"><span class="head"><b>${i18n('Horse racing')}</b></span><span class="note">${i18n('Your race has started. Tap to watch!')}</span></span>`;
+      el.addEventListener('click', () => hrOpen());
+      showPop(el, 7000);
+    }
+    // Pay out once the race is over on screen (so the result is never spoiled early).
+    const due = state.hr.open.some(r => now >= r * HR_PERIOD + HR_BET + HR_GATE + (hrRaces.get(r)?.plan ? hrRaces.get(r).plan.last * 1000 + 1500 : 28000));
+    if (due || (hrClaimSoon && backend.horse.shared && hrReady)) { hrClaimSoon = false; hrClaim(); }
+    if (watching) renderHRClock(now);
+    hrLobbyBadge(now);
+  }
+  function hrLobbyBadge(now) {
+    const b = $('hrBadge');
+    if (!b || $('lobby').hidden) return;
+    const { e, phase } = hrPhaseOf(now);
+    const mmss = ms => `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`;
+    b.textContent = phase === 'bet' ? `Live · ${mmss(HR_BET - e)}` : phase === 'race' && e < HR_BET + HR_GATE + 27000 ? i18n('Live · race running') : i18n(`Live · next race in ${mmss(HR_PERIOD - e)}`);
+  }
+  function renderHRClock(now) {
+    const { id, e, phase, run } = hrPhaseOf(now);
+    const race = hrRaces.get(id);
+    const mmss = ms => `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`;
+    const over = race?.plan && run > race.plan.last + 0.8;
+    $('hrRace').textContent = `Race #${id % 10000}`;
+    $('hrPhase').textContent = phase === 'bet' ? 'Betting open' : phase === 'gate' ? 'At the gates' : over ? 'Result' : 'Race on!';
+    $('hrPhase').dataset.phase = phase === 'bet' ? 'bet' : over ? 'done' : 'live';
+    $('hrClock').textContent = phase === 'bet' ? mmss(HR_BET - e) : over ? `${i18n('Next race')} ${mmss(HR_PERIOD - e)}` : '';
+    $('hrBar').style.width = (phase === 'bet' ? (1 - e / HR_BET) * 100 : over ? (1 - (HR_PERIOD - e) / (HR_PERIOD - HR_BET)) * 100 : 100) + '%';
+    const open = phase === 'bet' && hrReady !== false && !!race?.win;
+    if (open !== hrFieldOpen || hrFieldFor !== (race?.win ? id : -1) || (over && !hrShown[id])) renderHR();
+    if (phase === 'bet' && HR_BET - e < 10000 && Math.floor((HR_BET - e) / 1000) !== hrLastTick) { hrLastTick = Math.floor((HR_BET - e) / 1000); if (state.mode === 'hr') sound.tick(); }
+  }
+  let hrFieldOpen = null, hrFieldFor = -1, hrShown = {}, hrLastTick = -1;
+  // The field: six horses with odds and a bet button each; after the race, the result.
+  function renderHR() {
+    if (!account) return;
+    const now = hrNow(), { id, phase, run } = hrPhaseOf(now);
+    const race = hrRaces.get(id);
+    const open = phase === 'bet' && hrReady !== false && !!race?.win;
+    const over = !!race?.plan && phase === 'race' && run > race.plan.last + 0.8;
+    hrFieldOpen = open; hrFieldFor = race?.win ? id : -1;
+    if (over) hrShown[id] = 1;
+    if (hrReady === false) {
+      $('hrField').innerHTML = `<p class="note hr-setup">Horse racing needs the “Horse racing” part of supabase-setup.sql. Ask the person who runs the game to run it.</p>`;
+    } else if (!race?.win) {
+      $('hrField').innerHTML = `<p class="note">Loading the field…</p>`;
+    } else {
+      const fav = race.win.indexOf(Math.min(...race.win));
+      const amt = Math.max(1, Math.floor(Number($('hrBet').value)) || 1);
+      $('hrField').innerHTML = race.names.map((n, i) => {
+        const h = i + 1, odds = state.hr.kind === 'win' ? race.win[i] : race.place[i];
+        const stars = Math.max(1, Math.min(5, Math.round(6 - race.win[i] / 2.2)));
+        const pos = over ? race.finish.indexOf(h) + 1 : 0;
+        return `<div class="hr-horse${pos === 1 ? ' first' : ''}${pos && pos <= 2 ? ' placed' : ''}" data-h="${h}">
+          ${hrHorseLabel(race, h)}
+          <span class="hr-form" aria-label="${stars} of 5">${'★'.repeat(stars)}<i>${'★'.repeat(5 - stars)}</i>${i === fav ? '<em>Favourite</em>' : ''}</span>
+          <span class="hr-odds"><span>Win <b>${race.win[i].toFixed(1)}×</b></span><span>Place <b>${race.place[i].toFixed(2)}×</b></span></span>
+          ${pos ? `<span class="hr-pos">${pos}.</span>` : `<button class="chip-btn hr-betbtn" type="button" data-hb="${h}" ${open ? '' : 'disabled'}>Bet ${fmt(amt)} · ${odds.toFixed(state.hr.kind === 'win' ? 1 : 2)}×</button>`}
+        </div>`;
+      }).join('');
+    }
+    // the result board over the track
+    const ov = $('hrOverlay');
+    if (over) {
+      const mine = hrMine(id), won = mine.reduce((a, b) => a + (hrPays(race, b) ? Math.floor(b.amount * b.odds) : 0), 0);
+      ov.innerHTML = `<div class="hr-podium">${race.finish.slice(0, 3).map((h, k) => `<div class="hr-step s${k + 1}"><span class="hr-place">${k + 1}</span>${hrHorseLabel(race, h)}<small>${k === 0 ? `${race.win[h - 1].toFixed(1)}×` : k === 1 ? `${race.place[h - 1].toFixed(2)}×` : ''}</small></div>`).join('')}</div>
+        <p class="hr-yours">${mine.length ? (won ? `You won ${fmt(won)} credits!` : 'No luck this time.') : 'You had no bet on this race.'}</p>`;
+      ov.hidden = false;
+      ov.classList.toggle('won', won > 0);
+    } else ov.hidden = true;
+    renderHRBets();
+    renderHRControls();
+    renderHRHistory(race, over);
+  }
+  function renderHRHistory(race, over) {
+    if (over && race?.finish && !state.hr.history.some(x => x.id === race.id)) {
+      state.hr.history.unshift({ id: race.id, h: race.finish[0], name: hrName(race, race.finish[0]), odds: race.win[race.finish[0] - 1] });
+      state.hr.history = state.hr.history.slice(0, 8);
+      persist();
+    }
+    $('hrHist').innerHTML = state.hr.history.length ? `<span class="hr-hist-t">Recent winners</span>` + state.hr.history.map(x =>
+      `<span class="hr-hist-i" title="Race #${x.id % 10000}"><span class="hr-num" style="--silk:${HR_SILKS[x.h - 1].body};--silk-t:${HR_SILKS[x.h - 1].text}">${x.h}</span><b class="hr-name">${esc(x.name)}</b> ${x.odds.toFixed(1)}×</span>`).join('') : '';
+  }
+  function renderHRBets() {
+    const { id, phase, run } = hrPhaseOf(hrNow()), race = hrRaces.get(id);
+    const list = hrBetsFor === id ? hrBetList : [];
+    const mine = hrMine(id), over = !!race?.plan && phase === 'race' && run > race.plan.last + 0.8;
+    const row = (b, who) => {
+      const res = over ? (hrPays(race, b) ? `<b class="hr-paid">+${fmt(Math.floor(b.amount * b.odds))}</b>` : '<span class="hr-lost">–</span>') : `${Number(b.odds).toFixed(b.kind === 'win' ? 1 : 2)}×`;
+      return `<li>${who ? `<b class="name">${nameHtml(b.player, b.name)}</b>` : ''}<span class="hr-num" style="--silk:${HR_SILKS[b.horse - 1].body};--silk-t:${HR_SILKS[b.horse - 1].text}">${b.horse}</span><span>${b.kind === 'win' ? 'Win' : 'Place'} · ${fmt(b.amount)}</span><span class="hr-res">${res}</span></li>`;
+    };
+    $('hrMine').innerHTML = mine.length ? mine.map(b => row(b, false)).join('') : '<li class="empty">No bets yet on this race.</li>';
+    const pool = list.reduce((a, b) => a + b.amount, 0);
+    $('hrPool').textContent = list.length ? `${fmt(pool)} · ${new Set(list.map(b => b.player || b.name)).size} players` : '';
+    $('hrAllBox').hidden = !backend?.horse?.shared;
+    $('hrAll').innerHTML = list.length ? list.map(b => row(b, true)).join('') : '<li class="empty">Nobody has bet yet.</li>';
+  }
+  function renderHRControls() {
+    document.querySelectorAll('#hrKind [data-kind]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.kind === state.hr.kind)));
+    if (document.activeElement !== $('hrBet')) $('hrBet').value = state.hr.bet;
+  }
+  async function hrPlace(h) {
+    const { id, phase } = hrPhaseOf(hrNow()), race = hrRaces.get(id);
+    if (!account || hrPlacing || !race?.win) return;
+    if (phase !== 'bet') { hrSay('Betting is closed for this race.', 'lose'); return; }
+    if (settings.maintenance && !account.isAdmin) { hrSay('The game is paused by an admin. Try again later.', 'lose'); return; }
+    const amount = Math.floor(Number($('hrBet').value));
+    if (!(amount >= 1)) { hrSay('Enter a bet of at least 1.', 'lose'); return; }
+    if (settings.maxBet && amount > settings.maxBet) { hrSay(`The highest bet is ${fmt(settings.maxBet)}.`, 'lose'); return; }
+    if (amount > state.credits) { hrSay(`Not enough credits for a ${fmt(amount)} bet.`, 'lose'); return; }
+    hrPlacing = true;
+    document.querySelectorAll('[data-hb]').forEach(b => { b.disabled = true; });
+    try {
+      await flush();
+      quietCreditsUntil = Date.now() + 8000;
+      const kind = state.hr.kind;
+      const res = await backend.horse.bet(id, h, kind, amount);
+      if (res?.rev != null) {
+        const rev = Number(res.rev);
+        if (rev === (state.adminRev || 0) + 1) state.credits -= amount;
+        else state.credits = Number(res.credits) || 0;
+        state.adminRev = Math.max(state.adminRev || 0, rev);
+      } else state.credits -= amount;
+      state.credits = Math.max(0, state.credits);
+      state.hr.bet = amount;
+      if (!state.hr.open.includes(id)) { state.hr.open.push(id); state.hr.races++; }
+      gainXp(3);
+      if (hrBetsFor === id) hrBetList.push({ race_id: id, player: account.id, name: account.name, horse: h, kind, amount, odds: Number(res?.odds) || (kind === 'win' ? race.win : race.place)[h - 1] });
+      sound.chip();
+      const btn = document.querySelector(`[data-hb="${h}"]`)?.getBoundingClientRect();
+      if (btn) fxTop.coinBurst(btn.left + btn.width / 2, btn.top, 12, 6);
+      hrSay(`${fmt(amount)} on ${hrName(race, h)} to ${kind === 'win' ? 'win' : 'place'}. Good luck!`, 'win');
+      lastSaved = '';
+      persist();
+      render();
+      hrLoadBets(id);
+      while (pendingLevels.length) levelUp(pendingLevels.shift());
+    } catch (e) {
+      const m = e?.message || '';
+      hrSay(e?.code === 'hr_closed' || /closed/.test(m) ? 'Betting is closed for this race.' : e?.code === 'hr_many' || /too many/.test(m) ? 'That is the most bets for one race (12).'
+        : /credits/.test(m) ? 'Not enough credits for that.' : e?.code === 'PGRST202' || /could not find the function/i.test(m) ? 'Horse racing needs the “Horse racing” part of supabase-setup.sql.' : 'That did not work. Check the connection and try again.', 'lose');
+      refreshOwn();
+    }
+    hrPlacing = false;
+    renderHR();
+  }
+  function hrEnter() {
+    renderHRControls();
+    hrCam = null;
+    hrResize();
+    renderHR();
+    renderHRClock(hrNow());
+    const { phase } = hrPhaseOf(hrNow());
+    hrSay(phase === 'bet' ? 'Pick a horse and place your bet before the gates open.' : 'The race is on. Bets for the next race open soon.');
+    hrStartFrames();
+    if (backend?.horse && hrReady === null) backend.horse.available().then(ok => { if (!ok) { hrReady = false; renderHR(); } }).catch(() => {});
+  }
+  $('hrField').addEventListener('click', e => { const b = e.target.closest('[data-hb]'); if (b) hrPlace(Number(b.dataset.hb)); });
+  $('hrKind').addEventListener('click', e => {
+    const b = e.target.closest('[data-kind]');
+    if (!b) return;
+    state.hr.kind = b.dataset.kind;
+    sound.chip();
+    renderHR();
+  });
+  document.querySelectorAll('[data-hrb]').forEach(b => b.addEventListener('click', () => {
+    const cur = Math.max(1, Math.floor(Number($('hrBet').value)) || 1);
+    const cap = Math.max(1, Math.min(state.credits, settings.maxBet || MAX));
+    const v = { half: Math.max(1, Math.floor(cur / 2)), double: Math.min(cap, cur * 2), max: cap }[b.dataset.hrb];
+    $('hrBet').value = v;
+    state.hr.bet = v;
+    sound.chip();
+    renderHR();
+  }));
+  $('hrBet').addEventListener('input', () => { const v = Math.floor(Number($('hrBet').value)); if (v >= 1) state.hr.bet = v; renderHR(); });
+  addEventListener('resize', () => { if (state.mode === 'hr') { hrResize(); hrCam = null; } });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && state.mode === 'hr' && account) hrStartFrames(); });
+  setInterval(hrTick, 500);
+  // The lobby card shows the same horse, galloping while the card is hovered.
+  {
+    const cv = $('hrLobbyCv'), c = cv.getContext('2d'), card = cv.closest('.game-pick');
+    let on = false, ph = 0;
+    const draw = () => {
+      c.setTransform(1, 0, 0, 1, 0, 0);
+      c.clearRect(0, 0, cv.width, cv.height);
+      c.fillStyle = '#3f8a3e'; c.beginPath(); c.roundRect(10, 150, 260, 70, 14); c.fill();
+      c.fillStyle = '#4f9a45'; for (let k = 0; k < 6; k++) c.fillRect(20 + k * 44 - (ph * 44) % 44, 150, 22, 70);
+      c.fillStyle = '#ffffff'; c.fillRect(10, 146, 260, 4);
+      for (let k = 0; k < 9; k++) c.fillRect(16 + k * 32 - (ph * 64) % 32, 146, 3, 16);
+      hrHorse(c, 140, 200, 1.75, on ? ph % 1 : 0.2, HR_COATS[0], HR_SILKS[0], 7, true);
+    };
+    const loop = () => { if (!on) return; ph += 0.035; draw(); requestAnimationFrame(loop); };
+    const start = () => { if (on || reduceMotion) return; on = true; loop(); };
+    const stop = () => { on = false; draw(); };
+    card.addEventListener('mouseenter', start); card.addEventListener('mouseleave', stop);
+    card.addEventListener('focus', start); card.addEventListener('blur', stop);
+    draw();
+    document.fonts?.ready.then(draw);
+  }
 
   // ---------- Poker ----------
   // Cards are 0-51: rank = code >> 2 (0 = two … 12 = ace), suit = code & 3.
@@ -6576,6 +7426,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       chatWatch: cb => store.chatWatch(cb),
       chatSend: text => store.chatSend(text),
       poker: null,
+      horse: localHorse(),
       presence: cb => store.presence(cb),
       setOnline: me => store.setOnline(me),
       dmWatch: cb => store.dmWatch(cb),
@@ -7012,6 +7863,23 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         async tick() { await sb.rpc('poker_tick'); },
         watch(cb) { sb.channel('poker-pulse').on('postgres_changes', { event: '*', schema: 'public', table: 'poker_pulse' }, cb).subscribe(); },
       },
+      // Horse racing: the database keeps the odds, the bets, the finishing order and the payouts.
+      horse: {
+        shared: true,
+        async available() { const { error } = await sb.rpc('horse_race', { race: null }); return !error; },
+        async race(id) { const { data, error } = await sb.rpc('horse_race', { race: id ?? null }); if (error) throw error; return data; },
+        async bet(id, horse, kind, amount) {
+          const { data, error } = await sb.rpc('horse_bet', { race: id, horse_no: horse, bet_kind: kind, amount });
+          if (error) throw error;
+          return data;
+        },
+        async bets(id) {
+          const { data, error } = await sb.from('horse_bets').select('player,name,horse,kind,amount,odds').eq('race_id', id).order('id');
+          if (error) throw error;
+          return data;
+        },
+        async claim() { const { data, error } = await sb.rpc('horse_claim'); if (error) throw error; return data; },
+      },
       async chatWatch(cb) {
         let list = [];
         const pull = async () => {
@@ -7198,6 +8066,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     state.pl = Object.assign(fresh().pl, saved.pl);
     state.ck = Object.assign(fresh().ck, saved.ck);
     if (!['easy', 'medium', 'hard'].includes(state.ck.diff)) state.ck.diff = 'medium';
+    state.hr = Object.assign(fresh().hr, saved.hr);
+    if (!['win', 'place'].includes(state.hr.kind)) state.hr.kind = 'win';
+    state.hr.open = (Array.isArray(state.hr.open) ? state.hr.open : []).filter(Number.isFinite).slice(-20);
+    state.hr.history = (Array.isArray(state.hr.history) ? state.hr.history : []).filter(x => x && x.h >= 1 && x.h <= 6 && Number.isFinite(x.odds)).slice(0, 8);
     if (state.ck.round && !(state.ck.round.lane >= 0 && state.ck.round.bet > 0 && CK_SURVIVE[state.ck.round.diff])) state.ck.round = null;
     if (![8, 12, 16].includes(state.pl.rows)) state.pl.rows = 12;
     if (!['low', 'medium', 'high'].includes(state.pl.risk)) state.pl.risk = 'medium';
@@ -7209,7 +8081,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (typeof state.rl.bets !== 'object' || !state.rl.bets) state.rl.bets = {};
     if (!Array.isArray(state.bj.shoe)) state.bj.shoe = [];
     if (state.bj.round && !Array.isArray(state.bj.round.hands)) state.bj.round = null;
-    if (!['bj', 'rl', 'pk', 'pl', 'ck'].includes(state.mode)) state.mode = 'slots';
+    if (!['bj', 'rl', 'pk', 'pl', 'ck', 'hr'].includes(state.mode)) state.mode = 'slots';
     autoLeft = 0;
     pendingLevels.length = 0;
     held = [false, false, false];
@@ -7249,6 +8121,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     renderMyAvatar();
     seenMedals = null;
     setTimeout(checkGifts, 1200);
+    hrClaimSoon = true; hrBetsFor = -1; hrBetList = [];
     syncAdminButton();
     $('accountBar').hidden = false;
     document.body.classList.add('signed-in');
@@ -7764,7 +8637,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   }
   async function refreshOwn() {
     if (refreshing || !account) return;
-    if (busy) { setTimeout(refreshOwn, 1000); return; }
+    if (busy || hrClaiming || hrPlacing) { setTimeout(refreshOwn, 1000); return; }
     refreshing = true;
     try {
       const doc = await backend.loadOwn(account.id);
