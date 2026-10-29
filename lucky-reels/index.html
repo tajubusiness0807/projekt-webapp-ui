@@ -3009,7 +3009,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Nobody has an affiliate code yet.': 'Noch hat niemand einen Affiliate-Code.', 'Not available here.': 'Hier nicht verfügbar.',
     'This needs the “Admin: affiliate overview” part of supabase-setup.sql.': 'Dafür braucht es den Abschnitt „Admin: affiliate overview“ aus supabase-setup.sql.',
     'Every player with an affiliate code, how many new players joined with it and how many credits the owner got for them (5% of their credits at that moment). Open a row to see who joined and when.': 'Alle Spieler mit Affiliate-Code: wie viele neue Spieler sich damit angemeldet haben und wie viele Credits der Besitzer dafür bekommen hat (5 % seiner Credits zu dem Zeitpunkt). Öffne eine Zeile, um zu sehen, wer wann beigetreten ist.',
-    'Affiliate bonus': 'Affiliate-Bonus', 'No affiliate bonus': 'Kein Affiliate-Bonus',
+    'joined with your affiliate code!': 'hat sich mit deinem Affiliate-Code angemeldet!', 'Affiliate bonus': 'Affiliate-Bonus', 'No affiliate bonus': 'Kein Affiliate-Bonus',
     'The affiliate bonus is only for the first account on a device. Leave the code empty to create the account without it.': 'Den Affiliate-Bonus gibt es nur für das erste Konto auf einem Gerät. Lass das Feld leer, um das Konto ohne Bonus zu erstellen.',
     'This device already has an account, so there is no affiliate bonus.': 'Auf diesem Gerät gibt es schon ein Konto, deshalb gibt es keinen Affiliate-Bonus.',
     'Reload the page to use affiliate codes.': 'Lade die Seite neu, um Affiliate-Codes zu nutzen.', 'The affiliate code could not be used.': 'Der Affiliate-Code konnte nicht eingelöst werden.',
@@ -9613,12 +9613,12 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           : /level/i.test(m) ? 'gift_level' : /credits/i.test(m) ? 'gift_credits' : /player|yourself|blocked/i.test(m) ? 'gift_player' : 'gift_error' });
       },
       async giftsSince(since) {
-        const { data, error } = await sb.from('transfers').select('sender_name,amount,created_at').eq('recipient', account.id)
+        const { data, error } = await sb.from('transfers').select('id,sender_name,amount,created_at').eq('recipient', account.id)
           .gt('created_at', new Date(since).toISOString()).order('created_at');
-        const out = error ? [] : data.map(g => ({ from: g.sender_name, amount: Number(g.amount), at: Date.parse(g.created_at) }));
+        const out = error ? [] : data.map(g => ({ id: g.id, from: g.sender_name, amount: Number(g.amount), at: Date.parse(g.created_at) }));
         // Players who joined with my affiliate code.
-        const aff = await sb.from('affiliate_uses').select('new_name,bonus,created_at').eq('affiliate', account.id).gt('created_at', new Date(since).toISOString()).order('created_at');
-        if (!aff.error) out.push(...aff.data.map(g => ({ from: g.new_name, amount: Number(g.bonus), at: Date.parse(g.created_at), aff: true })));
+        const aff = await sb.from('affiliate_uses').select('id,new_name,bonus,created_at').eq('affiliate', account.id).gt('created_at', new Date(since).toISOString()).order('created_at');
+        if (!aff.error) out.push(...aff.data.map(g => ({ id: g.id, from: g.new_name, amount: Number(g.bonus), at: Date.parse(g.created_at), aff: true })));
         return out.sort((a, b) => a.at - b.at);
       },
       tickets: {
@@ -10151,20 +10151,25 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Gifts that arrived since we last looked: a pop-up each.
   async function checkGifts() {
     if (!account || !backend?.giftsSince) return 0;
-    const since = state.giftSeen || Date.now();
+    // What was already shown is kept in the saved game and, in case a save doesn't get through, in this browser too.
+    const LS = 'lucky-reels-gifts-' + account.id;
+    let local = {};
+    try { local = JSON.parse(localStorage.getItem(LS) || '{}'); } catch {}
+    const since = Math.max(state.giftSeen || Date.now(), Number(local.seen) || 0);
     // The database keeps microseconds and the page milliseconds, so a gift can come back at the edge of "since":
     // remember the ones already shown and move the marker one millisecond past the newest.
-    const shown = new Set(Array.isArray(state.giftKeys) ? state.giftKeys : []);
-    const keyOf = g => `${g.aff ? 'a' : 'g'}|${g.from}|${g.amount}|${g.at}`;
+    const shown = new Set([...(Array.isArray(state.giftKeys) ? state.giftKeys : []), ...(Array.isArray(local.keys) ? local.keys : [])]);
+    const keyOf = g => g.id != null ? `${g.aff ? 'a' : 'g'}#${g.id}` : `${g.aff ? 'a' : 'g'}|${g.from}|${g.amount}|${g.at}`;
     const gifts = (await backend.giftsSince(since).catch(() => [])).filter(g => !shown.has(keyOf(g)));
     if (!gifts.length) return 0;
     state.giftSeen = Math.max(since, ...gifts.map(g => g.at + 1));
-    state.giftKeys = [...shown, ...gifts.map(keyOf)].slice(-40);
+    state.giftKeys = [...shown, ...gifts.map(keyOf)].slice(-60);
+    try { localStorage.setItem(LS, JSON.stringify({ seen: state.giftSeen, keys: state.giftKeys })); } catch {}
     flush();
     for (const g of gifts) {
       const el = document.createElement('div');
       el.className = 'chat-pop gift-pop';
-      el.innerHTML = `<span class="gift-ico" aria-hidden="true">${SHOP_ICONS.gold}</span><span class="body"><span class="head"><b>${esc(g.from)}</b></span><span class="note">${g.aff ? i18n(`joined with your affiliate code: +${fmt(g.amount)} credits!`) : `sent you ${fmt(g.amount)} credits!`}</span></span>`;
+      el.innerHTML = `<span class="gift-ico" aria-hidden="true">${SHOP_ICONS.gold}</span><span class="body"><span class="head"><b>${esc(g.from)}</b></span><span class="note">${g.aff ? (g.amount > 0 ? i18n(`joined with your affiliate code: +${fmt(g.amount)} credits!`) : i18n('joined with your affiliate code!')) : `sent you ${fmt(g.amount)} credits!`}</span></span>`;
       showPop(el, 6500);
     }
     sound.bigWin();
