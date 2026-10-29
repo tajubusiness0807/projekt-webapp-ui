@@ -1808,6 +1808,18 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
 .rl-dolly { position: absolute; left: 50%; top: 50%; width: 18px; height: 22px; margin: -15px 0 0 -9px; border-radius: 6px 6px 9px 9px; background: linear-gradient(90deg, #ffffff55, #ffffffcc 45%, #ffffff44); box-shadow: 0 4px 8px #0008, inset 0 2px 0 #fff; animation: dollyIn 0.5s cubic-bezier(.3, 1.6, .5, 1); pointer-events: none; z-index: 3; }
 @keyframes dollyIn { from { transform: translateY(-30px); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .cabinet.spinning .bulbs span, .cabinet.shake, .rl-chip.drop, .rl-dolly { animation: none; } }
+/* Roulette: other players and dragging */
+.rl-cell.locked { cursor: default; }
+.rl-cell.movable { cursor: grab; touch-action: none; }
+.rl-cell.drop-target { box-shadow: 0 0 0 3px var(--accent-hi), 0 0 18px var(--accent); transform: scale(1.06); z-index: 4; }
+.rl-chip.lifted { opacity: 0.25; }
+.rl-ghost { position: fixed; z-index: 80; translate: -50% -50%; min-width: 30px; height: 30px; padding: 0 5px; border-radius: 15px; border: 3px dashed #fffc; background: var(--chip); color: #fff; font: 700 11px/24px var(--font-mono); text-align: center; box-shadow: 0 10px 18px #000a; pointer-events: none; transform: scale(1.15) rotate(-6deg); }
+.rl-others { position: absolute; z-index: 2; right: 1px; bottom: 1px; display: flex; align-items: center; gap: 1px; padding: 1px 3px 1px 1px; border-radius: 8px; background: #000b; pointer-events: none; }
+.rl-others i { width: 13px; height: 13px; border-radius: 50%; display: grid; place-items: center; background: hsl(var(--h) 60% 45%); color: #fff; font: 700 8px/1 var(--font-mono); font-style: normal; margin-left: -4px; box-shadow: 0 0 0 1px #000; }
+.rl-others i:first-child { margin-left: 0; }
+.rl-others b { margin-left: 2px; font: 700 8px/1 var(--font-mono); color: #fff2c4; }
+.rl-others.bump { animation: popIn 0.3s cubic-bezier(.2, 1.6, .4, 1); }
+.rl-cell.side.vert .rl-others { right: 50%; translate: 50% 0; }
 /* Game goodies */
 .gg { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; }
 .cabinet:not([data-mode="slots"]) .gg[data-gg="slots"] { display: none; }
@@ -2258,7 +2270,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       </div>
       <details class="bj-rules">
         <summary>Roulette rules</summary>
-        <p class="note">One wheel for everyone: every 45 seconds there are 30 seconds to place chips, then the ball is thrown, and while it rolls you have 4 more seconds for last bets. Then: no more bets, and everybody sees the same number. Pick a chip, tap the table to put it down, then press Place bets (chips still waiting when the time runs out go in by themselves). You can place more until the time is up. European wheel with one zero. A single number pays 35 to 1. Red or black, odd or even, 1–18 or 19–36 pay 1 to 1. A dozen (1st, 2nd, 3rd 12) or a column (2:1 under the numbers) pays 2 to 1. Zero loses every outside bet. Winnings land on your balance as soon as the ball stops, even if you left the table.</p>
+        <p class="note">One wheel for everyone: every 45 seconds there are 30 seconds to place chips, then the ball is thrown. While it rolls (4 more seconds) you cannot add chips, but you can drag your stacks to another field or swap two of them. Then: no more bets, and everybody sees the same number. The chips of the other players show on the felt as small coloured markers. Pick a chip, tap the table to put it down, then press Place bets (chips still waiting when the time runs out go in by themselves). You can place more until the time is up. European wheel with one zero. A single number pays 35 to 1. Red or black, odd or even, 1–18 or 19–36 pay 1 to 1. A dozen (1st, 2nd, 3rd 12) or a column (2:1 under the numbers) pays 2 to 1. Zero loses every outside bet. Winnings land on your balance as soon as the ball stops, even if you left the table.</p>
       </details>
     </section>
 
@@ -2989,6 +3001,12 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'other player online': 'anderer Spieler online', 'other players online': 'andere Spieler online', 'in the lobby': 'in der Lobby',
     'Nobody else is online right now.': 'Gerade ist sonst niemand online.', 'Lobby': 'Lobby',
     'Last bets!': 'Letzte Einsätze!', 'The ball is rolling: last bets!': 'Die Kugel rollt: letzte Einsätze!',
+    'Only moves now': 'Nur noch verschieben', 'Only moves now<small>drag your stacks to move or swap them</small>': 'Nur noch verschieben<small>zieh deine Stapel, um sie zu verschieben oder zu tauschen</small>',
+    'drag your stacks to move or swap them': 'zieh deine Stapel, um sie zu verschieben oder zu tauschen',
+    'No new chips now: drag a stack to move or swap it.': 'Jetzt keine neuen Chips: Zieh einen Stapel, um ihn zu verschieben oder zu tauschen.',
+    'The ball is rolling: no new chips, but you can drag your stacks to move or swap them.': 'Die Kugel rollt: keine neuen Chips mehr, aber du kannst deine Stapel verschieben oder tauschen.',
+    'The ball is rolling.': 'Die Kugel rollt.', 'Moved': 'Verschoben',
+    'Moving chips needs the updated “Global roulette” part of supabase-setup.sql.': 'Zum Verschieben braucht es den aktualisierten Abschnitt „Global roulette“ aus supabase-setup.sql.',
     'Place your bets': 'Setzt eure Chips', 'No more bets': 'Nichts geht mehr', 'Spinning': 'Die Kugel rollt', 'Next round': 'Nächste Runde', 'At the table': 'Am Tisch',
     'wait for the next round': 'warte auf die nächste Runde', 'Place bets': 'Einsätze setzen', 'Bets placed': 'Einsätze gesetzt', 'tap the table to add chips': 'tipp auf den Tisch für Chips', 'Live · spinning': 'Live · Kugel rollt',
     'Roulette · one wheel for everyone · play credits': 'Roulette · ein Rad für alle · Spiel-Credits',
@@ -2998,7 +3016,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Too late: no more bets for this round.': 'Zu spät: Für diese Runde geht nichts mehr.', 'That is the most bets for one round (20).': 'Mehr Einsätze gehen pro Runde nicht (20).',
     'Roulette now runs for everyone and needs the “Global roulette” part of supabase-setup.sql.': 'Roulette läuft jetzt für alle und braucht den Abschnitt „Global roulette“ aus supabase-setup.sql.',
     'Column 1': 'Spalte 1', 'Column 2': 'Spalte 2', 'Column 3': 'Spalte 3',
-    'One wheel for everyone: every 45 seconds there are 30 seconds to place chips, then the ball is thrown, and while it rolls you have 4 more seconds for last bets. Then: no more bets, and everybody sees the same number. Pick a chip, tap the table to put it down, then press Place bets (chips still waiting when the time runs out go in by themselves). You can place more until the time is up. European wheel with one zero. A single number pays 35 to 1. Red or black, odd or even, 1–18 or 19–36 pay 1 to 1. A dozen (1st, 2nd, 3rd 12) or a column (2:1 under the numbers) pays 2 to 1. Zero loses every outside bet. Winnings land on your balance as soon as the ball stops, even if you left the table.': 'Ein Rad für alle: Alle 45 Sekunden gibt es 30 Sekunden zum Setzen, dann wird die Kugel geworfen, und während sie rollt, hast du noch 4 Sekunden für letzte Einsätze. Dann heißt es: Nichts geht mehr, und alle sehen dieselbe Zahl. Wähl einen Chip, tipp auf den Tisch, um ihn zu legen, und drück dann „Einsätze setzen“ (Chips, die bei Zeitablauf noch warten, gehen automatisch rein). Bis die Zeit um ist, kannst du nachlegen. Europäisches Rad mit einer Null. Eine einzelne Zahl zahlt 35 zu 1. Rot oder Schwarz, Ungerade oder Gerade, 1–18 oder 19–36 zahlen 1 zu 1. Ein Dutzend (1., 2., 3. 12) oder eine Spalte (2:1 unter den Zahlen) zahlt 2 zu 1. Bei Null verlieren alle Außenwetten. Gewinne landen auf deinem Konto, sobald die Kugel liegt, auch wenn du den Tisch verlassen hast.',
+    'One wheel for everyone: every 45 seconds there are 30 seconds to place chips, then the ball is thrown. While it rolls (4 more seconds) you cannot add chips, but you can drag your stacks to another field or swap two of them. Then: no more bets, and everybody sees the same number. The chips of the other players show on the felt as small coloured markers. Pick a chip, tap the table to put it down, then press Place bets (chips still waiting when the time runs out go in by themselves). You can place more until the time is up. European wheel with one zero. A single number pays 35 to 1. Red or black, odd or even, 1–18 or 19–36 pay 1 to 1. A dozen (1st, 2nd, 3rd 12) or a column (2:1 under the numbers) pays 2 to 1. Zero loses every outside bet. Winnings land on your balance as soon as the ball stops, even if you left the table.': 'Ein Rad für alle: Alle 45 Sekunden gibt es 30 Sekunden zum Setzen, dann wird die Kugel geworfen. Während sie rollt (noch 4 Sekunden), kannst du keine Chips mehr dazulegen, aber deine Stapel auf ein anderes Feld ziehen oder zwei Stapel tauschen. Dann heißt es: Nichts geht mehr, und alle sehen dieselbe Zahl. Die Chips der anderen Spieler siehst du als kleine farbige Marken auf dem Tisch. Wähl einen Chip, tipp auf den Tisch, um ihn zu legen, und drück dann „Einsätze setzen“ (Chips, die bei Zeitablauf noch warten, gehen automatisch rein). Bis die Zeit um ist, kannst du nachlegen. Europäisches Rad mit einer Null. Eine einzelne Zahl zahlt 35 zu 1. Rot oder Schwarz, Ungerade oder Gerade, 1–18 oder 19–36 zahlen 1 zu 1. Ein Dutzend (1., 2., 3. 12) oder eine Spalte (2:1 unter den Zahlen) zahlt 2 zu 1. Bei Null verlieren alle Außenwetten. Gewinne landen auf deinem Konto, sobald die Kugel liegt, auch wenn du den Tisch verlassen hast.',
     'Horse Racing': 'Pferderennen', 'Horse racing': 'Pferderennen', 'Live': 'Live', 'Race': 'Rennen', 'Race track': 'Rennbahn',
     'One race for everyone every 3 minutes. Bet, watch live, cash in.': 'Alle 3 Minuten ein Rennen für alle. Wetten, live zuschauen, abkassieren.',
     'Horse racing · live for everyone · play credits': 'Pferderennen · live für alle · Spiel-Credits',
@@ -4885,12 +4903,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const wait = rlTotal(), placed = rlPlacedTotal();
     const paused = settings.maintenance && !account?.isAdmin;
     const { phase } = rlPhaseOf(hrNow());
-    const open = rlOpen(phase) && rlReadyR !== false;
+    const open = rlCanAdd(phase) && rlReadyR !== false;
     $('rlTotal').textContent = fmt(wait + placed);
     $('rlWaiting').textContent = wait && placed ? `(${fmt(wait)} not placed yet)` : '';
     const btn = $('rlSpin');
     btn.disabled = !open || rlSubmitting || paused || !wait || wait > state.credits || !account;
     btn.innerHTML = paused ? 'Paused<small>an admin paused the game</small>'
+      : phase === 'roll' ? 'Only moves now<small>drag your stacks to move or swap them</small>'
       : !open ? 'No more bets<small>wait for the next round</small>'
       : wait ? `Place bets<small>${fmt(wait)}</small>` : placed ? `Bets placed<small>${fmt(placed)} on the table</small>` : 'Place bets<small>tap the table to add chips</small>';
     for (const id of ['rlUndo', 'rlClear', 'rlRebet', 'rlX2']) $(id).disabled = !open || rlSubmitting;
@@ -4898,12 +4917,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     $('rlClear').disabled ||= !wait;
     $('rlRebet').disabled ||= !Object.keys(state.rl.last).length;
     $('rlX2').disabled ||= !wait && !placed;
-    document.querySelectorAll('.rl-cell').forEach(c => { c.disabled = !open; });
+    // Cells stay pressable (they are drop targets while the ball rolls); a class shows when nothing can be added.
+    document.querySelectorAll('.rl-cell').forEach(c => { c.classList.toggle('locked', !open); c.classList.toggle('movable', rlOpen(phase) && !!(state.rl.bets[c.dataset.key] || rlPlaced()[c.dataset.key])); });
     $('rlHistory').innerHTML = state.rl.history.slice(0, 14).map(n => `<span class="${rlColor(n)}">${n}</span>`).join('');
   }
   function renderRLClock(now) {
     const { e, phase } = rlPhaseOf(now);
-    $('rlPhase').textContent = phase === 'bet' ? 'Place your bets' : phase === 'roll' ? 'Last bets!' : phase === 'closed' ? 'No more bets' : phase === 'spin' ? 'Spinning' : 'Result';
+    $('rlPhase').textContent = phase === 'bet' ? 'Place your bets' : phase === 'roll' ? 'Only moves now' : phase === 'closed' ? 'No more bets' : phase === 'spin' ? 'Spinning' : 'Result';
     $('rlPhase').dataset.phase = phase === 'bet' ? 'bet' : phase === 'result' ? 'done' : 'live';
     $('rlClock').textContent = rlOpen(phase) ? `0:${String(Math.ceil((RL_BET - e) / 1000)).padStart(2, '0')}` : `${i18n('Next round')} 0:${String(Math.ceil((RL_PERIOD - e) / 1000)).padStart(2, '0')}`;
     $('rlBar').style.width = (rlOpen(phase) ? (1 - e / RL_BET) * 100 : (e - RL_BET) / (RL_PERIOD - RL_BET) * 100) + '%';
@@ -4948,7 +4968,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   });
   $('rlBoard').addEventListener('click', e => {
     const c = e.target.closest('.rl-cell');
-    if (!c || !rlOpen(rlPhaseOf(hrNow()).phase) || rlSubmitting) return;
+    if (!c || rlDragDone || rlSubmitting) return;
+    if (!rlCanAdd(rlPhaseOf(hrNow()).phase)) { if (rlPhaseOf(hrNow()).phase === 'roll') rlSay('No new chips now: drag a stack to move or swap it.', 'hot'); return; }
     const add = Math.min(rlChip, rlRoom());
     if (add <= 0) { rlSay(settings.maxBet && rlTotal() + rlPlacedTotal() >= settings.maxBet ? `The highest bet is ${fmt(settings.maxBet)}.` : 'Not enough credits for another chip.', 'lose'); return; }
     state.rl.bets[c.dataset.key] = (state.rl.bets[c.dataset.key] || 0) + add;
@@ -4957,6 +4978,79 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     renderRLBets();
     render();
   });
+  // Drag a stack (yours, placed or not) onto another field: it moves there, or the two stacks swap.
+  let rlDrag = null, rlDragDone = false;
+  $('rlBoard').addEventListener('pointerdown', e => {
+    const c = e.target.closest('.rl-cell');
+    if (!c || !rlOpen(rlPhaseOf(hrNow()).phase) || rlSubmitting || rlMoving) return;
+    const key = c.dataset.key;
+    if (!(state.rl.bets[key] || rlPlaced()[key])) return;
+    rlDrag = { key, x: e.clientX, y: e.clientY, ghost: null, over: null, id: e.pointerId };
+  });
+  addEventListener('pointermove', e => {
+    if (!rlDrag || e.pointerId !== rlDrag.id) return;
+    if (!rlDrag.ghost) {
+      if (Math.hypot(e.clientX - rlDrag.x, e.clientY - rlDrag.y) < 8) return;
+      const src = document.querySelector(`.rl-cell[data-key="${rlDrag.key}"] .rl-chip`);
+      const g = document.createElement('div');
+      g.className = 'rl-ghost';
+      g.textContent = src?.textContent || '';
+      g.style.setProperty('--chip', src?.style.getPropertyValue('--chip') || '#c8323a');
+      document.body.append(g);
+      rlDrag.ghost = g;
+      src?.classList.add('lifted');
+      sound.chip();
+    }
+    e.preventDefault();
+    rlDrag.ghost.style.left = e.clientX + 'px'; rlDrag.ghost.style.top = e.clientY + 'px';
+    const over = document.elementFromPoint(e.clientX, e.clientY)?.closest?.('#rlBoard .rl-cell');
+    if (over !== rlDrag.over) { rlDrag.over?.classList.remove('drop-target'); rlDrag.over = over; over?.classList.add('drop-target'); }
+  }, { passive: false });
+  const rlEndDrag = e => {
+    if (!rlDrag || (e && e.pointerId !== rlDrag.id)) return;
+    const d = rlDrag;
+    rlDrag = null;
+    if (!d.ghost) return;
+    d.ghost.remove();
+    d.over?.classList.remove('drop-target');
+    document.querySelectorAll('.rl-chip.lifted').forEach(x => x.classList.remove('lifted'));
+    rlDragDone = true;
+    setTimeout(() => { rlDragDone = false; }, 0);
+    const to = d.over?.dataset.key;
+    if (e?.type === 'pointerup' && to && to !== d.key) rlMove(d.key, to);
+  };
+  addEventListener('pointerup', rlEndDrag);
+  addEventListener('pointercancel', rlEndDrag);
+  let rlMoving = false;
+  async function rlMove(from, to) {
+    const { id, phase } = rlPhaseOf(hrNow());
+    if (!rlOpen(phase)) { rlSay('Too late: no more bets for this round.', 'lose'); return; }
+    const swap = obj => { const a = obj[from], b = obj[to]; delete obj[from]; delete obj[to]; if (a) obj[to] = a; if (b) obj[from] = b; };
+    const placed = state.rl.placed?.round === id ? state.rl.placed.bets : null;
+    if (placed && (placed[from] || placed[to])) {
+      rlMoving = true;
+      try {
+        await backend.roulette.move(id, from, to);
+        swap(placed);
+      } catch (err) {
+        rlMoving = false;
+        const m = err?.message || '';
+        rlSay(/closed/.test(m) ? 'Too late: no more bets for this round.' : err?.code === 'PGRST202' || /could not find the function/i.test(m) ? 'Moving chips needs the updated “Global roulette” part of supabase-setup.sql.' : 'That did not work. Check the connection and try again.', 'lose');
+        return;
+      }
+      rlMoving = false;
+    }
+    swap(state.rl.bets);
+    rlUndoStack = rlUndoStack.map(([k, v]) => [k === from ? to : k === to ? from : k, v]);
+    state.rl.last = placed ? { ...placed } : state.rl.last;
+    sound.chip(); audio.clack();
+    rlSay(`${i18n('Moved')}: ${rlKeyName(from)} → ${rlKeyName(to)}`, 'win');
+    lastSaved = '';
+    persist();
+    renderRLBets();
+    renderRLControls();
+    rlLoadTable(id);
+  }
   $('rlUndo').addEventListener('click', () => {
     const last = rlUndoStack.pop();
     if (!last) return;
@@ -5098,6 +5192,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     return { id, e, phase: e < RL_ROLL ? 'bet' : e < RL_BET ? 'roll' : e < RL_LAND_AT ? 'closed' : e < RL_LAND_AT + RL_LAND ? 'spin' : 'result' };
   }
   const rlOpen = phase => phase === 'bet' || phase === 'roll';
+  // New chips only before the throw; while the ball rolls, stacks can still be dragged to another field or swapped.
+  const rlCanAdd = phase => phase === 'bet';
   let rlRoll = null;
   // Where wheel and ball are t ms after the throw.
   function rlRollAt(t) {
@@ -5134,7 +5230,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       },
       async bet(id, chips) {
         const now = Date.now();
-        if (id !== Math.floor(now / RL_PERIOD) || now >= id * RL_PERIOD + RL_BET) throw Object.assign(new Error('closed'), { code: 'rl_closed' });
+        if (id !== Math.floor(now / RL_PERIOD) || now >= id * RL_PERIOD + RL_ROLL) throw Object.assign(new Error('closed'), { code: 'rl_closed' });
         const list = read();
         list.push({ round_id: id, player: account.id, name: account.name, bets: chips, total: Object.values(chips).reduce((a, v) => a + v, 0), mult: settings.winMultiplier, payout: null, claimed: false });
         write(list);
@@ -5142,6 +5238,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       },
       async bets(id) { return read().filter(b => b.round_id === id); },
       async rig(id) { const r = rigs(); r[id] = 1; try { localStorage.setItem('lucky-reels-rl-rig', JSON.stringify(r)); } catch {} },
+      async move(id, from, to) {
+        const now = Date.now();
+        if (id !== Math.floor(now / RL_PERIOD) || now >= id * RL_PERIOD + RL_BET) throw new Error('betting closed');
+        const list = read();
+        for (const b of list) if (b.round_id === id && b.payout == null) { const a = b.bets[from], c = b.bets[to]; delete b.bets[from]; delete b.bets[to]; if (a) b.bets[to] = a; if (c) b.bets[from] = c; }
+        write(list);
+      },
       async claim() {
         const now = Date.now(), list = read(), out = [];
         for (const b of list) {
@@ -5182,7 +5285,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const { id, phase } = rlPhaseOf(hrNow());
     const chips = { ...state.rl.bets }, total = rlTotal();
     if (!account || rlSubmitting || !total || !backend?.roulette) return;
-    if (!rlOpen(phase)) { rlSay('Too late: no more bets for this round.', 'lose'); return; }
+    if (!rlCanAdd(phase)) { rlSay('Too late: no more bets for this round.', 'lose'); return; }
     if (settings.maintenance && !account.isAdmin) { rlSay('The game is paused by an admin. Try again later.', 'lose'); return; }
     if (total > state.credits) { rlSay(`Not enough credits for ${fmt(total)}.`, 'lose'); return; }
     rlSubmitting = true;
@@ -5227,7 +5330,33 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const RL_KEY_NAMES = { red: 'Red', black: 'Black', odd: 'Odd', even: 'Even', low: '1–18', high: '19–36', d1: '1st 12', d2: '2nd 12', d3: '3rd 12', c1: 'Column 1', c2: 'Column 2', c3: 'Column 3' };
   const rlKeyName = k => k[0] === 'n' ? k.slice(1) : i18n(RL_KEY_NAMES[k] || k);
   // Everybody at the table this round, with what they put down.
+  // Everybody else's chips on the felt: small coloured markers with their initials and the amount.
+  function renderRLOthers() {
+    const { id } = rlPhaseOf(hrNow());
+    const by = {};
+    for (const b of rlTableFor === id ? rlTableList : []) {
+      if (b.player === account?.id) continue;
+      for (const [k, v] of Object.entries(b.bets || {})) {
+        const cell = (by[k] ||= {});
+        const p = (cell[b.player] ||= { name: b.name, amt: 0 });
+        p.amt += Number(v) || 0;
+      }
+    }
+    document.querySelectorAll('.rl-cell').forEach(c => {
+      const list = Object.entries(by[c.dataset.key] || {}).sort((a, b) => b[1].amt - a[1].amt);
+      let el = c.querySelector('.rl-others');
+      if (!list.length) { el?.remove(); return; }
+      if (!el) { el = document.createElement('span'); el.className = 'rl-others'; c.append(el); }
+      const sig = list.map(([pid, x]) => pid + x.amt).join(',');
+      if (el.dataset.sig === sig) return;
+      el.dataset.sig = sig;
+      el.title = list.map(([, x]) => `${x.name}: ${fmt(x.amt)}`).join('\n');
+      el.innerHTML = list.slice(0, 3).map(([, x]) => `<i style="--h:${hueFor(x.name)}">${esc(String(x.name)[0].toUpperCase())}</i>`).join('') + `<b>${shortAmt(list.reduce((a, [, x]) => a + x.amt, 0))}</b>`;
+      el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
+    });
+  }
   function renderRLTable() {
+    renderRLOthers();
     const box = $('rlTable');
     box.hidden = !backend?.roulette?.shared;
     if (box.hidden) return;
@@ -5344,7 +5473,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         $('rlResult').hidden = true;
         document.querySelectorAll('.rl-cell.hit, .rl-cell.won').forEach(x => x.classList.remove('hit', 'won'));
         document.querySelectorAll('.rl-chip').forEach(x => x.classList.remove('paid', 'lost'));
-        document.querySelectorAll('.rl-dolly').forEach(x => x.remove());
+        document.querySelectorAll('.rl-dolly, .rl-others').forEach(x => x.remove());
         if (watching) voice.say('Place your bets, please.');
         renderRLBets(); renderRLControls(); renderRLTable();
         if (!rlBusy) rlSay('Place your bets! The ball is thrown for everyone in 30 seconds.', 'hot');
@@ -5353,8 +5482,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (rlReadyR === false && !watching) return;
     if (!rlOpen(phase) && rlCur.result == null && performance.now() - rlFetchAt > 700) rlFetchR(id);
     // Chips still waiting when time runs out go in by themselves.
-    if (rlOpen(phase) && e >= RL_BET - 1500 && rlTotal() > 0 && rlAutoFor !== id && !rlSubmitting) { rlAutoFor = id; rlSubmit(true); }
-    if (watching && phase === 'roll' && rlRollSaid !== id && !rlBusy) { rlRollSaid = id; rlSay('The ball is rolling: last bets!', 'hot'); audio.whoosh(); voice.say('Last bets!'); }
+    if (phase === 'bet' && e >= RL_ROLL - 1500 && rlTotal() > 0 && rlAutoFor !== id && !rlSubmitting) { rlAutoFor = id; rlSubmit(true); }
+    if (watching && phase === 'roll' && rlRollSaid !== id && !rlBusy) { rlRollSaid = id; rlSay('The ball is rolling: no new chips, but you can drag your stacks to move or swap them.', 'hot'); audio.whoosh(); voice.say('The ball is rolling.'); renderRLControls(); }
     if (watching && phase === 'closed' && rlNoMoreSaid !== id) { rlNoMoreSaid = id; voice.say('Rien ne va plus.', { raw: true, urgent: true }); audio.bell(1320, 0.04); }
     if (watching && rlCur.result != null && rlAnimFor !== id && (phase === 'spin' || phase === 'result')) {
       rlAnimFor = id;
@@ -5362,7 +5491,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       if (el < RL_LAND - 800 && !reduceMotion) rlRunSpin(id, rlCur.result, el); else rlShowResult(id, rlCur.result);
     }
     if (watching && phase === 'closed' && rlAnimFor !== id && !rlBusy && $('rlMsg').textContent !== i18n('No more bets!')) rlSay('No more bets!', 'hot');
-    if (watching && rlReadyR !== false && (rlTableFor !== id || (rlOpen(phase) && performance.now() - rlTableAt > 3000)) && performance.now() - rlTableAt > 1500) rlLoadTable(id);
+    if (watching && rlReadyR !== false && (rlTableFor !== id || (rlOpen(phase) && performance.now() - rlTableAt > (phase === 'roll' ? 1200 : 3000))) && performance.now() - rlTableAt > 1500) rlLoadTable(id);
     // Pay out once the ball has landed on screen.
     const due = state.rl.open.some(r => now >= r * RL_PERIOD + RL_LAND_AT + RL_LAND + 300);
     if (due || (rlClaimSoon && backend.roulette.shared && rlReadyR)) { rlClaimSoon = false; rlClaim(); }
@@ -9528,6 +9657,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         },
         async claim() { const { data, error } = await sb.rpc('roulette_claim'); if (error) throw error; return data; },
         async rig(id) { const { error } = await sb.rpc('admin_rig_roulette', { round: id }); if (error) throw error; },
+        async move(id, from, to) { const { error } = await sb.rpc('roulette_move', { round: id, from_key: from, to_key: to }); if (error) throw error; },
       },
       // Horse racing: the database keeps the odds, the bets, the finishing order and the payouts.
       horse: {

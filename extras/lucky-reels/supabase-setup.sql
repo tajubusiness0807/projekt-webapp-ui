@@ -1744,7 +1744,8 @@ $$;
 -- ---------------------------------------------------------------------------
 -- Global roulette: run this part once (after "Horse racing"). One wheel for
 -- everyone: every 45 seconds there are 30 seconds to place chips, then the
--- ball is thrown and bets stay open 4 more seconds while it rolls. The database takes the bets, draws the number when betting
+-- ball is thrown; for 4 more seconds, while it rolls, players can only move
+-- or swap the stacks they placed. The database takes the bets, draws the number when betting
 -- closes and pays the winners. Keep the timing in step with the page
 -- (RL_PERIOD and RL_BET in index.html).
 -- If you ran an older copy of this part, run it again: it keeps the bets and
@@ -1870,7 +1871,7 @@ declare
   m numeric;
 begin
   if auth.uid() is null then raise exception 'not allowed'; end if;
-  if round <> now_ms / 45000 or now_ms >= round * 45000 + 34000 then raise exception 'betting closed'; end if;
+  if round <> now_ms / 45000 or now_ms >= round * 45000 + 30000 then raise exception 'betting closed'; end if;
   if jsonb_typeof(chips) <> 'object' then raise exception 'no such bet'; end if;
   for e in select * from jsonb_each(chips) loop
     if not public.roulette_key_ok(e.key) or jsonb_typeof(e.value) <> 'number' or (e.value)::text !~ '^[1-9][0-9]{0,17}$' then raise exception 'no such bet'; end if;
@@ -1886,6 +1887,27 @@ begin
   update public.players set credits = credits - tot, admin_rev = admin_rev + 1, updated_at = now() where id = me.id;
   insert into public.roulette_bets (round_id, player, name, bets, total, mult) values (round, me.id, me.name, chips, tot, m);
   return jsonb_build_object('credits', me.credits - tot, 'rev', me.admin_rev + 1);
+end;
+$$;
+
+-- While the ball rolls: move my chips from one field to another, or swap two fields (no new credits go in).
+create or replace function public.roulette_move(round bigint, from_key text, to_key text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  if round <> now_ms / 45000 or now_ms >= round * 45000 + 34000 then raise exception 'betting closed'; end if;
+  if not public.roulette_key_ok(from_key) or not public.roulette_key_ok(to_key) or from_key = to_key then raise exception 'no such bet'; end if;
+  update public.roulette_bets set bets = (bets - from_key - to_key)
+      || case when bets ? from_key then jsonb_build_object(to_key, bets -> from_key) else '{}'::jsonb end
+      || case when bets ? to_key then jsonb_build_object(from_key, bets -> to_key) else '{}'::jsonb end
+    where round_id = round and player = auth.uid() and payout is null and (bets ? from_key or bets ? to_key);
+  if not found then raise exception 'no chips there'; end if;
 end;
 $$;
 
@@ -1929,6 +1951,8 @@ revoke execute on function public.roulette_settle(bigint) from public, anon, aut
 revoke execute on function public.roulette_round(bigint) from public, anon;
 revoke execute on function public.roulette_bet(bigint, jsonb) from public, anon;
 revoke execute on function public.roulette_claim() from public, anon;
+revoke execute on function public.roulette_move(bigint, text, text) from public, anon;
+grant execute on function public.roulette_move(bigint, text, text) to authenticated;
 grant execute on function public.roulette_round(bigint) to authenticated;
 grant execute on function public.roulette_bet(bigint, jsonb) to authenticated;
 grant execute on function public.roulette_claim() to authenticated;
