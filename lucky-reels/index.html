@@ -2054,6 +2054,12 @@ body.cos-ckGold .ck-chicken svg { filter: sepia(1) saturate(5) hue-rotate(-8deg)
 .st-feed li { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 8px; align-items: center; font-size: 13px; padding: 4px; border-radius: 8px; }
 .st-feed li small { color: var(--muted); font-size: 11px; white-space: nowrap; }
 .st-feed li.k-bust, .st-feed li.k-takeover { background: #ffffff0a; }
+/* The countdown to a timed hard reset */
+.reset-timer { position: fixed; left: 50%; bottom: max(14px, env(safe-area-inset-bottom, 0px)); translate: -50% 0; z-index: 41; max-width: calc(100% - 32px); padding: 8px 16px; border-radius: 999px;
+  background: #1d1410f2; border: 2px solid var(--accent); box-shadow: 0 10px 30px -10px #000, 0 0 24px -8px #e9a23b; color: var(--fg); font: 600 14px var(--font-mono); text-align: center; pointer-events: none; }
+.reset-timer[hidden] { display: none; }
+.reset-timer.soon { border-color: var(--lose); color: #ffd0d3; animation: ltPulse 1s ease-in-out infinite; }
+.reset-timer.final { font-size: 22px; padding: 12px 22px; }
 #fx, #fxTop { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 #fxTop { z-index: 18; }
 .jp {
@@ -3196,6 +3202,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   </div>
 </div>
 <canvas id="fxTop" aria-hidden="true"></canvas>
+<div class="reset-timer" id="resetTimer" role="status" hidden><span aria-hidden="true">⏳</span> <span id="resetTimerText"></span></div>
 <div class="lt-show" id="ltShow" role="dialog" aria-modal="true" aria-labelledby="ltShowKind" data-kind="noon" hidden>
   <canvas id="ltCv" aria-hidden="true"></canvas>
   <div class="lt-show-head"><span class="lt-show-kind" id="ltShowKind">Midday Lotto</span><span class="lt-show-pot">Pot <b id="ltShowPot">0</b></span></div>
@@ -3314,6 +3321,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
             <small>Everyone online gets it right away and has to press “Got it”. Everyone else sees it once at their next sign-in. A new pop-up replaces the old one.</small>
             <div class="admin-row"><button class="abtn ok" type="button" id="newsSend">Send pop-up</button><button class="abtn" type="button" id="newsClear">Remove pop-up</button></div>
             <p class="admin-note" id="newsNow"></p>
+          </div>
+          <div class="setting wide news-admin">
+            <span class="label">Timed hard reset</span>
+            <input id="resetAtIn" type="datetime-local" aria-label="Time of the hard reset">
+            <small>Everyone sees a countdown. At that time the hard reset runs by itself, also if no admin is online. It wipes the same as the HARD RESET button.</small>
+            <div class="admin-row"><button class="abtn warn" type="button" id="resetAtSet">Schedule hard reset</button><button class="abtn" type="button" id="resetAtClear">Cancel the timer</button></div>
+            <p class="admin-note" id="resetAtNow"></p>
           </div>
           <div class="admin-row setting wide reload-row">
             <span><b>New version online?</b> Ask everyone who has the game open to reload the page.</span>
@@ -3650,6 +3664,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'You do not have that many shares.': 'So viele Aktien hast du nicht.',
     'Six shares are traded, at the same prices for everyone. Every 5 minutes each share takes one step: up with its own chance (shown next to the chart), otherwise down. The safe shares rise often but only a little; the wild ones rarely, but then a lot. Now and then breaking news moves a share by much more. Buying costs the price plus a 1% fee, selling brings the price minus 1%. One order can cost at most your bet limit, and you can put at most 25 times your bet limit into one share. If a share falls below 5% of its starting price, the company goes bankrupt and its shares are lost; if it reaches 10 times its starting price, it is taken over and every holder is paid out at that price, even while offline. Then the share starts over at its starting price. Your shares stay in your portfolio while you play other games or log out.': 'Sechs Aktien werden gehandelt, zu denselben Kursen für alle. Alle 5 Minuten macht jede Aktie einen Schritt: mit ihrer eigenen Chance nach oben (steht neben dem Chart), sonst nach unten. Die sicheren Aktien steigen oft, aber nur ein wenig; die wilden selten, dann aber kräftig. Ab und zu bewegt eine Eilmeldung eine Aktie viel stärker. Kaufen kostet den Kurs plus 1 % Gebühr, Verkaufen bringt den Kurs minus 1 %. Ein Kauf darf höchstens dein Einsatzlimit kosten, und in eine Aktie kannst du höchstens das 25-Fache deines Einsatzlimits stecken. Fällt eine Aktie unter 5 % ihres Startkurses, geht die Firma pleite und die Aktien sind weg; erreicht sie das 10-Fache, wird sie übernommen und jeder Aktionär zu diesem Kurs ausbezahlt, auch offline. Danach startet die Aktie wieder beim Startkurs. Deine Aktien bleiben im Depot, während du andere Spiele spielst oder ausgeloggt bist.',
     'This flight is over. The next rocket is being fuelled.': 'Dieser Flug ist vorbei. Die nächste Rakete wird betankt.',
+    'Timed hard reset': 'Hard Reset mit Timer', 'Time of the hard reset': 'Zeitpunkt des Hard Resets',
+    'Everyone sees a countdown. At that time the hard reset runs by itself, also if no admin is online. It wipes the same as the HARD RESET button.': 'Alle sehen einen Countdown. Zu diesem Zeitpunkt läuft der Hard Reset von selbst, auch wenn kein Admin online ist. Er löscht dasselbe wie der HARD-RESET-Knopf.',
+    'Schedule hard reset': 'Hard Reset planen', 'Cancel the timer': 'Timer abbrechen', 'No hard reset is scheduled.': 'Kein Hard Reset geplant.', 'Pick a time at least a minute from now.': 'Wähl eine Zeit mindestens eine Minute in der Zukunft.',
+    'Really schedule it?': 'Wirklich planen?', 'Cancel it?': 'Wirklich abbrechen?', 'The hard reset is scheduled. Everyone sees the countdown now.': 'Der Hard Reset ist geplant. Alle sehen jetzt den Countdown.',
+    'The timed hard reset is cancelled.': 'Der geplante Hard Reset ist abgebrochen.', 'Hard reset now…': 'Hard Reset läuft…',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -3848,7 +3867,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['Hard reset in {a} · {b}', 'Hard Reset in {a} · {b}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
     ['Rises in {a} of steps', 'Steigt in {a} der Schritte'], ['Usually {a} or {b}', 'Meist {a} oder {b}'], ['Swings: {a}', 'Schwankung: {a}'],
     ['Start {a} · bankrupt below {b} · takeover at {c}', 'Start {a} · Pleite unter {b} · Übernahme ab {c}'],
     ['Buy {a} for {b} · sell {c} for {d} (1% fee each way)', 'Kauf {a} für {b} · Verkauf {c} für {d} (je 1 % Gebühr)'],
@@ -10034,7 +10053,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
             if (!doc) continue;
             await store.save(p.id, { credits: settings.startCredits, best: 0, level: 1, spins: 0, jackpots: 0, game: null, flair: null, trophies: [], prestige: 0, adminRev: (Number(doc.adminRev) || 0) + 1 });
           }
-          await store.saveSettings({ lottoTickets: [] });
+          await store.saveSettings({ lottoTickets: [], stockHoldings: [], stockTrades: [] });
         },
         async reset(id) {
           const doc = await store.load(id);
@@ -10085,6 +10104,18 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       rocket: localRocket(),
       lotto: localLotto(store),
       stocks: localStocks(store),
+      async resetCheck() {
+        const at = Number(rawSettings.resetAt) || 0;
+        if (!at || at > Date.now()) return { done: false };
+        await store.saveSettings({ resetAt: 0, resetDone: at });
+        rawSettings.resetAt = 0;
+        for (const p of players) {
+          const doc = await store.load(p.id);
+          if (doc) await store.save(p.id, { credits: settings.startCredits, best: 0, level: 1, spins: 0, jackpots: 0, game: null, flair: null, trophies: [], prestige: 0, adminRev: (Number(doc.adminRev) || 0) + 1 });
+        }
+        await store.saveSettings({ lottoTickets: [], stockHoldings: [], stockTrades: [] });
+        return { done: true };
+      },
       presence: cb => store.presence(cb),
       setOnline: me => store.setOnline(me),
       dmWatch: cb => store.dmWatch(cb),
@@ -10614,6 +10645,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         async claim() { const { data, error } = await sb.rpc('rocket_claim'); if (error) throw error; return data; },
         async rig(id) { const { error } = await sb.rpc('admin_rig_rocket', { round: id }); if (error) throw error; },
       },
+      async resetCheck() { const { data, error } = await sb.rpc('reset_check'); if (error) throw error; return data; },
       // Stock market: the database draws the prices and keeps the portfolios.
       stocks: {
         shared: true,
@@ -11836,7 +11868,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     document.querySelectorAll('[data-pane]').forEach(p => { p.hidden = p.dataset.pane !== name; });
     adminSay('');
     if (name === 'players') renderAdminPlayers(true);
-    if (name === 'game') { fillSettingsForm(); renderNewsAdmin(); }
+    if (name === 'game') { fillSettingsForm(); renderNewsAdmin(); renderResetAdmin(); }
     if (name === 'chat') renderAdminMsgs();
     if (name === 'aff') loadAdminAffiliates();
     if (name === 'tickets') loadAdminTickets();
@@ -13308,6 +13340,60 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (due || Date.now() - stFetchAt > (inGame ? 15000 : 60000)) stFetch();
     if (inGame || !$('lobby').hidden) stClock();
   }, 1000);
+
+  // ----- Timed hard reset: a countdown for everyone, then the reset runs from the first page that asks -----
+  let resetAsking = false, resetFlushed = 0;
+  const resetAt = () => Number(rawSettings?.resetAt) || 0;
+  function resetLeft(ms) {
+    const sec = Math.max(0, Math.ceil(ms / 1000)), d = Math.floor(sec / 86400), h = Math.floor(sec / 3600) % 24, m = Math.floor(sec / 60) % 60, x = sec % 60;
+    const hms = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(x).padStart(2, '0')}`;
+    return d ? `${d} d ${hms}` : hms;
+  }
+  async function resetTick() {
+    const at = resetAt(), box = $('resetTimer');
+    if (!at) { box.hidden = true; return; }
+    const left = at - (Date.now() + (hrOffsetSet ? hrOffset : 0));
+    box.hidden = false;
+    box.classList.toggle('soon', left < 60000);
+    box.classList.toggle('final', left < 10000);
+    const when = new Date(at).toLocaleString(lang === 'de' ? 'de-DE' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    ltSet($('resetTimerText'), 'textContent', left > 0 ? `Hard reset in ${resetLeft(left)} · ${when}` : 'Hard reset now…');
+    // save what is on the page just before, then ask the database to run it
+    if (account && left < 5000 && left > 0 && Date.now() - resetFlushed > 4000) { resetFlushed = Date.now(); flush(); }
+    if (account && left <= 0 && !resetAsking && backend?.resetCheck) {
+      resetAsking = true;
+      try { const r = await backend.resetCheck(); if (r?.done) { rawSettings.resetAt = 0; box.hidden = true; } } catch {}
+      setTimeout(() => { resetAsking = false; refreshOwn(); }, 3000);
+    }
+  }
+  setInterval(resetTick, 500);
+  function renderResetAdmin() {
+    const at = resetAt();
+    $('resetAtNow').textContent = at ? `Scheduled for ${new Date(at).toLocaleString(lang === 'de' ? 'de-DE' : 'en-GB', { dateStyle: 'full', timeStyle: 'short' })}.` : 'No hard reset is scheduled.';
+    $('resetAtClear').disabled = !at;
+    if (!$('resetAtIn').value) {
+      const d = new Date(at || Date.now() + 86400000); d.setSeconds(0, 0);
+      $('resetAtIn').value = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    }
+  }
+  $('resetAtSet').addEventListener('click', e => {
+    const at = new Date($('resetAtIn').value).getTime();
+    if (!(at > Date.now() + 30000)) { adminSay('Pick a time at least a minute from now.', false); return; }
+    if (!confirmed(e.currentTarget, 'Really schedule it?')) return;
+    adminDo('The hard reset is scheduled. Everyone sees the countdown now.', async () => {
+      await backend.admin.saveSettings({ resetAt: at });
+      rawSettings.resetAt = at;
+      renderResetAdmin();
+    });
+  });
+  $('resetAtClear').addEventListener('click', e => {
+    if (!confirmed(e.currentTarget, 'Cancel it?')) return;
+    adminDo('The timed hard reset is cancelled.', async () => {
+      await backend.admin.saveSettings({ resetAt: 0 });
+      rawSettings.resetAt = 0;
+      renderResetAdmin();
+    });
+  });
 
   function renderAdminMsgs() {
     if (!adminUnlocked || $('adminModal').hidden) return;

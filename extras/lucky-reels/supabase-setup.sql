@@ -4024,3 +4024,77 @@ immutable
 as $$
   select (array[500, 750, 1000, 1500, 2000, 3000, 4000, 5000, 6500, 8000, 10000, 12500, 15000, 20000, 25000, 32500, 40000, 55000, 75000, 100000]::bigint[])[least(20, greatest(1, coalesce(lv, 1)))]
 $$;
+
+
+-- ---------------------------------------------------------------------------
+-- Timed hard reset: run this part once (after "Bet limits by level"). An admin can set a time in the
+-- admin menu; everyone sees a countdown, and at that time the first page that asks runs the hard reset
+-- (also if no admin is online).
+create or replace function public.lr_do_hard_reset()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  start_credits bigint := coalesce((select (data ->> 'startCredits')::bigint from public.settings where id = 1), 500);
+begin
+  update public.players set
+    credits = start_credits, best = 0, level = 1, spins = 0, jackpots = 0, game = null, flair = null, prestige = 0,
+    trophies = '{}', capped_saves = 0, admin_rev = admin_rev + 1, updated_at = now()
+  where true;
+  delete from public.horse_bets where true;
+  delete from public.roulette_bets where true;
+  delete from public.rocket_bets where true;
+  if to_regclass('public.stock_holdings') is not null then
+    execute 'delete from public.stock_holdings where true';
+    execute 'delete from public.stock_events where player is not null';
+  end if;
+  if to_regclass('public.lotto_tickets') is not null then
+    execute 'delete from public.lotto_tickets where true';
+    execute 'delete from public.lotto_draws where true';
+  end if;
+  if to_regclass('public.poker_seats') is not null then
+    execute 'delete from public.poker_seats where true';
+    execute $q$update public.poker_tables set phase = 'waiting', board = '{}', deck = '{}', current_bet = 0,
+      to_act = -1, deadline = null, result = null where id = 1$q$;
+    execute 'update public.poker_pulse set rev = rev + 1, at = now() where id = 1';
+  end if;
+end;
+$$;
+
+create or replace function public.admin_hard_reset(tok uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.admin_check(tok);
+  perform public.lr_do_hard_reset();
+  update public.settings set data = data || '{"resetAt": 0}'::jsonb where id = 1;
+end;
+$$;
+
+create or replace function public.reset_check()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  at bigint;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  select coalesce((data ->> 'resetAt')::bigint, 0) into at from public.settings where id = 1 for update;
+  if at <= 0 or at > floor(extract(epoch from clock_timestamp()) * 1000) then return jsonb_build_object('done', false); end if;
+  perform public.lr_do_hard_reset();
+  update public.settings set data = data || jsonb_build_object('resetAt', 0, 'resetDone', at) where id = 1;
+  return jsonb_build_object('done', true);
+end;
+$$;
+revoke execute on function public.lr_do_hard_reset() from public, anon, authenticated;
+revoke execute on function public.admin_hard_reset(uuid) from public, anon;
+grant execute on function public.admin_hard_reset(uuid) to authenticated;
+revoke execute on function public.reset_check() from public, anon;
+grant execute on function public.reset_check() to authenticated;
