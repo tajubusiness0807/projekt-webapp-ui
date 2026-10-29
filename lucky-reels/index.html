@@ -1782,6 +1782,21 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
 .game-pick:hover .gp-rk .gp-flame, .game-pick:focus-visible .gp-rk .gp-flame { transform: scaleY(1.2); }
 @media (max-width: 600px) { .rk-inputs { grid-template-columns: minmax(0, 1fr); } .rk-view { height: 280px; } }
 @media (prefers-reduced-motion: reduce) { .rk-cash, .rk-flying { animation: none; } }
+/* Game goodies */
+.gg { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; }
+.cabinet:not([data-mode="slots"]) .gg[data-gg="slots"] { display: none; }
+.gg-chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px 3px 4px; border-radius: 999px; background: #7fd18b1c; border: 1px solid #7fd18b55; color: var(--win); font-size: 11px; font-weight: 600; }
+.gg-chip svg { width: 18px; height: 18px; }
+.gg-shop { padding: 4px 10px; border-radius: 999px; background: transparent; border: 1px dashed #e9a23b88; color: var(--accent); font-size: 11px; font-weight: 600; }
+.gg-shop:hover { background: #e9a23b22; }
+.gb-pop { position: fixed; left: 50%; top: 22%; z-index: 70; display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; background: #120d0bee; border: 2px solid var(--win); color: var(--fg); box-shadow: 0 10px 30px #000a, 0 0 20px #7fd18b55; pointer-events: none; animation: gbPop 2.2s ease-out forwards; }
+.gb-pop span svg { width: 26px; height: 26px; display: block; }
+.gb-pop b { font: 700 16px var(--font-mono); color: var(--win); }
+.gb-pop small { font-size: 12px; color: var(--muted); }
+@keyframes gbPop { 0% { transform: translate(-50%, 20px) scale(0.8); opacity: 0; } 12% { transform: translate(-50%, 0) scale(1.05); opacity: 1; } 75% { opacity: 1; } 100% { transform: translate(-50%, -26px); opacity: 0; } }
+.bj-count { position: absolute; right: 10px; top: 64px; padding: 2px 8px; border-radius: 6px; background: #0008; color: var(--muted); font: 700 12px var(--font-mono); }
+.bj-count.good { color: var(--win); box-shadow: 0 0 0 1px #7fd18b77; } .bj-count.bad { color: #ff8a8f; box-shadow: 0 0 0 1px #e0414a77; }
+@media (prefers-reduced-motion: reduce) { .gb-pop { animation: none; opacity: 0.95; transform: translate(-50%, 0); } }
 /* Who plays what */
 .p-game { display: inline-flex; align-items: center; gap: 3px; margin-left: 6px; padding: 1px 7px 1px 5px; border-radius: 999px; background: #7fd18b1f; color: var(--win); font-size: 10px; font-weight: 600; letter-spacing: 0.04em; white-space: nowrap; vertical-align: 1px; }
 .p-game > span:first-child { font-size: 11px; }
@@ -2391,6 +2406,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     <section class="bj" id="bj" aria-label="Blackjack table">
       <div class="felt" id="felt">
         <div class="shoe" id="shoe" aria-hidden="true"><div class="shoe-card"></div><span id="shoeLeft">312</span></div>
+        <span class="bj-count" id="bjCount" hidden></span>
         <div class="bj-zone">
           <div class="bj-label">Dealer <span class="bj-total" id="dealerTotal" hidden></span></div>
           <div class="bj-hand" id="dealerHand"></div>
@@ -2865,6 +2881,21 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Affiliate codes need the “Affiliate codes” part of supabase-setup.sql.': 'Affiliate-Codes brauchen den Abschnitt „Affiliate codes“ aus supabase-setup.sql.',
     'No player has that affiliate code. Check it, or leave the field empty.': 'Diesen Affiliate-Code hat niemand. Prüf ihn oder lass das Feld leer.',
     'player': 'Spieler', 'players': 'Spieler',
+    'Lucky Chip': 'Glückschip', 'Blackjacks pay 1.6 to 1 instead of 3 to 2.': 'Blackjacks zahlen 1,6 zu 1 statt 3 zu 2.',
+    'Shoe Tracker': 'Schlitten-Zähler', 'Shows whether the cards left in the shoe favour you or the dealer.': 'Zeigt, ob die Karten im Schlitten dir oder dem Dealer helfen.',
+    'Lucky Number': 'Glückszahl', 'A single number pays 37 to 1 instead of 35 to 1.': 'Eine einzelne Zahl zahlt 37 zu 1 statt 35 zu 1.',
+    'Red & Black Charm': 'Rot-Schwarz-Talisman', 'Winning outside bets (colours, odd or even, halves, dozens, columns) pay 5% more.': 'Gewonnene Außenwetten (Farben, Gerade/Ungerade, Hälften, Dutzende, Spalten) zahlen 5 % mehr.',
+    'Chip Magnet': 'Chip-Magnet', 'Every pot you win pays 5% extra onto your balance, solo and online.': 'Jeder Pot, den du gewinnst, zahlt 5 % extra auf dein Konto, solo und online.',
+    'Golden Ball': 'Goldene Kugel', 'One ball in 40 turns golden and pays double.': 'Eine von 40 Kugeln wird golden und zahlt doppelt.',
+    'Soft Landing': 'Weiche Landung', 'Slots under 1× pay 0.1× more.': 'Felder unter 1× zahlen 0,1× mehr.',
+    'Lucky Feather': 'Glücksfeder', 'Cash-outs pay 3% more.': 'Auszahlungen bringen 3 % mehr.',
+    'Chicken Helmet': 'Hühnerhelm', 'Get 10% of your bet back when the chicken gets hit.': 'Du bekommst 10 % deines Einsatzes zurück, wenn das Huhn erwischt wird.',
+    'Riding Crop': 'Reitgerte', 'Winning Win bets pay 6% more.': 'Gewonnene Siegwetten zahlen 6 % mehr.',
+    'Binoculars': 'Fernglas', 'Winning Place bets pay 6% more.': 'Gewonnene Platzwetten zahlen 6 % mehr.',
+    'Turbo Booster': 'Turbo-Booster', 'Every rocket cash-out pays 3% more.': 'Jede Raketen-Auszahlung bringt 3 % mehr.',
+    'Parachute': 'Fallschirm', 'Get 5% of your bet back when the rocket explodes with you on board.': 'Du bekommst 5 % deines Einsatzes zurück, wenn die Rakete mit dir an Bord explodiert.',
+    'Goodies for this game ›': 'Goodies für dieses Spiel ›',
+    'The shoe is rich in tens and aces: good for you.': 'Im Schlitten sind viele Zehner und Asse: gut für dich.', 'Lots of small cards left: good for the dealer.': 'Viele kleine Karten übrig: gut für den Dealer.', 'The shoe is about even.': 'Der Schlitten ist ungefähr ausgeglichen.',
     'Affiliates': 'Affiliates', 'Search affiliates or invited players…': 'Affiliates oder eingeladene Spieler suchen…', 'Search affiliates': 'Affiliates suchen', 'Refresh': 'Aktualisieren',
     'Codes': 'Codes', 'Players invited': 'Eingeladene Spieler', 'Credits to affiliates': 'Credits an Affiliates', 'Start bonus for new players': 'Startbonus für neue Spieler',
     'no code': 'kein Code', 'Joined': 'Beigetreten', 'Nobody has used this code yet.': 'Diesen Code hat noch niemand benutzt.', 'No match.': 'Kein Treffer.',
@@ -3035,7 +3066,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['Bonus for {a}', 'Bonus für {a}'], ["Thanks to {a}'s code you start with {b} credits!", 'Dank des Codes von {a} startest du mit {b} Credits!'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['Goodies {a} ›', 'Goodies {a} ›'], ['Bonus for {a}', 'Bonus für {a}'], ["Thanks to {a}'s code you start with {b} credits!", 'Dank des Codes von {a} startest du mit {b} Credits!'],
     ['joined with your affiliate code: +{a} credits!', 'hat sich mit deinem Affiliate-Code angemeldet: +{a} Credits!'], ['Your code is {a}. Share it with friends!', 'Dein Code ist {a}. Teil ihn mit Freunden!'],
     ['{a} player joined with your code · +{b} credits earned', '{a} Spieler hat sich mit deinem Code angemeldet · +{b} Credits verdient'], ['{a} players joined with your code · +{b} credits earned', '{a} Spieler haben sich mit deinem Code angemeldet · +{b} Credits verdient'], ['Golden rocket! This one flies past {a} for sure.', 'Goldene Rakete! Die fliegt garantiert über {a}.'], ['bet {a}', 'Einsatz {a}'], ['auto {a}', 'auto {a}'],
     ["You're on board with {a}. Auto cash-out at {b}.", 'Du bist mit {a} an Bord. Auto-Auszahlung bei {b}.'], ["You're on board with {a}. Cash out before it blows!", 'Du bist mit {a} an Bord. Zahl aus, bevor sie explodiert!'],
@@ -3356,6 +3387,21 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   };
 
   // Boosts are armed for the next spin and charged as a multiple of the bet when it starts.
+  Object.assign(SHOP_ICONS, {
+    bjChip: '<svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="19" fill="#f3c94b" stroke="#a8741a" stroke-width="3"/><circle cx="24" cy="24" r="19" fill="none" stroke="#fff2c4" stroke-width="5" stroke-dasharray="6 7"/><circle cx="24" cy="24" r="11" fill="#1d1714"/><text x="24" y="29" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="13" fill="#f3c94b">21</text></svg>',
+    bjShoe: '<svg viewBox="0 0 48 48"><path d="M6 34l6-20h28l2 20z" fill="#3a2418" stroke="#7a5236" stroke-width="2"/><rect x="14" y="8" width="18" height="24" rx="3" fill="#f6efe3" stroke="#d9cbb8" stroke-width="1.5" transform="rotate(-8 23 20)"/><path d="M29 40l6-9 6 9z" fill="#7fd18b"/><text x="20" y="25" text-anchor="middle" font-family="Chivo Mono, monospace" font-weight="700" font-size="10" fill="#3fae5a" transform="rotate(-8 20 22)">+2</text></svg>',
+    rlStraight: '<svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="19" fill="#2a1a10" stroke="#e9a23b" stroke-width="3"/><circle cx="24" cy="24" r="12" fill="#c8323a"/><text x="24" y="29" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="13" fill="#fff">17</text><path d="M37 6l2 5 5 1-4 3 1 5-4-3-4 3 1-5-4-3 5-1z" fill="#f3c94b"/></svg>',
+    rlOutside: '<svg viewBox="0 0 48 48"><path d="M16 6l11 14-11 14L5 20z" fill="#c8323a" stroke="#fff6" stroke-width="1.5"/><path d="M32 14l11 14-11 14-11-14z" fill="#1d1714" stroke="#fff6" stroke-width="1.5"/><circle cx="24" cy="24" r="4" fill="#f3c94b"/></svg>',
+    pkMagnet: '<svg viewBox="0 0 48 48"><path d="M10 8h9v16a5 5 0 0 0 10 0V8h9v16a14 14 0 0 1-28 0z" fill="#c8323a"/><path d="M10 8h9v6h-9zM29 8h9v6h-9z" fill="#d9dae4"/><ellipse cx="24" cy="42" rx="9" ry="3" fill="#3d7bd9" stroke="#fff" stroke-width="1.5" stroke-dasharray="3 3"/></svg>',
+    plGold: '<svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="15" fill="#f3c94b"/><circle cx="24" cy="24" r="15" fill="url(#plg)"/><defs><radialGradient id="plg" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff8dd"/><stop offset=".5" stop-color="#f3c94b" stop-opacity=".2"/><stop offset="1" stop-color="#a8741a"/></radialGradient></defs><path d="M38 8l1.5 3.5 3.5 1.5-3.5 1.5L38 18l-1.5-3.5L33 13l3.5-1.5zM9 33l1 2.5 2.5 1-2.5 1L9 40l-1-2.5-2.5-1 2.5-1z" fill="#fff2c4"/></svg>',
+    plSoft: '<svg viewBox="0 0 48 48"><path d="M6 30c0-8 8-12 18-12s18 4 18 12-8 10-18 10S6 38 6 30z" fill="#a77bff"/><path d="M12 28c4-4 20-4 24 0" stroke="#d9c2ff" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="24" cy="12" r="6" fill="#ff5fa8"/></svg>',
+    ckFeather: '<svg viewBox="0 0 48 48"><path d="M38 6C22 8 12 20 10 38c10-4 22-12 28-32z" fill="#f6efe3" stroke="#d9cbb8" stroke-width="1.5"/><path d="M36 9L10 38" stroke="#e9a23b" stroke-width="2.5" stroke-linecap="round"/><path d="M28 16l-6-2M24 22l-7-1M20 28l-6 0" stroke="#d9cbb8" stroke-width="1.5"/></svg>',
+    ckHelmet: '<svg viewBox="0 0 48 48"><path d="M8 30a16 16 0 0 1 32 0z" fill="#e0414a"/><rect x="6" y="29" width="36" height="6" rx="3" fill="#7a1a20"/><path d="M24 14v16" stroke="#fff" stroke-width="3"/><circle cx="17" cy="23" r="2" fill="#ffffff88"/></svg>',
+    hrCrop: '<svg viewBox="0 0 48 48"><path d="M10 40L36 10" stroke="#3a2418" stroke-width="4" stroke-linecap="round"/><path d="M8 42l5-5" stroke="#1d1714" stroke-width="6" stroke-linecap="round"/><path d="M34 8l8-2-2 8z" fill="#c8323a"/></svg>',
+    hrBino: '<svg viewBox="0 0 48 48"><rect x="6" y="16" width="14" height="20" rx="5" fill="#2a2430"/><rect x="28" y="16" width="14" height="20" rx="5" fill="#2a2430"/><rect x="18" y="20" width="12" height="7" fill="#3a3346"/><circle cx="13" cy="33" r="6" fill="#4fa8e0" stroke="#1d1714" stroke-width="2"/><circle cx="35" cy="33" r="6" fill="#4fa8e0" stroke="#1d1714" stroke-width="2"/><circle cx="11" cy="31" r="2" fill="#fff9"/><circle cx="33" cy="31" r="2" fill="#fff9"/></svg>',
+    rkTurbo: '<svg viewBox="0 0 48 48"><path d="M17 34q7 14 14 0z" fill="#ffb347"/><path d="M20 34q4 8 8 0z" fill="#fff2c4"/><rect x="15" y="10" width="18" height="24" rx="5" fill="#d9dae4" stroke="#7c7f8a" stroke-width="2"/><path d="M15 16h18M15 28h18" stroke="#e0414a" stroke-width="3"/><path d="M24 4l5 6H19z" fill="#e0414a"/></svg>',
+    rkChute: '<svg viewBox="0 0 48 48"><path d="M6 22a18 14 0 0 1 36 0z" fill="#e9a23b"/><path d="M6 22q6-5 12 0 6-5 12 0 6-5 12 0" fill="#c98a24"/><path d="M8 22l16 16 16-16M18 22l6 16 6-16" stroke="#f6efe3" stroke-width="1.2" fill="none"/><rect x="20" y="36" width="8" height="8" rx="2" fill="#3a3346"/></svg>',
+  });
   const NAME_FLAIRS = ['neon', 'gold', 'fire', 'ice', 'galaxy'];
   const TROPHY_IDS = ['bronzeCup', 'silverCup', 'goldCup', 'diamondTrophy', 'crownTrophy'];
   const GOODIES = [
@@ -3384,6 +3430,21 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     { id: 'royalFelt', kind: 'cosmetic', shelf: 'effect', name: 'Royal Felt', desc: 'Purple velvet on the blackjack, roulette and poker tables.', price: () => 15000 },
     { id: 'goldBacks', kind: 'cosmetic', shelf: 'effect', name: 'Golden Card Backs', desc: 'Every face-down card gets a gold-and-black back.', price: () => 12000 },
     { id: 'fireworks', kind: 'cosmetic', shelf: 'effect', name: 'Fireworks', desc: 'Big moments launch fireworks: big slot wins, blackjacks, roulette numbers and poker pots.', price: () => 20000 },
+    // Goodies for the other games. In the live games (roulette, horse racing, rocket) they never touch the result,
+    // only what your own winning (or losing) bets pay.
+    { id: 'bjChip', game: 'bj', kind: 'perm', name: 'Lucky Chip', desc: 'Blackjacks pay 1.6 to 1 instead of 3 to 2.', price: () => 15000 },
+    { id: 'bjShoe', game: 'bj', kind: 'perm', name: 'Shoe Tracker', desc: 'Shows whether the cards left in the shoe favour you or the dealer.', price: () => 8000 },
+    { id: 'rlStraight', game: 'rl', kind: 'perm', name: 'Lucky Number', desc: 'A single number pays 37 to 1 instead of 35 to 1.', price: () => 12000 },
+    { id: 'rlOutside', game: 'rl', kind: 'perm', name: 'Red & Black Charm', desc: 'Winning outside bets (colours, odd or even, halves, dozens, columns) pay 5% more.', price: () => 20000 },
+    { id: 'pkMagnet', game: 'pk', kind: 'perm', name: 'Chip Magnet', desc: 'Every pot you win pays 5% extra onto your balance, solo and online.', price: () => 15000 },
+    { id: 'plGold', game: 'pl', kind: 'perm', name: 'Golden Ball', desc: 'One ball in 40 turns golden and pays double.', price: () => 20000 },
+    { id: 'plSoft', game: 'pl', kind: 'perm', name: 'Soft Landing', desc: 'Slots under 1× pay 0.1× more.', price: () => 10000 },
+    { id: 'ckFeather', game: 'ck', kind: 'perm', name: 'Lucky Feather', desc: 'Cash-outs pay 3% more.', price: () => 12000 },
+    { id: 'ckHelmet', game: 'ck', kind: 'perm', name: 'Chicken Helmet', desc: 'Get 10% of your bet back when the chicken gets hit.', price: () => 15000 },
+    { id: 'hrCrop', game: 'hr', kind: 'perm', name: 'Riding Crop', desc: 'Winning Win bets pay 6% more.', price: () => 15000 },
+    { id: 'hrBino', game: 'hr', kind: 'perm', name: 'Binoculars', desc: 'Winning Place bets pay 6% more.', price: () => 15000 },
+    { id: 'rkTurbo', game: 'rk', kind: 'perm', name: 'Turbo Booster', desc: 'Every rocket cash-out pays 3% more.', price: () => 25000 },
+    { id: 'rkChute', game: 'rk', kind: 'perm', name: 'Parachute', desc: 'Get 5% of your bet back when the rocket explodes with you on board.', price: () => 15000 },
     { id: 'lightning', kind: 'perm', name: 'Lightning Strike', desc: 'On 1% of your slot wins lightning strikes and multiplies the win ×2, ×3, ×5 or even ×10.', price: () => 250000 },
   ];
 
@@ -3451,8 +3512,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const reels = [...document.querySelectorAll('.reel')];
   const strips = reels.map(r => r.querySelector('.strip'));
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  // Secret code (↑ ↑ ↓ ↓ ← → ← → B A), for admins only. The next round in the solo games is rigged:
-  // three sevens on the slots, a blackjack, an outermost Plinko slot, a chicken that makes it across.
+  // Secret code (↑ ↑ ↓ ↓ ← → ← → B A), for admins only. The next round in any game but poker is rigged:
+  // three sevens on the slots, a blackjack, an outermost Plinko slot, a chicken that makes it across; in the live
+  // games the admin's next bet decides: their horse wins, the ball lands on zero, their rocket flies to the moon.
   const SECRET = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
   let typed = [];
   let rigged = false;
@@ -4377,6 +4439,17 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     for (const [v, color] of [...BJ_CHIPS].reverse()) while (left >= v && stack.length < 6) { stack.push(color); left -= v; }
     $('chipStack').innerHTML = stack.map((c, i) => `<i style="--chip:${c};transform:translateY(${-i * 4}px)"></i>`).join('');
     $('shoeLeft').textContent = state.bj.shoe.length || BJ_DECKS * 52;
+    // Shoe Tracker: high cards (tens, aces) left minus low cards (2 to 6) left, per deck still in the shoe.
+    const ct = $('bjCount');
+    ct.hidden = !hasG('bjShoe');
+    if (hasG('bjShoe')) {
+      const shoe = state.bj.shoe.length ? state.bj.shoe : null;
+      let tc = 0;
+      if (shoe) { let rc = 0; for (const c of shoe) { const v = bjValue(c); if (v >= 10) rc++; else if (v <= 6) rc--; } tc = rc / (shoe.length / 52); }
+      ct.textContent = `${tc >= 0 ? '+' : ''}${tc.toFixed(1)} ${tc >= 1 ? '▲' : tc <= -1 ? '▼' : '•'}`;
+      ct.className = 'bj-count ' + (tc >= 1 ? 'good' : tc <= -1 ? 'bad' : '');
+      ct.title = i18n(tc >= 1 ? 'The shoe is rich in tens and aces: good for you.' : tc <= -1 ? 'Lots of small cards left: good for the dealer.' : 'The shoe is about even.');
+    }
   }
 
   $('chipTray').innerHTML = BJ_CHIPS.map(([v, color, ink]) =>
@@ -4541,7 +4614,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       staked += h.bet;
       const t = bjTotal(h.cards).total;
       if (h.result === 'bust') h.win = 0;
-      else if (bjNatural(h) && !dealerBJ) { h.result = 'blackjack'; h.win = h.bet * 2.5; }
+      else if (bjNatural(h) && !dealerBJ) { h.result = 'blackjack'; h.win = h.bet * (hasG('bjChip') ? 2.6 : 2.5); }
       else if (dealerBJ && !bjNatural(h)) { h.result = 'lose'; h.win = 0; }
       else if (d > 21 || t > d) { h.result = 'win'; h.win = h.bet * 2; }
       else if (t === d) { h.result = 'push'; h.win = h.bet; }
@@ -4934,7 +5007,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const key = () => 'lucky-reels-rl-' + (account?.id || '');
     const read = () => { try { return JSON.parse(localStorage.getItem(key()) || '[]'); } catch { return []; } };
     const write = l => { try { localStorage.setItem(key(), JSON.stringify(l.slice(-80))); } catch {} };
-    const resultOf = id => Math.floor(hrRng(id, 333)() * 37);
+    const rigs = () => { try { return JSON.parse(localStorage.getItem('lucky-reels-rl-rig') || '{}'); } catch { return {}; } };
+    const resultOf = id => rigs()[id] ? 0 : Math.floor(hrRng(id, 333)() * 37);
     return {
       shared: false,
       async available() { return true; },
@@ -4954,6 +5028,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         return { credits: null, rev: null };
       },
       async bets(id) { return read().filter(b => b.round_id === id); },
+      async rig(id) { const r = rigs(); r[id] = 1; try { localStorage.setItem('lucky-reels-rl-rig', JSON.stringify(r)); } catch {} },
       async claim() {
         const now = Date.now(), list = read(), out = [];
         for (const b of list) {
@@ -5010,6 +5085,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       state.rl.bets = {};
       rlUndoStack = [];
       if (!state.rl.open.includes(id)) state.rl.open.push(id);
+      if (account.isAdmin && takeRigged()) backend.roulette.rig?.(id)?.catch?.(() => {});
       sound.chip();
       rlSay(auto ? `Time is up: your ${fmt(total)} went in automatically. Good luck!` : `Bets placed: ${fmt(total)}. Good luck!`, 'win');
       lastSaved = '';
@@ -5104,6 +5180,15 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       const rows = (res?.bets || []).map(b => ({ ...b, round_id: Number(b.round_id), total: Number(b.total) || 0, payout: Number(b.payout) || 0, result: Number(b.result) }));
       const won = rows.reduce((a, b) => a + b.payout, 0), staked = rows.reduce((a, b) => a + b.total, 0);
       serverCredits(res, won);
+      // Goodies: a single number pays 37 instead of 35; outside wins pay 5% more.
+      let straightBonus = 0, outsideBonus = 0;
+      for (const b of rows) for (const [k, v] of Object.entries(b.bets || {})) {
+        if (!rlHit(k, b.result)) continue;
+        if (k[0] === 'n') { if (hasG('rlStraight')) straightBonus += Number(v) * 2; }
+        else if (hasG('rlOutside')) outsideBonus += Number(v) * rlPays(k) * 0.05;
+      }
+      goodieBonus(straightBonus, 'rlStraight');
+      goodieBonus(outsideBonus, 'rlOutside');
       const rounds = new Set(rows.map(b => b.round_id));
       state.rl.open = state.rl.open.filter(r => !rounds.has(r) && r >= Math.floor(hrNow() / RL_PERIOD) - 1);
       if (rows.length) {
@@ -5257,8 +5342,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     for (const ball of plBalls) {
       const r = b.ballR;
       const grd = ctx.createRadialGradient(ball.x - r * 0.35, ball.y - r * 0.4, r * 0.1, ball.x, ball.y, r);
-      grd.addColorStop(0, '#ffd1e6'); grd.addColorStop(0.45, '#ff5fa8'); grd.addColorStop(1, '#c2186b');
-      ctx.fillStyle = 'rgba(255, 95, 168, 0.25)';
+      if (ball.gold) { grd.addColorStop(0, '#fff8dd'); grd.addColorStop(0.45, '#f3c94b'); grd.addColorStop(1, '#a8741a'); }
+      else { grd.addColorStop(0, '#ffd1e6'); grd.addColorStop(0.45, '#ff5fa8'); grd.addColorStop(1, '#c2186b'); }
+      ctx.fillStyle = ball.gold ? 'rgba(243, 201, 75, 0.45)' : 'rgba(255, 95, 168, 0.25)';
       ctx.beginPath(); ctx.arc(ball.x, ball.y, r * 1.7, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = grd;
       ctx.beginPath(); ctx.arc(ball.x, ball.y, r, 0, Math.PI * 2); ctx.fill();
@@ -5358,13 +5444,16 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     for (const d of path) rights.push(rights[rights.length - 1] + (d > 0 ? 1 : 0));
     const slot = rights[R];
     const mult = plMults()[slot];
-    const pay = Math.min(MAX, Math.floor(bet * mult * settings.winMultiplier));
+    // Goodies: one ball in 40 is golden and pays double; slots under 1× pay 0.1× more.
+    const gold = hasG('plGold') && randInt(40) === 0;
+    const eff = (mult < 1 && hasG('plSoft') ? mult + 0.1 : mult) * (gold ? 2 : 1);
+    const pay = Math.min(MAX, Math.floor(bet * eff * settings.winMultiplier));
     const id = plNextId++;
     state.pl.bet = bet;
     state.credits -= bet;
     state.pl.pending.push({ id, pay });
     state.pl.drops++;
-    const ball = { id, bet, pay, mult, slot, path, rights, x: PL_W / 2 + (Math.random() - 0.5) * plBoard.g * 0.2, y: PL_TOP - plBoard.rowGap * 0.9, vx: (Math.random() - 0.5) * 30, vy: 0, row: -1 };
+    const ball = { id, bet, pay, mult, slot, path, rights, gold, x: PL_W / 2 + (Math.random() - 0.5) * plBoard.g * 0.2, y: PL_TOP - plBoard.rowGap * 0.9, vx: (Math.random() - 0.5) * 30, vy: 0, row: -1 };
     if (reduceMotion) { plLand(ball); render(); return true; }
     plBalls.push(ball);
     sound.chip();
@@ -5385,7 +5474,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     state.pl.history.length = Math.min(state.pl.history.length, 12);
     renderPLHistory();
     gainXp(3 + (ball.mult >= 2 ? 4 : 0));
-    const label = plFmtMult(ball.mult);
+    const label = plFmtMult(ball.mult) + (ball.gold ? ' ×2 ✨' : '');
+    if (ball.gold) { const r0 = plCanvas.getBoundingClientRect(), sc0 = r0.width / PL_W; fxTop.burst(r0.left + (sl?.x || PL_W / 2) * sc0, r0.top + plBoard.slotY * sc0, 50, 30, 6, false); }
     if (ball.mult >= 10) {
       plSay(`${label}! +${fmt(ball.pay)}`, 'win');
       const r = plCanvas.getBoundingClientRect(), sc = r.width / PL_W;
@@ -5578,6 +5668,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       state.ck.round = null;
       state.ck.games++;
       state.lastWin = 0;
+      if (hasG('ckHelmet')) goodieBonus(r.bet * 0.1, 'ckHelmet');
       gainXp(3 + next);
       ckSay(next === 1 ? 'Splat! Hit in the very first lane.' : `Splat! Hit in lane ${next}. The ${fmt(r.bet)} is gone.`, 'lose');
       await sleep(reduceMotion ? 0 : 1300);
@@ -5602,6 +5693,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const m = ckMult(r.lane, r.diff);
     const pay = Math.min(MAX, Math.floor(r.bet * m * settings.winMultiplier));
     state.credits = Math.min(MAX, state.credits + pay);
+    if (hasG('ckFeather')) goodieBonus(pay * 0.03, 'ckFeather');
     state.lastWin = pay;
     state.best = Math.max(state.best, pay - r.bet);
     state.ck.round = null;
@@ -5734,7 +5826,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const read = () => { try { return JSON.parse(localStorage.getItem(key()) || '[]'); } catch { return []; } };
     const write = l => { try { localStorage.setItem(key(), JSON.stringify(l.slice(-80))); } catch {} };
     const field = id => { const rng = hrRng(id, 11); const weights = Array.from({ length: HR_N }, () => Math.exp((rng() - 0.5) * 2.4)); return { weights, ...hrOdds(weights) }; };
-    const finishOf = (id, w) => hrDraw(w, hrRng(id, 77));
+    const rigs = () => { try { return JSON.parse(localStorage.getItem('lucky-reels-hr-rig') || '{}'); } catch { return {}; } };
+    const finishOf = (id, w) => {
+      const forced = rigs()[id];
+      if (!forced) return hrDraw(w, hrRng(id, 77));
+      const rest = hrDraw(w.map((x, i) => i + 1 === forced ? 0 : x), hrRng(id, 77)).filter(h => h !== forced);
+      return [forced, ...rest];
+    };
     return {
       shared: false,
       async available() { return true; },
@@ -5755,6 +5853,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         return { odds, credits: null, rev: null };
       },
       async bets(id) { return read().filter(b => b.race_id === id); },
+      async rig(id, horse) { const r = rigs(); r[id] = horse; try { localStorage.setItem('lucky-reels-hr-rig', JSON.stringify(r)); } catch {} },
       async claim() {
         const now = Date.now(), list = read(), out = [];
         for (const b of list) {
@@ -6121,6 +6220,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         else if (rev > (state.adminRev || 0)) state.credits = Number(res.credits) || 0;
         state.adminRev = Math.max(state.adminRev || 0, rev);
       } else state.credits = Math.min(MAX, state.credits + won);
+      // Goodies: winning Win or Place bets pay 6% more.
+      goodieBonus(bets.filter(b => b.payout > 0 && b.kind === 'win' && hasG('hrCrop')).reduce((a, b) => a + b.payout * 0.06, 0), 'hrCrop');
+      goodieBonus(bets.filter(b => b.payout > 0 && b.kind === 'place' && hasG('hrBino')).reduce((a, b) => a + b.payout * 0.06, 0), 'hrBino');
       const races = new Set(bets.map(b => b.race_id));
       state.hr.open = state.hr.open.filter(r => !races.has(r) && r >= Math.floor(hrNow() / HR_PERIOD) - 1);
       if (bets.length) {
@@ -6302,6 +6404,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       state.hr.bet = amount;
       if (!state.hr.open.includes(id)) { state.hr.open.push(id); state.hr.races++; }
       gainXp(3);
+      if (account.isAdmin && takeRigged()) backend.horse.rig?.(id, h)?.catch?.(() => {});
       if (hrBetsFor === id) hrBetList.push({ race_id: id, player: account.id, name: account.name, horse: h, kind, amount, odds: Number(res?.odds) || (kind === 'win' ? race.win : race.place)[h - 1] });
       sound.chip();
       const btn = document.querySelector(`[data-hb="${h}"]`)?.getBoundingClientRect();
@@ -6393,7 +6496,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const read = () => { try { return JSON.parse(localStorage.getItem(key()) || '[]'); } catch { return []; } };
     const write = l => { try { localStorage.setItem(key(), JSON.stringify(l.slice(-60))); } catch {} };
     const goldOf = id => hrRng(id, 997)() < RK_GOLD_CHANCE;
-    const crashOf = id => goldOf(id) ? Math.min(RK_CAP, Math.floor(RK_GOLD / (1 - hrRng(id, 999)()) * 100) / 100) : Math.min(RK_CAP, Math.max(1, Math.floor(RK_EDGE / (1 - hrRng(id, 999)()) * 100) / 100));
+    const rigs = () => { try { return JSON.parse(localStorage.getItem('lucky-reels-rk-rig') || '{}'); } catch { return {}; } };
+    const crashOf = id => rigs()[id] ? RK_CAP : goldOf(id) ? Math.min(RK_CAP, Math.floor(RK_GOLD / (1 - hrRng(id, 999)()) * 100) / 100) : Math.min(RK_CAP, Math.max(1, Math.floor(RK_EDGE / (1 - hrRng(id, 999)()) * 100) / 100));
     const round = id => { const bs = id * P, c = crashOf(id); return { id, bet_start: bs, launch: bs + RK_BET, crash: c, golden: goldOf(id), crash_at: bs + RK_BET + Math.round(rkTimeFor(c)), next_start: (id + 1) * P }; };
     const settle = b => {
       if (b.payout != null) return;
@@ -6432,6 +6536,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         return { mult: m, payout: b.payout, credits: null, rev: null };
       },
       async bets(id) { const list = read(); list.forEach(settle); return list.filter(b => b.round_id === id); },
+      async rig(id) { const r = rigs(); r[id] = 1; try { localStorage.setItem('lucky-reels-rk-rig', JSON.stringify(r)); } catch {} },
       async claim() {
         const list = read(), out = [];
         for (const b of list) { if (b.claimed) continue; settle(b); if (b.payout == null) continue; b.claimed = true; out.push({ ...b, crash: round(b.round_id).crash }); }
@@ -6507,6 +6612,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       serverCredits(res, -amount);
       state.rk.bet = amount; state.rk.auto = auto; state.rk.rounds++;
       if (!state.rk.open.includes(rkCur.id)) state.rk.open.push(rkCur.id);
+      if (account.isAdmin && takeRigged()) backend.rocket.rig?.(rkCur.id)?.catch?.(() => {});
       rkBets = rkBets.filter(b => b.player !== account.id).concat({ player: account.id, name: account.name, amount, auto, cashed: null, payout: null });
       rkBetsFor = rkCur.id;
       gainXp(3);
@@ -6538,6 +6644,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       const res = await backend.rocket.cashout(rkCur.id);
       const m = Number(res.mult), pay = Number(res.payout) || 0;
       serverCredits(res, pay);
+      if (hasG('rkTurbo')) goodieBonus(pay * 0.03, 'rkTurbo');
       mine.cashed = m; mine.payout = pay; mine.claimed = true;
       state.rk.open = state.rk.open.filter(r => r !== rkCur.id);
       rkWin(mine.amount, m, pay, auto);
@@ -6577,6 +6684,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       const rows = (res?.bets || []).map(b => ({ ...b, round_id: Number(b.round_id), amount: Number(b.amount), payout: Number(b.payout) || 0, cashed: b.cashed == null ? null : Number(b.cashed) }));
       const won = rows.reduce((a, b) => a + b.payout, 0);
       serverCredits(res, won);
+      // Goodies: auto cash-outs and moon landings pay 3% more; a parachute gives 5% back after an explosion.
+      if (hasG('rkTurbo')) goodieBonus(rows.reduce((a, b) => a + b.payout * 0.03, 0), 'rkTurbo');
+      if (hasG('rkChute')) goodieBonus(rows.filter(b => !b.payout).reduce((a, b) => a + b.amount * 0.05, 0), 'rkChute');
       const ids = new Set(rows.map(b => b.round_id));
       state.rk.open = state.rk.open.filter(r => !ids.has(r) && r >= (rkCur?.id ?? 0) - 1);
       for (const b of rows) if (b.payout > 0) {
@@ -7530,6 +7640,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       if (me >= 0 && st.seats[me].in_hand) {
         state.pk.hands++;
         const won = st.seats[me].won > 0;
+        if (won && hasG('pkMagnet')) goodieBonus(st.seats[me].won * 0.05, 'pkMagnet');
         gainXp(6 + (won ? 8 : 0));
         checkAch({ pokerWin: won, pokerSF: won && st.seats[me].hand_name && /straight flush|royal/i.test(st.seats[me].hand_name) });
       }
@@ -7653,6 +7764,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         state.pk.lastOnlineHand = st.hand;
         state.pk.hands++;
         const won = st.seats[st.me].won > 0;
+        if (won && hasG('pkMagnet')) goodieBonus(Number(st.seats[st.me].won) * 0.05, 'pkMagnet');
         gainXp(6 + (won ? 8 : 0));
         checkAch({ pokerWin: won, pokerSF: won && /straight flush|royal/i.test(st.seats[st.me].hand_name || '') });
         render();
@@ -8066,8 +8178,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       <h4>${g.name}</h4><p>${g.desc}</p><span class="status" id="st-${g.id}"></span>
       <button class="buy price-tag" id="buy-${g.id}"></button>
     </div>`;
+  const GAME_SHELVES = [['slots', 'Slots'], ['bj', 'Blackjack'], ['rl', 'Roulette'], ['pk', 'Poker'], ['pl', 'Plinko'], ['ck', 'Chicken'], ['hr', 'Horse Racing'], ['rk', 'Rocket']];
   const SHELVES = [
-    ['useful', 'power', 'Power-ups', g => g.kind !== 'cosmetic'],
+    ...GAME_SHELVES.map(([game, title]) => ['useful', 'g-' + game, title, g => g.kind !== 'cosmetic' && (g.game || 'slots') === game]),
     ['cosmetic', 'cabinet', 'Machine colours', g => g.shelf === 'cabinet'],
     ['cosmetic', 'name', 'Name styles', g => g.shelf === 'name'],
     ['cosmetic', 'trophy', 'Trophies', g => g.shelf === 'trophy'],
@@ -8081,14 +8194,16 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     document.querySelectorAll('[data-shelf-tab]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.shelfTab === tab)));
     document.querySelectorAll('#shopPage [data-for]').forEach(el => { el.hidden = el.dataset.for !== tab; });
   }
-  function openShop() {
+  function openShop(shelf) {
     if (!account) return;
+    if (shelf) shopTab = 'useful';
     shopFromLobby = !$('lobby').hidden;
     $('lobby').hidden = true;
     showShopTab(shopTab);
     renderShop();
     $('shopPage').hidden = false;
     $('shopPage').scrollTop = 0;
+    if (shelf) requestAnimationFrame(() => document.querySelector(`[data-shelf="g-${shelf}"]`)?.scrollIntoView({ block: 'start' }));
     $('shopBack').focus();
     sound.chime();
   }
@@ -8097,7 +8212,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (shopFromLobby) showLobby();
     render();
   }
-  document.addEventListener('click', e => { if (e.target.closest('[data-shop]')) openShop(); });
+  document.addEventListener('click', e => { const t = e.target.closest('[data-shop]'); if (t) openShop(t.dataset.shop || undefined); });
   $('shopBack').addEventListener('click', closeShop);
   $('shopPage').addEventListener('keydown', e => { if (e.key === 'Escape') closeShop(); });
   document.querySelectorAll('[data-shelf-tab]').forEach(b => b.addEventListener('click', () => { showShopTab(b.dataset.shelfTab); sound.chip(); }));
@@ -8208,7 +8323,43 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     })();
   }
 
+  // Extra credits from a game goodie, with a little pop so you see what it brought.
+  function goodieBonus(amount, id) {
+    amount = Math.floor(amount);
+    if (!(amount > 0)) return 0;
+    state.credits = Math.min(MAX, state.credits + amount);
+    const g = GOODIES.find(x => x.id === id);
+    const el = document.createElement('div');
+    el.className = 'gb-pop';
+    el.innerHTML = `<span aria-hidden="true">${SHOP_ICONS[id] || ''}</span><b>+${fmt(amount)}</b><small>${esc(i18n(g?.name || ''))}</small>`;
+    document.body.append(el);
+    setTimeout(() => el.remove(), 2200);
+    persist();
+    return amount;
+  }
+  const hasG = id => !!state.owned[id];
+  // Each game shows its goodies (owned ones lit) with a way to the shop shelf.
+  function renderGameGoodies() {
+    document.querySelectorAll('[data-gg]').forEach(el => {
+      const game = el.dataset.gg, list = GOODIES.filter(g => g.kind !== 'cosmetic' && (g.game || 'slots') === game);
+      const owned = list.filter(g => g.kind === 'level' ? state.owned[g.id] > 0 : state.owned[g.id]);
+      const key = owned.map(g => g.id + (g.kind === 'level' ? state.owned[g.id] : '')).join(',') + '|' + lang;
+      if (el.dataset.key === key) return;
+      el.dataset.key = key;
+      el.innerHTML = owned.map(g => `<span class="gg-chip" title="${esc(i18n(g.desc))}">${SHOP_ICONS[g.id] || ''}${esc(i18n(g.name))}</span>`).join('') +
+        `<button type="button" class="gg-shop" data-shop="${game}">${owned.length ? `Goodies ${owned.length}/${list.length} ›` : 'Goodies for this game ›'}</button>`;
+    });
+  }
+  {
+    const strip = game => { const d = document.createElement('div'); d.className = 'gg'; d.dataset.gg = game; return d; };
+    document.querySelector('details.paytable')?.before(strip('slots'));
+    for (const game of ['bj', 'rl', 'pk', 'pl', 'ck', 'hr', 'rk']) {
+      const sec = $(game), rules = sec?.querySelector(':scope > details.bj-rules');
+      if (rules) rules.before(strip(game)); else sec?.append(strip(game));
+    }
+  }
   function render() {
+    renderGameGoodies();
     const cost = spinCost();
     const free = state.freeSpins > 0;
     tweenCredits();
@@ -9043,6 +9194,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           return data;
         },
         async claim() { const { data, error } = await sb.rpc('rocket_claim'); if (error) throw error; return data; },
+        async rig(id) { const { error } = await sb.rpc('admin_rig_rocket', { round: id }); if (error) throw error; },
       },
       // Global roulette: the database takes the chips, draws the number and pays out.
       roulette: {
@@ -9056,6 +9208,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           return data;
         },
         async claim() { const { data, error } = await sb.rpc('roulette_claim'); if (error) throw error; return data; },
+        async rig(id) { const { error } = await sb.rpc('admin_rig_roulette', { round: id }); if (error) throw error; },
       },
       // Horse racing: the database keeps the odds, the bets, the finishing order and the payouts.
       horse: {
@@ -9073,6 +9226,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           return data;
         },
         async claim() { const { data, error } = await sb.rpc('horse_claim'); if (error) throw error; return data; },
+        async rig(id, horse) { const { error } = await sb.rpc('admin_rig_horse', { race: id, horse_no: horse }); if (error) throw error; },
       },
       async chatWatch(cb) {
         let list = [];
