@@ -1092,14 +1092,14 @@ body.has-announce .lobby { padding-top: calc(70px + env(safe-area-inset-top, 0px
 .mode-switch .link-btn { margin-left: 4px; color: var(--accent); }
 .login-hint { margin: -8px 0 0; font-size: 12px; color: var(--muted); }
 .login-note { margin: 0; font-size: 12px; color: var(--muted); text-align: center; line-height: 1.5; }
-.help-line { max-width: 460px; margin: 0 auto 6px; text-align: right; font-size: 11px; }
+.help-line { max-width: 460px; margin: 8px auto 0; text-align: center; font-size: 11px; }
 @media (min-width: 900px) { .help-line { max-width: 960px; } }
 body.wide .help-line { max-width: 980px; }
 .help-line a { color: var(--muted); text-decoration: underline dotted; text-underline-offset: 2px; }
 .help-line a:hover { color: var(--accent); }
 .account-bar {
   max-width: 460px; margin: 0 auto 14px;
-  display: flex; flex-wrap: wrap; gap: 6px 14px; justify-content: space-between; align-items: center;
+  display: flex; flex-wrap: wrap; gap: 6px 14px; justify-content: flex-end; align-items: center;
   font-size: 13px; color: var(--muted);
 }
 @media (min-width: 900px) { .account-bar { max-width: 960px; } }
@@ -2113,6 +2113,25 @@ html:has(#lobby:not([hidden])), html:has(#shopPage:not([hidden])), html:has(#log
 .ticket-pill .dot-badge { position: absolute; top: -4px; right: -4px; }
 .ticket-pill .tp-short { display: none; }
 @media (max-width: 520px) { .ticket-pill .tp-long { display: none; } .ticket-pill .tp-short { display: inline; } .ticket-pill { padding: 4px 9px 4px 7px; font-size: 12px; } }
+/* Highscores: name on one line, the extras small underneath */
+.board td:first-child { width: 100%; max-width: 0; }
+.board th, .board td:not(:first-child) { white-space: nowrap; padding-left: 8px; }
+.board .b-who { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.board .b-av { position: relative; flex: none; display: inline-flex; }
+.board .b-av .dot { position: absolute; right: -2px; bottom: -2px; margin: 0; width: 9px; height: 9px; box-shadow: 0 0 0 2px var(--cabinet), 0 0 6px var(--win); }
+.board .b-id { display: grid; min-width: 0; line-height: 1.25; }
+.board .b-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.board .b-extra { display: flex; align-items: center; gap: 4px; min-width: 0; overflow: hidden; font-size: 11px; }
+.board .b-extra:empty { display: none; }
+.board .b-extra .p-game { margin-left: 0; padding: 0 5px; font-size: 9px; }
+.board .b-extra .name-trophy { margin-left: 0; width: 1.25em; height: 1.25em; }
+.board .b-extra .medals { margin-left: 0; }
+.board .b-extra .medals svg { width: 13px; height: 13px; }
+.board .pbadge { width: 1.5em; height: 1.5em; margin-left: 2px; }
+.board .p-title { margin-left: 4px; padding: 0 4px; font-size: 0; }
+.board .p-title span { font-size: 11px; }
+.board .rank { flex: none; }
+.profile-pill .pill-av { width: 22px; height: 22px; font-size: 11px; margin: -2px 0 -2px -4px; }
 #fx, #fxTop { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 #fxTop { z-index: 18; }
 .jp {
@@ -2725,7 +2744,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   </div>
 </div>
 
-<p class="help-line"><a href="https://i.ytimg.com/vi/nTBifNknZ2I/sddefault.jpg" target="_blank" rel="noopener noreferrer">Help with gambling behaviour disorders</a></p>
 <div class="shop-page" id="shopPage" role="dialog" aria-modal="true" aria-labelledby="shopPageTitle" hidden>
   <div class="shop-wrap">
     <header class="shop-head">
@@ -2748,8 +2766,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 </div>
 
 <div class="account-bar" id="accountBar" hidden>
-  <span><span class="who-label">Signed in as </span><span id="myAv"></span><b id="whoami"></b></span>
-  <span class="links"><button class="lang-toggle" type="button" aria-label="Sprache wechseln"><span data-l="de">DE</span><span data-l="en">EN</span></button><button class="ticket-pill" id="supportBtn" type="button" title="Write a ticket: ideas, bugs or wishes for the admins"><span class="tp-ico" aria-hidden="true">🎫</span><span class="tp-long">Support ticket</span><span class="tp-short">Support</span><i class="dot-badge" id="supportBadge" hidden></i></button><button class="profile-pill" id="profileBtn" type="button" title="Your profile and settings"><span aria-hidden="true">⚙</span> My profile</button><button class="link-btn" id="logout" type="button">Sign out</button></span>
+  <b id="whoami" hidden></b>
+  <span class="links"><button class="lang-toggle" type="button" aria-label="Sprache wechseln"><span data-l="de">DE</span><span data-l="en">EN</span></button><button class="ticket-pill" id="supportBtn" type="button" title="Write a ticket: ideas, bugs or wishes for the admins"><span class="tp-ico" aria-hidden="true">🎫</span><span class="tp-long">Support ticket</span><span class="tp-short">Support</span><i class="dot-badge" id="supportBadge" hidden></i></button><button class="profile-pill" id="profileBtn" type="button" title="Your profile and settings"><span id="myAv" aria-hidden="true"></span><span>My profile</span></button><button class="link-btn" id="logout" type="button">Sign out</button></span>
 </div>
 
 <div class="announce" id="announce" role="status" aria-live="polite" hidden>
@@ -3449,6 +3467,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 </section>
 <div class="toasts" id="toasts" aria-live="polite"></div>
 <p class="disclaimer">Play credits only. Nothing here can be bought with real money, cashed out or won for real. Space bar spins.</p>
+<p class="help-line"><a href="https://i.ytimg.com/vi/nTBifNknZ2I/sddefault.jpg" target="_blank" rel="noopener noreferrer">Help with gambling behaviour disorders</a></p>
 
 <script>
 (() => {
@@ -10962,11 +10981,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           const hot = age < 6000;
           const top = i < 3 && p.credits > 0 ? ` top top${i + 1}` : '';
           return `<tr data-id="${esc(p.id)}" class="${me ? 'me' : ''}${hot ? ' jackpot-row' : ''}${top}"${hot ? ` style="animation-delay:-${Math.round(age)}ms"` : ''}>` +
-            `<td><span class="rank"${top ? ` title="${['1st', '2nd', '3rd'][i]} place"` : ''}>${i + 1}</span>${online.has(p.id) ? '<i class="dot" title="Online"></i>' : ''}` +
-            avatarHtml(p.id, p.name, '', account ? 'button' : 'span') +
-            `${me || !account ? nameHtml(p.id, p.name) : `<span data-dm="${esc(p.id)}" title="Send ${esc(p.name)} a private message">${nameHtml(p.id, p.name)}</span>`}` +
-            trophyHtml(p.id) + medalsHtml(p.id) + gameTag(p.id) +
-            `${me ? '<span class="you">you</span>' : ''}${hot ? '<span class="jp-badge">JACKPOT</span>' : ''}</td>` +
+            `<td><div class="b-who"><span class="rank"${top ? ` title="${['1st', '2nd', '3rd'][i]} place"` : ''}>${i + 1}</span>` +
+            `<span class="b-av">${avatarHtml(p.id, p.name, '', account ? 'button' : 'span')}${online.has(p.id) ? '<i class="dot" title="Online"></i>' : ''}</span>` +
+            `<span class="b-id"><span class="b-name">${me || !account ? nameHtml(p.id, p.name) : `<span data-dm="${esc(p.id)}" title="Send ${esc(p.name)} a private message">${nameHtml(p.id, p.name)}</span>`}</span>` +
+            `<span class="b-extra">${gameTag(p.id)}${trophyHtml(p.id)}${medalsHtml(p.id, 3)}${hot ? '<span class="jp-badge">JACKPOT</span>' : ''}</span></span></div></td>` +
             `<td>${fmt(p.credits)}</td><td>${fmt(p.best)}</td><td>${p.level}</td></tr>`;
         }).join('') + '</tbody>'
       : '<tbody><tr><td class="empty" colspan="4">No players yet.</td></tr></tbody>';
@@ -11358,8 +11376,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   $('profileModal').addEventListener('click', e => { if (e.target === $('profileModal')) closeProfile(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('profileModal').hidden) closeProfile(); });
   $('profileBtn').addEventListener('click', () => account && openProfile(account.id));
-  function renderMyAvatar() { if (account) $('myAv').innerHTML = avatarHtml(account.id, account.name, '', 'button'); }
-  $('myAv').addEventListener('click', () => account && openProfile(account.id));
+  function renderMyAvatar() { if (account) $('myAv').innerHTML = avatarHtml(account.id, account.name, 'pill-av'); }
   // Tell a player when an admin gives them a new medal.
   function checkNewMedals() {
     const me = players.find(p => p.id === account?.id);
