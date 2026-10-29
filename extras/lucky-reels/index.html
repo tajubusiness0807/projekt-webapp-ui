@@ -1798,6 +1798,16 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
 .ticket-reply b { color: var(--win); }
 .ticket-edit { display: grid; gap: 6px; margin-top: 6px; }
 .ticket-filter button { padding: 6px 12px; font-size: 12px; }
+/* Atmosphere */
+.cabinet.spinning .bulbs span { animation: bulbChase 0.5s linear infinite; }
+.cabinet.spinning .bulbs span:nth-child(2n) { animation-delay: -0.25s; }
+@keyframes bulbChase { 0%, 49% { background: var(--accent-hi); box-shadow: 0 0 12px var(--accent); } 50%, 100% { background: #5a3a1a; box-shadow: none; } }
+.cabinet.shake { animation: mineShake 0.5s 3; }
+.rl-chip.drop { animation: chipDrop 0.35s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes chipDrop { 0% { transform: translateY(-16px) scale(1.25); opacity: 0.4; } 100% { transform: none; opacity: 1; } }
+.rl-dolly { position: absolute; left: 50%; top: 50%; width: 18px; height: 22px; margin: -15px 0 0 -9px; border-radius: 6px 6px 9px 9px; background: linear-gradient(90deg, #ffffff55, #ffffffcc 45%, #ffffff44); box-shadow: 0 4px 8px #0008, inset 0 2px 0 #fff; animation: dollyIn 0.5s cubic-bezier(.3, 1.6, .5, 1); pointer-events: none; z-index: 3; }
+@keyframes dollyIn { from { transform: translateY(-30px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .cabinet.spinning .bulbs span, .cabinet.shake, .rl-chip.drop, .rl-dolly { animation: none; } }
 /* Game goodies */
 .gg { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; }
 .cabinet:not([data-mode="slots"]) .gg[data-gg="slots"] { display: none; }
@@ -2487,6 +2497,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       <span id="stats">Spins: 0 · Biggest win: 0</span>
       <span class="links">
         <button class="link-btn" id="sound">Sound: on</button>
+        <button class="link-btn" id="voice">Voice: on</button>
         <button class="link-btn" id="refill">Start over</button>
       </span>
     </div>
@@ -2928,6 +2939,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Affiliate codes need the “Affiliate codes” part of supabase-setup.sql.': 'Affiliate-Codes brauchen den Abschnitt „Affiliate codes“ aus supabase-setup.sql.',
     'No player has that affiliate code. Check it, or leave the field empty.': 'Diesen Affiliate-Code hat niemand. Prüf ihn oder lass das Feld leer.',
     'player': 'Spieler', 'players': 'Spieler',
+    'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
+    'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
+    'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
+    'Liftoff!': 'Abheben!', 'Touchdown! We are on the moon!': 'Gelandet! Wir sind auf dem Mond!',
     'Lucky Chip': 'Glückschip', 'Blackjacks pay 1.6 to 1 instead of 3 to 2.': 'Blackjacks zahlen 1,6 zu 1 statt 3 zu 2.',
     'Shoe Tracker': 'Schlitten-Zähler', 'Shows whether the cards left in the shoe favour you or the dealer.': 'Zeigt, ob die Karten im Schlitten dir oder dem Dealer helfen.',
     'Lucky Number': 'Glückszahl', 'A single number pays 37 to 1 instead of 35 to 1.': 'Eine einzelne Zahl zahlt 37 zu 1 statt 35 zu 1.',
@@ -3127,7 +3142,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['Reply to {a}…', 'Antwort an {a}…'], ['Your ticket “{a}” is now: {b}', 'Dein Ticket „{a}“ ist jetzt: {b}'], ['Goodies {a} ›', 'Goodies {a} ›'], ['Bonus for {a}', 'Bonus für {a}'], ["Thanks to {a}'s code you start with {b} credits!", 'Dank des Codes von {a} startest du mit {b} Credits!'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['{a} times!', '{a}-fach!'], ['Reply to {a}…', 'Antwort an {a}…'], ['Your ticket “{a}” is now: {b}', 'Dein Ticket „{a}“ ist jetzt: {b}'], ['Goodies {a} ›', 'Goodies {a} ›'], ['Bonus for {a}', 'Bonus für {a}'], ["Thanks to {a}'s code you start with {b} credits!", 'Dank des Codes von {a} startest du mit {b} Credits!'],
     ['joined with your affiliate code: +{a} credits!', 'hat sich mit deinem Affiliate-Code angemeldet: +{a} Credits!'], ['Your code is {a}. Share it with friends!', 'Dein Code ist {a}. Teil ihn mit Freunden!'],
     ['{a} player joined with your code · +{b} credits earned', '{a} Spieler hat sich mit deinem Code angemeldet · +{b} Credits verdient'], ['{a} players joined with your code · +{b} credits earned', '{a} Spieler haben sich mit deinem Code angemeldet · +{b} Credits verdient'], ['Golden rocket! This one flies past {a} for sure.', 'Goldene Rakete! Die fliegt garantiert über {a}.'], ['bet {a}', 'Einsatz {a}'], ['auto {a}', 'auto {a}'],
     ["You're on board with {a}. Auto cash-out at {b}.", 'Du bist mit {a} an Bord. Auto-Auszahlung bei {b}.'], ["You're on board with {a}. Cash out before it blows!", 'Du bist mit {a} an Bord. Zahl aus, bevor sie explodiert!'],
@@ -4012,6 +4027,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         if (Math.random() < 0.5) fxTop.confetti(CONFETTI);
         if (el - last > 450) { last = el; fxTop.burst(fxTop.W * (0.2 + Math.random() * 0.6), fxTop.H * (0.15 + Math.random() * 0.35), 70, randInt(360)); }
       });
+      voice.say('Mega win!', { urgent: true, pitch: 1.1 });
+      cabinet.classList.remove('shake'); void cabinet.offsetWidth; cabinet.classList.add('shake');
+      audio.coins(30, 0.07);
       await banner('MEGA WIN', 'mega', 3800, win);
     } else if (ratio >= 25) {
       sound.bigWin();
@@ -4021,14 +4039,18 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         if (Math.random() < 0.4) fxTop.fountain(0.5);
         if (el - last > 700) { last = el; fxTop.burst(x + (Math.random() - 0.5) * 200, y - 60, 60, 40); }
       });
+      voice.say('Big win!', { urgent: true });
+      audio.coins(20, 0.08);
       await banner('BIG WIN', 'big', 2800, win);
     } else if (ratio >= 10) {
       sound.bigWin();
       fxTop.coinBurst(x, y, 40, 11);
       fxTop.burst(x, y, 50, 120, 6, false);
+      audio.coins(12, 0.08);
       await banner('NICE WIN', 'nice', 1700, win);
     } else {
       sound.win();
+      audio.coins(Math.min(10, 2 + Math.round(ratio * 2)));
       fxTop.coinBurst(x, y, Math.min(24, 6 + Math.round(ratio * 4)), 7);
     }
   }
@@ -4039,7 +4061,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       const el = strips[i];
       const startY = -((STRIP.length + pos[i]) * CELL - CELL / 2);
       const endY = -(((LOOPS - 1) * STRIP.length + target) * CELL - CELL / 2);
-      const done = () => { reels[i].classList.remove('spinning'); place(i, target); sound.clunk(); resolve(); };
+      const done = () => { reels[i].classList.remove('spinning'); place(i, target); sound.clunk(); audio.noise(0.06, { type: 'lowpass', freq: 500, vol: 0.18 }); reels[i].animate?.([{ transform: 'translateY(5px)' }, { transform: 'none' }], { duration: 260, easing: 'cubic-bezier(.3, 1.8, .5, 1)' }); resolve(); };
       if (reduceMotion) return done();
       reels[i].classList.add('spinning');
       const t0 = performance.now();
@@ -4107,6 +4129,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     state.credits -= cost;
     state.spins++;
     reels.forEach(r => r.classList.remove('win', 'star', 'wild'));
+    cabinet.classList.add('spinning');
+    if (!reduceMotion) audio.noise(0.25, { type: 'bandpass', freq: 600, to: 1800, vol: 0.08 });
     say(free ? `Free spin ${freeDone} · wins ×${FREE_MULT}` : raised ? 'Bet raised, so the holds are off. Spinning…' : holds.some(Boolean) ? 'Spinning the reels you did not hold…' : 'Spinning…', free ? 'bonus' : '');
     render();
     holds.forEach((h, i) => reels[i].classList.toggle('held', h));
@@ -4131,7 +4155,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       for (let k = 0; k < 14; k++) setTimeout(() => sound.tease(), k * 180);
     });
     await Promise.all(stops);
-    cabinet.classList.remove('tease');
+    cabinet.classList.remove('tease', 'spinning');
     reels.forEach(r => r.classList.remove('held'));
     pos = targets;
 
@@ -4851,6 +4875,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       let chip = c.querySelector('.rl-chip');
       if (!amt) { chip?.remove(); return; }
       if (!chip) { chip = document.createElement('i'); chip.className = 'rl-chip'; c.append(chip); }
+      if (chip.dataset.amt !== String(amt)) { chip.dataset.amt = amt; chip.classList.remove('drop'); void chip.offsetWidth; chip.classList.add('drop'); }
       chip.textContent = shortAmt(amt);
       chip.style.setProperty('--chip', chipColor(amt));
       chip.classList.toggle('pending', wait > 0);
@@ -5006,9 +5031,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     for (let k = 0; k < 4; k++) { ctx.rotate(Math.PI / 2); ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -R * 0.2); ctx.stroke(); ctx.beginPath(); ctx.arc(0, -R * 0.2, S * 0.016, 0, Math.PI * 2); ctx.fillStyle = '#fff2c4'; ctx.fill(); }
     ctx.restore();
     ctx.beginPath(); ctx.arc(c, c, S * 0.04, 0, Math.PI * 2); ctx.fillStyle = '#e9a23b'; ctx.fill();
+    // Glare from the lamp above the table
+    const gl = ctx.createRadialGradient(c - R * 0.45, c - R * 0.55, R * 0.05, c - R * 0.3, c - R * 0.35, R * 0.9);
+    gl.addColorStop(0, 'rgba(255,255,255,0.16)'); gl.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(c, c, R, 0, Math.PI * 2); ctx.fill();
     // Ball
     if (ball) {
       const [bx, by] = polar(ball.angle, ball.r * R);
+      ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.ellipse(bx + S * 0.008, by + S * 0.01, S * 0.02, S * 0.014, 0, 0, Math.PI * 2); ctx.fill();
       const bg = ctx.createRadialGradient(bx - S * 0.006, by - S * 0.006, 1, bx, by, S * 0.02);
       bg.addColorStop(0, '#fff'); bg.addColorStop(1, '#bdb6ad');
       ctx.beginPath(); ctx.arc(bx, by, S * 0.019, 0, Math.PI * 2); ctx.fillStyle = bg; ctx.fill();
@@ -5048,7 +5078,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         }
         drawRoulette(wa, { angle: ba, r: br });
         const pk = Math.floor((((ba - wa) % (Math.PI * 2)) + Math.PI * 2) / seg);
-        if (pk !== lastPocket && now - lastTick > 45) { lastPocket = pk; lastTick = now; if (br < 0.7) sound.tick(); }
+        if (pk !== lastPocket && now - lastTick > 45) { lastPocket = pk; lastTick = now; if (br < 0.7) { sound.tick(); audio.clack(); } }
         if (t < 1) requestAnimationFrame(frame);
         else { rlAngle = wa; rlBallRel = pocket; resolve(); }
       })(t0);
@@ -5128,7 +5158,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   }
 
   let rlCur = { id: -1, result: null }, rlFetchingR = false, rlFetchAt = 0, rlAnimFor = -1, rlSubmitting = false, rlClaimingR = false;
-  let rlTableList = [], rlTableFor = -1, rlTableAt = 0, rlAutoFor = -1, rlReadyR = null, rlClaimSoon = true, rlRollSaid = -1;
+  let rlTableList = [], rlTableFor = -1, rlTableAt = 0, rlAutoFor = -1, rlReadyR = null, rlClaimSoon = true, rlRollSaid = -1, rlNoMoreSaid = -1;
   async function rlFetchR(id) {
     if (!backend?.roulette || rlFetchingR || !account) return;
     rlFetchingR = true; rlFetchAt = performance.now();
@@ -5232,7 +5262,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     res.textContent = String(result);
     res.className = 'rl-result ' + rlColor(result);
     res.hidden = false;
-    document.querySelector(`.rl-cell[data-key="n${result}"]`)?.classList.add('hit');
+    const hitCell = document.querySelector(`.rl-cell[data-key="n${result}"]`);
+    hitCell?.classList.add('hit');
+    if (hitCell && !hitCell.querySelector('.rl-dolly')) hitCell.insertAdjacentHTML('beforeend', '<i class="rl-dolly" aria-hidden="true"></i>');
+    voice.say(`${result}, ${i18n(result === 0 ? 'zero' : rlColor(result))}`, { urgent: true, raw: true, rate: 0.95 });
+    audio.noise(0.08, { type: 'lowpass', freq: 700, vol: 0.2 });
     const placed = state.rl.placed?.round === id ? state.rl.placed.bets : {};
     const total = Object.values(placed).reduce((a, v) => a + v, 0);
     const back = rlPayout(placed, result, settings.winMultiplier), net = back - total;
@@ -5246,6 +5280,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (!total) rlSay(`${name}. Place your chips for the next round.`, '');
     else if (net > 0) {
       rlSay(`${name}! You win +${fmt(net)}.`, 'win');
+      audio.coins(straight ? 24 : 10);
       const b = $('rlWheel').getBoundingClientRect();
       fxTop.coinBurst(b.left + b.width / 2, b.top + b.height / 2, straight ? 50 : 22, straight ? 12 : 8);
       if (straight) { fxTop.burst(b.left + b.width / 2, b.top + b.height / 2, 120, 42, 9, false); sound.bigWin(); fireworks(6); } else sound.win();
@@ -5309,6 +5344,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         $('rlResult').hidden = true;
         document.querySelectorAll('.rl-cell.hit, .rl-cell.won').forEach(x => x.classList.remove('hit', 'won'));
         document.querySelectorAll('.rl-chip').forEach(x => x.classList.remove('paid', 'lost'));
+        document.querySelectorAll('.rl-dolly').forEach(x => x.remove());
+        if (watching) voice.say('Place your bets, please.');
         renderRLBets(); renderRLControls(); renderRLTable();
         if (!rlBusy) rlSay('Place your bets! The ball is thrown for everyone in 30 seconds.', 'hot');
       }
@@ -5317,7 +5354,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (!rlOpen(phase) && rlCur.result == null && performance.now() - rlFetchAt > 700) rlFetchR(id);
     // Chips still waiting when time runs out go in by themselves.
     if (rlOpen(phase) && e >= RL_BET - 1500 && rlTotal() > 0 && rlAutoFor !== id && !rlSubmitting) { rlAutoFor = id; rlSubmit(true); }
-    if (watching && phase === 'roll' && rlRollSaid !== id && !rlBusy) { rlRollSaid = id; rlSay('The ball is rolling: last bets!', 'hot'); }
+    if (watching && phase === 'roll' && rlRollSaid !== id && !rlBusy) { rlRollSaid = id; rlSay('The ball is rolling: last bets!', 'hot'); audio.whoosh(); voice.say('Last bets!'); }
+    if (watching && phase === 'closed' && rlNoMoreSaid !== id) { rlNoMoreSaid = id; voice.say('Rien ne va plus.', { raw: true, urgent: true }); audio.bell(1320, 0.04); }
     if (watching && rlCur.result != null && rlAnimFor !== id && (phase === 'spin' || phase === 'result')) {
       rlAnimFor = id;
       const el = e - RL_LAND_AT;
@@ -6143,6 +6181,15 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         c.fillStyle = '#f0c9a0'; c.beginPath(); c.arc(px, py, 2.6, 0, Math.PI * 2); c.fill();
       }
     }
+    // camera flashes in the stands during the final stretch
+    if (running && lead > HR_DIST - 220 && lead < HR_DIST + 30 && !reduceMotion) {
+      for (let k = 0; k < 4; k++) if (Math.random() < 0.5) {
+        const fx = Math.random() * W, fy = gy + Math.random() * gh;
+        const fg = c.createRadialGradient(fx, fy, 0, fx, fy, 14);
+        fg.addColorStop(0, 'rgba(255,255,255,0.95)'); fg.addColorStop(1, 'rgba(255,255,255,0)');
+        c.fillStyle = fg; c.fillRect(fx - 14, fy - 14, 28, 28);
+      }
+    }
     // turf with mowing stripes
     c.fillStyle = night ? '#1f4a2c' : '#4f9a45'; c.fillRect(0, H * 0.38, W, H);
     for (let m = Math.floor(cam / 8) * 8; m < cam + viewM + 8; m += 16) { c.fillStyle = night ? '#245433' : '#58a74d'; c.fillRect(sx(m), trackTop - 4, 8 * ppm, H * 0.955 - trackTop + 4); }
@@ -6251,24 +6298,26 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       const race = v.race, said = hrSaid[race.id] || (hrSaid[race.id] = {});
       const order = v.dist.map((d, i) => [d, i + 1]).sort((a, b) => b[0] - a[0]);
       const leader = order[0][1];
-      if (v.run < 3 && !said.off && v.run > 0) { said.off = 1; hrSay("And they're off!", 'hot'); sound.chime(); sound.rumble(); }
-      if (v.run > 3 && leader !== hrLastLead && order[0][0] < HR_DIST && order[0][0] - order[1][0] > 0.4 && !(said.leadAt > v.run - 1.6)) { said.leadAt = v.run; hrSay(`${hrName(race, leader)} takes the lead!`, 'hot'); }
-      if (order[0][0] > HR_DIST / 2 && !said.half) { said.half = 1; hrSay(`Halfway: ${hrName(race, order[0][1])} ahead of ${hrName(race, order[1][1])}.`, 'hot'); }
-      if (order[0][0] > HR_DIST - 150 && !said.stretch) { said.stretch = 1; hrSay('Into the final stretch!', 'hot'); sound.rumble(); }
+      if (v.run < 3 && !said.off && v.run > 0) { said.off = 1; hrCall("And they're off!", 'hot', true); audio.bell(988, 0.09); audio.bell(988, 0.07, 0.25); sound.rumble(); }
+      if (v.run > 3 && leader !== hrLastLead && order[0][0] < HR_DIST && order[0][0] - order[1][0] > 0.4 && !(said.leadAt > v.run - 2.5)) { said.leadAt = v.run; hrCall(`${hrName(race, leader)} takes the lead!`); }
+      if (order[0][0] > HR_DIST / 2 && !said.half) { said.half = 1; hrCall(`Halfway: ${hrName(race, order[0][1])} ahead of ${hrName(race, order[1][1])}.`); }
+      if (order[0][0] > HR_DIST - 150 && !said.stretch) { said.stretch = 1; hrCall('Into the final stretch!', 'hot', true); sound.rumble(); audio.roar(); }
       const tw = race.plan.T[race.finish[0] - 1];
       if (v.run >= tw && !said.won) {
         said.won = 1;
         hrFlash = race.plan.margin < 0.12 ? 0.85 : 0.35;
-        hrSay(race.plan.margin < 0.12 ? `Photo finish! ${hrName(race, race.finish[0])} wins by a nose!` : `${hrName(race, race.finish[0])} wins!`, 'win');
+        hrCall(race.plan.margin < 0.12 ? `Photo finish! ${hrName(race, race.finish[0])} wins by a nose!` : `${hrName(race, race.finish[0])} wins!`, 'win', true);
+        audio.roar(); audio.roar();
         const mine = hrMine(race.id);
         const won = mine.some(b => hrPays(race, b));
-        if (won) { sound.bigWin(); for (let k = 0; k < 50; k++) fxTop.confetti(CONFETTI); fireworks(6); } else sound.win();
+        if (won) { sound.bigWin(); audio.coins(16); for (let k = 0; k < 50; k++) fxTop.confetti(CONFETTI); fireworks(6); } else sound.win();
       }
       if (v.run >= race.plan.last + 0.8 && !said.done) { said.done = 1; renderHR(); }
       hrLastLead = leader;
-      if (state.sound && v.run < race.plan.last + 1 && performance.now() - hrLastGallop > 95) {
+      // Hoofbeats: a four-beat gallop, louder as the field comes closer to the finish.
+      if (state.sound && v.run < race.plan.last + 1 && performance.now() - hrLastGallop > 70) {
         hrLastGallop = performance.now();
-        sound.tone(70 + Math.random() * 60, 0, 0.05, 'triangle', 0.035 + Math.min(0.03, v.run / 800));
+        audio.hoof(0.06 + Math.min(0.08, order[0][0] / HR_DIST * 0.08));
       }
     } else hrLastLead = 0;
     requestAnimationFrame(hrFrame);
@@ -6280,6 +6329,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     requestAnimationFrame(hrFrame);
   }
   function hrSay(text, kind = '') { showMessage($('hrMsg'), text, kind); }
+  // The race caller says it too.
+  function hrCall(text, kind = 'hot', urgent = false) { hrSay(text, kind); voice.say(text, { urgent, rate: 1.15, pitch: 1.05 }); }
   const hrMine = id => hrBetsFor === id ? hrBetList.filter(b => !b.player || b.player === account?.id) : [];
   const hrPays = (race, b) => race.finish && (b.kind === 'win' ? race.finish[0] === b.horse : race.finish.slice(0, 2).includes(b.horse));
   async function hrLoadBets(id) {
@@ -6394,8 +6445,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const open = phase === 'bet' && hrReady !== false && !!race?.win;
     if (open !== hrFieldOpen || hrFieldFor !== (race?.win ? id : -1) || (over && !hrShown[id])) renderHR();
     if (phase === 'bet' && HR_BET - e < 10000 && Math.floor((HR_BET - e) / 1000) !== hrLastTick) { hrLastTick = Math.floor((HR_BET - e) / 1000); if (state.mode === 'hr') sound.tick(); }
+    if (phase === 'bet' && HR_BET - e < 20000 && hrBugled !== id && state.mode === 'hr') { hrBugled = id; audio.bugle(); setTimeout(() => voice.say('The horses are going to the post.'), 1800); }
+    if (phase === 'gate' && hrGated !== id && state.mode === 'hr') { hrGated = id; voice.say('They are in the gates.', { urgent: true }); }
   }
-  let hrFieldOpen = null, hrFieldFor = -1, hrShown = {}, hrLastTick = -1;
+  let hrFieldOpen = null, hrFieldFor = -1, hrShown = {}, hrLastTick = -1, hrBugled = -1, hrGated = -1;
   // The field: six horses with odds and a bet button each; after the race, the result.
   function renderHR() {
     if (!account) return;
@@ -6569,7 +6622,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // about 5 s, 10× after about 17 s and 200× (the moon) after 40 s. With the online database the explosion point is
   // drawn and kept on the server, which also checks every cash-out against its own clock. Must match the "Rocket"
   // part of supabase-setup.sql.
-  const RK_BET = 25000, RK_FULL = 40000, RK_CAP = 200;
+  const RK_BET = 25000, RK_FULL = 40000, RK_CAP = 200, RK_MILES = [2, 5, 10, 25, 50, 100];
   // One rocket in 300 is golden and flies past 30× for sure (then P(reaching m) = 30 / m). To pay for that the
   // ordinary rockets reach m with P = 0.87 / m, so a player who holds every golden one to 30× still gets about 96.7%.
   const RK_GOLD = 30, RK_GOLD_CHANCE = 1 / 300, RK_EDGE = 0.87;
@@ -6649,6 +6702,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       // A golden rocket shows itself at liftoff: it will make it past 30×.
       if (next.golden && !wasGold && state.mode === 'rk' && hrNow() - next.launch < 5000) {
         rkSay(`Golden rocket! This one flies past ${RK_GOLD}× for sure.`, 'win');
+        voice.say('Golden rocket!', { urgent: true, pitch: 1.15 });
         sound.star(); sound.chime();
         const b = $('rkView').getBoundingClientRect();
         fxTop.burst(b.left + b.width / 2, b.top + b.height / 2, 90, 30, 8, false);
@@ -6730,6 +6784,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       const res = await backend.rocket.cashout(rkCur.id);
       const m = Number(res.mult), pay = Number(res.payout) || 0;
       serverCredits(res, pay);
+      audio.kaching();
       if (hasG('rkTurbo')) goodieBonus(pay * 0.03, 'rkTurbo');
       mine.cashed = m; mine.payout = pay; mine.claimed = true;
       state.rk.open = state.rk.open.filter(r => r !== rkCur.id);
@@ -6802,7 +6857,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const rkStars = Array.from({ length: 140 }, (_, i) => { const r = hrRng(i, 21); return { x: r(), y: r(), d: 0.2 + r() * 0.8, s: 0.6 + r() * 1.6, tw: r() * 6 }; });
   const rkScene = {
     parts: [], chutes: [], boomAt: 0, shake: 0, lastRound: -1, lastLaunch: 0,
-    reset() { this.parts = []; this.chutes = []; this.boomAt = 0; this.shake = 0; this.dust = []; this.touched = false; },
+    reset() { this.parts = []; this.chutes = []; this.boomAt = 0; this.shake = 0; this.dust = []; this.touched = false; this.mile = 1; this.mileAt = 0; },
     chute(pid, name, m) { if (!this.chutes.some(c => c.pid === pid)) this.chutes.push({ pid, name, m, at: performance.now(), x: (Math.random() - 0.5) * 0.3 }); },
   };
   function rkRocket(c, x, y, s, flame, tilt, gold = false, legs = 0) {
@@ -7024,6 +7079,25 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     let tilt = flying ? Math.sin(t / 500) * 0.04 : 0;
     const shakePad = p.phase === 'bet' && p.left < 3000 ? (3000 - p.left) / 3000 : 0;
     if (shakePad) rx += (Math.random() - 0.5) * 3 * shakePad;
+    if (flying) {
+      // the faster it goes, the more it shakes and the hotter it glows
+      rx += (Math.random() - 0.5) * prog * 5; ry += (Math.random() - 0.5) * prog * 3;
+      if (prog > 0.25) {
+        const hg = c.createRadialGradient(rx, ry, 10, rx, ry, 90 * rs * (0.6 + prog));
+        hg.addColorStop(0, `rgba(255,${gold ? 220 : 150},60,${(prog - 0.25) * 0.45})`); hg.addColorStop(1, 'rgba(255,120,40,0)');
+        c.fillStyle = hg; c.beginPath(); c.arc(rx, ry, 90 * rs * (0.6 + prog), 0, Math.PI * 2); c.fill();
+      }
+      // shock cone lines at high speed
+      if (prog > 0.35) {
+        c.strokeStyle = `rgba(255,255,255,${(prog - 0.35) * 0.5})`; c.lineWidth = 1.5;
+        for (let i = 0; i < 6; i++) { const a = -Math.PI / 2 + (i - 2.5) * 0.25; c.beginPath(); c.moveTo(rx + Math.cos(a) * 50 * rs, ry - 40 * rs + Math.sin(a) * 20); c.lineTo(rx + Math.cos(a) * 90 * rs, ry + 60 * rs); c.stroke(); }
+      }
+    }
+    if (rkScene.mileAt && performance.now() - rkScene.mileAt < 700) {
+      const age = (performance.now() - rkScene.mileAt) / 700;
+      c.strokeStyle = `rgba(255,242,196,${1 - age})`; c.lineWidth = 4 * (1 - age) + 1;
+      c.beginPath(); c.arc(W / 2, H * 0.2, 40 + age * 160, 0, Math.PI * 2); c.stroke();
+    }
     if (!boom || p.since < 30) {
       rkRocket(c, rx, ry, rs, flying ? 0.6 + prog : shakePad, tilt, gold);
       // smoke trail (with gold sparkles behind a golden rocket)
@@ -7088,7 +7162,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       if (s <= 5) big(s <= 0 ? i18n('Liftoff!') : String(s), Math.min(110, H * 0.32), '#fff2c4', H * 0.38);
       else big(`0:${String(s).padStart(2, '0')}`, Math.min(54, H * 0.17), '#ffffff', H * 0.2);
     } else if (flying) {
-      big(`${p.m.toFixed(2)}×`, Math.min(78, H * 0.22) * (1 + Math.min(0.25, prog * 0.3)), col);
+      const pop = rkScene.mileAt ? Math.max(0, 1 - (performance.now() - rkScene.mileAt) / 400) * 0.25 : 0;
+      big(`${p.m.toFixed(2)}×`, Math.min(78, H * 0.22) * (1 + Math.min(0.25, prog * 0.3) + pop), col);
       if (gold && air < 4) big(i18n('Golden rocket!'), Math.min(34, H * 0.1), '#fff2c4', H * 0.36);
     }
     else if (boom) { big(`${p.m.toFixed(2)}×`, Math.min(70, H * 0.2), '#e0414a'); big(i18n('BOOM!'), Math.min(40, H * 0.12), '#ffb347', H * 0.36); }
@@ -7100,18 +7175,27 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (!(state.mode === 'rk' && account && $('lobby').hidden && $('shopPage').hidden && !document.hidden)) { rkFrameOn = false; return; }
     const now = hrNow(), p = rkDraw(now);
     if (p.phase !== rkLastPhase) {
-      if (p.phase === 'fly' && rkLastPhase === 'bet') { sound.rumble(); sound.chime(); rkSay('Liftoff! Cash out before it blows.', 'hot'); }
+      if (p.phase === 'fly' && rkLastPhase === 'bet') { sound.rumble(); audio.whoosh(); audio.noise(1.2, { type: 'lowpass', freq: 200, to: 900, vol: 0.3, attack: 0.05 }); rkSay('Liftoff! Cash out before it blows.', 'hot'); voice.say('Liftoff!', { urgent: true }); }
       if (p.phase === 'boom' && p.since < 3000) {
-        sound.boom(); sound.thunder();
+        sound.boom(); sound.thunder(); audio.boom();
+        for (let k = 0; k < 8; k++) setTimeout(() => sound.crackle(), 300 + k * 90);
         const mine = rkMine();
         rkSay(mine && mine.payout == null && !(mine.auto && mine.auto < p.m) ? `Boom at ${p.m.toFixed(2)}×. Your ${fmt(mine.amount)} went up in smoke.` : `Boom at ${p.m.toFixed(2)}×!`, 'lose');
       }
-      if (p.phase === 'moon' && p.since < 3000) { sound.fanfare(); for (let i = 0; i < 80; i++) fxTop.confetti(CONFETTI); fireworks(12); rkSay(`To the moon! Everyone still on board gets ${RK_CAP}×.`, 'win'); }
+      if (p.phase === 'moon' && p.since < 3000) { sound.fanfare(); voice.say('Touchdown! We are on the moon!', { urgent: true }); setTimeout(() => audio.noise(0.5, { type: 'lowpass', freq: 300, vol: 0.4 }), 2600); for (let i = 0; i < 80; i++) fxTop.confetti(CONFETTI); fireworks(12); rkSay(`To the moon! Everyone still on board gets ${RK_CAP}×.`, 'win'); }
       rkLastPhase = p.phase;
       renderRK();
     }
-    if (p.phase === 'fly' && state.sound && performance.now() - rkLastTone > 140) { rkLastTone = performance.now(); sound.tone(90 + Math.log(p.m) * 60 + Math.random() * 20, 0, 0.12, 'sawtooth', 0.012); }
-    if (p.phase === 'bet' && p.left < 5000 && Math.ceil(p.left / 1000) !== rkLastCount) { rkLastCount = Math.ceil(p.left / 1000); sound.tick(); }
+    // Milestones on the way up: a ring of light, a chord and the number called out.
+    if (p.phase === 'fly') {
+      const next = RK_MILES.find(x => x > (rkScene.mile || 1));
+      if (next && p.m >= next) { rkScene.mile = next; rkScene.mileAt = performance.now(); [523, 659, 784].forEach((f, i) => sound.tone(f * Math.min(4, 1 + Math.log2(next) / 3), i * 0.04, 0.3, 'triangle', 0.05)); if (next >= 10) voice.say(`${next} times!`, { urgent: true }); }
+    }
+    if (p.phase === 'bet' && p.left < 5000 && Math.ceil(p.left / 1000) !== rkLastCount) {
+      rkLastCount = Math.ceil(p.left / 1000);
+      sound.tone(rkLastCount <= 1 ? 1320 : 880, 0, 0.12, 'sine', 0.07);
+      if (rkLastCount <= 3 && rkLastCount >= 1) voice.say(String(rkLastCount), { urgent: true, raw: true, rate: 1.2 });
+    }
     if (p.phase === 'fly') renderRKControls(p);
     requestAnimationFrame(rkFrame);
   }
@@ -7215,6 +7299,124 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   addEventListener('resize', () => { if (state.mode === 'rk') rkResize(); });
   document.addEventListener('visibilitychange', () => { if (!document.hidden && state.mode === 'rk' && account && !rkFrameOn) { rkFrameOn = true; requestAnimationFrame(rkFrame); } });
   setInterval(rkTick, 200);
+
+  // ---------- Atmosphere ----------
+  // Richer sounds built from filtered noise, a room tone per game (casino murmur, the crowd at the track, the
+  // rocket's engine), one continuous effect per game (spinning reels, the rolling ball) and a voice for the
+  // croupier and the race caller. Everything follows the sound switch; the voice has its own.
+  const audio = {
+    buf: null,
+    noiseBuf(c) {
+      if (!this.buf) {
+        const len = c.sampleRate * 2, b = c.createBuffer(1, len, c.sampleRate), d = b.getChannelData(0);
+        for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+        this.buf = b;
+      }
+      return this.buf;
+    },
+    // A burst of filtered noise: clacks, hoofbeats, whooshes, booms.
+    noise(dur, { type = 'bandpass', freq = 1000, to = null, q = 1, vol = 0.2, at = 0, attack = 0.004 } = {}) {
+      const c = sound.ensure();
+      if (!c) return;
+      const t = c.currentTime + at;
+      const src = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+      src.buffer = this.noiseBuf(c);
+      f.type = type; f.Q.value = q;
+      f.frequency.setValueAtTime(freq, t);
+      if (to) f.frequency.exponentialRampToValueAtTime(to, t + dur);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + attack);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      src.connect(f).connect(g).connect(c.destination);
+      src.start(t, Math.random() * 1.5);
+      src.stop(t + dur + 0.05);
+    },
+    // A bell: a few inharmonic partials that ring out.
+    bell(freq = 880, vol = 0.08, at = 0) { [1, 2.76, 5.4].forEach((k, i) => sound.tone(freq * k, at, 1.6 / (i + 1), 'sine', vol / (i + 1))); },
+    coin(at = 0) { sound.tone(2400 + Math.random() * 600, at, 0.08, 'triangle', 0.05); sound.tone(3600 + Math.random() * 500, at + 0.02, 0.12, 'sine', 0.035); },
+    coins(n, gap = 0.06) { for (let i = 0; i < n; i++) this.coin(i * gap * (0.8 + Math.random() * 0.4)); },
+    kaching() { this.noise(0.12, { type: 'highpass', freq: 3000, vol: 0.12 }); sound.tone(1568, 0.05, 0.25, 'triangle', 0.06); sound.tone(2093, 0.12, 0.4, 'triangle', 0.06); this.coins(5, 0.05); },
+    boom() { this.noise(1.6, { type: 'lowpass', freq: 900, to: 60, vol: 0.55, attack: 0.01 }); this.noise(0.5, { type: 'bandpass', freq: 2000, to: 300, vol: 0.2 }); sound.tone(55, 0, 0.9, 'sine', 0.2); },
+    clack() { this.noise(0.03, { type: 'bandpass', freq: 3000 + Math.random() * 2000, q: 4, vol: 0.12 }); },
+    hoof(vol = 0.1) { this.noise(0.05, { type: 'lowpass', freq: 380 + Math.random() * 160, vol }); },
+    whoosh() { this.noise(0.9, { type: 'bandpass', freq: 300, to: 3000, q: 0.7, vol: 0.12, attack: 0.25 }); },
+    roar() { this.noise(2.5, { type: 'bandpass', freq: 700, to: 1200, q: 0.6, vol: 0.18, attack: 0.4 }); },
+    // Call to the post: the bugle before a race.
+    bugle() { [[392, 0], [523, 0.18], [659, 0.36], [784, 0.54], [659, 0.9], [784, 1.08], [1047, 1.26]].forEach(([f, at], i) => sound.tone(f, at, i === 6 ? 0.9 : 0.2, 'square', 0.035)); },
+  };
+  // Looping noise through a filter, with smooth level and pitch changes.
+  function makeLoop(type, freq, q = 1) {
+    const c = sound.ensure();
+    if (!c) return null;
+    const src = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+    src.buffer = audio.noiseBuf(c); src.loop = true;
+    f.type = type; f.frequency.value = freq; f.Q.value = q;
+    g.gain.value = 0.0001;
+    src.connect(f).connect(g).connect(c.destination);
+    src.start();
+    return {
+      set(vol, fr) { const t = c.currentTime; g.gain.setTargetAtTime(Math.max(0.0001, vol), t, 0.25); if (fr) f.frequency.setTargetAtTime(fr, t, 0.3); },
+      stop() { const t = c.currentTime; g.gain.setTargetAtTime(0.0001, t, 0.2); setTimeout(() => { try { src.stop(); } catch {} }, 900); },
+    };
+  }
+  const loops = { amb: null, ambKind: '', fx: null, fxKind: '' };
+  function loopTo(slot, kind, make) {
+    if (loops[slot + 'Kind'] === kind) return loops[slot];
+    loops[slot]?.stop();
+    loops[slot] = kind ? make() : null;
+    loops[slot + 'Kind'] = kind && loops[slot] ? kind : '';
+    return loops[slot];
+  }
+  // The voice: the croupier and the race caller, in the page's language.
+  const voice = {
+    on: () => state.sound && state.voice !== false && 'speechSynthesis' in window,
+    say(text, { urgent = false, rate = 1.08, pitch = 1, raw = false } = {}) {
+      if (!this.on()) return;
+      try {
+        if (urgent) speechSynthesis.cancel();
+        if (speechSynthesis.pending && !urgent) return;
+        const u = new SpeechSynthesisUtterance(raw ? text : i18n(text));
+        u.lang = lang === 'de' ? 'de-DE' : 'en-GB';
+        u.rate = rate; u.pitch = pitch; u.volume = 0.9;
+        speechSynthesis.speak(u);
+      } catch {}
+    },
+  };
+  // Ten times a second: which room tone and which continuous effect fit what is on screen.
+  function atmosTick() {
+    const watching = account && state.sound && $('lobby').hidden && $('shopPage').hidden && !document.hidden;
+    const mode = watching ? state.mode : '';
+    // room tone
+    const ambKind = mode === 'hr' ? 'crowd' : mode === 'rk' ? 'wind' : mode ? 'casino' : '';
+    const amb = loopTo('amb', ambKind, () => ambKind === 'crowd' ? makeLoop('bandpass', 750, 0.5) : ambKind === 'wind' ? makeLoop('lowpass', 260, 0.7) : makeLoop('bandpass', 420, 0.4));
+    if (amb) {
+      if (ambKind === 'crowd') {
+        const { phase, run, id } = hrPhaseOf(hrNow()), race = hrRaces.get(id);
+        const live = phase === 'race' && race?.plan && run < race.plan.last + 3;
+        const lead = live ? Math.max(...race.plan.T.map((_, i) => hrDistAt(race.plan, i, run))) : 0;
+        amb.set(live ? 0.04 + Math.min(1, lead / HR_DIST) * 0.1 : phase === 'gate' ? 0.06 : 0.025, live ? 700 + lead / HR_DIST * 500 : 700);
+      } else if (ambKind === 'wind') {
+        const p = rkPhase(hrNow());
+        amb.set(p.phase === 'fly' ? 0.03 + Math.log(p.m) / Math.log(RK_CAP) * 0.06 : 0.012, p.phase === 'fly' ? 260 + Math.log(p.m) * 120 : 260);
+      } else amb.set(0.012 + Math.sin(performance.now() / 2300) * 0.004, 420);
+    }
+    // continuous effect
+    let fxKind = '', vol = 0, fr = 0;
+    if (mode === 'slots' && cabinet.classList.contains('spinning')) { fxKind = 'reels'; vol = 0.05; fr = 900; }
+    else if (mode === 'rl') {
+      const { phase, e } = rlPhaseOf(hrNow());
+      if (phase === 'roll' || phase === 'closed') { fxKind = 'ball'; const sp = rlRollAt(e - RL_ROLL).wb / RL_V0; vol = 0.03 + sp * 0.05; fr = 1600 + sp * 1600; }
+      else if (phase === 'spin' && rlBusy) { const f2 = Math.max(0, 1 - (e - RL_LAND_AT) / (RL_LAND * 0.7)); fxKind = 'ball'; vol = 0.0001 + f2 * 0.06; fr = 900 + f2 * 1500; }
+    } else if (mode === 'rk') {
+      const p = rkPhase(hrNow());
+      if (p.phase === 'fly') { fxKind = 'engine'; const pr = Math.log(p.m) / Math.log(RK_CAP); vol = 0.06 + pr * 0.12; fr = 110 + pr * 520; }
+      else if (p.phase === 'bet' && p.left < 3000) { fxKind = 'engine'; vol = 0.02 + (3000 - p.left) / 3000 * 0.05; fr = 90; }
+    }
+    const fx = loopTo('fx', fxKind, () => fxKind === 'engine' ? makeLoop('lowpass', 120, 1.2) : fxKind === 'ball' ? makeLoop('bandpass', 2400, 2.5) : makeLoop('bandpass', 900, 1.5));
+    if (fx) fx.set(vol, fr);
+  }
+  setInterval(atmosTick, 100);
+  $('voice').addEventListener('click', () => { state.voice = state.voice === false; if (!state.voice) try { speechSynthesis.cancel(); } catch {} render(); });
 
   // ---------- Poker ----------
   // Cards are 0-51: rank = code >> 2 (0 = two … 12 = ace), suit = code & 3.
@@ -8493,6 +8695,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const chips = [];
     if (inBonus) chips.unshift(`<span class="boost-chip bonus">Free spin ${freeDone} · bonus +${fmt(state.freeTotal)}</span>`);
     $('sound').textContent = `Sound: ${state.sound ? 'on' : 'off'}`;
+    $('voice').textContent = `Voice: ${state.voice !== false ? 'on' : 'off'}`;
 
     const canNudge = nudgeOpen && state.nudges > 0;
     $('reelCtl').hidden = busy || !(holdOffer || canNudge);
