@@ -2207,6 +2207,9 @@ $$;
 -- creates an account with that code starts with 5,000 credits instead of 500,
 -- and the code's owner gets 5% of their current credits on top. Each new
 -- account can use one code, only in its first 30 minutes and not its own.
+-- The bonus is only for the first account on a device: every page has a
+-- device key, and a code is refused on a device another account has used.
+-- Run this part again if you ran an older copy.
 
 alter table public.players add column if not exists affiliate_code text unique
   check (affiliate_code ~ '^[A-Z0-9]{3,12}$');
@@ -2220,12 +2223,37 @@ create table if not exists public.affiliate_uses (
   bonus bigint not null,
   created_at timestamptz not null default now()
 );
+alter table public.affiliate_uses add column if not exists device text;
+create unique index if not exists affiliate_uses_device on public.affiliate_uses (device) where device is not null;
 alter table public.affiliate_uses enable row level security;
 revoke all on public.affiliate_uses from anon, authenticated;
 grant select on public.affiliate_uses to authenticated;
 drop policy if exists "See your own affiliate uses" on public.affiliate_uses;
 create policy "See your own affiliate uses" on public.affiliate_uses
   for select to authenticated using (auth.uid() = affiliate or auth.uid() = new_player);
+
+-- Which devices each account has been used on (only for the affiliate check).
+create table if not exists public.player_devices (
+  device text not null check (length(device) between 8 and 64),
+  player uuid not null references public.players (id) on delete cascade,
+  seen_at timestamptz not null default now(),
+  primary key (device, player)
+);
+alter table public.player_devices enable row level security;
+revoke all on public.player_devices from anon, authenticated;
+
+create or replace function public.note_device(dev text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if auth.uid() is null or dev is null or length(dev) not between 8 and 64 then return; end if;
+  insert into public.player_devices (device, player) values (dev, auth.uid())
+    on conflict (device, player) do update set seen_at = now();
+end;
+$$;
 
 -- Is there a player with this code? (Asked on the sign-up screen, before the account exists.)
 create or replace function public.affiliate_check(code text)
@@ -2259,7 +2287,8 @@ end;
 $$;
 
 -- Use a code right after creating an account: 4,500 extra for me, 5% of their credits for the code's owner.
-create or replace function public.affiliate_redeem(code text)
+drop function if exists public.affiliate_redeem(text);
+create or replace function public.affiliate_redeem(code text, dev text default null)
 returns jsonb
 language plpgsql
 security definer
@@ -2274,6 +2303,9 @@ begin
   if auth.uid() is null then raise exception 'not allowed'; end if;
   if exists (select 1 from public.affiliate_uses where new_player = auth.uid()) then raise exception 'code already used'; end if;
   if (select created_at from auth.users where id = auth.uid()) < now() - interval '30 minutes' then raise exception 'only for new accounts'; end if;
+  if dev is null or length(dev) not between 8 and 64 then raise exception 'reload the page'; end if;
+  if exists (select 1 from public.player_devices d where d.device = dev and d.player <> auth.uid())
+     or exists (select 1 from public.affiliate_uses u where u.device = dev) then raise exception 'device already has an account'; end if;
   select * into aff from public.players where affiliate_code = c for update;
   if aff.id is null or aff.is_banned then raise exception 'no such code'; end if;
   if aff.id = auth.uid() then raise exception 'not your own code'; end if;
@@ -2282,14 +2314,17 @@ begin
   bonus := floor(aff.credits * 0.05)::bigint;
   update public.players set credits = credits + bonus, admin_rev = admin_rev + 1, updated_at = now() where id = aff.id;
   update public.players set credits = credits + 4500, admin_rev = admin_rev + 1, updated_at = now() where id = me.id;
-  insert into public.affiliate_uses (new_player, new_name, affiliate, code, bonus) values (me.id, me.name, aff.id, c, bonus);
+  insert into public.affiliate_uses (new_player, new_name, affiliate, code, bonus, device) values (me.id, me.name, aff.id, c, bonus, dev);
+  insert into public.player_devices (device, player) values (dev, me.id) on conflict do nothing;
   return jsonb_build_object('credits', me.credits + 4500, 'rev', me.admin_rev + 1, 'affiliate', aff.name);
 end;
 $$;
 
 revoke execute on function public.affiliate_check(text) from public;
 revoke execute on function public.set_affiliate_code(text) from public, anon;
-revoke execute on function public.affiliate_redeem(text) from public, anon;
+revoke execute on function public.affiliate_redeem(text, text) from public, anon;
+revoke execute on function public.note_device(text) from public, anon;
+grant execute on function public.note_device(text) to authenticated;
 grant execute on function public.affiliate_check(text) to anon, authenticated;
 grant execute on function public.set_affiliate_code(text) to authenticated;
-grant execute on function public.affiliate_redeem(text) to authenticated;
+grant execute on function public.affiliate_redeem(text, text) to authenticated;

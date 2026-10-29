@@ -1931,7 +1931,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     <label class="field"><span class="label">Password</span><input id="loginPass" name="password" type="password" autocomplete="current-password"></label>
     <label class="field" id="pass2Field" hidden><span class="label">Repeat password</span><input id="loginPass2" name="password2" type="password" autocomplete="new-password"></label>
     <label class="field" id="affField" hidden><span class="label">Affiliate code (optional)</span><input id="loginAff" name="affiliate" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="12" placeholder="e.g. LUKAS7"></label>
-    <p class="login-hint" id="affHint" hidden>Got a code from a friend? You start with 5,000 credits instead of 500.</p>
+    <p class="login-hint" id="affHint" hidden>Got a code from a friend? You start with 5,000 credits instead of 500 (first account on this device only).</p>
     <p class="login-error" id="loginError" role="alert"></p>
     <button class="spin" id="loginBtn" type="submit" disabled>Connecting…</button>
     <p class="mode-switch" id="modeSwitch" hidden><span id="modeText">New here?</span><button type="button" class="link-btn" id="modeBtn">Create an account</button></p>
@@ -2813,7 +2813,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Affiliate codes have 3 to 12 letters or digits.': 'Affiliate-Codes haben 3 bis 12 Buchstaben oder Ziffern.',
     'Affiliate codes need the “Affiliate codes” part of supabase-setup.sql.': 'Affiliate-Codes brauchen den Abschnitt „Affiliate codes“ aus supabase-setup.sql.',
     'No player has that affiliate code. Check it, or leave the field empty.': 'Diesen Affiliate-Code hat niemand. Prüf ihn oder lass das Feld leer.',
-    'Affiliate bonus': 'Affiliate-Bonus', 'Affiliate code': 'Affiliate-Code', 'Your affiliate code': 'Dein Affiliate-Code', 'Affiliate code saved': 'Affiliate-Code gespeichert',
+    'Affiliate bonus': 'Affiliate-Bonus', 'No affiliate bonus': 'Kein Affiliate-Bonus',
+    'The affiliate bonus is only for the first account on a device. Leave the code empty to create the account without it.': 'Den Affiliate-Bonus gibt es nur für das erste Konto auf einem Gerät. Lass das Feld leer, um das Konto ohne Bonus zu erstellen.',
+    'This device already has an account, so there is no affiliate bonus.': 'Auf diesem Gerät gibt es schon ein Konto, deshalb gibt es keinen Affiliate-Bonus.',
+    'Reload the page to use affiliate codes.': 'Lade die Seite neu, um Affiliate-Codes zu nutzen.', 'The affiliate code could not be used.': 'Der Affiliate-Code konnte nicht eingelöst werden.',
+    'Got a code from a friend? You start with 5,000 credits instead of 500 (first account on this device only).': 'Code von einem Freund? Dann startest du mit 5,000 statt 500 Credits (nur beim ersten Konto auf diesem Gerät).', 'Affiliate code': 'Affiliate-Code', 'Your affiliate code': 'Dein Affiliate-Code', 'Affiliate code saved': 'Affiliate-Code gespeichert',
     'Copy': 'Kopieren', 'Copied!': 'Kopiert!', 'Create': 'Erstellen', 'Change': 'Ändern', 'New code': 'Neuer Code',
     'New players who use it start with 5,000 credits.': 'Neue Spieler, die ihn nutzen, starten mit 5,000 Credits.',
     'New players who sign up with your code start with 5,000 credits, and you get 5% of your credits on top.': 'Neue Spieler, die sich mit deinem Code anmelden, starten mit 5,000 Credits, und du bekommst 5 % deiner Credits obendrauf.',
@@ -8497,6 +8501,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         return code;
       },
       async affiliateRedeem(key, code) {
+        if (seenAccounts().some(id => id !== key)) throw new Error('device already has an account');
         const me = await store.load(key), owner = players.find(p => p.affCode === code && !p.banned);
         if (!me || me.affUsed || (Number(me.spins) || 0) > 0) throw new Error('only for new accounts');
         if (!owner) throw new Error('no such code');
@@ -8928,7 +8933,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         return !!data;
       },
       async setAffiliateCode(code) { const { data, error } = await sb.rpc('set_affiliate_code', { code }); if (error) throw error; return data; },
-      async affiliateRedeem(key, code) { const { data, error } = await sb.rpc('affiliate_redeem', { code }); if (error) throw error; return data; },
+      async affiliateRedeem(key, code, dev) { const { data, error } = await sb.rpc('affiliate_redeem', { code, dev }); if (error) throw error; return data; },
+      async noteDevice(dev) { await sb.rpc('note_device', { dev }); },
       async affiliateStats() {
         const { data, error } = await sb.from('affiliate_uses').select('bonus').eq('affiliate', account.id);
         if (error) throw error;
@@ -9232,6 +9238,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     }
     saved.adminRev = rev;
     account = { id: key, name: doc.name || key, isAdmin: !!doc.admin };
+    noteDevice(key);
     adminUnlocked = false;
     lastSaved = '';
     loadState(saved);
@@ -10241,6 +10248,23 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     norow: 'Your login was created, but the game has no place for new players yet. Ask the person who runs the game to finish the setup.',
   };
 
+  // A key for this browser, and the accounts seen on it: the affiliate bonus is only for a device's first account.
+  const DEVICE_KEY = 'lucky-reels-device', SEEN_KEY = 'lucky-reels-device-accounts';
+  function deviceId() {
+    let id = null;
+    try { id = localStorage.getItem(DEVICE_KEY); } catch {}
+    if (!id) id = document.cookie.match(/(?:^|; )lrdev=([\w-]{8,64})/)?.[1] || null;
+    if (!id) id = crypto.randomUUID ? crypto.randomUUID() : newSalt() + newSalt();
+    try { localStorage.setItem(DEVICE_KEY, id); } catch {}
+    try { document.cookie = `lrdev=${id}; max-age=${60 * 60 * 24 * 400}; path=/; SameSite=Lax`; } catch {}
+    return id;
+  }
+  const seenAccounts = () => { try { return JSON.parse(localStorage.getItem(SEEN_KEY) || '[]'); } catch { return []; } };
+  function noteDevice(id) {
+    const list = seenAccounts();
+    if (!list.includes(id)) { list.push(id); try { localStorage.setItem(SEEN_KEY, JSON.stringify(list.slice(-20))); } catch {} }
+    backend?.noteDevice?.(deviceId())?.catch?.(() => {});
+  }
   const affNorm = v => String(v || '').trim().toUpperCase();
   const AFF_RE = /^[A-Z0-9]{3,12}$/;
   async function createAccount(name, pw) {
@@ -10252,6 +10276,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       : code && !AFF_RE.test(code) ? 'Affiliate codes have 3 to 12 letters or digits.' : '';
     if (problem) { err.textContent = problem; return; }
     // Check the code before the account exists, so a typo doesn't cost the bonus.
+    if (code && seenAccounts().length) { err.textContent = 'The affiliate bonus is only for the first account on a device. Leave the code empty to create the account without it.'; return; }
     if (code) {
       const ok = await backend.affiliateCheck(code).catch(() => null);
       if (ok === null) { err.textContent = 'Affiliate codes need the “Affiliate codes” part of supabase-setup.sql.'; return; }
@@ -10259,13 +10284,16 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     }
     const res = await backend.signUp(name, pw);
     if (res.status !== 'ok') { err.textContent = SIGNUP_ERRORS[res.status] || 'Could not create the account. Try again.'; return; }
-    let from = '';
+    let from = '', affErr = '';
     if (code) {
       try {
-        const r = await backend.affiliateRedeem(res.found.key, code);
+        const r = await backend.affiliateRedeem(res.found.key, code, deviceId());
         from = r?.affiliate || '';
         res.found.doc = (await backend.loadOwn(res.found.key)) || res.found.doc;
-      } catch {}
+      } catch (e) {
+        const m = e?.message || '';
+        affErr = /device/.test(m) ? 'This device already has an account, so there is no affiliate bonus.' : /reload/.test(m) ? 'Reload the page to use affiliate codes.' : 'The affiliate code could not be used.';
+      }
     }
     setMode(false);
     $('loginAff').value = '';
@@ -10273,6 +10301,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     sound.chime();
     if (from) { toast('Affiliate bonus', `Thanks to ${from}'s code you start with ${fmt(state.credits)} credits!`); for (let k = 0; k < 40; k++) fxTop.confetti(CONFETTI); }
     else toast('Account created', `Welcome, ${account.name}! You start with ${fmt(state.credits)} credits.`);
+    if (affErr) toast('No affiliate bonus', affErr);
   }
 
   $('loginForm').addEventListener('submit', async e => {
