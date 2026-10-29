@@ -2166,6 +2166,30 @@ begin
 end;
 $$;
 
+-- Change or switch off my automatic cash-out, also while the rocket is in the air (only to a value it hasn't reached yet).
+create or replace function public.rocket_set_auto(round bigint, auto_at numeric)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+  r public.rocket_rounds;
+  m numeric := 1;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  select * into r from public.rocket_rounds where id = round;
+  if r.id is null then raise exception 'no such round'; end if;
+  if now_ms >= r.launch then m := public.rocket_mult(now_ms - r.launch); end if;
+  if now_ms >= r.crash_at or m >= r.crash then perform public.rocket_settle(round); raise exception 'crashed'; end if;
+  if auto_at is not null and (auto_at < 1.01 or auto_at > 200) then raise exception 'auto cash-out must be 1.01 to 200'; end if;
+  if auto_at is not null and auto_at <= m then raise exception 'too low'; end if;
+  update public.rocket_bets set auto = auto_at where round_id = round and player = auth.uid() and payout is null;
+  if not found then raise exception 'no bet'; end if;
+end;
+$$;
+
 -- Collects finished rounds of mine (automatic cash-outs and moon landings) onto my balance.
 create or replace function public.rocket_claim()
 returns jsonb
@@ -2208,6 +2232,8 @@ revoke execute on function public.rocket_state() from public, anon;
 revoke execute on function public.rocket_bet(bigint, bigint, numeric) from public, anon;
 revoke execute on function public.rocket_cashout(bigint) from public, anon;
 revoke execute on function public.rocket_claim() from public, anon;
+revoke execute on function public.rocket_set_auto(bigint, numeric) from public, anon;
+grant execute on function public.rocket_set_auto(bigint, numeric) to authenticated;
 grant execute on function public.rocket_state() to authenticated;
 grant execute on function public.rocket_bet(bigint, bigint, numeric) to authenticated;
 grant execute on function public.rocket_cashout(bigint) to authenticated;

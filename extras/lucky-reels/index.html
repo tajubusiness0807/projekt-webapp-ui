@@ -2957,6 +2957,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'player': 'Spieler', 'players': 'Spieler',
     'New title': 'Neuer Titel', 'Remove “Bug Abuser”': '„Bug Abuser“ entfernen', 'Give this player the title Bug Abuser': 'Diesem Spieler den Titel Bug Abuser geben', 'Take the title away again': 'Den Titel wieder wegnehmen',
     'Took advantage of a bug instead of reporting it.': 'Hat einen Fehler ausgenutzt, statt ihn zu melden.',
+    'Auto cash-out is off.': 'Auto-Auszahlung ist aus.', 'The rocket is already past that. Use Cash out instead.': 'Die Rakete ist schon darüber. Nutz stattdessen „Auszahlen“.',
+    'Changing it in flight needs the updated “Rocket” part of supabase-setup.sql.': 'Zum Ändern im Flug braucht es den aktualisierten Abschnitt „Rocket“ aus supabase-setup.sql.',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -3166,7 +3168,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['An admin gave you the title “{a}”.', 'Ein Admin hat dir den Titel „{a}“ gegeben.'], ['{a} is now marked as Bug Abuser.', '{a} ist jetzt als Bug Abuser markiert.'], ['{a} is no longer marked as Bug Abuser.', '{a} ist nicht mehr als Bug Abuser markiert.'], ['{a} times!', '{a}-fach!'], ['Reply to {a}…', 'Antwort an {a}…'], ['Your ticket “{a}” is now: {b}', 'Dein Ticket „{a}“ ist jetzt: {b}'], ['Goodies {a} ›', 'Goodies {a} ›'], ['Bonus for {a}', 'Bonus für {a}'], ["Thanks to {a}'s code you start with {b} credits!", 'Dank des Codes von {a} startest du mit {b} Credits!'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['Auto cash-out set to {a}.', 'Auto-Auszahlung auf {a} gesetzt.'], ['The rocket is already past {a}. Use Cash out instead.', 'Die Rakete ist schon über {a}. Nutz stattdessen „Auszahlen“.'], ['An admin gave you the title “{a}”.', 'Ein Admin hat dir den Titel „{a}“ gegeben.'], ['{a} is now marked as Bug Abuser.', '{a} ist jetzt als Bug Abuser markiert.'], ['{a} is no longer marked as Bug Abuser.', '{a} ist nicht mehr als Bug Abuser markiert.'], ['{a} times!', '{a}-fach!'], ['Reply to {a}…', 'Antwort an {a}…'], ['Your ticket “{a}” is now: {b}', 'Dein Ticket „{a}“ ist jetzt: {b}'], ['Goodies {a} ›', 'Goodies {a} ›'], ['Bonus for {a}', 'Bonus für {a}'], ["Thanks to {a}'s code you start with {b} credits!", 'Dank des Codes von {a} startest du mit {b} Credits!'],
     ['joined with your affiliate code: +{a} credits!', 'hat sich mit deinem Affiliate-Code angemeldet: +{a} Credits!'], ['Your code is {a}. Share it with friends!', 'Dein Code ist {a}. Teil ihn mit Freunden!'],
     ['{a} player joined with your code · +{b} credits earned', '{a} Spieler hat sich mit deinem Code angemeldet · +{b} Credits verdient'], ['{a} players joined with your code · +{b} credits earned', '{a} Spieler haben sich mit deinem Code angemeldet · +{b} Credits verdient'], ['Golden rocket! This one flies past {a} for sure.', 'Goldene Rakete! Die fliegt garantiert über {a}.'], ['bet {a}', 'Einsatz {a}'], ['auto {a}', 'auto {a}'],
     ["You're on board with {a}. Auto cash-out at {b}.", 'Du bist mit {a} an Bord. Auto-Auszahlung bei {b}.'], ["You're on board with {a}. Cash out before it blows!", 'Du bist mit {a} an Bord. Zahl aus, bevor sie explodiert!'],
@@ -6813,6 +6815,15 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         return { mult: m, payout: b.payout, credits: null, rev: null };
       },
       async bets(id) { const list = read(); list.forEach(settle); return list.filter(b => b.round_id === id); },
+      async setAuto(id, auto) {
+        const now = Date.now(), r = round(id), list = read(), b = list.find(x => x.round_id === id && x.payout == null);
+        const m = now >= r.launch ? rkMult(now - r.launch) : 1;
+        if (now >= r.crash_at || m >= r.crash) throw new Error('crashed');
+        if (auto && auto <= m) throw new Error('too low');
+        if (!b) throw new Error('no bet');
+        b.auto = auto || null;
+        write(list);
+      },
       async rig(id) { const r = rigs(); r[id] = 1; try { localStorage.setItem('lucky-reels-rk-rig', JSON.stringify(r)); } catch {} },
       async claim() {
         const list = read(), out = [];
@@ -7354,7 +7365,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       else if (p.phase === 'moon') { btn.disabled = true; btn.className = 'spin rk-cash done'; btn.innerHTML = `Moon landing<small>+${fmt(mine.amount * RK_CAP)}</small>`; }
       else { btn.disabled = true; btn.className = 'spin rk-cash lost'; btn.innerHTML = mine.auto && mine.auto < (rkCur?.crash ?? 0) ? `Auto cash-out<small>${mine.auto.toFixed(2)}× · +${fmt(Math.floor(mine.amount * mine.auto))}</small>` : `Blown up<small>−${fmt(mine.amount)}</small>`; }
     }
-    for (const el of document.querySelectorAll('[data-rkb], #rkBet, #rkAuto')) el.disabled = !open || !!mine;
+    for (const el of document.querySelectorAll('[data-rkb], #rkBet')) el.disabled = !open || !!mine;
+    // The automatic cash-out can still be changed once on board, before liftoff and in the air.
+    $('rkAuto').disabled = !((open && !mine) || (mine && mine.payout == null && (p.phase === 'bet' || p.phase === 'fly')));
   }
   function renderRKList() {
     const p = rkPhase(hrNow()), list = rkBetsFor === rkCur?.id ? rkBets : [];
@@ -7426,7 +7439,27 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     sound.chip(); renderRKControls();
   }));
   $('rkBet').addEventListener('input', () => { const v = Math.floor(Number($('rkBet').value)); if (v >= 1) state.rk.bet = v; renderRKControls(); });
-  $('rkAuto').addEventListener('change', () => { state.rk.auto = rkAutoValue(); $('rkAuto').value = state.rk.auto ? state.rk.auto.toFixed(2) : ''; });
+  async function rkSetAuto() {
+    const v = rkAutoValue();
+    state.rk.auto = v;
+    $('rkAuto').value = v ? v.toFixed(2) : '';
+    const mine = rkMine(), p = rkPhase(hrNow());
+    if (!mine || mine.payout != null || !rkCur || (p.phase !== 'bet' && p.phase !== 'fly')) return;
+    if (v && p.phase === 'fly' && v <= p.m) { rkSay(`The rocket is already past ${v.toFixed(2)}×. Use Cash out instead.`, 'hot'); return; }
+    try {
+      await backend.rocket.setAuto(rkCur.id, v);
+      mine.auto = v;
+      rkAutoTried = -1;
+      sound.chip();
+      rkSay(v ? `Auto cash-out set to ${v.toFixed(2)}×.` : 'Auto cash-out is off.', 'win');
+    } catch (e) {
+      const m = e?.message || '';
+      rkSay(/crashed/.test(m) ? 'Too late: it blew up!' : /too low/.test(m) ? 'The rocket is already past that. Use Cash out instead.'
+        : e?.code === 'PGRST202' || /could not find the function/i.test(m) ? 'Changing it in flight needs the updated “Rocket” part of supabase-setup.sql.' : 'That did not work. Check the connection and try again.', 'lose');
+    }
+    renderRKControls();
+  }
+  $('rkAuto').addEventListener('change', rkSetAuto);
   document.addEventListener('keydown', e => {
     if (state.mode !== 'rk' || !account || !$('lobby').hidden || e.code !== 'Space') return;
     if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'SUMMARY'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal, #profileModal, #mineModal')) return;
@@ -9649,6 +9682,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         async state() { const { data, error } = await sb.rpc('rocket_state'); if (error) throw error; return data; },
         async bet(id, amount, auto) { const { data, error } = await sb.rpc('rocket_bet', { round: id, amount, auto_at: auto }); if (error) throw error; return data; },
         async cashout(id) { const { data, error } = await sb.rpc('rocket_cashout', { round: id }); if (error) throw error; return data; },
+        async setAuto(id, auto) { const { error } = await sb.rpc('rocket_set_auto', { round: id, auto_at: auto }); if (error) throw error; },
         async bets(id) {
           const { data, error } = await sb.from('rocket_bets').select('player,name,amount,auto,cashed,payout').eq('round_id', id).order('id');
           if (error) throw error;
