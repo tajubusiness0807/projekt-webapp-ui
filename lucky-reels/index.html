@@ -11573,7 +11573,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     $('chatPanel').hidden = !chatOpen;
     if (chatOpen) renderChat.scrolled = false;
     renderChat();
-    if (chatOpen) $('chatInput').focus();
+    // Only with a mouse: on phones and tablets the keyboard should not pop up until the text field is tapped.
+    if (chatOpen && matchMedia('(hover: hover) and (pointer: fine)').matches) $('chatInput').focus();
   }
   function openConversation(id) {
     chatWith = id && id !== account?.id ? id : null;
