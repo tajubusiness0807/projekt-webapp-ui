@@ -3289,6 +3289,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           <label class="setting wide"><span class="label">Announcement for everyone</span><input name="announcement" maxlength="200" placeholder="e.g. Happy hour tonight: all wins ×2!"><small>Shown at the top of the game and the sign-in screen. Leave empty to hide it.</small></label>
           <label class="setting check"><input type="checkbox" name="signupsOpen"><span>New accounts allowed</span><small>Shows "Create an account" on the sign-in screen.</small></label>
           <label class="setting check"><input type="checkbox" name="chatEnabled"><span>Chat on</span><small>When off, only admins can open the chat.</small></label>
+          <label class="setting check"><input type="checkbox" name="cheats"><span>Admin cheats on</span><small>The admin secret code works in every game except the stock market. Off: nobody can use it.</small></label>
           <label class="setting check"><input type="checkbox" name="maintenance"><span>Pause the game</span><small>Nobody but admins can spin.</small></label>
           <label class="setting"><span class="label">Start credits for new accounts</span><input name="startCredits" type="number" min="0" step="1"></label>
           <label class="setting"><span class="label">Win multiplier (happy hour)</span>
@@ -3655,6 +3656,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Schedule hard reset': 'Hard Reset planen', 'Cancel the timer': 'Timer abbrechen', 'No hard reset is scheduled.': 'Kein Hard Reset geplant.', 'Pick a time at least a minute from now.': 'Wähl eine Zeit mindestens eine Minute in der Zukunft.',
     'Really schedule it?': 'Wirklich planen?', 'Cancel it?': 'Wirklich abbrechen?', 'The hard reset is scheduled. Everyone sees the countdown now.': 'Der Hard Reset ist geplant. Alle sehen jetzt den Countdown.',
     'The timed hard reset is cancelled.': 'Der geplante Hard Reset ist abgebrochen.', 'Hard reset now…': 'Hard Reset läuft…',
+    'Admin cheats on': 'Admin-Cheats an', 'The admin secret code works in every game except the stock market. Off: nobody can use it.': 'Der Admin-Geheimcode wirkt in allen Spielen außer der Börse. Aus: Niemand kann ihn benutzen.',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -4180,7 +4182,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   let HOLD_CHANCE = 15;
   // Game-wide settings an admin can change; every client applies them live.
   const DEFAULT_SETTINGS = {
-    announcement: '', signupsOpen: true, chatEnabled: true, maintenance: false,
+    announcement: '', signupsOpen: true, chatEnabled: true, maintenance: false, cheats: true,
     startCredits: 500, winMultiplier: 1, jackpotPay: 150, maxBet: 0,
     starGoal: 15, freeSpins: 6, freeMult: 2, nudgeChance: 12, holdChance: 15,
     econ: 2,
@@ -4390,7 +4392,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const SECRET = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
   let typed = [];
   let rigged = false;
-  const takeRigged = () => { if (!rigged) return false; rigged = false; cabinet.classList.remove('armed'); return true; };
+  const takeRigged = () => { if (!rigged) return false; rigged = false; cabinet.classList.remove('armed'); return settings.cheats !== false; };
   let busy = false;
   let inBonus = false;
   let freeDone = 0;
@@ -8683,6 +8685,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       for (let k = 0; k < live.length; k++) { i = pkNextSeat(st, i, s => s.in_hand); st.seats[i].cards.push(deck.pop()); }
     }
     st.deck = deck;
+    // Admin secret code: pocket aces for you, and the other two aces come on the flop.
+    const meAt = st.seats.findIndex(x => x && !x.bot && x.in_hand);
+    if (meAt >= 0 && account?.isAdmin && takeRigged()) {
+      const spots = [deck, ...st.seats.filter(Boolean).map(x => x.cards)];
+      const put = (card, arr, k) => { for (const a of spots) { const j = a.indexOf(card); if (j >= 0) { [a[j], arr[k]] = [arr[k], a[j]]; return; } } };
+      const mine = st.seats[meAt].cards;
+      put(48, mine, 0); put(49, mine, 1); put(50, deck, deck.length - 1); put(51, deck, deck.length - 2);
+    }
     const sbSeat = live.length === 2 ? st.button : pkNextSeat(st, st.button, s => s.in_hand);
     const bbSeat = pkNextSeat(st, sbSeat, s => s.in_hand);
     pkPut(st, sbSeat, st.sb); st.seats[sbSeat].last = 'Small blind';
@@ -9922,7 +9932,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   document.addEventListener('keydown', e => {
     if (!account?.isAdmin || e.target.closest?.('#chatPanel, #adminModal, #profileModal') || ['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
     typed = [...typed, e.key.length === 1 ? e.key.toLowerCase() : e.key].slice(-SECRET.length);
-    if (typed.join() === SECRET.join() && !rigged) {
+    if (typed.join() === SECRET.join() && !rigged && settings.cheats !== false) {
       rigged = true;
       typed = [];
       cabinet.classList.add('armed');
@@ -10644,6 +10654,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         async state() { const { data, error } = await sb.rpc('lotto_state'); if (error) throw error; return data; },
         async buy(id) { const { data, error } = await sb.rpc('lotto_buy', { draw: id }); if (error) throw error; return data; },
         async claim() { const { data, error } = await sb.rpc('lotto_claim'); if (error) throw error; return data; },
+        async rig(id) { const { error } = await sb.rpc('admin_rig_lotto', { draw: id }); if (error) throw error; },
       },
       // Global roulette: the database takes the chips, draws the number and pays out.
       roulette: {
@@ -11496,6 +11507,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   function applySettings(raw) {
     rawSettings = raw || {};
     settings = cleanSettings(raw);
+    if (settings.cheats === false && rigged) { rigged = false; cabinet.classList.remove('armed'); }
     if (reloadSeen === null) reloadSeen = settings.reloadAt;
     else if (settings.reloadAt > reloadSeen) { reloadSeen = settings.reloadAt; $('reloadModal').hidden = false; $('reloadNow').focus(); }
     STAR_GOAL = settings.starGoal;
@@ -12102,6 +12114,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       const tot = list.reduce((a, t) => a + t.cost, 0), rng = hrRng(ltHash(id), 4242);
       let win = list[Math.floor(rng() * list.length)];
       if (c.mode === 'weighted') { let x = rng() * tot; win = list.find(t => (x -= t.cost) < 0) || list[list.length - 1]; }
+      const forced = rawSettings.lottoRig?.[id] && list.find(t => t.player === rawSettings.lottoRig[id]);
+      if (forced) win = forced;
       return { tickets: list.length, pot: Math.floor(tot * c.share / 100) + c[slotOf(id).kind + 'Bonus'], winner: win.player, winner_name: win.name, winner_cost: win.cost };
     }
     return {
@@ -12145,6 +12159,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         try { localStorage.setItem(claimKey(), JSON.stringify([...done].slice(-40))); } catch {}
         return { tickets: out, credits: null, rev: null };
       },
+      async rig(id) { const r = { ...(rawSettings.lottoRig || {}), [id]: account.id }; rawSettings.lottoRig = r; await store.saveSettings({ lottoRig: r }); },
       selling() {
         const c = cfg(), now = Date.now(), today = berlinDay(now);
         if (!c.on) return null;
@@ -12278,6 +12293,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       const b = btn.getBoundingClientRect();
       fxTop.coinBurst(b.left + b.width / 2, b.top, 30, 9);
       toast(LT_TITLE[kind], `Your ticket for ${fmt(paid)} credits is in the drum. Draw at ${ltClock(s.drawAt)}!`);
+      if (account.isAdmin && takeRigged()) backend.lotto.rig?.(s.id)?.catch?.(() => {});
       while (pendingLevels.length) levelUp(pendingLevels.shift());
       ltFetch();
     } catch (e) {
@@ -12874,6 +12890,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     jb = { ...jbNew(), on: true, cycle: now, next: now + 400, lastAct: now };
     state.job.shifts++;
     jbSay('Clocked in! Keep busy: the boss pays only while you work.', 'win');
+    // Admin secret code: promoted on the spot.
+    const nx = JB_POS[jbIdx() + 1];
+    if (nx && account.isAdmin && takeRigged()) { state.job.worked = nx.at; state.job.pos = jbIdx(); jbPromote(jbIdx()); }
     sound.chime();
     jbRender();
   }

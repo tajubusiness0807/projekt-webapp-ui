@@ -4098,3 +4098,116 @@ revoke execute on function public.admin_hard_reset(uuid) from public, anon;
 grant execute on function public.admin_hard_reset(uuid) to authenticated;
 revoke execute on function public.reset_check() from public, anon;
 grant execute on function public.reset_check() to authenticated;
+
+
+-- ---------------------------------------------------------------------------
+-- Admin cheats switch: run this part once (after "Timed hard reset"). The admin menu can switch the admin
+-- secret code off for everyone; the live games then refuse it here too. The lotto gets the code as well:
+-- an admin with a ticket wins the draw.
+alter table public.lotto_draws add column if not exists forced uuid;
+create or replace function public.admin_rig_horse(race bigint, horse_no integer)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not public.admin_me() then raise exception 'not allowed'; end if;
+  if not coalesce((select (data ->> 'cheats')::boolean from public.settings where id = 1), true) then raise exception 'cheats are off'; end if;
+  if horse_no is null or horse_no < 1 or horse_no > 6 then raise exception 'no such horse'; end if;
+  if public.horse_now_ms() >= race * 180000 + 120000 then raise exception 'betting closed'; end if;
+  perform public.horse_make(race);
+  update public.horse_races set forced = horse_no where id = race and finish is null;
+end;
+$$;
+
+create or replace function public.admin_rig_roulette(round bigint)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not public.admin_me() then raise exception 'not allowed'; end if;
+  if not coalesce((select (data ->> 'cheats')::boolean from public.settings where id = 1), true) then raise exception 'cheats are off'; end if;
+  if public.horse_now_ms() >= round * 45000 + 34000 then raise exception 'betting closed'; end if;
+  insert into public.roulette_rounds (id, forced) values (round, 0)
+    on conflict (id) do update set forced = 0 where public.roulette_rounds.result is null;
+end;
+$$;
+
+create or replace function public.admin_rig_rocket(round bigint)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not public.admin_me() then raise exception 'not allowed'; end if;
+  if not coalesce((select (data ->> 'cheats')::boolean from public.settings where id = 1), true) then raise exception 'cheats are off'; end if;
+  update public.rocket_rounds set crash = 200, crash_at = launch + 40000, next_start = launch + 49000
+    where id = round and public.horse_now_ms() < launch;
+end;
+$$;
+
+create or replace function public.lotto_settle(draw text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  dr public.lotto_draws;
+  cfg jsonb := public.lotto_cfg();
+  n integer;
+  tot numeric;
+  v_pot bigint;
+  pick public.lotto_tickets;
+  x numeric;
+begin
+  select * into dr from public.lotto_draws where id = draw for update;
+  if dr.id is null or dr.settled or now() < dr.draw_at then return; end if;
+  select count(*), coalesce(sum(cost), 0) into n, tot from public.lotto_tickets where draw_id = draw;
+  if n = 0 then
+    update public.lotto_draws set settled = true, pot = 0, tickets = 0 where id = draw;
+    return;
+  end if;
+  v_pot := floor(tot * (cfg ->> 'share')::numeric / 100)::bigint + (cfg ->> (dr.kind || 'Bonus'))::bigint;
+  -- the admin's secret code can name the winner (if that admin has a ticket)
+  if (to_jsonb(dr) ->> 'forced') is not null then
+    select * into pick from public.lotto_tickets where draw_id = draw and player = (to_jsonb(dr) ->> 'forced')::uuid;
+  end if;
+  if pick.id is not null then null;
+  elsif cfg ->> 'mode' = 'equal' then
+    select * into pick from public.lotto_tickets where draw_id = draw order by random() limit 1;
+  else
+    x := random() * tot;
+    select t.id, t.draw_id, t.player, t.name, t.cost, t.payout, t.claimed, t.created_at into pick
+      from (select *, sum(cost) over (order by id) as run from public.lotto_tickets where draw_id = draw) t
+      where t.run > x order by t.run limit 1;
+    if pick.id is null then select * into pick from public.lotto_tickets where draw_id = draw order by id desc limit 1; end if;
+  end if;
+  update public.lotto_tickets set payout = case when id = pick.id then v_pot else 0 end where draw_id = draw;
+  -- the winner gets the pot right away, online or not
+  update public.players set credits = least(9007199254740991, credits + v_pot), admin_rev = admin_rev + 1, updated_at = now() where id = pick.player;
+  update public.lotto_tickets set claimed = true where draw_id = draw;
+  update public.lotto_draws set settled = true, pot = v_pot, tickets = n, winner = pick.player, winner_name = pick.name, winner_cost = pick.cost
+    where id = draw;
+end;
+$$;
+
+create or replace function public.admin_rig_lotto(draw text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not public.admin_me() then raise exception 'not allowed'; end if;
+  if not coalesce((select (data ->> 'cheats')::boolean from public.settings where id = 1), true) then raise exception 'cheats are off'; end if;
+  if not exists (select 1 from public.lotto_tickets where draw_id = draw and player = auth.uid()) then raise exception 'no ticket'; end if;
+  update public.lotto_draws set forced = auth.uid() where id = draw and not settled;
+end;
+$$;
+revoke execute on function public.admin_rig_lotto(text) from public, anon;
+grant execute on function public.admin_rig_lotto(text) to authenticated;
