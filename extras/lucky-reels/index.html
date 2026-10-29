@@ -937,7 +937,7 @@ details summary { cursor: pointer; font-size: 11px; letter-spacing: 0.16em; text
 .ach-box > summary { flex-wrap: wrap; row-gap: 8px; }
 .ach-shelf { display: grid; gap: 10px; }
 .ach-shelf[hidden] { display: none; }
-.ach-shelf .ach-grid { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+.ach-shelf .ach-grid { grid-template-columns: repeat(auto-fill, minmax(min(190px, 100%), 1fr)); }
 .ach-teaser { margin-left: 6px; }
 .ach-shelf .ach-bar { display: block; width: 100%; }
 .ach-bar { order: 5; flex-basis: 100%; height: 6px; border-radius: 3px; background: #0006; overflow: hidden; }
@@ -2395,6 +2395,12 @@ html:has(#lobby:not([hidden])), html:has(#shopPage:not([hidden])), html:has(#log
 }
 html[data-theme="night"] .shop-page { background: repeating-linear-gradient(90deg, #171a22 0 58px, #13161d 58px 60px), #171a22; }
 .shop-wrap { max-width: 900px; margin: 0 auto; display: grid; gap: 16px; }
+/* phones: nothing in the shop may push it wider than the screen */
+.shop-page { overflow-x: hidden; }
+.shop-wrap > *, .shelf, .shelf-row > * { min-width: 0; }
+.shop-tabs button { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 480px) { .shop-tabs button { padding: 9px 4px; font-size: 12px; letter-spacing: 0; } }
+.ach-grid li { min-width: 0; overflow-wrap: anywhere; }
 .shop-head { position: relative; display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 12px; align-items: center; }
 .shop-head .back-btn { position: static; }
 .shop-sign { justify-self: center; text-align: center; padding: 8px 26px 10px; border-radius: 12px; background: linear-gradient(#2a1d18, #150f0c); border: 3px solid var(--accent); box-shadow: 0 0 30px #e9a23b44, inset 0 0 18px #000a; }
@@ -2410,7 +2416,7 @@ html[data-theme="night"] .shop-page { background: repeating-linear-gradient(90de
 #goodies { display: grid; gap: 22px; }
 .shelf[hidden], .shop-rate[hidden] { display: none; }
 .shelf-title { margin: 0 0 4px; display: inline-block; padding: 4px 14px; border-radius: 8px 8px 0 0; background: #0009; font: 400 15px var(--font-display); color: var(--accent-hi); letter-spacing: 0.06em; }
-.shelf-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); column-gap: 0; row-gap: 26px; padding: 14px 10px 6px; border-radius: 0 12px 12px 12px; background: #0005; box-shadow: inset 0 10px 24px #0008; }
+.shelf-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(160px, 100%), 1fr)); column-gap: 0; row-gap: 26px; padding: 14px 10px 6px; border-radius: 0 12px 12px 12px; background: #0005; box-shadow: inset 0 10px 24px #0008; }
 .ware { position: relative; display: grid; grid-template-rows: auto auto 1fr auto auto; justify-items: center; gap: 4px; padding: 0 8px; text-align: center; }
 .ware-stand { width: 100%; height: 96px; display: grid; place-items: end center; padding-bottom: 6px; border-bottom: 12px solid #7a5236; box-shadow: 0 10px 0 #4a3020, 0 18px 14px -6px #000a; margin: 0 -8px 8px; }
 html[data-theme="night"] .ware-stand { border-bottom-color: #4a5266; box-shadow: 0 10px 0 #2a3040, 0 18px 14px -6px #000a; }
