@@ -2803,7 +2803,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       <button class="spin" id="cfFlip" type="button">Flip</button>
       <details class="bj-rules">
         <summary>Coin flip rules</summary>
-        <p class="note">Pick heads (crown) or tails (star), set a bet and flip. If the coin shows your side you get 1.95× your bet back. Once in 10,000 flips (0.01%) the coin lands on its edge: then everyone wins 10× the bet, whichever side they picked. Over the long run about 97.6% of bets come back. Space flips the coin.</p>
+        <p class="note">Pick heads (crown) or tails (star), set a bet and flip. If the coin shows your side you get 2× your bet back. Once in 10,000 flips (0.01%) the coin lands on its edge: then everyone wins 10× the bet, whichever side they picked. Over the long run slightly more than 100% of bets come back. Space flips the coin.</p>
       </details>
     </section>
 
@@ -3433,7 +3433,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Coin Flip': 'Münzwurf', 'Coin flip': 'Münzwurf', 'Heads or tails, one flip, almost double. And once in 10,000 flips the coin lands on its edge: ×10.': 'Kopf oder Zahl, ein Wurf, fast das Doppelte. Und einmal in 10.000 Würfen landet die Münze auf der Kante: ×10.',
     'Pick a side, set your bet and flip.': 'Wähl eine Seite, setz deinen Einsatz und wirf.', '👑 Heads': '👑 Kopf', '⭐ Tails': '⭐ Zahl', 'Your side': 'Deine Seite', 'Bet per flip': 'Einsatz pro Wurf',
     'Flip': 'Werfen', 'Flipping…': 'Fliegt…', 'Coin flip rules': 'Münzwurf-Regeln', 'Last flips': 'Letzte Würfe', 'Edge': 'Kante', 'Heads': 'Kopf', 'Tails': 'Zahl', 'HEADS': 'KOPF', 'TAILS': 'ZAHL',
-    'Pick heads (crown) or tails (star), set a bet and flip. If the coin shows your side you get 1.95× your bet back. Once in 10,000 flips (0.01%) the coin lands on its edge: then everyone wins 10× the bet, whichever side they picked. Over the long run about 97.6% of bets come back. Space flips the coin.': 'Wähl Kopf (Krone) oder Zahl (Stern), setz einen Einsatz und wirf. Zeigt die Münze deine Seite, bekommst du das 1,95-Fache deines Einsatzes zurück. Einmal in 10.000 Würfen (0,01 %) landet die Münze auf der Kante: Dann gewinnt man das 10-Fache, egal welche Seite gewählt wurde. Auf lange Sicht kommen etwa 97,6 % der Einsätze zurück. Leertaste wirft die Münze.',
+    'Pick heads (crown) or tails (star), set a bet and flip. If the coin shows your side you get 2× your bet back. Once in 10,000 flips (0.01%) the coin lands on its edge: then everyone wins 10× the bet, whichever side they picked. Over the long run slightly more than 100% of bets come back. Space flips the coin.': 'Wähl Kopf (Krone) oder Zahl (Stern), setz einen Einsatz und wirf. Zeigt die Münze deine Seite, bekommst du das 2-Fache deines Einsatzes zurück. Einmal in 10.000 Würfen (0,01 %) landet die Münze auf der Kante: Dann gewinnt man das 10-Fache, egal welche Seite gewählt wurde. Auf lange Sicht kommt etwas mehr als 100 % der Einsätze zurück. Leertaste wirft die Münze.',
     'You picked heads. Up it goes…': 'Du hast Kopf gewählt. Hoch damit…', 'You picked tails. Up it goes…': 'Du hast Zahl gewählt. Hoch damit…', 'Wait… it is standing on its edge!': 'Moment… sie steht auf der Kante!',
     'Unbelievable! The coin landed on its edge!': 'Unglaublich! Die Münze ist auf der Kante gelandet!', 'On the Edge': 'Auf der Kante', 'Land the coin flip on its edge (1 in 10,000).': 'Lass die Münze auf der Kante landen (1 zu 10.000).',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
@@ -6521,8 +6521,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   });
   addEventListener('resize', () => { if (state.mode === 'ck') ckPlace(false); });
   // ---------- Coin flip ----------
-  // Heads or tails pays 1.95×; one flip in 10,000 lands on the edge and pays 10× whatever was picked.
-  const CF_PAY = 1.95, CF_EDGE = 10, CF_EDGE_IN = 10000;
+  // Heads or tails pays 2×; one flip in 10,000 lands on the edge and pays 10× whatever was picked.
+  const CF_PAY = 2, CF_EDGE = 10, CF_EDGE_IN = 10000;
   // var: the busy check in gameBusy() can run before this part of the script
   var cfBusy = false, cfTurn = 0;
   const cfSay = (text, kind = '') => showMessage($('cfMsg'), text, kind);
