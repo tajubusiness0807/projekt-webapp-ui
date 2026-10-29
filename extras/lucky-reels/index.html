@@ -1708,6 +1708,14 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
   .float, .tier, .tier-title, .toast, .modal, .modal-card, .reel.wild, .card.flip, .chat-panel, .jp-badge { animation: none; }
   .jp-flash, .float { opacity: 0; }
 }
+/* Global roulette */
+.rl-top { justify-content: space-between; }
+.rl-chip.pending { opacity: 0.75; outline: 2px dashed #fff2c4; outline-offset: 1px; }
+#rlWaiting { font-size: 11px; color: var(--muted); }
+.rl-table { display: grid; gap: 8px; }
+.rl-keys { display: flex; flex-wrap: wrap; gap: 3px; min-width: 0; }
+.rl-key { padding: 1px 6px; border-radius: 5px; background: #ffffff14; font: 600 10px var(--font-mono); font-style: normal; }
+.rl-key.red { background: #c8323a; color: #fff; } .rl-key.black { background: #1d1714; color: #fff; border: 1px solid #ffffff33; } .rl-key.green { background: #2f9e6a; color: #fff; }
 /* Horse racing */
 .hr { display: grid; gap: 12px; }
 .hr-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -1935,6 +1943,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         <span class="gp-go">Play</span>
       </button>
       <button class="game-pick" type="button" data-mode="rl">
+        <span class="gp-online gp-live" id="rlBadge">Live</span>
         <svg class="gp-rl" viewBox="0 0 140 130" aria-hidden="true">
           <circle cx="70" cy="66" r="56" fill="#5a3a22" stroke="#e9a23b" stroke-width="3"/>
           <circle cx="70" cy="66" r="47" fill="#1d1714"/>
@@ -2078,22 +2087,31 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     <div class="tier" id="tier" role="status" hidden><div class="tier-title" id="tierTitle"></div><div class="tier-sub" id="tierSub"></div></div>
 
     <section class="rl" id="rl" aria-label="Roulette">
+      <div class="hr-top rl-top">
+        <span class="hr-phase" id="rlPhase" data-phase="bet">Place your bets</span>
+        <span class="hr-clock" id="rlClock"></span>
+      </div>
+      <div class="hr-bar"><span id="rlBar"></span></div>
       <div class="rl-wheel-wrap"><canvas id="rlWheel" width="600" height="600" aria-label="Roulette wheel"></canvas><div class="rl-result" id="rlResult" hidden></div></div>
       <div class="rl-history" id="rlHistory" aria-label="Last numbers"></div>
       <p class="message" id="rlMsg" role="status" aria-live="polite">Pick a chip, place it on the table, then spin.</p>
       <div class="rl-chips" id="rlChips"></div>
       <div class="rl-board" id="rlBoard"></div>
-      <p class="rl-total">On the table: <b id="rlTotal">0</b></p>
+      <p class="rl-total">On the table: <b id="rlTotal">0</b> <span id="rlWaiting"></span></p>
       <div class="rl-row">
         <button class="chip-btn" id="rlUndo">Undo</button>
         <button class="chip-btn" id="rlClear">Clear</button>
         <button class="chip-btn" id="rlRebet">Rebet</button>
         <button class="chip-btn" id="rlX2">×2</button>
       </div>
-      <button class="spin" id="rlSpin">Spin</button>
+      <button class="spin" id="rlSpin">Place bets</button>
+      <div class="rl-table" id="rlTable" hidden>
+        <h4 class="hr-h">At the table <span id="rlPool"></span></h4>
+        <ul class="hr-list" id="rlPlayers"></ul>
+      </div>
       <details class="bj-rules">
         <summary>Roulette rules</summary>
-        <p class="note">European wheel with one zero. A single number pays 35 to 1. Red or black, odd or even, 1–18 or 19–36 pay 1 to 1. A dozen (1st, 2nd, 3rd 12) or a column (2:1 under the numbers) pays 2 to 1. Zero loses every outside bet. Pick a chip, tap the table to place it, tap again to add more.</p>
+        <p class="note">One wheel for everyone: every minute there are 45 seconds to place chips, then the ball is thrown and everybody sees the same number. Pick a chip, tap the table to put it down, then press Place bets (chips still waiting when the time runs out go in by themselves). You can place more until the time is up. European wheel with one zero. A single number pays 35 to 1. Red or black, odd or even, 1–18 or 19–36 pay 1 to 1. A dozen (1st, 2nd, 3rd 12) or a column (2:1 under the numbers) pays 2 to 1. Zero loses every outside bet. Winnings land on your balance as soon as the ball stops, even if you left the table.</p>
       </details>
     </section>
 
@@ -2674,6 +2692,16 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Private chats are not set up yet. Ask the person who runs the game to run the private-chat setup.': 'Private Chats sind noch nicht eingerichtet. Bitte die Person, die das Spiel betreibt, sie einzurichten.',
     'The message did not go through. Try again.': 'Die Nachricht ging nicht durch. Versuch es nochmal.', 'Chat is switched off for players': 'Der Chat ist für Spieler abgeschaltet',
     'Someone': 'Jemand', 'Actions': 'Aktionen',
+    'Place your bets': 'Setzt eure Chips', 'No more bets': 'Nichts geht mehr', 'Spinning': 'Die Kugel rollt', 'Next round': 'Nächste Runde', 'At the table': 'Am Tisch',
+    'wait for the next round': 'warte auf die nächste Runde', 'Place bets': 'Einsätze setzen', 'Bets placed': 'Einsätze gesetzt', 'tap the table to add chips': 'tipp auf den Tisch für Chips', 'Live · spinning': 'Live · Kugel rollt',
+    'Roulette · one wheel for everyone · play credits': 'Roulette · ein Rad für alle · Spiel-Credits',
+    'Place your chips: the ball is thrown for everyone when the time is up.': 'Setz deine Chips: Wenn die Zeit um ist, wird die Kugel für alle geworfen.',
+    'No more bets. The next round opens in a moment.': 'Nichts geht mehr. Gleich startet die nächste Runde.',
+    'Place your bets! The ball is thrown for everyone in 45 seconds.': 'Macht eure Einsätze! In 45 Sekunden wird die Kugel für alle geworfen.',
+    'Too late: no more bets for this round.': 'Zu spät: Für diese Runde geht nichts mehr.', 'That is the most bets for one round (20).': 'Mehr Einsätze gehen pro Runde nicht (20).',
+    'Roulette now runs for everyone and needs the “Global roulette” part of supabase-setup.sql.': 'Roulette läuft jetzt für alle und braucht den Abschnitt „Global roulette“ aus supabase-setup.sql.',
+    'Column 1': 'Spalte 1', 'Column 2': 'Spalte 2', 'Column 3': 'Spalte 3',
+    'One wheel for everyone: every minute there are 45 seconds to place chips, then the ball is thrown and everybody sees the same number. Pick a chip, tap the table to put it down, then press Place bets (chips still waiting when the time runs out go in by themselves). You can place more until the time is up. European wheel with one zero. A single number pays 35 to 1. Red or black, odd or even, 1–18 or 19–36 pay 1 to 1. A dozen (1st, 2nd, 3rd 12) or a column (2:1 under the numbers) pays 2 to 1. Zero loses every outside bet. Winnings land on your balance as soon as the ball stops, even if you left the table.': 'Ein Rad für alle: Jede Minute gibt es 45 Sekunden zum Setzen, dann wird die Kugel geworfen und alle sehen dieselbe Zahl. Wähl einen Chip, tipp auf den Tisch, um ihn zu legen, und drück dann „Einsätze setzen“ (Chips, die bei Zeitablauf noch warten, gehen automatisch rein). Bis die Zeit um ist, kannst du nachlegen. Europäisches Rad mit einer Null. Eine einzelne Zahl zahlt 35 zu 1. Rot oder Schwarz, Ungerade oder Gerade, 1–18 oder 19–36 zahlen 1 zu 1. Ein Dutzend (1., 2., 3. 12) oder eine Spalte (2:1 unter den Zahlen) zahlt 2 zu 1. Bei Null verlieren alle Außenwetten. Gewinne landen auf deinem Konto, sobald die Kugel liegt, auch wenn du den Tisch verlassen hast.',
     'Horse Racing': 'Pferderennen', 'Horse racing': 'Pferderennen', 'Live': 'Live', 'Race': 'Rennen', 'Race track': 'Rennbahn',
     'One race for everyone every 3 minutes. Bet, watch live, cash in.': 'Alle 3 Minuten ein Rennen für alle. Wetten, live zuschauen, abkassieren.',
     'Horse racing · live for everyone · play credits': 'Pferderennen · live für alle · Spiel-Credits',
@@ -2817,7 +2845,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next race {a}', 'Nächstes Rennen {a}'], ['Live · bets close in {a}', 'Live · Wetten schließen in {a}'], ['Live · next race in {a}', 'Live · nächstes Rennen in {a}'],
+    ['Race #{a}', 'Rennen #{a}'], ['({a} not placed yet)', '({a} noch nicht gesetzt)'], ['next round in {a} s', 'nächste Runde in {a} s'], ['{a} on the table', '{a} auf dem Tisch'],
+    ['Bets placed: {a}. Good luck!', 'Einsätze gesetzt: {a}. Viel Glück!'], ['Time is up: your {a} went in automatically. Good luck!', 'Zeit um: Deine {a} wurden automatisch gesetzt. Viel Glück!'],
+    ['{a}. Place your chips for the next round.', '{a}. Setz deine Chips für die nächste Runde.'], ['Your chips paid: +{a} credits!', 'Deine Chips haben gezahlt: +{a} Credits!'], ['Next race {a}', 'Nächstes Rennen {a}'], ['Live · bets close in {a}', 'Live · Wetten schließen in {a}'], ['Live · next race in {a}', 'Live · nächstes Rennen in {a}'],
     ['{a} takes the lead!', '{a} übernimmt die Führung!'], ['Halfway: {a} ahead of {b}.', 'Halbzeit: {a} vor {b}.'],
     ['Photo finish! {a} wins by a nose!', 'Fotofinish! {a} gewinnt um eine Nasenlänge!'], ['{a} wins!', '{a} gewinnt!'],
     ['{a} on {b} to win. Good luck!', '{a} auf {b} (Sieg). Viel Glück!'], ['{a} on {b} to place. Good luck!', '{a} auf {b} (Platz). Viel Glück!'],
@@ -3209,7 +3239,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     xp: 0, level: 1, ach: {}, adminRev: 0,
     nudges: 0, missions: [], missionsDone: 0,
     mode: 'slots', bj: { shoe: [], round: null, bet: 0, lastBet: 0, hands: 0 },
-    rl: { bets: {}, last: {}, history: [], spins: 0 },
+    rl: { bets: {}, last: {}, history: [], spins: 0, placed: null, open: [], histId: -1 },
     pl: { bet: 10, rows: 12, risk: 'medium', drops: 0, history: [], pending: [] },
     ck: { bet: 10, diff: 'medium', games: 0, round: null },
     hr: { bet: 100, kind: 'win', races: 0, wins: 0, won: 0, open: [], history: [] },
@@ -3222,8 +3252,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const reels = [...document.querySelectorAll('.reel')];
   const strips = reels.map(r => r.querySelector('.strip'));
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  // Secret code (↑ ↑ ↓ ↓ ← → ← → B A), for admins only. The next round in any game but poker is rigged:
-  // three sevens on the slots, a blackjack, zero in roulette, an outermost Plinko slot, a chicken that makes it across.
+  // Secret code (↑ ↑ ↓ ↓ ← → ← → B A), for admins only. The next round in the solo games is rigged:
+  // three sevens on the slots, a blackjack, an outermost Plinko slot, a chicken that makes it across.
   const SECRET = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
   let typed = [];
   let rigged = false;
@@ -4138,7 +4168,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     act('double').disabled = bjBusy || !h || h.cards.length !== 2 || state.credits < h.bet;
     act('split').disabled = bjBusy || !h || r.hands.length > 1 || h.cards.length !== 2 || bjValue(h.cards[0]) !== bjValue(h.cards[1]) || state.credits < h.bet;
     const room = Math.min(state.credits, settings.maxBet || MAX) - bet;
-    document.querySelectorAll('.bj-chipbtn').forEach(b => { b.disabled = active || bjBusy || Number(b.dataset.v) > room; });
+    document.querySelectorAll('#chipTray .bj-chipbtn').forEach(b => { b.disabled = active || bjBusy || room < 1; });
     for (const id of ['bjClear', 'bjRebet', 'bjX2', 'bjMax']) $(id).disabled = active || bjBusy;
     $('bjRebet').disabled ||= !state.bj.lastBet;
     $('betSpot').hidden = active;
@@ -4385,13 +4415,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const MODE_SUBS = {
     slots: 'Three reels · one payline · play credits',
     bj: 'Blackjack · pays 3 to 2 · play credits',
-    rl: 'Roulette · single zero · play credits',
+    rl: 'Roulette · one wheel for everyone · play credits',
     pk: "Texas Hold'em · solo or online · play credits",
     pl: 'Plinko · real bounces · play credits',
     ck: 'Chicken · cross the road · play credits',
     hr: 'Horse racing · live for everyone · play credits',
   };
-  const gameBusy = () => busy || bjBusy || rlBusy || (typeof pkBusy === 'function' && pkBusy()) || (typeof plBusy === 'function' && plBusy()) || (typeof ckBusy === 'function' && ckBusy());
+  const gameBusy = () => busy || bjBusy || (typeof pkBusy === 'function' && pkBusy()) || (typeof plBusy === 'function' && plBusy()) || (typeof ckBusy === 'function' && ckBusy());
   function applyGameMode() {
     const bj = state.mode === 'bj';
     cabinet.dataset.mode = state.mode;
@@ -4451,7 +4481,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const rlPays = key => key[0] === 'n' ? 35 : RL_OUTSIDE[key].pays;
   const rlHit = (key, n) => key[0] === 'n' ? Number(key.slice(1)) === n : RL_OUTSIDE[key].hit(n);
   const rlTotal = () => Object.values(state.rl.bets).reduce((a, v) => a + v, 0);
-  let rlBusy = false, rlChip = 10, rlUndoStack = [], rlAngle = 0, rlBallPos = null;
+  let rlBusy = false, rlChip = 10, rlUndoStack = [], rlAngle = 0, rlBallRel = null;
   function rlSay(text, kind = '') { showMessage($('rlMsg'), text, kind); }
 
   // Board: zero on top, the numbers in 12 rows of three, dozens on the left, even-money bets on the right.
@@ -4474,35 +4504,70 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const chipColor = v => [...BJ_CHIPS].reverse().find(([cv]) => v >= cv)?.[1] || BJ_CHIPS[0][1];
   const shortAmt = v => v >= 1e6 ? (v / 1e6).toFixed(v >= 1e7 ? 0 : 1).replace(/\.0$/, '') + 'M' : v >= 1000 ? (v / 1000).toFixed(v >= 1e4 ? 0 : 1).replace(/\.0$/, '') + 'K' : String(v);
 
+  // Placed chips (already paid for this round) and chips still waiting on the table.
+  const rlPlaced = () => state.rl.placed?.round === rlPhaseOf(hrNow()).id ? state.rl.placed.bets : {};
+  const rlPlacedTotal = () => Object.values(rlPlaced()).reduce((a, v) => a + v, 0);
   function renderRLBets() {
+    const placed = rlPlaced();
     document.querySelectorAll('.rl-cell').forEach(c => {
-      const amt = state.rl.bets[c.dataset.key] || 0;
+      const key = c.dataset.key, wait = state.rl.bets[key] || 0, amt = wait + (placed[key] || 0);
       let chip = c.querySelector('.rl-chip');
       if (!amt) { chip?.remove(); return; }
       if (!chip) { chip = document.createElement('i'); chip.className = 'rl-chip'; c.append(chip); }
       chip.textContent = shortAmt(amt);
       chip.style.setProperty('--chip', chipColor(amt));
+      chip.classList.toggle('pending', wait > 0);
     });
   }
   function renderRLControls() {
-    const total = rlTotal();
+    const wait = rlTotal(), placed = rlPlacedTotal();
     const paused = settings.maintenance && !account?.isAdmin;
-    $('rlTotal').textContent = fmt(total);
-    $('rlSpin').disabled = rlBusy || paused || !total || total > state.credits || !account;
-    $('rlSpin').innerHTML = paused ? 'Paused<small>an admin paused the game</small>' : total ? `Spin<small>bet ${fmt(total)}</small>` : 'Spin<small>place a chip first</small>';
-    for (const id of ['rlUndo', 'rlClear', 'rlRebet', 'rlX2']) $(id).disabled = rlBusy;
+    const { phase } = rlPhaseOf(hrNow());
+    const open = phase === 'bet' && rlReadyR !== false;
+    $('rlTotal').textContent = fmt(wait + placed);
+    $('rlWaiting').textContent = wait && placed ? `(${fmt(wait)} not placed yet)` : '';
+    const btn = $('rlSpin');
+    btn.disabled = !open || rlSubmitting || paused || !wait || wait > state.credits || !account;
+    btn.innerHTML = paused ? 'Paused<small>an admin paused the game</small>'
+      : !open ? 'No more bets<small>wait for the next round</small>'
+      : wait ? `Place bets<small>${fmt(wait)}</small>` : placed ? `Bets placed<small>${fmt(placed)} on the table</small>` : 'Place bets<small>tap the table to add chips</small>';
+    for (const id of ['rlUndo', 'rlClear', 'rlRebet', 'rlX2']) $(id).disabled = !open || rlSubmitting;
     $('rlUndo').disabled ||= !rlUndoStack.length;
-    $('rlClear').disabled ||= !total;
+    $('rlClear').disabled ||= !wait;
     $('rlRebet').disabled ||= !Object.keys(state.rl.last).length;
-    document.querySelectorAll('.rl-cell').forEach(c => { c.disabled = rlBusy; });
+    $('rlX2').disabled ||= !wait && !placed;
+    document.querySelectorAll('.rl-cell').forEach(c => { c.disabled = !open; });
     $('rlHistory').innerHTML = state.rl.history.slice(0, 14).map(n => `<span class="${rlColor(n)}">${n}</span>`).join('');
   }
+  function renderRLClock(now) {
+    const { e, phase } = rlPhaseOf(now);
+    $('rlPhase').textContent = phase === 'bet' ? 'Place your bets' : phase === 'closed' ? 'No more bets' : phase === 'spin' ? 'Spinning' : 'Result';
+    $('rlPhase').dataset.phase = phase === 'bet' ? 'bet' : phase === 'result' ? 'done' : 'live';
+    $('rlClock').textContent = phase === 'bet' ? `0:${String(Math.ceil((RL_BET - e) / 1000)).padStart(2, '0')}` : `${i18n('Next round')} 0:${String(Math.ceil((RL_PERIOD - e) / 1000)).padStart(2, '0')}`;
+    $('rlBar').style.width = (phase === 'bet' ? (1 - e / RL_BET) * 100 : (e - RL_BET) / (RL_PERIOD - RL_BET) * 100) + '%';
+    if (phase !== rlLastPhase) { rlLastPhase = phase; renderRLControls(); }
+    if (phase === 'bet' && RL_BET - e < 6000 && Math.floor((RL_BET - e) / 1000) !== rlLastTick) { rlLastTick = Math.floor((RL_BET - e) / 1000); sound.tick(); }
+  }
+  let rlLastPhase = '', rlLastTick = -1, rlIdleOn = false;
   function rlEnter() {
     renderRLBets();
-    drawRoulette(rlAngle, rlBallPos);
-    if (!rlBusy) rlSay(rlTotal() ? 'Spin when you are ready.' : 'Pick a chip, place it on the table, then spin.');
+    renderRLControls();
+    renderRLClock(hrNow());
+    renderRLTable();
+    drawRoulette(rlAngle, rlBallRel == null ? null : { angle: rlAngle + rlBallRel, r: 0.56 });
+    if (rlReadyR === false) rlSay('Roulette now runs for everyone and needs the “Global roulette” part of supabase-setup.sql.', 'lose');
+    else if (!rlBusy) rlSay(rlPhaseOf(hrNow()).phase === 'bet' ? 'Place your chips: the ball is thrown for everyone when the time is up.' : 'No more bets. The next round opens in a moment.');
+    if (backend?.roulette && rlReadyR === null) backend.roulette.available().then(ok => { rlReadyR = ok; if (!ok && state.mode === 'rl') rlEnter(); }).catch(() => {});
+    if (!rlIdleOn) { rlIdleOn = true; requestAnimationFrame(rlIdle); }
   }
-  const rlRoom = () => Math.min(state.credits, settings.maxBet || MAX) - rlTotal();
+  // Between spins the wheel keeps turning slowly, with the last ball in its pocket.
+  function rlIdle() {
+    if (!(state.mode === 'rl' && account && $('lobby').hidden && $('shopPage').hidden && !document.hidden)) { rlIdleOn = false; return; }
+    if (!rlBusy) { rlAngle += reduceMotion ? 0 : 0.004; drawRoulette(rlAngle, rlBallRel == null ? null : { angle: rlAngle + rlBallRel, r: 0.56 }); }
+    requestAnimationFrame(rlIdle);
+  }
+  // Room for more chips: credits not yet on the table, and the highest bet per round if an admin set one.
+  const rlRoom = () => Math.min(state.credits - rlTotal(), settings.maxBet ? settings.maxBet - rlTotal() - rlPlacedTotal() : MAX);
   $('rlChips').addEventListener('click', e => {
     const b = e.target.closest('.bj-chipbtn');
     if (!b) return;
@@ -4512,14 +4577,12 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   });
   $('rlBoard').addEventListener('click', e => {
     const c = e.target.closest('.rl-cell');
-    if (!c || rlBusy) return;
+    if (!c || rlPhaseOf(hrNow()).phase !== 'bet' || rlSubmitting) return;
     const add = Math.min(rlChip, rlRoom());
-    if (add <= 0) { rlSay(settings.maxBet && rlTotal() >= settings.maxBet ? `The highest bet is ${fmt(settings.maxBet)}.` : 'Not enough credits for another chip.', 'lose'); return; }
+    if (add <= 0) { rlSay(settings.maxBet && rlTotal() + rlPlacedTotal() >= settings.maxBet ? `The highest bet is ${fmt(settings.maxBet)}.` : 'Not enough credits for another chip.', 'lose'); return; }
     state.rl.bets[c.dataset.key] = (state.rl.bets[c.dataset.key] || 0) + add;
     rlUndoStack.push([c.dataset.key, add]);
     sound.chip();
-    $('rlResult').hidden = true;
-    document.querySelectorAll('.rl-cell.hit, .rl-cell.won').forEach(x => x.classList.remove('hit', 'won'));
     renderRLBets();
     render();
   });
@@ -4534,16 +4597,18 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   $('rlClear').addEventListener('click', () => { state.rl.bets = {}; rlUndoStack = []; sound.chip(); renderRLBets(); render(); });
   $('rlRebet').addEventListener('click', () => {
     const total = Object.values(state.rl.last).reduce((a, v) => a + v, 0);
-    if (total > Math.min(state.credits, settings.maxBet || MAX)) { rlSay('Not enough credits to repeat the last bet.', 'lose'); return; }
+    if (total > rlRoom() + rlTotal()) { rlSay('Not enough credits to repeat the last bet.', 'lose'); return; }
     state.rl.bets = { ...state.rl.last };
     rlUndoStack = [];
     sound.chip(); renderRLBets(); render();
   });
+  // ×2 doubles the chips waiting on the table, or puts the placed chips down once more.
   $('rlX2').addEventListener('click', () => {
-    const total = rlTotal();
+    const src = rlTotal() ? state.rl.bets : rlPlaced();
+    const total = Object.values(src).reduce((a, v) => a + v, 0);
     if (!total) return;
-    if (total * 2 > Math.min(state.credits, settings.maxBet || MAX)) { rlSay('Not enough credits to double the bets.', 'lose'); return; }
-    for (const k of Object.keys(state.rl.bets)) state.rl.bets[k] *= 2;
+    if (total > rlRoom()) { rlSay('Not enough credits to double the bets.', 'lose'); return; }
+    for (const [k, v] of Object.entries(src)) state.rl.bets[k] = (state.rl.bets[k] || 0) + v;
     rlUndoStack = [];
     sound.chip(); renderRLBets(); render();
   });
@@ -4606,7 +4671,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
   // The wheel turns clockwise and slows; the ball runs the other way on the track,
   // drops into the pockets with a few bounces and then rides the wheel into its pocket.
-  function rlAnimate(result) {
+  function rlAnimate(result, elapsed = 0) {
     return new Promise(resolve => {
       const seg = (Math.PI * 2) / 37;
       const pocket = RL_ORDER.indexOf(result) * seg;
@@ -4616,7 +4681,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       const D = reduceMotion ? 400 : 7000, T1 = 0.72;
       const land = wheelAt(T1) + pocket + 0.9;
       const start = land + Math.PI * 2 * 9 + Math.random() * Math.PI * 2;
-      const t0 = performance.now();
+      const t0 = performance.now() - elapsed;
       let lastPocket = -1, lastTick = 0;
       (function frame(now) {
         const t = Math.min(1, (now - t0) / D);
@@ -4636,82 +4701,273 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         const pk = Math.floor((((ba - wa) % (Math.PI * 2)) + Math.PI * 2) / seg);
         if (pk !== lastPocket && now - lastTick > 45) { lastPocket = pk; lastTick = now; if (br < 0.7) sound.tick(); }
         if (t < 1) requestAnimationFrame(frame);
-        else { rlAngle = wa; rlBallPos = { angle: wa + pocket, r: 0.56 }; resolve(); }
+        else { rlAngle = wa; rlBallRel = pocket; resolve(); }
       })(t0);
     });
   }
 
-  async function rlSpin() {
-    if (rlBusy || !account || gameBusy()) return;
-    if (settings.maintenance && !account.isAdmin) { rlSay('The game is paused by an admin. Try again later.', 'lose'); return; }
-    const total = rlTotal();
-    if (!total) { rlSay('Place a chip on the table first.', 'lose'); return; }
-    if (total > state.credits) { rlSay(`Not enough credits for ${fmt(total)}.`, 'lose'); return; }
-    rlBusy = true;
-    state.credits -= total;
-    state.rl.last = { ...state.rl.bets };
-    $('rlResult').hidden = true;
-    document.querySelectorAll('.rl-cell.hit, .rl-cell.won').forEach(x => x.classList.remove('hit', 'won'));
-    rlSay('No more bets!', 'hot');
-    render();
-    const result = takeRigged() ? 0 : randInt(37);
-    await rlAnimate(result);
+  // ---------- Roulette rounds for everyone ----------
+  // Every minute: 45 seconds to place chips, a moment of "no more bets", the spin, then the result.
+  // With the online database the server draws the number and pays out; every page spins the same
+  // number at the same moment. Timing must match the "Global roulette" part of supabase-setup.sql.
+  const RL_PERIOD = 60000, RL_BET = 45000, RL_THROW = 1500, RL_SPIN = 7000;
+  function rlPhaseOf(now) {
+    const id = Math.floor(now / RL_PERIOD), e = now - id * RL_PERIOD;
+    return { id, e, phase: e < RL_BET ? 'bet' : e < RL_BET + RL_THROW ? 'closed' : e < RL_BET + RL_THROW + RL_SPIN ? 'spin' : 'result' };
+  }
+  const rlPayout = (bets, n, mult = 1) => Object.entries(bets || {}).reduce((a, [k, v]) => a + (rlHit(k, n) ? Math.floor(v * (1 + rlPays(k) * mult)) : 0), 0);
+  // A balance change the server made too: apply it here unless something else changed the account meanwhile.
+  function serverCredits(res, delta) {
+    if (res?.rev != null) {
+      const rev = Number(res.rev);
+      if (rev === (state.adminRev || 0) + 1) state.credits += delta;
+      else if (rev > (state.adminRev || 0)) state.credits = Number(res.credits) || 0;
+      state.adminRev = Math.max(state.adminRev || 0, rev);
+    } else state.credits += delta;
+    state.credits = Math.max(0, Math.min(MAX, state.credits));
+  }
+  // Without the online database the number comes from the round number (bets stay in this browser).
+  function localRoulette() {
+    const key = () => 'lucky-reels-rl-' + (account?.id || '');
+    const read = () => { try { return JSON.parse(localStorage.getItem(key()) || '[]'); } catch { return []; } };
+    const write = l => { try { localStorage.setItem(key(), JSON.stringify(l.slice(-80))); } catch {} };
+    const resultOf = id => Math.floor(hrRng(id, 333)() * 37);
+    return {
+      shared: false,
+      async available() { return true; },
+      async round(id) {
+        const now = Date.now(), cur = Math.floor(now / RL_PERIOD);
+        id ??= cur;
+        const recent = [];
+        for (let k = cur - 1; k >= cur - 14; k--) recent.push(resultOf(k));
+        return { id, now, result: now >= id * RL_PERIOD + RL_BET ? resultOf(id) : null, recent };
+      },
+      async bet(id, chips) {
+        const now = Date.now();
+        if (id !== Math.floor(now / RL_PERIOD) || now >= id * RL_PERIOD + RL_BET) throw Object.assign(new Error('closed'), { code: 'rl_closed' });
+        const list = read();
+        list.push({ round_id: id, player: account.id, name: account.name, bets: chips, total: Object.values(chips).reduce((a, v) => a + v, 0), mult: settings.winMultiplier, payout: null, claimed: false });
+        write(list);
+        return { credits: null, rev: null };
+      },
+      async bets(id) { return read().filter(b => b.round_id === id); },
+      async claim() {
+        const now = Date.now(), list = read(), out = [];
+        for (const b of list) {
+          if (b.claimed || now < b.round_id * RL_PERIOD + RL_BET) continue;
+          const res = resultOf(b.round_id);
+          b.payout = rlPayout(b.bets, res, b.mult);
+          b.claimed = true;
+          out.push({ ...b, result: res });
+        }
+        write(list);
+        return { bets: out, credits: null, rev: null };
+      },
+    };
+  }
 
-    let back = 0, straight = false;
-    const won = [];
-    for (const [key, amt] of Object.entries(state.rl.bets)) {
-      if (!rlHit(key, result)) continue;
-      const profit = amt * rlPays(key) * settings.winMultiplier;
-      back += Math.floor(amt + profit);
-      won.push(key);
-      if (key[0] === 'n') straight = true;
+  let rlCur = { id: -1, result: null }, rlFetchingR = false, rlFetchAt = 0, rlAnimFor = -1, rlSubmitting = false, rlClaimingR = false;
+  let rlTableList = [], rlTableFor = -1, rlTableAt = 0, rlAutoFor = -1, rlReadyR = null, rlClaimSoon = true;
+  async function rlFetchR(id) {
+    if (!backend?.roulette || rlFetchingR || !account) return;
+    rlFetchingR = true; rlFetchAt = performance.now();
+    try {
+      const t0 = Date.now();
+      const r = await backend.roulette.round(id);
+      if (backend.roulette.shared && Number.isFinite(Number(r?.now))) { const off = Number(r.now) - (t0 + Date.now()) / 2; hrOffset = hrOffsetSet ? hrOffset * 0.7 + off * 0.3 : off; hrOffsetSet = true; }
+      if (Number(r.id) === rlCur.id && r.result != null) rlCur.result = Number(r.result);
+      if (Array.isArray(r.recent) && Number(r.id) === rlCur.id && rlCur.result == null) {
+        state.rl.history = r.recent.map(Number).slice(0, 20);
+        if (state.mode === 'rl') renderRLControls();
+      }
+      rlReadyR = true;
+    } catch (e) {
+      if (e?.code === 'PGRST202' || /could not find the function/i.test(e?.message || '')) { if (rlReadyR !== false) { rlReadyR = false; if (state.mode === 'rl') rlEnter(); } }
     }
-    state.credits = Math.min(MAX, state.credits + back);
-    const net = back - total;
-    state.lastWin = Math.max(0, net);
-    state.best = Math.max(state.best, net);
-    state.rl.history.unshift(result);
-    state.rl.history.length = Math.min(state.rl.history.length, 20);
-    state.rl.spins++;
-
+    rlFetchingR = false;
+  }
+  // Put the chips waiting on the table into the open round.
+  async function rlSubmit(auto = false) {
+    const { id, phase } = rlPhaseOf(hrNow());
+    const chips = { ...state.rl.bets }, total = rlTotal();
+    if (!account || rlSubmitting || !total || !backend?.roulette) return;
+    if (phase !== 'bet') { rlSay('Too late: no more bets for this round.', 'lose'); return; }
+    if (settings.maintenance && !account.isAdmin) { rlSay('The game is paused by an admin. Try again later.', 'lose'); return; }
+    if (total > state.credits) { rlSay(`Not enough credits for ${fmt(total)}.`, 'lose'); return; }
+    rlSubmitting = true;
+    renderRLControls();
+    try {
+      await flush();
+      quietCreditsUntil = Date.now() + 8000;
+      const res = await backend.roulette.bet(id, chips);
+      serverCredits(res, -total);
+      if (state.rl.placed?.round !== id) state.rl.placed = { round: id, bets: {} };
+      for (const [k, v] of Object.entries(chips)) state.rl.placed.bets[k] = (state.rl.placed.bets[k] || 0) + v;
+      state.rl.last = { ...state.rl.placed.bets };
+      state.rl.bets = {};
+      rlUndoStack = [];
+      if (!state.rl.open.includes(id)) state.rl.open.push(id);
+      sound.chip();
+      rlSay(auto ? `Time is up: your ${fmt(total)} went in automatically. Good luck!` : `Bets placed: ${fmt(total)}. Good luck!`, 'win');
+      lastSaved = '';
+      persist();
+      rlLoadTable(id);
+    } catch (e) {
+      const m = e?.message || '';
+      rlSay(e?.code === 'rl_closed' || /closed/.test(m) ? 'Too late: no more bets for this round.' : /too many/.test(m) ? 'That is the most bets for one round (20).'
+        : /credits/.test(m) ? 'Not enough credits for that.' : /paused/.test(m) ? 'The game is paused by an admin. Try again later.'
+        : e?.code === 'PGRST202' || /could not find the function/i.test(m) ? 'Roulette now runs for everyone and needs the “Global roulette” part of supabase-setup.sql.' : 'That did not work. Check the connection and try again.', 'lose');
+      refreshOwn();
+    }
+    rlSubmitting = false;
+    renderRLBets();
+    render();
+  }
+  async function rlLoadTable(id) {
+    if (!backend?.roulette?.shared || !account) return;
+    rlTableAt = performance.now();
+    try {
+      const list = await backend.roulette.bets(id);
+      if (Array.isArray(list)) { rlTableList = list; rlTableFor = id; }
+    } catch {}
+    if (state.mode === 'rl') renderRLTable();
+  }
+  const RL_KEY_NAMES = { red: 'Red', black: 'Black', odd: 'Odd', even: 'Even', low: '1–18', high: '19–36', d1: '1st 12', d2: '2nd 12', d3: '3rd 12', c1: 'Column 1', c2: 'Column 2', c3: 'Column 3' };
+  const rlKeyName = k => k[0] === 'n' ? k.slice(1) : i18n(RL_KEY_NAMES[k] || k);
+  // Everybody at the table this round, with what they put down.
+  function renderRLTable() {
+    const box = $('rlTable');
+    box.hidden = !backend?.roulette?.shared;
+    if (box.hidden) return;
+    const { id } = rlPhaseOf(hrNow());
+    const by = new Map();
+    for (const b of rlTableFor === id ? rlTableList : []) {
+      const p = by.get(b.player) || { name: b.name, total: 0, keys: {} };
+      p.total += Number(b.total) || 0;
+      for (const [k, v] of Object.entries(b.bets || {})) p.keys[k] = (p.keys[k] || 0) + Number(v);
+      by.set(b.player, p);
+    }
+    const rows = [...by.entries()].sort((a, b) => b[1].total - a[1].total);
+    $('rlPool').textContent = rows.length ? `${fmt(rows.reduce((a, [, p]) => a + p.total, 0))} · ${rows.length} players` : '';
+    $('rlPlayers').innerHTML = rows.length ? rows.map(([pid, p]) => {
+      const keys = Object.entries(p.keys).sort((a, b) => b[1] - a[1]);
+      return `<li><b class="name">${nameHtml(pid, p.name)}</b><span class="rl-keys">${keys.slice(0, 4).map(([k]) => `<i class="rl-key ${k[0] === 'n' ? rlColor(Number(k.slice(1))) : k === 'red' || k === 'black' ? k : ''}">${esc(rlKeyName(k))}</i>`).join('')}${keys.length > 4 ? `<i class="rl-key">+${keys.length - 4}</i>` : ''}</span><span class="hr-res">${fmt(p.total)}</span></li>`;
+    }).join('') : '<li class="empty">Nobody has bet yet.</li>';
+  }
+  async function rlRunSpin(id, result, elapsed) {
+    rlBusy = true;
+    rlBallRel = null;
+    rlSay('No more bets!', 'hot');
+    await rlAnimate(result, Math.max(0, elapsed));
+    rlBusy = false;
+    if (rlPhaseOf(hrNow()).id === id) rlShowResult(id, result);
+  }
+  // The number is in: mark it, show what my chips brought (the credits come with the claim).
+  function rlShowResult(id, result) {
+    if (state.rl.histId !== id) { state.rl.history.unshift(result); state.rl.history.length = Math.min(state.rl.history.length, 20); state.rl.histId = id; }
+    if (rlBallRel == null) rlBallRel = RL_ORDER.indexOf(result) * (Math.PI * 2) / 37;
     const res = $('rlResult');
     res.textContent = String(result);
     res.className = 'rl-result ' + rlColor(result);
     res.hidden = false;
     document.querySelector(`.rl-cell[data-key="n${result}"]`)?.classList.add('hit');
+    const placed = state.rl.placed?.round === id ? state.rl.placed.bets : {};
+    const total = Object.values(placed).reduce((a, v) => a + v, 0);
+    const back = rlPayout(placed, result, settings.winMultiplier), net = back - total;
+    const straight = Object.keys(placed).some(k => k[0] === 'n' && rlHit(k, result));
     document.querySelectorAll('.rl-cell').forEach(c => {
       const chip = c.querySelector('.rl-chip');
-      if (!chip) return;
-      if (won.includes(c.dataset.key)) { c.classList.add('won'); chip.classList.add('paid'); }
-      else chip.classList.add('lost');
+      if (!chip || !placed[c.dataset.key]) return;
+      if (rlHit(c.dataset.key, result)) { c.classList.add('won'); chip.classList.add('paid'); } else chip.classList.add('lost');
     });
     const name = `${result} ${result === 0 ? 'green' : rlColor(result)}`;
-    if (net > 0) {
+    if (!total) rlSay(`${name}. Place your chips for the next round.`, '');
+    else if (net > 0) {
       rlSay(`${name}! You win +${fmt(net)}.`, 'win');
       const b = $('rlWheel').getBoundingClientRect();
       fxTop.coinBurst(b.left + b.width / 2, b.top + b.height / 2, straight ? 50 : 22, straight ? 12 : 8);
-      if (straight) { fxTop.burst(b.left + b.width / 2, b.top + b.height / 2, 120, 42, 9, false); sound.bigWin(); } else sound.win();
+      if (straight) { fxTop.burst(b.left + b.width / 2, b.top + b.height / 2, 120, 42, 9, false); sound.bigWin(); fireworks(6); } else sound.win();
     } else if (back > 0) rlSay(`${name}. Some bets won; you are down ${fmt(-net)}.`, '');
     else { rlSay(`${name}. No luck this time.`, 'lose'); sound.lose(); }
-    gainXp(6 + won.length * 3);
-    if (straight) fireworks(6);
-    checkAch({ bullseye: straight, win: Math.max(0, net), bet: total });
-    render();
-    await sleep(reduceMotion ? 0 : 1600);
-    state.rl.bets = {};
-    rlUndoStack = [];
-    renderRLBets();
-    rlBusy = false;
-    render();
-    while (pendingLevels.length) levelUp(pendingLevels.shift());
+    renderRLControls();
   }
-  $('rlSpin').addEventListener('click', rlSpin);
+  // Collect finished rounds onto the balance.
+  async function rlClaim() {
+    if (!backend?.roulette || !account || rlClaimingR) return;
+    rlClaimingR = true;
+    try {
+      await flush();
+      const res = await backend.roulette.claim();
+      const rows = (res?.bets || []).map(b => ({ ...b, round_id: Number(b.round_id), total: Number(b.total) || 0, payout: Number(b.payout) || 0, result: Number(b.result) }));
+      const won = rows.reduce((a, b) => a + b.payout, 0), staked = rows.reduce((a, b) => a + b.total, 0);
+      serverCredits(res, won);
+      const rounds = new Set(rows.map(b => b.round_id));
+      state.rl.open = state.rl.open.filter(r => !rounds.has(r) && r >= Math.floor(hrNow() / RL_PERIOD) - 1);
+      if (rows.length) {
+        state.rl.spins += rounds.size;
+        const straight = rows.some(b => Object.keys(b.bets || {}).some(k => k[0] === 'n' && b.payout > 0 && rlHit(k, b.result)));
+        const net = won - staked;
+        state.lastWin = Math.max(0, net);
+        state.best = Math.max(state.best, net);
+        gainXp(6 + rows.length * 2);
+        checkAch({ bullseye: straight, win: Math.max(0, net), bet: staked });
+        if (won > 0 && state.mode !== 'rl') {
+          const el = document.createElement('button');
+          el.type = 'button';
+          el.className = 'chat-pop gift-pop';
+          el.innerHTML = `<span class="gift-ico" aria-hidden="true">${SHOP_ICONS.goldCherry}</span><span class="body"><span class="head"><b>Roulette</b></span><span class="note">${i18n(`Your chips paid: +${fmt(won)} credits!`)}</span></span>`;
+          showPop(el, 6000);
+          sound.win();
+        }
+        persist();
+        render();
+        while (pendingLevels.length) levelUp(pendingLevels.shift());
+      }
+    } catch {}
+    rlClaimingR = false;
+  }
+  // Runs four times a second on every signed-in page, whatever game is open.
+  function rlTick() {
+    if (!account || !backend?.roulette) return;
+    const now = hrNow(), { id, e, phase } = rlPhaseOf(now);
+    const watching = state.mode === 'rl' && $('lobby').hidden && $('shopPage').hidden;
+    if (rlCur.id !== id) {
+      rlCur = { id, result: null };
+      rlFetchR(id);
+      if (watching) {
+        $('rlResult').hidden = true;
+        document.querySelectorAll('.rl-cell.hit, .rl-cell.won').forEach(x => x.classList.remove('hit', 'won'));
+        document.querySelectorAll('.rl-chip').forEach(x => x.classList.remove('paid', 'lost'));
+        renderRLBets(); renderRLControls(); renderRLTable();
+        if (!rlBusy) rlSay('Place your bets! The ball is thrown for everyone in 45 seconds.', 'hot');
+      }
+    }
+    if (rlReadyR === false && !watching) return;
+    if (phase !== 'bet' && rlCur.result == null && performance.now() - rlFetchAt > 700) rlFetchR(id);
+    // Chips still waiting when time runs out go in by themselves.
+    if (phase === 'bet' && e >= RL_BET - 2500 && rlTotal() > 0 && rlAutoFor !== id && !rlSubmitting) { rlAutoFor = id; rlSubmit(true); }
+    if (watching && rlCur.result != null && rlAnimFor !== id && (phase === 'spin' || phase === 'result')) {
+      rlAnimFor = id;
+      const el = e - RL_BET - RL_THROW;
+      if (el < RL_SPIN - 800 && !reduceMotion) rlRunSpin(id, rlCur.result, el); else rlShowResult(id, rlCur.result);
+    }
+    if (watching && phase === 'closed' && rlAnimFor !== id && !rlBusy && $('rlMsg').textContent !== i18n('No more bets!')) rlSay('No more bets!', 'hot');
+    if (watching && rlReadyR !== false && (rlTableFor !== id || (phase === 'bet' && performance.now() - rlTableAt > 3000)) && performance.now() - rlTableAt > 1500) rlLoadTable(id);
+    // Pay out once the ball has landed on screen.
+    const due = state.rl.open.some(r => now >= r * RL_PERIOD + RL_BET + RL_THROW + RL_SPIN + 300);
+    if (due || (rlClaimSoon && backend.roulette.shared && rlReadyR)) { rlClaimSoon = false; rlClaim(); }
+    if (watching) renderRLClock(now);
+    const badge = $('rlBadge');
+    if (badge && !$('lobby').hidden) badge.textContent = phase === 'bet' ? `Live · 0:${String(Math.ceil((RL_BET - e) / 1000)).padStart(2, '0')}` : i18n('Live · spinning');
+  }
+  $('rlSpin').addEventListener('click', () => rlSubmit(false));
   document.addEventListener('keydown', e => {
     if (state.mode !== 'rl' || !account || !$('lobby').hidden || e.code !== 'Space') return;
     if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'SUMMARY'].includes(e.target.tagName) || e.target.closest?.('#chatPanel, #adminModal, #profileModal, #mineModal') || !$('mineModal').hidden) return;
     e.preventDefault();
-    rlSpin();
+    rlSubmit(false);
   });
+  setInterval(rlTick, 250);
 
   // ---------- Plinko ----------
   // Multipliers per row count and risk, edge to edge. Each table returns about 96% of bets:
@@ -7427,6 +7683,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       chatSend: text => store.chatSend(text),
       poker: null,
       horse: localHorse(),
+      roulette: localRoulette(),
       presence: cb => store.presence(cb),
       setOnline: me => store.setOnline(me),
       dmWatch: cb => store.dmWatch(cb),
@@ -7863,6 +8120,19 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         async tick() { await sb.rpc('poker_tick'); },
         watch(cb) { sb.channel('poker-pulse').on('postgres_changes', { event: '*', schema: 'public', table: 'poker_pulse' }, cb).subscribe(); },
       },
+      // Global roulette: the database takes the chips, draws the number and pays out.
+      roulette: {
+        shared: true,
+        async available() { const { error } = await sb.rpc('roulette_round', { round: null }); return !error; },
+        async round(id) { const { data, error } = await sb.rpc('roulette_round', { round: id ?? null }); if (error) throw error; return data; },
+        async bet(id, chips) { const { data, error } = await sb.rpc('roulette_bet', { round: id, chips }); if (error) throw error; return data; },
+        async bets(id) {
+          const { data, error } = await sb.from('roulette_bets').select('player,name,bets,total').eq('round_id', id).order('id');
+          if (error) throw error;
+          return data;
+        },
+        async claim() { const { data, error } = await sb.rpc('roulette_claim'); if (error) throw error; return data; },
+      },
       // Horse racing: the database keeps the odds, the bets, the finishing order and the payouts.
       horse: {
         shared: true,
@@ -8063,6 +8333,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     state.missions = (Array.isArray(saved.missions) ? saved.missions : []).filter(m => MISSIONS[m?.t]);
     state.bj = Object.assign(fresh().bj, saved.bj);
     state.rl = Object.assign(fresh().rl, saved.rl);
+    state.rl.open = (Array.isArray(state.rl.open) ? state.rl.open : []).filter(Number.isFinite).slice(-20);
+    if (!state.rl.placed || typeof state.rl.placed.bets !== 'object' || !Number.isFinite(state.rl.placed.round)) state.rl.placed = null;
+    if (!Array.isArray(state.rl.history)) state.rl.history = [];
     state.pl = Object.assign(fresh().pl, saved.pl);
     state.ck = Object.assign(fresh().ck, saved.ck);
     if (!['easy', 'medium', 'hard'].includes(state.ck.diff)) state.ck.diff = 'medium';
@@ -8122,6 +8395,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     seenMedals = null;
     setTimeout(checkGifts, 1200);
     hrClaimSoon = true; hrBetsFor = -1; hrBetList = [];
+    rlClaimSoon = true; rlCur = { id: -1, result: null }; rlTableFor = -1; rlAnimFor = -1;
     syncAdminButton();
     $('accountBar').hidden = false;
     document.body.classList.add('signed-in');
@@ -8637,7 +8911,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   }
   async function refreshOwn() {
     if (refreshing || !account) return;
-    if (busy || hrClaiming || hrPlacing) { setTimeout(refreshOwn, 1000); return; }
+    if (busy || hrClaiming || hrPlacing || rlSubmitting || rlClaimingR) { setTimeout(refreshOwn, 1000); return; }
     refreshing = true;
     try {
       const doc = await backend.loadOwn(account.id);

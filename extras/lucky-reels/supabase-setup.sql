@@ -1733,3 +1733,210 @@ begin
   return new;
 end;
 $$;
+
+
+-- ---------------------------------------------------------------------------
+-- Global roulette: run this part once (after "Horse racing"). One wheel for
+-- everyone: every minute there are 45 seconds to place chips, then the ball
+-- is thrown. The database takes the bets, draws the number when betting
+-- closes and pays the winners. Keep the timing in step with the page
+-- (RL_PERIOD and RL_BET in index.html).
+
+create table if not exists public.roulette_rounds (
+  id bigint primary key,                     -- round number: milliseconds since 1970 / 60000
+  result smallint check (result between 0 and 36),
+  created_at timestamptz not null default now()
+);
+alter table public.roulette_rounds enable row level security;
+revoke all on public.roulette_rounds from anon, authenticated;
+
+create table if not exists public.roulette_bets (
+  id bigint generated always as identity primary key,
+  round_id bigint not null,
+  player uuid not null references public.players (id) on delete cascade,
+  name text not null,
+  bets jsonb not null,                       -- {"red": 100, "n17": 10, …}
+  total bigint not null check (total > 0),
+  mult numeric not null default 1,           -- the happy-hour win multiplier when the bet was placed
+  payout bigint,                             -- null until the number is drawn
+  claimed boolean not null default false,
+  created_at timestamptz not null default now()
+);
+create index if not exists roulette_bets_round on public.roulette_bets (round_id);
+create index if not exists roulette_bets_open on public.roulette_bets (player) where not claimed;
+alter table public.roulette_bets enable row level security;
+revoke all on public.roulette_bets from anon, authenticated;
+grant select on public.roulette_bets to authenticated;
+drop policy if exists "Everyone sees the roulette bets" on public.roulette_bets;
+create policy "Everyone sees the roulette bets" on public.roulette_bets for select to authenticated using (true);
+
+create or replace function public.roulette_key_ok(k text)
+returns boolean language sql immutable as $$
+  select k ~ '^n([0-9]|[12][0-9]|3[0-6])$' or k in ('red', 'black', 'odd', 'even', 'low', 'high', 'd1', 'd2', 'd3', 'c1', 'c2', 'c3')
+$$;
+create or replace function public.roulette_hit(k text, n integer)
+returns boolean language sql immutable as $$
+  select case
+    when k like 'n%' then substr(k, 2)::integer = n
+    when k = 'red' then n in (1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36)
+    when k = 'black' then n > 0 and n not in (1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36)
+    when k = 'odd' then n > 0 and n % 2 = 1
+    when k = 'even' then n > 0 and n % 2 = 0
+    when k = 'low' then n between 1 and 18
+    when k = 'high' then n between 19 and 36
+    when k = 'd1' then n between 1 and 12
+    when k = 'd2' then n between 13 and 24
+    when k = 'd3' then n between 25 and 36
+    when k = 'c1' then n > 0 and n % 3 = 1
+    when k = 'c2' then n > 0 and n % 3 = 2
+    when k = 'c3' then n > 0 and n % 3 = 0
+    else false end
+$$;
+create or replace function public.roulette_pays(k text)
+returns integer language sql immutable as $$
+  select case when k like 'n%' then 35 when k ~ '^[dc][123]$' then 2 else 1 end
+$$;
+
+-- Draws the number once betting is closed and settles the round's bets.
+create or replace function public.roulette_settle(round bigint)
+returns smallint
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  res smallint;
+begin
+  insert into public.roulette_rounds (id) values (round) on conflict (id) do nothing;
+  select result into res from public.roulette_rounds where id = round for update;
+  if res is not null then return res; end if;
+  res := floor(random() * 37)::smallint;
+  update public.roulette_rounds set result = res where id = round;
+  update public.roulette_bets b set payout = (
+      select coalesce(sum(case when public.roulette_hit(e.key, res)
+        then floor(e.value::bigint * (1 + public.roulette_pays(e.key) * b.mult)) else 0 end), 0)::bigint
+      from jsonb_each_text(b.bets) e)
+    where round_id = round and payout is null;
+  -- Old rounds and bets go after about four days.
+  delete from public.roulette_bets where round_id < round - 6000 and claimed;
+  delete from public.roulette_rounds where id < round - 6000;
+  return res;
+end;
+$$;
+
+-- What the page asks for: the server clock, the number once betting is closed, and the last numbers.
+create or replace function public.roulette_round(round bigint default null)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+  cur bigint := now_ms / 60000;
+  res smallint;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  round := coalesce(round, cur);
+  if round > cur or round < cur - 3000 then raise exception 'no such round'; end if;
+  if now_ms >= round * 60000 + 45000 then res := public.roulette_settle(round); end if;
+  return jsonb_build_object('id', round, 'now', now_ms, 'result', res,
+    'recent', (select coalesce(jsonb_agg(result order by id desc), '[]') from (
+      select id, result from public.roulette_rounds where result is not null and id < cur order by id desc limit 14) r));
+end;
+$$;
+
+-- Places chips on the open round: {"red": 100, "n17": 10}. Takes the credits at once.
+create or replace function public.roulette_bet(round bigint, chips jsonb)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+  me public.players;
+  e record;
+  tot bigint := 0;
+  m numeric;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  if round <> now_ms / 60000 or now_ms >= round * 60000 + 45000 then raise exception 'betting closed'; end if;
+  if jsonb_typeof(chips) <> 'object' then raise exception 'no such bet'; end if;
+  for e in select * from jsonb_each(chips) loop
+    if not public.roulette_key_ok(e.key) or jsonb_typeof(e.value) <> 'number' or (e.value)::text !~ '^[1-9][0-9]{0,17}$' then raise exception 'no such bet'; end if;
+    tot := tot + (e.value)::text::bigint;
+  end loop;
+  if tot < 1 then raise exception 'bet at least 1'; end if;
+  select * into me from public.players where id = auth.uid() for update;
+  if me is null or me.is_banned then raise exception 'not allowed'; end if;
+  if coalesce((select (data ->> 'maintenance')::boolean from public.settings where id = 1), false) and not me.is_admin then raise exception 'paused'; end if;
+  if me.credits < tot then raise exception 'not enough credits'; end if;
+  if (select count(*) from public.roulette_bets where round_id = round and player = me.id) >= 20 then raise exception 'too many bets'; end if;
+  m := least(100, greatest(0.1, coalesce((select (data ->> 'winMultiplier')::numeric from public.settings where id = 1), 1)));
+  update public.players set credits = credits - tot, admin_rev = admin_rev + 1, updated_at = now() where id = me.id;
+  insert into public.roulette_bets (round_id, player, name, bets, total, mult) values (round, me.id, me.name, chips, tot, m);
+  return jsonb_build_object('credits', me.credits - tot, 'rev', me.admin_rev + 1);
+end;
+$$;
+
+-- Collects every finished roulette bet of mine onto my balance.
+create or replace function public.roulette_claim()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+  round bigint;
+  won bigint;
+  rows_ jsonb;
+  me public.players;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  for round in select distinct round_id from public.roulette_bets
+      where player = auth.uid() and not claimed and round_id * 60000 + 45000 <= now_ms loop
+    perform public.roulette_settle(round);
+  end loop;
+  select * into me from public.players where id = auth.uid() for update;
+  if me is null then raise exception 'not allowed'; end if;
+  with c as (
+    update public.roulette_bets b set claimed = true
+    where player = me.id and not claimed and payout is not null
+    returning round_id, bets, total, payout
+  )
+  select coalesce(sum(c.payout), 0), coalesce(jsonb_agg(to_jsonb(c) || jsonb_build_object('result', r.result)), '[]') into won, rows_
+    from c join public.roulette_rounds r on r.id = c.round_id;
+  if won > 0 then
+    update public.players set credits = credits + won, admin_rev = admin_rev + 1, updated_at = now() where id = me.id;
+    return jsonb_build_object('bets', rows_, 'credits', me.credits + won, 'rev', me.admin_rev + 1);
+  end if;
+  return jsonb_build_object('bets', rows_, 'credits', me.credits, 'rev', me.admin_rev);
+end;
+$$;
+
+revoke execute on function public.roulette_settle(bigint) from public, anon, authenticated;
+revoke execute on function public.roulette_round(bigint) from public, anon;
+revoke execute on function public.roulette_bet(bigint, jsonb) from public, anon;
+revoke execute on function public.roulette_claim() from public, anon;
+grant execute on function public.roulette_round(bigint) to authenticated;
+grant execute on function public.roulette_bet(bigint, jsonb) to authenticated;
+grant execute on function public.roulette_claim() to authenticated;
+
+-- A reset or hard reset also drops a player's bets that were not collected yet.
+create or replace function public.players_clear_cosmetics()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+begin
+  if new.game is null and old.game is not null then
+    new.flair := null;
+    new.trophies := '{}';
+    delete from public.horse_bets where player = new.id and not claimed;
+    delete from public.roulette_bets where player = new.id and not claimed;
+  end if;
+  return new;
+end;
+$$;
