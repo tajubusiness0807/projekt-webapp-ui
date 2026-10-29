@@ -1744,7 +1744,7 @@ $$;
 -- ---------------------------------------------------------------------------
 -- Global roulette: run this part once (after "Horse racing"). One wheel for
 -- everyone: every 45 seconds there are 30 seconds to place chips, then the
--- ball is thrown. The database takes the bets, draws the number when betting
+-- ball is thrown and bets stay open 4 more seconds while it rolls. The database takes the bets, draws the number when betting
 -- closes and pays the winners. Keep the timing in step with the page
 -- (RL_PERIOD and RL_BET in index.html).
 -- If you ran an older copy of this part, run it again: it keeps the bets and
@@ -1848,7 +1848,7 @@ begin
   if auth.uid() is null then raise exception 'not allowed'; end if;
   round := coalesce(round, cur);
   if round > cur or round < cur - 3000 then raise exception 'no such round'; end if;
-  if now_ms >= round * 45000 + 30000 then res := public.roulette_settle(round); end if;
+  if now_ms >= round * 45000 + 34000 then res := public.roulette_settle(round); end if;
   return jsonb_build_object('id', round, 'now', now_ms, 'result', res,
     'recent', (select coalesce(jsonb_agg(result order by id desc), '[]') from (
       select id, result from public.roulette_rounds where result is not null and id < cur order by id desc limit 14) r));
@@ -1870,7 +1870,7 @@ declare
   m numeric;
 begin
   if auth.uid() is null then raise exception 'not allowed'; end if;
-  if round <> now_ms / 45000 or now_ms >= round * 45000 + 30000 then raise exception 'betting closed'; end if;
+  if round <> now_ms / 45000 or now_ms >= round * 45000 + 34000 then raise exception 'betting closed'; end if;
   if jsonb_typeof(chips) <> 'object' then raise exception 'no such bet'; end if;
   for e in select * from jsonb_each(chips) loop
     if not public.roulette_key_ok(e.key) or jsonb_typeof(e.value) <> 'number' or (e.value)::text !~ '^[1-9][0-9]{0,17}$' then raise exception 'no such bet'; end if;
@@ -1905,7 +1905,7 @@ declare
 begin
   if auth.uid() is null then raise exception 'not allowed'; end if;
   for round in select distinct round_id from public.roulette_bets
-      where player = auth.uid() and not claimed and round_id * 45000 + 30000 <= now_ms loop
+      where player = auth.uid() and not claimed and round_id * 45000 + 34000 <= now_ms loop
     perform public.roulette_settle(round);
   end loop;
   select * into me from public.players where id = auth.uid() for update;
@@ -2475,7 +2475,7 @@ set search_path = public
 as $$
 begin
   if not public.admin_me() then raise exception 'not allowed'; end if;
-  if public.horse_now_ms() >= round * 45000 + 30000 then raise exception 'betting closed'; end if;
+  if public.horse_now_ms() >= round * 45000 + 34000 then raise exception 'betting closed'; end if;
   insert into public.roulette_rounds (id, forced) values (round, 0)
     on conflict (id) do update set forced = 0 where public.roulette_rounds.result is null;
 end;
