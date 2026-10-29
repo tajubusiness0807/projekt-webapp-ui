@@ -1955,6 +1955,7 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
 .news-ok { width: 100%; }
 .news-admin { display: grid; gap: 8px; }
 .news-admin textarea { width: 100%; resize: vertical; font: inherit; padding: 10px 12px; border-radius: 10px; border: 1px solid #ffffff22; background: #0006; color: var(--fg); }
+#voice[hidden] { display: none; }
 #fx, #fxTop { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 #fxTop { z-index: 18; }
 .jp {
@@ -7550,7 +7551,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       // A golden rocket shows itself at liftoff: it will make it past 30×.
       if (next.golden && !wasGold && state.mode === 'rk' && hrNow() - next.launch < 5000) {
         rkSay(`Golden rocket! This one flies past ${RK_GOLD}× for sure.`, 'win');
-        voice.say('Golden rocket!', { urgent: true, pitch: 1.15 });
+        voice.say('Golden rocket!', { urgent: true, pitch: 1.15, rocket: true });
         sound.star(); sound.chime();
         const b = $('rkView').getBoundingClientRect();
         fxTop.burst(b.left + b.width / 2, b.top + b.height / 2, 90, 30, 8, false);
@@ -8023,26 +8024,26 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (!(state.mode === 'rk' && account && $('lobby').hidden && $('shopPage').hidden && !document.hidden)) { rkFrameOn = false; return; }
     const now = hrNow(), p = rkDraw(now);
     if (p.phase !== rkLastPhase) {
-      if (p.phase === 'fly' && rkLastPhase === 'bet') { sound.rumble(); audio.whoosh(); audio.noise(1.2, { type: 'lowpass', freq: 200, to: 900, vol: 0.3, attack: 0.05 }); rkSay('Liftoff! Cash out before it blows.', 'hot'); voice.say('Liftoff!', { urgent: true }); }
+      if (p.phase === 'fly' && rkLastPhase === 'bet') { sound.rumble(); audio.whoosh(); audio.noise(1.2, { type: 'lowpass', freq: 200, to: 900, vol: 0.3, attack: 0.05 }); rkSay('Liftoff! Cash out before it blows.', 'hot'); voice.say('Liftoff!', { urgent: true, rocket: true }); }
       if (p.phase === 'boom' && p.since < 3000) {
         sound.boom(); sound.thunder(); audio.boom();
         for (let k = 0; k < 8; k++) setTimeout(() => sound.crackle(), 300 + k * 90);
         const mine = rkMine();
         rkSay(mine && mine.payout == null && !(mine.auto && mine.auto < p.m) ? `Boom at ${p.m.toFixed(2)}×. Your ${fmt(mine.amount)} went up in smoke.` : `Boom at ${p.m.toFixed(2)}×!`, 'lose');
       }
-      if (p.phase === 'moon' && p.since < 3000) { sound.fanfare(); voice.say('Touchdown! We are on the moon!', { urgent: true }); setTimeout(() => audio.noise(0.5, { type: 'lowpass', freq: 300, vol: 0.4 }), 2600); for (let i = 0; i < 80; i++) fxTop.confetti(CONFETTI); fireworks(12); rkSay(`To the moon! Everyone still on board gets ${RK_CAP}×.`, 'win'); }
+      if (p.phase === 'moon' && p.since < 3000) { sound.fanfare(); voice.say('Touchdown! We are on the moon!', { urgent: true, rocket: true }); setTimeout(() => audio.noise(0.5, { type: 'lowpass', freq: 300, vol: 0.4 }), 2600); for (let i = 0; i < 80; i++) fxTop.confetti(CONFETTI); fireworks(12); rkSay(`To the moon! Everyone still on board gets ${RK_CAP}×.`, 'win'); }
       rkLastPhase = p.phase;
       renderRK();
     }
     // Milestones on the way up: a ring of light, a chord and the number called out.
     if (p.phase === 'fly') {
       const next = RK_MILES.find(x => x > (rkScene.mile || 1));
-      if (next && p.m >= next) { rkScene.mile = next; rkScene.mileAt = performance.now(); [523, 659, 784].forEach((f, i) => sound.tone(f * Math.min(4, 1 + Math.log2(next) / 3), i * 0.04, 0.3, 'triangle', 0.05)); if (next >= 10) voice.say(`${next} times!`, { urgent: true }); }
+      if (next && p.m >= next) { rkScene.mile = next; rkScene.mileAt = performance.now(); [523, 659, 784].forEach((f, i) => sound.tone(f * Math.min(4, 1 + Math.log2(next) / 3), i * 0.04, 0.3, 'triangle', 0.05)); if (next >= 10) voice.say(`${next} times!`, { urgent: true, rocket: true }); }
     }
     if (p.phase === 'bet' && p.left < 5000 && Math.ceil(p.left / 1000) !== rkLastCount) {
       rkLastCount = Math.ceil(p.left / 1000);
       sound.tone(rkLastCount <= 1 ? 1320 : 880, 0, 0.12, 'sine', 0.07);
-      if (rkLastCount <= 3 && rkLastCount >= 1) voice.say(String(rkLastCount), { urgent: true, raw: true, rate: 1.2 });
+      if (rkLastCount <= 3 && rkLastCount >= 1) voice.say(String(rkLastCount), { urgent: true, raw: true, rate: 1.2, rocket: true });
     }
     if (p.phase === 'fly') renderRKControls(p);
     requestAnimationFrame(rkFrame);
@@ -8237,11 +8238,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     loops[slot + 'Kind'] = kind && loops[slot] ? kind : '';
     return loops[slot];
   }
-  // The voice: the croupier and the race caller, in the page's language.
+  // The voice: only the rocket's countdown and calls speak, in the page's language; everything else stays silent.
   const voice = {
     on: () => state.sound && state.voice !== false && 'speechSynthesis' in window,
-    say(text, { urgent = false, rate = 1.08, pitch = 1, raw = false } = {}) {
-      if (!this.on()) return;
+    say(text, { urgent = false, rate = 1.08, pitch = 1, raw = false, rocket = false } = {}) {
+      if (!rocket || !this.on()) return;
       try {
         if (urgent) speechSynthesis.cancel();
         if (speechSynthesis.pending && !urgent) return;
@@ -9466,6 +9467,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (inBonus) chips.unshift(`<span class="boost-chip bonus">Free spin ${freeDone} · bonus +${fmt(state.freeTotal)}</span>`);
     $('sound').textContent = `Sound: ${state.sound ? 'on' : 'off'}`;
     $('voice').textContent = `Voice: ${state.voice !== false ? 'on' : 'off'}`;
+    $('voice').hidden = state.mode !== 'rk';
 
     const canNudge = nudgeOpen && state.nudges > 0;
     $('reelCtl').hidden = busy || !(holdOffer || canNudge);
