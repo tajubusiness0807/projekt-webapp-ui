@@ -8699,11 +8699,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   };
   // Ten times a second: which room tone and which continuous effect fit what is on screen.
   function atmosTick() {
-    if (ltShow.open) { loopTo('amb', 'ltcrowd', () => makeLoop('bandpass', 750, 0.5))?.set(0.035, 720); return; }
+    // No background noise (room tone, crowd, wind): only the effects of what happens play.
+    loopTo('amb', '', null);
+    if (ltShow.open) return;
     const watching = account && state.sound && $('lobby').hidden && $('shopPage').hidden && !document.hidden;
     const mode = watching ? state.mode : '';
     // room tone
-    const ambKind = mode === 'hr' ? 'crowd' : mode === 'rk' ? 'wind' : mode ? 'casino' : '';
+    const ambKind = '';
     const amb = loopTo('amb', ambKind, () => ambKind === 'crowd' ? makeLoop('bandpass', 750, 0.5) : ambKind === 'wind' ? makeLoop('lowpass', 260, 0.7) : makeLoop('bandpass', 420, 0.4));
     if (amb) {
       if (ambKind === 'crowd') {
