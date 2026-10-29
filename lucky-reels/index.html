@@ -1954,6 +1954,9 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
 .cf-hist span.won { box-shadow: inset 0 0 0 2px var(--win); }
 .cf-hist span.edge { background: linear-gradient(135deg, #f3c94b, #ff8fb8, #a77bff); }
 .cf-pick { justify-self: center; }
+.cf-streak { margin: 0; justify-self: center; padding: 5px 14px; border-radius: 999px; background: #f3c94b22; box-shadow: inset 0 0 0 1px #f3c94b88; color: #ffe27a; font: 600 14px var(--font-mono); }
+.cf-streak[hidden] { display: none; }
+.ck-btns:has(#cfCash[hidden]) #cfFlip { grid-column: 1 / -1; }
 .cf-pick button { min-width: 130px; font-size: 16px; }
 @media (prefers-reduced-motion: reduce) { .cf-stage.idle .cf-toss, .gp-cf .gp-coin3 { animation: none !important; } }
 #fx, #fxTop { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
@@ -2505,7 +2508,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           </g>
         </svg>
         <span class="gp-title">Coin Flip</span>
-        <span class="gp-desc">Heads or tails, one flip, almost double. And once in 10,000 flips the coin lands on its edge: ×10.</span>
+        <span class="gp-desc">Heads or tails: double it, then double again, and again. And once in 10,000 flips the coin lands on its edge: ×10.</span>
         <span class="gp-go">Play</span>
       </button>
       <button class="game-pick" type="button" data-mode="pk">
@@ -2800,10 +2803,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         <button class="chip-btn" type="button" data-cfb="double" aria-label="Double bet">×2</button>
         <button class="chip-btn" type="button" data-cfb="max">Max</button>
       </div>
-      <button class="spin" id="cfFlip" type="button">Flip</button>
+      <p class="cf-streak" id="cfStreak" hidden></p>
+      <div class="ck-btns">
+        <button class="spin" id="cfFlip" type="button">Flip</button>
+        <button class="chip-btn ck-cash" id="cfCash" type="button" hidden>Cash out</button>
+      </div>
       <details class="bj-rules">
         <summary>Coin flip rules</summary>
-        <p class="note">Pick heads (crown) or tails (star), set a bet and flip. If the coin shows your side you get 2× your bet back. Once in 10,000 flips (0.01%) the coin lands on its edge: then everyone wins 10× the bet, whichever side they picked. Over the long run slightly more than 100% of bets come back. Space flips the coin.</p>
+        <p class="note">Pick heads (crown) or tails (star), set a bet and flip. If the coin shows your side the stake doubles, and you choose: cash out, or let it ride and flip again for ×4, ×8, ×16 and so on. One wrong side and everything on the coin is gone. You may switch sides between flips. Once in 10,000 flips (0.01%) the coin lands on its edge: then the stake on the coin is multiplied by 10, whichever side you picked. Space flips the coin.</p>
       </details>
     </section>
 
@@ -3430,12 +3437,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'You fell asleep on the job. Shift over.': 'Du bist bei der Arbeit eingeschlafen. Schicht vorbei.', 'Welcome back! Start a shift when you are ready.': 'Willkommen zurück! Starte eine Schicht, wenn du bereit bist.',
     'Welcome to Lucky Burger! Start your first shift as a cleaner.': 'Willkommen bei Lucky Burger! Starte deine erste Schicht als Putzkraft.',
     'Lucky Burger costs nothing. Start a shift and do the work that comes up: scrub stains off the floor, take the fries out when the bar is in the green, flip and serve the patties at the right moment, and put exactly what a customer ordered on the tray. Every 10 seconds you get your wage, but only if you did something in those 10 seconds and the boss is not angry. Finished jobs make the boss happier; things you let slip (a stain someone slips on, burnt food, a customer who walks out) make the boss angry. Paid time counts as time worked, and time worked brings promotions: from cleaner (14 credits every 10 seconds) up to store manager (250 credits every 10 seconds) after 9 hours of work. Higher positions run more stations at once and things go faster. A shift ends when you press End shift, leave the game, switch to another tab or do nothing for 45 seconds.': 'Lucky Burger kostet nichts. Starte eine Schicht und erledige, was anfällt: Flecken vom Boden schrubben, die Pommes rausholen, wenn der Balken im grünen Bereich ist, Pattys im richtigen Moment wenden und servieren und genau das aufs Tablett legen, was ein Kunde bestellt hat. Alle 10 Sekunden gibt es Lohn, aber nur, wenn du in diesen 10 Sekunden etwas getan hast und der Chef nicht sauer ist. Erledigte Aufgaben machen den Chef zufriedener; was du schleifen lässt (ein Fleck, auf dem jemand ausrutscht, verbranntes Essen, ein Kunde, der geht) macht ihn sauer. Bezahlte Zeit zählt als Arbeitszeit, und Arbeitszeit bringt Beförderungen: von der Putzkraft (14 Credits alle 10 Sekunden) bis zum Filialmanager (250 Credits alle 10 Sekunden) nach 9 Stunden Arbeit. Höhere Positionen betreuen mehr Stationen gleichzeitig, und alles geht schneller. Eine Schicht endet, wenn du „Schicht beenden“ drückst, das Spiel verlässt, in einen anderen Tab wechselst oder 45 Sekunden nichts tust.',
-    'Coin Flip': 'Münzwurf', 'Coin flip': 'Münzwurf', 'Heads or tails, one flip, almost double. And once in 10,000 flips the coin lands on its edge: ×10.': 'Kopf oder Zahl, ein Wurf, fast das Doppelte. Und einmal in 10.000 Würfen landet die Münze auf der Kante: ×10.',
+    'Coin Flip': 'Münzwurf', 'Coin flip': 'Münzwurf', 'Heads or tails: double it, then double again, and again. And once in 10,000 flips the coin lands on its edge: ×10.': 'Kopf oder Zahl: verdoppeln, nochmal verdoppeln, und nochmal. Und einmal in 10.000 Würfen landet die Münze auf der Kante: ×10.',
     'Pick a side, set your bet and flip.': 'Wähl eine Seite, setz deinen Einsatz und wirf.', '👑 Heads': '👑 Kopf', '⭐ Tails': '⭐ Zahl', 'Your side': 'Deine Seite', 'Bet per flip': 'Einsatz pro Wurf',
     'Flip': 'Werfen', 'Flipping…': 'Fliegt…', 'Coin flip rules': 'Münzwurf-Regeln', 'Last flips': 'Letzte Würfe', 'Edge': 'Kante', 'Heads': 'Kopf', 'Tails': 'Zahl', 'HEADS': 'KOPF', 'TAILS': 'ZAHL',
-    'Pick heads (crown) or tails (star), set a bet and flip. If the coin shows your side you get 2× your bet back. Once in 10,000 flips (0.01%) the coin lands on its edge: then everyone wins 10× the bet, whichever side they picked. Over the long run slightly more than 100% of bets come back. Space flips the coin.': 'Wähl Kopf (Krone) oder Zahl (Stern), setz einen Einsatz und wirf. Zeigt die Münze deine Seite, bekommst du das 2-Fache deines Einsatzes zurück. Einmal in 10.000 Würfen (0,01 %) landet die Münze auf der Kante: Dann gewinnt man das 10-Fache, egal welche Seite gewählt wurde. Auf lange Sicht kommt etwas mehr als 100 % der Einsätze zurück. Leertaste wirft die Münze.',
+    'Pick heads (crown) or tails (star), set a bet and flip. If the coin shows your side the stake doubles, and you choose: cash out, or let it ride and flip again for ×4, ×8, ×16 and so on. One wrong side and everything on the coin is gone. You may switch sides between flips. Once in 10,000 flips (0.01%) the coin lands on its edge: then the stake on the coin is multiplied by 10, whichever side you picked. Space flips the coin.': 'Wähl Kopf (Krone) oder Zahl (Stern), setz einen Einsatz und wirf. Zeigt die Münze deine Seite, verdoppelt sich der Einsatz, und du entscheidest: auszahlen oder liegen lassen und weiter werfen für ×4, ×8, ×16 und so weiter. Eine falsche Seite und alles auf der Münze ist weg. Zwischen den Würfen darfst du die Seite wechseln. Einmal in 10.000 Würfen (0,01 %) landet die Münze auf der Kante: Dann wird der Einsatz auf der Münze verzehnfacht, egal welche Seite gewählt wurde. Leertaste wirft die Münze.',
     'You picked heads. Up it goes…': 'Du hast Kopf gewählt. Hoch damit…', 'You picked tails. Up it goes…': 'Du hast Zahl gewählt. Hoch damit…', 'Wait… it is standing on its edge!': 'Moment… sie steht auf der Kante!',
     'Unbelievable! The coin landed on its edge!': 'Unglaublich! Die Münze ist auf der Kante gelandet!', 'On the Edge': 'Auf der Kante', 'Land the coin flip on its edge (1 in 10,000).': 'Lass die Münze auf der Kante landen (1 zu 10.000).',
+    'Flip again': 'Nochmal werfen', 'win': 'Sieg', 'Double Up': 'Verdoppler', 'Win 5 coin flips in a row and cash out (×32).': 'Gewinn 5 Münzwürfe hintereinander und zahl aus (×32).',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -3634,7 +3642,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['{a} wins {b}', '{a} gewinnt {b}'], ['ON THE EDGE! ×{a}', 'AUF DER KANTE! ×{a}'], ['HEADS! +{a}', 'KOPF! +{a}'], ['TAILS! +{a}', 'ZAHL! +{a}'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['×{a} on the coin · {b} wins in a row', '×{a} auf der Münze · {b} Siege in Folge'], ['×{a} on the coin · {b} win in a row', '×{a} auf der Münze · {b} Sieg in Folge'],
+    ['{a} is still on the coin (×{b}). Cash out or flip again.', '{a} liegen noch auf der Münze (×{b}). Auszahlen oder weiter werfen.'],
+    ['{a} on the coin, ×{b} if it shows heads…', '{a} auf der Münze, ×{b}, wenn Kopf kommt…'], ['{a} on the coin, ×{b} if it shows tails…', '{a} auf der Münze, ×{b}, wenn Zahl kommt…'],
+    ['The coin landed on its edge! 1 in {a}: ×{b} · {c} on the coin. Cash out or keep going!', 'Die Münze ist auf der Kante gelandet! 1 zu {a}: ×{b} · {c} auf der Münze. Auszahlen oder weitermachen!'],
+    ['HEADS! ×{a}', 'KOPF! ×{a}'], ['TAILS! ×{a}', 'ZAHL! ×{a}'],
+    ['Heads! {a} on the coin. Cash out or flip again for ×{b}.', 'Kopf! {a} auf der Münze. Auszahlen oder nochmal werfen für ×{b}.'], ['Tails! {a} on the coin. Cash out or flip again for ×{b}.', 'Zahl! {a} auf der Münze. Auszahlen oder nochmal werfen für ×{b}.'],
+    ['Heads. The {a} on the coin is gone.', 'Kopf. Die {a} auf der Münze sind weg.'], ['Tails. The {a} on the coin is gone.', 'Zahl. Die {a} auf der Münze sind weg.'],
+    ['Cashed out after {a} wins: ×{b} · +{c}', 'Ausgezahlt nach {a} Siegen: ×{b} · +{c}'], ['Cashed out after {a} win: ×{b} · +{c}', 'Ausgezahlt nach {a} Sieg: ×{b} · +{c}'], ['{a} wins {b}', '{a} gewinnt {b}'], ['ON THE EDGE! ×{a}', 'AUF DER KANTE! ×{a}'], ['HEADS! +{a}', 'KOPF! +{a}'], ['TAILS! +{a}', 'ZAHL! +{a}'],
     ['The coin landed on its edge! 1 in {a}: ×{b} · +{c}', 'Die Münze ist auf der Kante gelandet! 1 zu {a}: ×{b} · +{c}'], ['Heads! You win {a}.', 'Kopf! Du gewinnst {a}.'], ['Tails! You win {a}.', 'Zahl! Du gewinnst {a}.'],
     ['Heads. The {a} is gone.', 'Kopf. Die {a} sind weg.'], ['Tails. The {a} is gone.', 'Zahl. Die {a} sind weg.'], ['{a} credits / 10 s', '{a} Credits / 10 s'], ['{a} / 10 s', '{a} / 10 s'], ['{a} credits every 10 s while you work', '{a} Credits alle 10 s, solange du arbeitest'],
     ['Next paycheck in {a} s', 'Nächster Lohn in {a} s'], ['Paycheck: +{a} credits!', 'Lohn: +{a} Credits!'], ['Unlocks as {a}', 'Ab {a}'], ['after {a}', 'nach {a}'],
@@ -4061,6 +4076,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     { id: 'plinko', name: 'Sky Drop', desc: 'Land a Plinko ball on 25× or more.', reward: 800, test: c => c?.plinkoMult >= 25 },
     { id: 'prestige', name: 'Prestigious', desc: 'Go Prestige for the first time.', reward: 2500, test: c => c?.prestige >= 1 },
     { id: 'miner', name: 'First Paycheck', desc: 'Earn your first wage at Lucky Burger.', reward: 100, test: c => c?.jobPaid },
+    { id: 'coinStreak', name: 'Double Up', desc: 'Win 5 coin flips in a row and cash out (×32).', reward: 1500, test: c => c?.coinStreak >= 5 },
     { id: 'coinEdge', name: 'On the Edge', desc: 'Land the coin flip on its edge (1 in 10,000).', reward: 10000, test: c => c?.coinEdge },
     { id: 'jobBoss', name: 'Burger Boss', desc: 'Work your way up to store manager at Lucky Burger.', reward: 5000, test: c => c?.jobPos >= 7 },
     { id: 'bullseye', name: 'Bullseye', desc: 'Hit a single number in roulette.', reward: 500, test: c => c?.bullseye },
@@ -4092,7 +4108,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     pk: { view: 'solo', solo: null, hands: 0, buyIn: 2000 },
     // the burger job: seconds worked (paid), credits earned, shifts, the highest position reached so far
     job: { worked: 0, earned: 0, shifts: 0, pos: 0 },
-    cf: { bet: 10, side: 'heads', flips: 0, history: [], pending: 0 },
+    cf: { bet: 10, side: 'heads', flips: 0, history: [], round: null },
   });
   const state = fresh();
 
@@ -6521,25 +6537,38 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   });
   addEventListener('resize', () => { if (state.mode === 'ck') ckPlace(false); });
   // ---------- Coin flip ----------
-  // Heads or tails pays 2×; one flip in 10,000 lands on the edge and pays 10× whatever was picked.
+  // Heads or tails doubles the stake, and a win can ride on; one flip in 10,000 lands on the edge and pays 10× whatever was picked.
   const CF_PAY = 2, CF_EDGE = 10, CF_EDGE_IN = 10000;
   // var: the busy check in gameBusy() can run before this part of the script
   var cfBusy = false, cfTurn = 0;
   const cfSay = (text, kind = '') => showMessage($('cfMsg'), text, kind);
+  // A won flip can ride: the stake stays on the coin and doubles with every win (×2, ×4, ×8, …) until you cash out or lose.
+  const cfRound = () => state.cf.round;
+  const cfPayOf = r => happyPay(r.bet, r.mult);
   function renderCFControls() {
+    const r = cfRound();
     document.querySelectorAll('#cfPick [data-side]').forEach(b => { b.setAttribute('aria-pressed', String(b.dataset.side === state.cf.side)); b.disabled = cfBusy; });
-    document.querySelectorAll('[data-cfb]').forEach(b => { b.disabled = cfBusy; });
-    $('cfBet').disabled = cfBusy;
+    document.querySelectorAll('[data-cfb]').forEach(b => { b.disabled = cfBusy || !!r; });
+    $('cfBet').disabled = cfBusy || !!r;
+    if (r && document.activeElement !== $('cfBet')) $('cfBet').value = r.bet;
     const bet = Math.floor(Number($('cfBet').value));
-    const f = $('cfFlip');
-    f.disabled = !account || cfBusy || !(bet >= 1 && bet <= state.credits);
-    f.innerHTML = cfBusy ? 'Flipping…' : `Flip<small>${state.cf.side === 'heads' ? '👑' : '⭐'} wins ${fmt(happyPay(Math.max(1, bet || 1), CF_PAY))}</small>`;
+    const f = $('cfFlip'), cash = $('cfCash'), ico = state.cf.side === 'heads' ? '👑' : '⭐';
+    f.disabled = !account || cfBusy || (!r && !(bet >= 1 && bet <= state.credits));
+    f.innerHTML = cfBusy ? 'Flipping…' : r ? `Flip again<small>${ico} ×${fmt(r.mult * 2)} · ${fmt(happyPay(r.bet, r.mult * 2))}</small>` : `Flip<small>${ico} wins ${fmt(happyPay(Math.max(1, bet || 1), 2))}</small>`;
+    cash.hidden = !r || cfBusy;
+    if (r) cash.innerHTML = `Cash out<small>${fmt(cfPayOf(r))} · ×${fmt(r.mult)}</small>`;
+    $('cfStreak').hidden = !r;
+    if (r) $('cfStreak').textContent = `×${fmt(r.mult)} on the coin · ${r.wins} ${r.wins === 1 ? 'win' : 'wins'} in a row`;
     const hist = state.cf.history.map(h => `<span class="${h.r === 'edge' ? 'edge' : h.w ? 'won' : ''}" title="${h.r === 'edge' ? 'Edge' : h.r === 'heads' ? 'Heads' : 'Tails'}">${h.r === 'edge' ? '🪙' : h.r === 'heads' ? '👑' : '⭐'}</span>`).join('');
     if ($('cfHist').dataset.html !== hist) { $('cfHist').dataset.html = hist; $('cfHist').innerHTML = hist; }
   }
   function cfEnter() {
-    if (document.activeElement !== $('cfBet')) $('cfBet').value = state.cf.bet;
-    if (!cfBusy) { $('cfStage').classList.add('idle'); $('cfBig').hidden = true; cfSay('Pick a side, set your bet and flip.'); }
+    const r = cfRound();
+    if (document.activeElement !== $('cfBet')) $('cfBet').value = r ? r.bet : state.cf.bet;
+    if (!cfBusy) {
+      $('cfStage').classList.add('idle'); $('cfBig').hidden = true;
+      cfSay(r ? `${fmt(cfPayOf(r))} is still on the coin (×${fmt(r.mult)}). Cash out or flip again.` : 'Pick a side, set your bet and flip.', r ? 'hot' : '');
+    }
     renderCFControls();
   }
   function cfBigText(text, cls) {
@@ -6551,25 +6580,30 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   async function cfFlip() {
     if (!account || cfBusy) return;
     if (settings.maintenance && !account.isAdmin) { cfSay('The game is paused by an admin. Try again later.', 'lose'); return; }
-    const bet = Math.floor(Number($('cfBet').value));
-    if (!(bet >= 1)) { cfSay('Enter a bet of at least 1.', 'lose'); return; }
-    if (settings.maxBet && bet > settings.maxBet) { cfSay(`The highest bet is ${fmt(settings.maxBet)}.`, 'lose'); return; }
-    if (bet > state.credits) { cfSay(`Not enough credits for a ${fmt(bet)} bet.`, 'lose'); return; }
-    const pick = state.cf.side;
-    // decided right away; the pay is kept as pending so a closed page still pays it
+    let r = cfRound();
+    if (!r) {
+      const bet = Math.floor(Number($('cfBet').value));
+      if (!(bet >= 1)) { cfSay('Enter a bet of at least 1.', 'lose'); return; }
+      if (settings.maxBet && bet > settings.maxBet) { cfSay(`The highest bet is ${fmt(settings.maxBet)}.`, 'lose'); return; }
+      if (bet > state.credits) { cfSay(`Not enough credits for a ${fmt(bet)} bet.`, 'lose'); return; }
+      state.credits -= bet;
+      state.cf.bet = bet;
+      r = state.cf.round = { bet, mult: 1, wins: 0 };
+    }
+    const pick = state.cf.side, at = cfPayOf(r);
+    // decided right away and saved, so a closed page keeps the result
     const edge = takeRigged() || randInt(CF_EDGE_IN) === 0;
     const res = edge ? 'edge' : randInt(2) ? 'heads' : 'tails';
     const won = edge || res === pick;
-    const pay = edge ? happyPay(bet, CF_EDGE) : won ? happyPay(bet, CF_PAY) : 0;
-    state.credits -= bet;
-    state.cf.bet = bet;
-    state.cf.pending = pay;
+    const mult = r.mult * (edge ? CF_EDGE : 2);
+    if (won) { r.mult = mult; r.wins++; } else state.cf.round = null;
+    state.cf.flips++;
     cfBusy = true;
     render();
     renderCFControls();
     $('cfBig').hidden = true;
     $('cfStage').classList.remove('idle', 'flash');
-    cfSay(pick === 'heads' ? 'You picked heads. Up it goes…' : 'You picked tails. Up it goes…', 'hot');
+    cfSay(r.wins > (won ? 1 : 0) ? `${fmt(at)} on the coin, ×${fmt(mult)} if it shows ${pick === 'heads' ? 'heads' : 'tails'}…` : pick === 'heads' ? 'You picked heads. Up it goes…' : 'You picked tails. Up it goes…', 'hot');
     // the flip: up, many turns, down, a little bounce
     const spins = 6 + randInt(3), from = cfTurn % 360;
     const end = (edge ? 90 : res === 'heads' ? 0 : 180) + 360 * spins;
@@ -6591,54 +6625,69 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       { transform: `rotateX(${end + (edge ? 25 : 0)}deg)`, offset: 0.92 },
       { transform: `rotateX(${end}deg)` },
     ], { duration: D, easing: 'cubic-bezier(.25,.6,.35,1)', fill: 'forwards' });
-    // a ting for every half turn while it climbs
     for (let k = 1; k < 7; k++) setTimeout(() => sound.tone(1800 + k * 120, 0, 0.03, 'sine', 0.025), D * 0.06 * k);
     setTimeout(() => { audio.clack(); sound.tone(900, 0, 0.05, 'triangle', 0.05); }, D * 0.84);
     setTimeout(() => audio.clack(), D * 0.97);
     await spin.finished.catch(() => {});
     if (edge && !reduceMotion) {
-      // it stands on the edge and wobbles... and stays
       cfSay('Wait… it is standing on its edge!', 'hot');
       await $('cfCoin').animate([0, -14, 11, -8, 6, -3, 1, 0].map(d => ({ transform: `rotateX(${end + d}deg)` })), { duration: 1700, easing: 'ease-out', fill: 'forwards' }).finished.catch(() => {});
     }
     $('cfCoin').getAnimations().forEach(a => { a.commitStyles?.(); a.cancel(); });
     $('cfToss').getAnimations().forEach(a => { a.commitStyles?.(); a.cancel(); });
     $('cfShadow').getAnimations().forEach(a => a.cancel());
-    state.credits = Math.min(MAX, state.credits + pay);
-    state.cf.pending = 0;
-    state.cf.flips++;
     state.cf.history = [{ r: res, w: won }, ...state.cf.history].slice(0, 14);
-    state.lastWin = pay;
-    if (pay) state.best = Math.max(state.best, pay - bet);
     gainXp(3);
-    const r = $('cfStage').getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height * 0.55;
+    const box = $('cfStage').getBoundingClientRect(), cx = box.left + box.width / 2, cy = box.top + box.height * 0.55;
+    const now = won ? happyPay(r.bet, mult) : 0;
     if (edge) {
       cfBigText(`ON THE EDGE! ×${CF_EDGE}`, 'edge');
-      cfSay(`The coin landed on its edge! 1 in ${fmt(CF_EDGE_IN)}: ×${CF_EDGE} · +${fmt(pay)}`, 'win');
+      cfSay(`The coin landed on its edge! 1 in ${fmt(CF_EDGE_IN)}: ×${fmt(mult)} · ${fmt(now)} on the coin. Cash out or keep going!`, 'win');
       $('cfStage').classList.add('flash');
       sound.fanfare(); audio.kaching(); sound.bigWin();
       voice.say('Unbelievable! The coin landed on its edge!', { urgent: true });
       fxTop.coinBurst(cx, cy, 80, 12);
       for (let k = 0; k < 80; k++) fxTop.confetti(CONFETTI);
       fireworks(10);
+      checkAch({ coinEdge: true });
     } else if (won) {
-      cfBigText(`${res === 'heads' ? 'HEADS' : 'TAILS'}! +${fmt(pay)}`);
-      cfSay(`${res === 'heads' ? 'Heads' : 'Tails'}! You win ${fmt(pay)}.`, 'win');
+      cfBigText(`${res === 'heads' ? 'HEADS' : 'TAILS'}! ×${fmt(mult)}`);
+      cfSay(`${res === 'heads' ? 'Heads' : 'Tails'}! ${fmt(now)} on the coin. Cash out or flip again for ×${fmt(mult * 2)}.`, 'win');
       $('cfStage').classList.add('flash');
-      sound.win(); audio.coins(6);
-      fxTop.coinBurst(cx, cy, bet >= 1000 ? 40 : 22, 9);
+      sound.win(); audio.coins(Math.min(12, 3 + r.wins * 2));
+      fxTop.coinBurst(cx, cy, Math.min(60, 14 + r.wins * 8), 9);
+      if (r.wins >= 4) fireworks(Math.min(8, r.wins - 2));
     } else {
       cfBigText(res === 'heads' ? 'HEADS' : 'TAILS', 'lose');
-      cfSay(`${res === 'heads' ? 'Heads' : 'Tails'}. The ${fmt(bet)} is gone.`, 'lose');
+      cfSay(at > r.bet ? `${res === 'heads' ? 'Heads' : 'Tails'}. The ${fmt(at)} on the coin is gone.` : `${res === 'heads' ? 'Heads' : 'Tails'}. The ${fmt(r.bet)} is gone.`, 'lose');
       sound.lose();
+      state.lastWin = 0;
     }
-    checkAch({ win: pay - bet, bet, coinEdge: edge });
     cfBusy = false;
     $('cfStage').classList.add('idle');
     render();
     renderCFControls();
     while (pendingLevels.length) levelUp(pendingLevels.shift());
   }
+  function cfCashOut() {
+    const r = cfRound();
+    if (!r || cfBusy || !account) return;
+    const pay = cfPayOf(r);
+    state.credits = Math.min(MAX, state.credits + pay);
+    state.cf.round = null;
+    state.lastWin = pay;
+    state.best = Math.max(state.best, pay - r.bet);
+    cfBigText(`+${fmt(pay)}`);
+    cfSay(`Cashed out after ${r.wins} ${r.wins === 1 ? 'win' : 'wins'}: ×${fmt(r.mult)} · +${fmt(pay)}`, 'win');
+    const b = $('cfCash').getBoundingClientRect();
+    fxTop.coinBurst(b.left + b.width / 2, b.top, Math.min(70, 20 + r.wins * 8), 10);
+    if (r.mult >= 16) { sound.bigWin(); fireworks(5); } else { sound.win(); audio.kaching(); }
+    checkAch({ win: pay - r.bet, bet: r.bet, coinStreak: r.wins });
+    render();
+    renderCFControls();
+    while (pendingLevels.length) levelUp(pendingLevels.shift());
+  }
+  $('cfCash').addEventListener('click', cfCashOut);
   $('cfFlip').addEventListener('click', cfFlip);
   $('cfPick').addEventListener('click', e => {
     const b = e.target.closest('[data-side]');
@@ -10479,9 +10528,12 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     state.cf = Object.assign(fresh().cf, saved.cf);
     if (!['heads', 'tails'].includes(state.cf.side)) state.cf.side = 'heads';
     state.cf.history = (Array.isArray(state.cf.history) ? state.cf.history : []).filter(h => h && ['heads', 'tails', 'edge'].includes(h.r)).slice(0, 14);
-    // a coin still in the air when the page closed: its result was already drawn, so pay it now
+    // older saves: a coin still in the air paid out as "pending"
     if (Number(state.cf.pending) > 0) state.credits = Math.min(MAX, state.credits + Math.floor(Number(state.cf.pending)));
-    state.cf.pending = 0;
+    delete state.cf.pending;
+    // a stake still riding on the coin stays there
+    const cr = state.cf.round;
+    if (!(cr && cr.bet >= 1 && cr.mult >= 1 && cr.wins >= 0)) state.cf.round = null;
     for (const k of ['worked', 'earned', 'shifts', 'pos']) state.job[k] = Math.max(0, Math.floor(Number(state.job[k]) || 0));
     if (state.pk.solo && !Array.isArray(state.pk.solo.seats)) state.pk.solo = null;
     if (typeof state.rl.bets !== 'object' || !state.rl.bets) state.rl.bets = {};
