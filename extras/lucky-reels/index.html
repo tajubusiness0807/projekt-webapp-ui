@@ -1118,6 +1118,24 @@ body.wide .help-line { max-width: 980px; }
 .board td:first-child { font-family: var(--font-body); font-weight: 600; }
 .board tr.me td { color: var(--accent); }
 .board .rank { display: inline-block; width: 18px; color: var(--muted); font-family: var(--font-mono); font-weight: 400; }
+/* The podium: gold, silver and bronze for the top three */
+.board tr.top { --tc: #f3c94b; --tc2: #b8860b; }
+.board tr.top2 { --tc: #e6ebf2; --tc2: #8d97a6; }
+.board tr.top3 { --tc: #e6a06b; --tc2: #9a5a2c; }
+.board tr.top td { background: color-mix(in srgb, var(--tc) 8%, transparent); border-top-color: color-mix(in srgb, var(--tc) 30%, transparent); }
+.board tr.top td:first-child { box-shadow: inset 3px 0 0 var(--tc); padding-left: 6px; border-radius: 8px 0 0 8px; }
+.board tr.top td:last-child { border-radius: 0 8px 8px 0; padding-right: 6px; }
+.board tr.top td:nth-child(2) { color: var(--tc); font-weight: 600; }
+.board tr.top .rank { position: relative; display: inline-grid; place-items: center; width: 22px; height: 22px; margin-right: 6px; border-radius: 50%; vertical-align: middle;
+  background: radial-gradient(circle at 35% 30%, #fff 0 10%, var(--tc) 35%, var(--tc2) 100%); color: #1d1714; font-weight: 700; font-size: 12px; box-shadow: 0 0 0 2px #0006, 0 2px 6px #0008; }
+.board tr.top1 .rank { width: 26px; height: 26px; font-size: 13px; animation: podiumGlow 2.4s ease-in-out infinite; }
+.board tr.top1 td { padding-top: 14px; padding-bottom: 10px; }
+.board tr.top1 .rank::after { content: '👑'; position: absolute; top: -13px; left: 50%; translate: -50% 0; font-size: 12px; filter: drop-shadow(0 1px 1px #000); }
+.board tr.top1 td { background: linear-gradient(90deg, #f3c94b24, #f3c94b0a 70%); }
+.board tr.top1 td:first-child { background: linear-gradient(90deg, #f3c94b33, #f3c94b14); }
+@keyframes podiumGlow { 50% { box-shadow: 0 0 0 2px #0006, 0 0 14px #f3c94bcc; } }
+.board-title::before { content: '🏆 '; }
+@media (prefers-reduced-motion: reduce) { .board tr.top1 .rank { animation: none; } }
 .board .you { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-left: 4px; }
 .board .empty { color: var(--muted); font-family: var(--font-body); text-align: left; }
 .shop .board-wrap { padding-bottom: 14px; margin-bottom: 6px; border-bottom: 1px solid #ffffff12; }
@@ -3972,7 +3990,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['1st place', '1. Platz'], ['2nd place', '2. Platz'], ['3rd place', '3. Platz'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
     ['Rises in {a} of steps', 'Steigt in {a} der Schritte'], ['Usually {a} or {b}', 'Meist {a} oder {b}'], ['Swings: {a}', 'Schwankung: {a}'],
     ['Start {a} · bankrupt below {b} · takeover at {c}', 'Start {a} · Pleite unter {b} · Übernahme ab {c}'],
     ['Buy {a} for {b} · sell {c} for {d} (1% fee each way)', 'Kauf {a} für {b} · Verkauf {c} für {d} (je 1 % Gebühr)'],
@@ -10927,8 +10945,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           const flash = jackpotFlash.get(p.id);
           const age = flash ? performance.now() - flash : Infinity;
           const hot = age < 6000;
-          return `<tr data-id="${esc(p.id)}" class="${me ? 'me' : ''}${hot ? ' jackpot-row' : ''}"${hot ? ` style="animation-delay:-${Math.round(age)}ms"` : ''}>` +
-            `<td><span class="rank">${i + 1}</span>${online.has(p.id) ? '<i class="dot" title="Online"></i>' : ''}` +
+          const top = i < 3 && p.credits > 0 ? ` top top${i + 1}` : '';
+          return `<tr data-id="${esc(p.id)}" class="${me ? 'me' : ''}${hot ? ' jackpot-row' : ''}${top}"${hot ? ` style="animation-delay:-${Math.round(age)}ms"` : ''}>` +
+            `<td><span class="rank"${top ? ` title="${['1st', '2nd', '3rd'][i]} place"` : ''}>${i + 1}</span>${online.has(p.id) ? '<i class="dot" title="Online"></i>' : ''}` +
             avatarHtml(p.id, p.name, '', account ? 'button' : 'span') +
             `${me || !account ? nameHtml(p.id, p.name) : `<span data-dm="${esc(p.id)}" title="Send ${esc(p.name)} a private message">${nameHtml(p.id, p.name)}</span>`}` +
             trophyHtml(p.id) + medalsHtml(p.id) + gameTag(p.id) +
