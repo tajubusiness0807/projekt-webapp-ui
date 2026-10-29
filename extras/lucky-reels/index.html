@@ -665,8 +665,18 @@ body.wide .account-bar { max-width: 980px; }
 .gp-pl .gp-pball { transition: transform 0.2s; }
 .game-pick:hover .gp-pl .gp-pball, .game-pick:focus-visible .gp-pl .gp-pball { animation: gpPlinko 1.3s ease-in infinite; }
 @keyframes gpPlinko { 0% { transform: translate(0, 0); } 20% { transform: translate(-6px, 14px); } 40% { transform: translate(5px, 28px); } 60% { transform: translate(-4px, 42px); } 80% { transform: translate(6px, 56px); } 100% { transform: translate(0, 82px); opacity: 0.2; } }
-.lobby-games .game-pick:last-child:nth-child(odd) { grid-column: 1 / -1; justify-self: center; width: calc(50% - 8px); }
-@media (max-width: 420px) { .lobby-games .game-pick:last-child:nth-child(odd) { width: calc(50% - 8px); } }
+.lobby-games .game-pick:last-of-type:nth-of-type(odd) { grid-column: 1 / -1; justify-self: center; width: calc(50% - 8px); }
+@media (max-width: 420px) { .lobby-games .game-pick:last-of-type:nth-of-type(odd) { width: calc(50% - 8px); } }
+/* The lotto sits in the middle of the game selection: on narrow screens on top, on wide screens with the games all around it. */
+.lobby-games > .lotto-hero { grid-column: 1 / -1; }
+@media (min-width: 1100px) {
+  .lobby-card:has(.lotto-hero:not([hidden])) { max-width: 1180px; }
+  .lobby-games:has(> .lotto-hero:not([hidden])) { grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-flow: row dense; }
+  .lobby-games > .lotto-hero { grid-column: 2 / 4; grid-row: 2 / 4; align-content: center; }
+  /* the last row: the two games left over sit in the middle under the lotto */
+  .lobby-games:has(> .lotto-hero:not([hidden])) .game-pick:nth-of-type(9) { grid-column: 2; grid-row: 4; }
+  .lobby-games:has(> .lotto-hero:not([hidden])) .game-pick:nth-of-type(10) { grid-column: 3; grid-row: 4; }
+}
 .rl { display: grid; gap: 12px; }
 .rl-wheel-wrap { position: relative; justify-self: center; width: min(300px, 78vw); aspect-ratio: 1; max-width: 100%; }
 .rl-wheel-wrap canvas { width: 100%; height: 100%; display: block; filter: drop-shadow(0 14px 22px #000a); }
@@ -2263,42 +2273,42 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     <p class="lobby-credits">Credits <b id="lobbyCredits">0</b></p>
     <p class="lobby-online" id="lobbyOnline"></p>
     <button type="button" class="chip-btn lobby-job" id="lobbyJob" data-job hidden>Out of credits? Work a shift at Lucky Burger</button>
-    <section class="lotto-hero" id="lottoHero" aria-labelledby="ltLogo" hidden>
-      <span class="lt-bulbs" aria-hidden="true"></span>
-      <div class="lt-head">
-        <h2 class="lt-logo" id="ltLogo" aria-label="Lotto"><i>L</i><i>O</i><i>T</i><i>T</i><i>O</i></h2>
-        <p class="lt-sub">Twice a day. <b>One winner</b> takes the whole pot.</p>
-        <p class="lt-times"><span class="lt-t-noon" id="ltTimeNoon">☀ Midday 12:00</span><span class="lt-t-eve" id="ltTimeEve">☾ Evening 18:00</span><span class="lt-t-tz">German time</span></p>
-      </div>
-      <div class="lt-pair">
-      <article class="lt-ticket lt-noon" data-lt="noon">
-        <div class="lt-tk-head"><svg class="lt-tk-ico" viewBox="0 0 32 32" aria-hidden="true"><g stroke="#e0453a" stroke-width="2.6" stroke-linecap="round"><path d="M16 2v4M16 26v4M2 16h4M26 16h4M6 6l3 3M23 23l3 3M26 6l-3 3M9 23l-3 3"/></g><circle cx="16" cy="16" r="7" fill="#ff7a2e" stroke="#fff3c4" stroke-width="2"/></svg><span class="lt-tk-title">Midday Lotto</span></div>
-        <div class="lt-tk-when" data-f="when"><b>12:00</b> German time</div>
-        <div class="lt-perf" aria-hidden="true"></div>
-        <div class="lt-tk-pot"><small>Pot</small><b data-f="pot">0</b></div>
-        <div class="lt-tk-status" data-f="status">…</div>
-        <div class="lt-tk-people" data-f="people"></div>
-        <div class="lt-tk-price" data-f="price"></div>
-        <button class="lt-buy" type="button" data-f="buy" data-kind="noon">Buy ticket</button>
-        <div class="lt-mine" data-f="mine" hidden></div>
-        <div class="lt-tk-last" data-f="last"></div>
-      </article>
-      <article class="lt-ticket lt-eve" data-lt="eve">
-        <div class="lt-tk-head"><svg class="lt-tk-ico" viewBox="0 0 32 32" aria-hidden="true"><path d="M21 4a12 12 0 1 0 7 19A10 10 0 0 1 21 4z" fill="#e2c36a"/><path d="M8 7l.8 1.8L10.6 9.6 8.8 10.4 8 12.2 7.2 10.4 5.4 9.6 7.2 8.8z M27 3l.6 1.4 1.4.6-1.4.6L27 7l-.6-1.4L25 5l1.4-.6z" fill="#fff4cf"/></svg><span class="lt-tk-title">Evening Lotto</span></div>
-        <div class="lt-tk-when" data-f="when"><b>18:00</b> German time</div>
-        <div class="lt-perf" aria-hidden="true"></div>
-        <div class="lt-tk-pot"><small>Pot</small><b data-f="pot">0</b></div>
-        <div class="lt-tk-status" data-f="status">…</div>
-        <div class="lt-tk-people" data-f="people"></div>
-        <div class="lt-tk-price" data-f="price"></div>
-        <button class="lt-buy" type="button" data-f="buy" data-kind="eve">Buy ticket</button>
-        <div class="lt-mine" data-f="mine" hidden></div>
-        <div class="lt-tk-last" data-f="last"></div>
-      </article>
-      </div>
-      <p class="lt-off" id="ltOff" hidden></p>
-    </section>
     <div class="lobby-games">
+      <section class="lotto-hero" id="lottoHero" aria-labelledby="ltLogo" hidden>
+        <span class="lt-bulbs" aria-hidden="true"></span>
+        <div class="lt-head">
+          <h2 class="lt-logo" id="ltLogo" aria-label="Lotto"><i>L</i><i>O</i><i>T</i><i>T</i><i>O</i></h2>
+          <p class="lt-sub">Twice a day. <b>One winner</b> takes the whole pot.</p>
+          <p class="lt-times"><span class="lt-t-noon" id="ltTimeNoon">☀ Midday 12:00</span><span class="lt-t-eve" id="ltTimeEve">☾ Evening 18:00</span><span class="lt-t-tz">German time</span></p>
+        </div>
+        <div class="lt-pair">
+        <article class="lt-ticket lt-noon" data-lt="noon">
+          <div class="lt-tk-head"><svg class="lt-tk-ico" viewBox="0 0 32 32" aria-hidden="true"><g stroke="#e0453a" stroke-width="2.6" stroke-linecap="round"><path d="M16 2v4M16 26v4M2 16h4M26 16h4M6 6l3 3M23 23l3 3M26 6l-3 3M9 23l-3 3"/></g><circle cx="16" cy="16" r="7" fill="#ff7a2e" stroke="#fff3c4" stroke-width="2"/></svg><span class="lt-tk-title">Midday Lotto</span></div>
+          <div class="lt-tk-when" data-f="when"><b>12:00</b> German time</div>
+          <div class="lt-perf" aria-hidden="true"></div>
+          <div class="lt-tk-pot"><small>Pot</small><b data-f="pot">0</b></div>
+          <div class="lt-tk-status" data-f="status">…</div>
+          <div class="lt-tk-people" data-f="people"></div>
+          <div class="lt-tk-price" data-f="price"></div>
+          <button class="lt-buy" type="button" data-f="buy" data-kind="noon">Buy ticket</button>
+          <div class="lt-mine" data-f="mine" hidden></div>
+          <div class="lt-tk-last" data-f="last"></div>
+        </article>
+        <article class="lt-ticket lt-eve" data-lt="eve">
+          <div class="lt-tk-head"><svg class="lt-tk-ico" viewBox="0 0 32 32" aria-hidden="true"><path d="M21 4a12 12 0 1 0 7 19A10 10 0 0 1 21 4z" fill="#e2c36a"/><path d="M8 7l.8 1.8L10.6 9.6 8.8 10.4 8 12.2 7.2 10.4 5.4 9.6 7.2 8.8z M27 3l.6 1.4 1.4.6-1.4.6L27 7l-.6-1.4L25 5l1.4-.6z" fill="#fff4cf"/></svg><span class="lt-tk-title">Evening Lotto</span></div>
+          <div class="lt-tk-when" data-f="when"><b>18:00</b> German time</div>
+          <div class="lt-perf" aria-hidden="true"></div>
+          <div class="lt-tk-pot"><small>Pot</small><b data-f="pot">0</b></div>
+          <div class="lt-tk-status" data-f="status">…</div>
+          <div class="lt-tk-people" data-f="people"></div>
+          <div class="lt-tk-price" data-f="price"></div>
+          <button class="lt-buy" type="button" data-f="buy" data-kind="eve">Buy ticket</button>
+          <div class="lt-mine" data-f="mine" hidden></div>
+          <div class="lt-tk-last" data-f="last"></div>
+        </article>
+        </div>
+        <p class="lt-off" id="ltOff" hidden></p>
+      </section>
       <button class="game-pick" type="button" data-mode="slots">
         <svg class="gp-slots" viewBox="0 0 140 130" aria-hidden="true">
           <defs><clipPath id="gpWin"><rect x="26" y="40" width="70" height="30" rx="4"/></clipPath></defs>
