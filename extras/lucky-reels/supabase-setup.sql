@@ -3006,3 +3006,727 @@ begin
 end;
 $$;
 
+
+
+-- ---------------------------------------------------------------------------
+-- Economy rework: run this part once (after "Lotto"). It brings:
+--  * a bet limit per round that grows with your level and prestige (horse racing, roulette, rocket here;
+--    the page applies the same limit to the other games),
+--  * winnings of the live games and the lotto go straight onto the balance, also for players who are
+--    offline (the highscores are always up to date),
+--  * a little more house edge on the rocket,
+--  * at most 10,000 credits for an affiliate code owner per new player,
+--  * a complete hard reset (credits, levels, prestige, goodies, cosmetics, trophies, bets and tickets),
+--  * a guard against edited saves: one save can no longer jump levels or add absurd amounts of credits.
+
+alter table public.horse_bets add column if not exists seen boolean not null default false;
+alter table public.roulette_bets add column if not exists seen boolean not null default false;
+alter table public.rocket_bets add column if not exists seen boolean not null default false;
+alter table public.lotto_tickets add column if not exists seen boolean not null default false;
+update public.horse_bets set seen = true where claimed and not seen;
+update public.roulette_bets set seen = true where claimed and not seen;
+update public.rocket_bets set seen = true where claimed and not seen;
+update public.lotto_tickets set seen = true where claimed and not seen;
+alter table public.players add column if not exists capped_saves integer not null default 0;
+revoke update (capped_saves) on public.players from authenticated;
+
+-- The bet limit per round: level 1 starts at 500, level 20 allows 40,000; every prestige adds 25% (up to twice as much).
+-- An admin's "highest bet" setting can lower it further.
+create or replace function public.lr_bet_limit(lv integer, pr integer)
+returns bigint
+language sql
+immutable
+as $$
+  select floor((array[500, 750, 1000, 1500, 2000, 2500, 3000, 4000, 5000, 6000, 7500, 9000, 10000, 12500, 15000, 17500, 20000, 25000, 30000, 40000])[least(20, greatest(1, coalesce(lv, 1)))]
+    * (1 + 0.25 * least(4, greatest(0, coalesce(pr, 0)))))::bigint
+$$;
+
+create or replace function public.lr_over_limit(me public.players, spent bigint)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select spent > least(public.lr_bet_limit(me.level, me.prestige),
+    coalesce(nullif((select (data ->> 'maxBet')::bigint from public.settings where id = 1), 0), 9007199254740991))
+$$;
+
+-- Settles every finished round that still has unpaid bets (at most every two seconds), so winnings reach offline players too.
+create table if not exists public.lr_sweep_at (id integer primary key, at timestamptz not null default now());
+insert into public.lr_sweep_at (id, at) values (1, now() - interval '1 hour') on conflict (id) do nothing;
+alter table public.lr_sweep_at enable row level security;
+revoke all on public.lr_sweep_at from anon, authenticated;
+
+create or replace function public.lr_sweep()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+  x bigint;
+  d text;
+begin
+  update public.lr_sweep_at set at = now() where id = 1 and at < now() - interval '2 seconds';
+  if not found then return; end if;
+  for x in select distinct race_id from public.horse_bets where payout is null and race_id * 180000 + 120000 <= now_ms limit 20 loop
+    perform public.horse_settle(x);
+  end loop;
+  for x in select distinct round_id from public.roulette_bets where payout is null and round_id * 45000 + 34000 <= now_ms limit 20 loop
+    perform public.roulette_settle(x);
+  end loop;
+  for x in select distinct b.round_id from public.rocket_bets b join public.rocket_rounds r on r.id = b.round_id
+      where b.payout is null and r.crash_at <= now_ms limit 20 loop
+    perform public.rocket_settle(x);
+  end loop;
+  if to_regclass('public.lotto_draws') is not null then
+    for d in select id from public.lotto_draws where not settled and draw_at <= now() limit 5 loop
+      perform public.lotto_settle(d);
+    end loop;
+  end if;
+end;
+$$;
+revoke execute on function public.lr_sweep() from public, anon, authenticated;
+revoke execute on function public.lr_over_limit(public.players, bigint) from public, anon, authenticated;
+
+create or replace function public.rocket_current()
+returns public.rocket_rounds
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+  r public.rocket_rounds;
+  bs bigint;
+  c numeric;
+  ca bigint;
+  gold boolean := random() < 1.0 / 300;
+begin
+  select * into r from public.rocket_rounds order by id desc limit 1;
+  if r.id is not null and now_ms < r.next_start then return r; end if;
+  bs := case when r.id is null or now_ms - r.next_start > 10000 then now_ms else r.next_start end;
+  -- Golden: P(reaching m) = 30 / m from 30× up. Ordinary: P(reaching m) = 0.85 / m (15% blow up on the pad). Moon at 200.
+  c := case when gold then least(200, floor(30 / (1 - random()) * 100) / 100)
+       else least(200, greatest(1, floor(0.85 / (1 - random()) * 100) / 100)) end;
+  ca := bs + 25000 + round(40000 * ln(c) / ln(200));
+  insert into public.rocket_rounds (id, bet_start, launch, crash, crash_at, next_start, golden)
+    values (coalesce(r.id, 0) + 1, bs, bs + 25000, c, ca, ca + case when c >= 200 then 9000 else 5000 end, gold)
+    on conflict (id) do nothing;
+  delete from public.rocket_bets where round_id < coalesce(r.id, 0) - 5000 and claimed;
+  delete from public.rocket_rounds where id < coalesce(r.id, 0) - 5000;
+  select * into r from public.rocket_rounds order by id desc limit 1;
+  return r;
+end;
+$$;
+
+create or replace function public.rocket_settle(round bigint)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  r public.rocket_rounds;
+begin
+  select * into r from public.rocket_rounds where id = round for update;
+  if r.id is null or r.settled or public.horse_now_ms() < r.crash_at then return; end if;
+  update public.rocket_bets set
+      cashed = case when auto is not null and auto < r.crash then auto when r.crash >= 200 then 200 else null end,
+      payout = case when auto is not null and auto < r.crash then floor(amount * auto)::bigint when r.crash >= 200 then amount * 200 else 0 end
+    where round_id = round and payout is null;
+  -- Winnings go straight onto the balance, also for players who are offline right now.
+  with w as (select player, sum(payout) as s from public.rocket_bets where round_id = round and payout > 0 and not claimed group by player)
+  update public.players p set credits = least(9007199254740991, p.credits + w.s), admin_rev = p.admin_rev + 1, updated_at = now() from w where p.id = w.player;
+  update public.rocket_bets set claimed = true where round_id = round and payout is not null and not claimed;
+  update public.rocket_rounds set settled = true where id = round;
+end;
+$$;
+
+create or replace function public.horse_settle(race bigint)
+returns smallint[]
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  r public.horse_races;
+  left_ smallint[] := '{1,2,3,4,5,6}';
+  fin smallint[] := '{}';
+  tot double precision;
+  x double precision;
+  pick smallint;
+begin
+  perform public.horse_make(race);
+  select * into r from public.horse_races where id = race for update;
+  if r.finish is not null then
+    -- Winnings go straight onto the balance, also for players who are offline right now.
+    with w as (select player, sum(payout) as s from public.horse_bets where race_id = race and payout > 0 and not claimed group by player)
+    update public.players p set credits = least(9007199254740991, p.credits + w.s), admin_rev = p.admin_rev + 1, updated_at = now() from w where p.id = w.player;
+    update public.horse_bets set claimed = true where race_id = race and payout is not null and not claimed;
+    return r.finish;
+  end if;
+  -- The admin's secret code can name the winner; the rest of the field is drawn as usual.
+  if (to_jsonb(r) ->> 'forced') is not null then
+    pick := (to_jsonb(r) ->> 'forced')::smallint;
+    fin := array[pick];
+    left_ := array_remove(left_, pick);
+  end if;
+  while cardinality(left_) > 0 loop
+    tot := 0;
+    foreach pick in array left_ loop tot := tot + r.weights[pick]; end loop;
+    x := random() * tot;
+    foreach pick in array left_ loop
+      x := x - r.weights[pick];
+      exit when x <= 0;
+    end loop;
+    fin := fin || pick;
+    left_ := array_remove(left_, pick);
+  end loop;
+  update public.horse_races set finish = fin where id = race;
+  update public.horse_bets set payout = case
+      when (kind = 'win' and horse = fin[1]) or (kind = 'place' and horse in (fin[1], fin[2])) then floor(amount * odds)::bigint
+      else 0 end
+    where race_id = race and payout is null;
+  -- Winnings go straight onto the balance, also for players who are offline right now.
+  with w as (select player, sum(payout) as s from public.horse_bets where race_id = race and payout > 0 and not claimed group by player)
+  update public.players p set credits = least(9007199254740991, p.credits + w.s), admin_rev = p.admin_rev + 1, updated_at = now() from w where p.id = w.player;
+  update public.horse_bets set claimed = true where race_id = race and payout is not null and not claimed;
+  return fin;
+end;
+$$;
+
+create or replace function public.roulette_settle(round bigint)
+returns smallint
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  res smallint;
+begin
+  insert into public.roulette_rounds (id) values (round) on conflict (id) do nothing;
+  select result into res from public.roulette_rounds where id = round for update;
+  if res is not null then return res; end if;
+  -- The admin's secret code can force a zero.
+  res := coalesce((select (to_jsonb(x) ->> 'forced')::smallint from public.roulette_rounds x where id = round), floor(random() * 37)::smallint);
+  update public.roulette_rounds set result = res where id = round;
+  update public.roulette_bets b set payout = (
+      select coalesce(sum(case when public.roulette_hit(e.key, res)
+        then floor(e.value::bigint * (1 + public.roulette_pays(e.key) * b.mult)) else 0 end), 0)::bigint
+      from jsonb_each_text(b.bets) e)
+    where round_id = round and payout is null;
+  -- Winnings go straight onto the balance, also for players who are offline right now.
+  with w as (select player, sum(payout) as s from public.roulette_bets where round_id = round and payout > 0 and not claimed group by player)
+  update public.players p set credits = least(9007199254740991, p.credits + w.s), admin_rev = p.admin_rev + 1, updated_at = now() from w where p.id = w.player;
+  update public.roulette_bets set claimed = true where round_id = round and payout is not null and not claimed;
+  -- Old rounds and bets go after about four days.
+  delete from public.roulette_bets where round_id < round - 6000 and claimed;
+  delete from public.roulette_rounds where id < round - 6000;
+  return res;
+end;
+$$;
+
+create or replace function public.lotto_settle(draw text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  dr public.lotto_draws;
+  cfg jsonb := public.lotto_cfg();
+  n integer;
+  tot numeric;
+  v_pot bigint;
+  pick public.lotto_tickets;
+  x numeric;
+begin
+  select * into dr from public.lotto_draws where id = draw for update;
+  if dr.id is null or dr.settled or now() < dr.draw_at then return; end if;
+  select count(*), coalesce(sum(cost), 0) into n, tot from public.lotto_tickets where draw_id = draw;
+  if n = 0 then
+    update public.lotto_draws set settled = true, pot = 0, tickets = 0 where id = draw;
+    return;
+  end if;
+  v_pot := floor(tot * (cfg ->> 'share')::numeric / 100)::bigint + (cfg ->> (dr.kind || 'Bonus'))::bigint;
+  if cfg ->> 'mode' = 'equal' then
+    select * into pick from public.lotto_tickets where draw_id = draw order by random() limit 1;
+  else
+    x := random() * tot;
+    select t.id, t.draw_id, t.player, t.name, t.cost, t.payout, t.claimed, t.created_at into pick
+      from (select *, sum(cost) over (order by id) as run from public.lotto_tickets where draw_id = draw) t
+      where t.run > x order by t.run limit 1;
+    if pick.id is null then select * into pick from public.lotto_tickets where draw_id = draw order by id desc limit 1; end if;
+  end if;
+  update public.lotto_tickets set payout = case when id = pick.id then v_pot else 0 end where draw_id = draw;
+  -- the winner gets the pot right away, online or not
+  update public.players set credits = least(9007199254740991, credits + v_pot), admin_rev = admin_rev + 1, updated_at = now() where id = pick.player;
+  update public.lotto_tickets set claimed = true where draw_id = draw;
+  update public.lotto_draws set settled = true, pot = v_pot, tickets = n, winner = pick.player, winner_name = pick.name, winner_cost = pick.cost
+    where id = draw;
+end;
+$$;
+
+create or replace function public.horse_bet(race bigint, horse_no integer, bet_kind text, amount bigint)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+  me public.players;
+  r public.horse_races;
+  o numeric;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  if race <> now_ms / 180000 or now_ms >= race * 180000 + 120000 then raise exception 'betting closed'; end if;
+  if horse_no is null or horse_no < 1 or horse_no > 6 or bet_kind not in ('win', 'place') then raise exception 'no such bet'; end if;
+  if amount is null or amount < 1 then raise exception 'bet at least 1'; end if;
+  select * into me from public.players where id = auth.uid() for update;
+  if me is null or me.is_banned then raise exception 'not allowed'; end if;
+  if me.credits < amount then raise exception 'not enough credits'; end if;
+  if public.lr_over_limit(me, (amount + coalesce((select sum(b.amount) from public.horse_bets b where b.race_id = race and b.player = me.id), 0))::bigint) then raise exception 'over your bet limit'; end if;
+  if (select count(*) from public.horse_bets where race_id = race and player = me.id) >= 12 then raise exception 'too many bets'; end if;
+  r := public.horse_make(race);
+  o := case when bet_kind = 'win' then r.win_odds[horse_no] else r.place_odds[horse_no] end;
+  update public.players set credits = credits - amount, admin_rev = admin_rev + 1, updated_at = now() where id = me.id;
+  insert into public.horse_bets (race_id, player, name, horse, kind, amount, odds) values (race, me.id, me.name, horse_no, bet_kind, amount, o);
+  return jsonb_build_object('odds', o, 'credits', me.credits - amount, 'rev', me.admin_rev + 1);
+end;
+$$;
+
+create or replace function public.roulette_bet(round bigint, chips jsonb)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+  me public.players;
+  e record;
+  tot bigint := 0;
+  m numeric;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  if round <> now_ms / 45000 or now_ms >= round * 45000 + 30000 then raise exception 'betting closed'; end if;
+  if jsonb_typeof(chips) <> 'object' then raise exception 'no such bet'; end if;
+  for e in select * from jsonb_each(chips) loop
+    if not public.roulette_key_ok(e.key) or jsonb_typeof(e.value) <> 'number' or (e.value)::text !~ '^[1-9][0-9]{0,17}$' then raise exception 'no such bet'; end if;
+    tot := tot + (e.value)::text::bigint;
+  end loop;
+  if tot < 1 then raise exception 'bet at least 1'; end if;
+  select * into me from public.players where id = auth.uid() for update;
+  if me is null or me.is_banned then raise exception 'not allowed'; end if;
+  if coalesce((select (data ->> 'maintenance')::boolean from public.settings where id = 1), false) and not me.is_admin then raise exception 'paused'; end if;
+  if me.credits < tot then raise exception 'not enough credits'; end if;
+  if public.lr_over_limit(me, (tot + coalesce((select sum(b.total) from public.roulette_bets b where b.round_id = round and b.player = me.id), 0))::bigint) then raise exception 'over your bet limit'; end if;
+  if (select count(*) from public.roulette_bets where round_id = round and player = me.id) >= 20 then raise exception 'too many bets'; end if;
+  m := least(100, greatest(0.1, coalesce((select (data ->> 'winMultiplier')::numeric from public.settings where id = 1), 1)));
+  update public.players set credits = credits - tot, admin_rev = admin_rev + 1, updated_at = now() where id = me.id;
+  insert into public.roulette_bets (round_id, player, name, bets, total, mult) values (round, me.id, me.name, chips, tot, m);
+  return jsonb_build_object('credits', me.credits - tot, 'rev', me.admin_rev + 1);
+end;
+$$;
+
+create or replace function public.rocket_bet(round bigint, amount bigint, auto_at numeric default null)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+  r public.rocket_rounds := public.rocket_current();
+  me public.players;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  if round <> r.id or now_ms < r.bet_start or now_ms >= r.launch then raise exception 'betting closed'; end if;
+  if amount is null or amount < 1 then raise exception 'bet at least 1'; end if;
+  if auto_at is not null and (auto_at < 1.01 or auto_at > 200) then raise exception 'auto cash-out must be 1.01 to 200'; end if;
+  select * into me from public.players where id = auth.uid() for update;
+  if me is null or me.is_banned then raise exception 'not allowed'; end if;
+  if coalesce((select (data ->> 'maintenance')::boolean from public.settings where id = 1), false) and not me.is_admin then raise exception 'paused'; end if;
+  if me.credits < amount then raise exception 'not enough credits'; end if;
+  if public.lr_over_limit(me, (amount)::bigint) then raise exception 'over your bet limit'; end if;
+  if exists (select 1 from public.rocket_bets where round_id = round and player = me.id) then raise exception 'already on board'; end if;
+  update public.players set credits = credits - amount, admin_rev = admin_rev + 1, updated_at = now() where id = me.id;
+  insert into public.rocket_bets (round_id, player, name, amount, auto) values (round, me.id, me.name, amount, auto_at);
+  return jsonb_build_object('credits', me.credits - amount, 'rev', me.admin_rev + 1);
+end;
+$$;
+
+create or replace function public.rocket_cashout(round bigint)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+  r public.rocket_rounds;
+  b public.rocket_bets;
+  m numeric;
+  pay bigint;
+  me public.players;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  select * into r from public.rocket_rounds where id = round;
+  if r.id is null or now_ms < r.launch then raise exception 'not flying'; end if;
+  m := public.rocket_mult(now_ms - r.launch);
+  if now_ms >= r.crash_at or m >= r.crash then
+    perform public.rocket_settle(round);
+    raise exception 'crashed';
+  end if;
+  select * into b from public.rocket_bets where round_id = round and player = auth.uid() and payout is null for update;
+  if b.id is null then raise exception 'no bet'; end if;
+  if b.auto is not null and b.auto < m then m := b.auto; end if;
+  pay := floor(b.amount * m)::bigint;
+  update public.rocket_bets set cashed = m, payout = pay, claimed = true, seen = true where id = b.id;
+  select * into me from public.players where id = auth.uid() for update;
+  update public.players set credits = credits + pay, admin_rev = admin_rev + 1, updated_at = now() where id = me.id;
+  return jsonb_build_object('mult', m, 'payout', pay, 'credits', me.credits + pay, 'rev', me.admin_rev + 1);
+end;
+$$;
+
+create or replace function public.horse_race(race bigint default null)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+  cur bigint := now_ms / 180000;
+  r public.horse_races;
+  fin smallint[];
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  perform public.lr_sweep();
+  race := coalesce(race, cur);
+  if race > cur or race < cur - 1000 then raise exception 'no such race'; end if;
+  r := public.horse_make(race);
+  if now_ms >= race * 180000 + 120000 then fin := public.horse_settle(race); end if;
+  return jsonb_build_object('id', race, 'now', now_ms, 'weights', to_jsonb(r.weights), 'win', to_jsonb(r.win_odds),
+    'place', to_jsonb(r.place_odds), 'finish', to_jsonb(fin));
+end;
+$$;
+
+create or replace function public.roulette_round(round bigint default null)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+  cur bigint := now_ms / 45000;
+  res smallint;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  perform public.lr_sweep();
+  round := coalesce(round, cur);
+  if round > cur or round < cur - 3000 then raise exception 'no such round'; end if;
+  if now_ms >= round * 45000 + 34000 then res := public.roulette_settle(round); end if;
+  return jsonb_build_object('id', round, 'now', now_ms, 'result', res,
+    'recent', (select coalesce(jsonb_agg(result order by id desc), '[]') from (
+      select id, result from public.roulette_rounds where result is not null and id < cur order by id desc limit 14) r));
+end;
+$$;
+
+create or replace function public.rocket_state()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+  r public.rocket_rounds;
+  done boolean;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  perform public.lr_sweep();
+  r := public.rocket_current();
+  perform public.rocket_settle(r.id - 1);
+  done := now_ms >= r.crash_at;
+  if done then perform public.rocket_settle(r.id); end if;
+  return jsonb_build_object('id', r.id, 'now', now_ms, 'bet_start', r.bet_start, 'launch', r.launch,
+    'golden', now_ms >= r.launch and r.golden,
+    'crash', case when done then r.crash end, 'crash_at', case when done then r.crash_at end, 'next_start', case when done then r.next_start end,
+    'recent', (select coalesce(jsonb_agg(jsonb_build_object('c', crash, 'g', golden) order by id desc), '[]') from (
+      select id, crash, golden from public.rocket_rounds where crash_at <= now_ms and id < r.id order by id desc limit 14) x));
+end;
+$$;
+
+create or replace function public.lotto_state()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  cfg jsonb := public.lotto_cfg();
+  today date := (now() at time zone 'Europe/Berlin')::date;
+  k text;
+  s jsonb;
+  dr public.lotto_draws;
+  slots jsonb := '[]';
+  d text;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  perform public.lr_sweep();
+  for d in select id from public.lotto_draws where not settled and draw_at <= now() loop
+    perform public.lotto_settle(d);
+  end loop;
+  foreach k in array array['noon', 'eve'] loop
+    s := public.lotto_slot(today, k, cfg);
+    -- a draw stays on show for three minutes after its time, then the next day's takes over
+    if (s ->> 'draw_at')::timestamptz + interval '3 minutes' < now() then s := public.lotto_slot(today + 1, k, cfg); end if;
+    -- (a new time from the admin menu moves a draw that has not happened yet)
+    insert into public.lotto_draws (id, kind, draw_at) values (s ->> 'id', k, (s ->> 'draw_at')::timestamptz)
+      on conflict (id) do update set draw_at = excluded.draw_at where not public.lotto_draws.settled and public.lotto_draws.draw_at > now();
+    select * into dr from public.lotto_draws where id = s ->> 'id';
+    slots := slots || jsonb_build_array(s || jsonb_build_object(
+      'pct', cfg ->> (k || 'Pct'), 'bonus', cfg ->> (k || 'Bonus'), 'share', cfg ->> 'share',
+      'settled', dr.settled, 'pot', dr.pot, 'winner', dr.winner, 'winner_name', dr.winner_name, 'winner_cost', dr.winner_cost,
+      'people', (select coalesce(jsonb_agg(jsonb_build_object('player', player, 'name', name, 'cost', cost) order by cost desc), '[]')
+        from public.lotto_tickets where draw_id = s ->> 'id')));
+  end loop;
+  return jsonb_build_object('now', floor(extract(epoch from clock_timestamp()) * 1000), 'cfg', cfg, 'slots', slots,
+    'recent', (select coalesce(jsonb_agg(to_jsonb(r) order by r.draw_at desc), '[]') from (
+      select id, kind, draw_at, pot, tickets, winner, winner_name, winner_cost from public.lotto_draws
+      where settled and tickets > 0 order by draw_at desc limit 6) r));
+end;
+$$;
+
+create or replace function public.horse_claim()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+  x bigint;
+  won bigint;
+  rows_ jsonb;
+  me public.players;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  for x in select distinct race_id from public.horse_bets where player = auth.uid() and payout is null and race_id * 180000 + 120000 <= now_ms loop perform public.horse_settle(x); end loop;
+  select * into me from public.players where id = auth.uid() for update;
+  if me is null then raise exception 'not allowed'; end if;
+  -- bets paid out before this update was installed
+  select coalesce(sum(payout), 0) into won from public.horse_bets where player = me.id and not claimed and payout is not null;
+  if won > 0 then
+    update public.horse_bets set claimed = true where player = me.id and not claimed and payout is not null;
+    update public.players set credits = credits + won, admin_rev = admin_rev + 1, updated_at = now() where id = me.id returning * into me;
+  end if;
+  with c as (
+    update public.horse_bets set seen = true
+    where player = me.id and claimed and not seen and payout is not null
+    returning race_id, horse, kind, amount, odds, payout
+  )
+  select coalesce(jsonb_agg(to_jsonb(c)), '[]') into rows_ from c;
+  return jsonb_build_object('bets', rows_, 'credits', me.credits, 'rev', me.admin_rev);
+end;
+$$;
+
+create or replace function public.roulette_claim()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+  x bigint;
+  won bigint;
+  rows_ jsonb;
+  me public.players;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  for x in select distinct round_id from public.roulette_bets where player = auth.uid() and payout is null and round_id * 45000 + 34000 <= now_ms loop perform public.roulette_settle(x); end loop;
+  select * into me from public.players where id = auth.uid() for update;
+  if me is null then raise exception 'not allowed'; end if;
+  -- bets paid out before this update was installed
+  select coalesce(sum(payout), 0) into won from public.roulette_bets where player = me.id and not claimed and payout is not null;
+  if won > 0 then
+    update public.roulette_bets set claimed = true where player = me.id and not claimed and payout is not null;
+    update public.players set credits = credits + won, admin_rev = admin_rev + 1, updated_at = now() where id = me.id returning * into me;
+  end if;
+  with c as (
+    update public.roulette_bets set seen = true
+    where player = me.id and claimed and not seen and payout is not null
+    returning round_id, bets, total, payout
+  )
+  select coalesce(jsonb_agg(to_jsonb(c) || jsonb_build_object('result', r.result)), '[]') into rows_ from c join public.roulette_rounds r on r.id = c.round_id;
+  return jsonb_build_object('bets', rows_, 'credits', me.credits, 'rev', me.admin_rev);
+end;
+$$;
+
+create or replace function public.rocket_claim()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+  x bigint;
+  won bigint;
+  rows_ jsonb;
+  me public.players;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  for x in select b.round_id from public.rocket_bets b join public.rocket_rounds r on r.id = b.round_id where b.player = auth.uid() and b.payout is null and r.crash_at <= now_ms loop perform public.rocket_settle(x); end loop;
+  select * into me from public.players where id = auth.uid() for update;
+  if me is null then raise exception 'not allowed'; end if;
+  -- bets paid out before this update was installed
+  select coalesce(sum(payout), 0) into won from public.rocket_bets where player = me.id and not claimed and payout is not null;
+  if won > 0 then
+    update public.rocket_bets set claimed = true where player = me.id and not claimed and payout is not null;
+    update public.players set credits = credits + won, admin_rev = admin_rev + 1, updated_at = now() where id = me.id returning * into me;
+  end if;
+  with c as (
+    update public.rocket_bets set seen = true
+    where player = me.id and claimed and not seen and payout is not null
+    returning round_id, amount, auto, cashed, payout
+  )
+  select coalesce(jsonb_agg(to_jsonb(c) || jsonb_build_object('crash', r.crash)), '[]') into rows_ from c join public.rocket_rounds r on r.id = c.round_id;
+  return jsonb_build_object('bets', rows_, 'credits', me.credits, 'rev', me.admin_rev);
+end;
+$$;
+
+create or replace function public.lotto_claim()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  d text;
+  won bigint;
+  rows_ jsonb;
+  me public.players;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  for d in select distinct t.draw_id from public.lotto_tickets t join public.lotto_draws r on r.id = t.draw_id
+      where t.player = auth.uid() and t.payout is null and r.draw_at <= now() loop
+    perform public.lotto_settle(d);
+  end loop;
+  select * into me from public.players where id = auth.uid() for update;
+  if me is null then raise exception 'not allowed'; end if;
+  select coalesce(sum(payout), 0) into won from public.lotto_tickets where player = me.id and not claimed and payout is not null;
+  if won > 0 then
+    update public.lotto_tickets set claimed = true where player = me.id and not claimed and payout is not null;
+    update public.players set credits = credits + won, admin_rev = admin_rev + 1, updated_at = now() where id = me.id returning * into me;
+  end if;
+  with c as (
+    update public.lotto_tickets set seen = true where player = me.id and claimed and not seen and payout is not null
+    returning draw_id, cost, payout
+  )
+  select coalesce(jsonb_agg(to_jsonb(c)), '[]') into rows_ from c;
+  return jsonb_build_object('tickets', rows_, 'credits', me.credits, 'rev', me.admin_rev);
+end;
+$$;
+
+create or replace function public.affiliate_redeem(code text, dev text default null)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  c text := upper(trim(code));
+  me public.players;
+  aff public.players;
+  bonus bigint;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  if exists (select 1 from public.affiliate_uses where new_player = auth.uid()) then raise exception 'code already used'; end if;
+  if (select created_at from auth.users where id = auth.uid()) < now() - interval '30 minutes' then raise exception 'only for new accounts'; end if;
+  if dev is null or length(dev) not between 8 and 64 then raise exception 'reload the page'; end if;
+  if exists (select 1 from public.player_devices d where d.device = dev and d.player <> auth.uid())
+     or exists (select 1 from public.affiliate_uses u where u.device = dev) then raise exception 'device already has an account'; end if;
+  select * into aff from public.players where affiliate_code = c for update;
+  if aff.id is null or aff.is_banned then raise exception 'no such code'; end if;
+  if aff.id = auth.uid() then raise exception 'not your own code'; end if;
+  select * into me from public.players where id = auth.uid() for update;
+  if me.id is null or me.is_banned then raise exception 'not allowed'; end if;
+  -- 5% of the code owner's credits, at most 10,000
+  bonus := least(10000, floor(aff.credits * 0.05))::bigint;
+  update public.players set credits = credits + bonus, admin_rev = admin_rev + 1, updated_at = now() where id = aff.id;
+  update public.players set credits = credits + 4500, admin_rev = admin_rev + 1, updated_at = now() where id = me.id;
+  insert into public.affiliate_uses (new_player, new_name, affiliate, code, bonus, device) values (me.id, me.name, aff.id, c, bonus, dev);
+  insert into public.player_devices (device, player) values (dev, me.id) on conflict do nothing;
+  return jsonb_build_object('credits', me.credits + 4500, 'rev', me.admin_rev + 1, 'affiliate', aff.name);
+end;
+$$;
+
+-- The hard reset: everybody starts again from the start credits. Credits, levels, prestige, goodies, cosmetics,
+-- name styles, trophies, achievements, missions, the Lucky Burger career, open bets and lotto tickets all go.
+-- Profile pictures, medals, admin titles and affiliate codes stay.
+create or replace function public.admin_hard_reset(tok uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  start_credits bigint := coalesce((select (data ->> 'startCredits')::bigint from public.settings where id = 1), 500);
+begin
+  perform public.admin_check(tok);
+  update public.players set
+    credits = start_credits, best = 0, level = 1, spins = 0, jackpots = 0, game = null, flair = null, prestige = 0,
+    trophies = '{}', capped_saves = 0, admin_rev = admin_rev + 1, updated_at = now()
+  where true;
+  delete from public.horse_bets where true;
+  delete from public.roulette_bets where true;
+  delete from public.rocket_bets where true;
+  if to_regclass('public.lotto_tickets') is not null then
+    execute 'delete from public.lotto_tickets where true';
+    execute 'delete from public.lotto_draws where true';
+  end if;
+  if to_regclass('public.poker_seats') is not null then
+    execute 'delete from public.poker_seats where true';
+    execute $q$update public.poker_tables set phase = 'waiting', board = '{}', deck = '{}', current_bet = 0,
+      to_act = -1, deadline = null, result = null where id = 1$q$;
+    execute 'update public.poker_pulse set rev = rev + 1, at = now() where id = 1';
+  end if;
+end;
+$$;
+revoke execute on function public.admin_hard_reset(uuid) from public, anon;
+grant execute on function public.admin_hard_reset(uuid) to authenticated;
+
+-- A guard on the players' own saves (the live games and admin changes go through the database functions and are not touched).
+-- One save may add at most 6,000× the player's bet limit plus 250,000 credits, at most two levels, and prestige only from level 20.
+-- Anything above is cut back, counted in capped_saves (so an admin can see who tried) and the page reloads the balance.
+create or replace function public.players_guard()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+declare
+  cap bigint;
+  cut boolean := false;
+begin
+  if current_user <> 'authenticated' then return new; end if;
+  if new.level > old.level + 2 then new.level := old.level + 2; cut := true; end if;
+  if new.prestige > old.prestige and (new.prestige > old.prestige + 1 or old.level < 20) then
+    new.prestige := old.prestige; new.level := greatest(new.level, old.level); cut := true;
+  end if;
+  cap := public.lr_bet_limit(old.level, old.prestige) * 6000 + 250000;
+  if new.credits > old.credits + cap then new.credits := old.credits + cap; cut := true; end if;
+  -- a cut save also makes the page reload the balance from the database
+  if cut then new.capped_saves := old.capped_saves + 1; new.admin_rev := old.admin_rev + 1; end if;
+  return new;
+end;
+$$;
+drop trigger if exists players_guard on public.players;
+create trigger players_guard before update on public.players for each row execute function public.players_guard();
