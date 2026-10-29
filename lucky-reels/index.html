@@ -2065,6 +2065,14 @@ body.cos-ckGold .ck-chicken svg { filter: sepia(1) saturate(5) hue-rotate(-8deg)
 .reset-timer[hidden] { display: none; }
 .reset-timer.soon { border-color: var(--lose); color: #ffd0d3; animation: ltPulse 1s ease-in-out infinite; }
 .reset-timer.final { font-size: 22px; padding: 12px 22px; }
+.profile-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: #e9a23b1f; border: 1.5px solid var(--accent); color: var(--accent); font-weight: 700; font-size: 13px; }
+.profile-pill:hover { background: var(--accent); color: var(--ink); }
+.profile-settings { display: grid; gap: 8px; width: 100%; margin-top: 12px; padding-top: 12px; border-top: 1px solid #ffffff14; }
+.profile-settings[hidden] { display: none; }
+.profile-settings .pw-form { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+.profile-settings .pw-form button { grid-column: 1 / -1; }
+@media (max-width: 520px) { .profile-settings .pw-form { grid-template-columns: minmax(0, 1fr); } }
+.profile-settings .pw-msg { grid-column: 1 / -1; margin: 0; }
 #fx, #fxTop { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 #fxTop { z-index: 18; }
 .jp {
@@ -2394,7 +2402,7 @@ body:not(.signed-in) .lang-toggle.floating { display: flex; }
   .account-bar > span:first-child { display: flex; align-items: center; min-width: 0; }
   .account-bar > span:first-child b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .account-bar .links { gap: 10px; align-items: center; flex: none; }
-  .account-bar #pwToggle { display: none; }
+  .account-bar .profile-pill { padding: 5px 10px; }
   .account-bar .lang-toggle span { padding: 4px 7px; font-size: 10px; }
   body.signed-in { padding-bottom: 76px; }
   .chat-fab { padding: 10px 14px; font-size: 14px; }
@@ -2689,13 +2697,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
 <div class="account-bar" id="accountBar" hidden>
   <span><span class="who-label">Signed in as </span><span id="myAv"></span><b id="whoami"></b></span>
-  <span class="links"><button class="theme-toggle" type="button" aria-label="Night mode" title="Night mode"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="currentColor"/></svg></button><button class="lang-toggle" type="button" aria-label="Sprache wechseln"><span data-l="de">DE</span><span data-l="en">EN</span></button><button class="link-btn" id="supportBtn" type="button">Support<i class="dot-badge" id="supportBadge" hidden></i></button><button class="link-btn" id="profileBtn" type="button">Profile</button><button class="link-btn" id="pwToggle" type="button">Change password</button><button class="link-btn" id="logout" type="button">Sign out</button></span>
-  <form class="pw-form" id="pwForm" hidden>
-    <input id="pwOld" type="password" autocomplete="current-password" placeholder="Current password" aria-label="Current password">
-    <input id="pwNew" type="password" autocomplete="new-password" placeholder="New password (4+ characters)" aria-label="New password">
-    <button type="submit">Save</button>
-    <p class="pw-msg" id="pwMsg" role="status"></p>
-  </form>
+  <span class="links"><button class="lang-toggle" type="button" aria-label="Sprache wechseln"><span data-l="de">DE</span><span data-l="en">EN</span></button><button class="link-btn" id="supportBtn" type="button">Support<i class="dot-badge" id="supportBadge" hidden></i></button><button class="profile-pill" id="profileBtn" type="button" title="Your profile and settings"><span aria-hidden="true">⚙</span> My profile</button><button class="link-btn" id="logout" type="button">Sign out</button></span>
 </div>
 
 <div class="announce" id="announce" role="status" aria-live="polite" hidden>
@@ -3132,6 +3134,15 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   <div class="modal-card profile-card">
     <button class="chat-close" id="profileClose" type="button" aria-label="Close profile">×</button>
     <div id="profileBody" class="profile-head"></div>
+    <section class="profile-settings" id="profileSettings" hidden>
+      <span class="profile-label">Change password</span>
+      <form class="pw-form" id="pwForm">
+        <input id="pwOld" type="password" autocomplete="current-password" placeholder="Current password" aria-label="Current password">
+        <input id="pwNew" type="password" autocomplete="new-password" placeholder="New password (4+ characters)" aria-label="New password">
+        <button type="submit" class="chip-btn">Save</button>
+        <p class="pw-msg" id="pwMsg" role="status"></p>
+      </form>
+    </section>
   </div>
 </div>
 
@@ -3366,7 +3377,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   </div>
 </div>
 
-<button class="theme-toggle floating" type="button" aria-label="Night mode" title="Night mode"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="currentColor"/></svg></button>
 <button class="lang-toggle floating" type="button" aria-label="Sprache wechseln"><span data-l="de">DE</span><span data-l="en">EN</span></button>
 <div class="chat-pops" id="chatPops" aria-live="polite"></div>
 <button class="chat-fab" id="chatFab" type="button" hidden>Chat <span class="badge" id="chatBadge" hidden>0</span></button>
@@ -3393,8 +3403,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     document.querySelectorAll('.theme-toggle').forEach(b => b.setAttribute('aria-pressed', String(night)));
     try { localStorage.setItem(THEME_KEY, night ? 'night' : 'day'); } catch {}
   }
-  setTheme((() => { try { return localStorage.getItem(THEME_KEY) === 'night'; } catch { return false; } })());
-  document.querySelectorAll('.theme-toggle').forEach(b => b.addEventListener('click', () => setTheme(document.documentElement.dataset.theme !== 'night')));
+  // Night mode is a cosmetic from the shop; before signing in the page shows the normal look.
+  setTheme(false);
 
   // ---------- Language ----------
   // The page is written in English. In German every text the page shows (static or rendered later) is
@@ -3678,6 +3688,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Really schedule it?': 'Wirklich planen?', 'Cancel it?': 'Wirklich abbrechen?', 'The hard reset is scheduled. Everyone sees the countdown now.': 'Der Hard Reset ist geplant. Alle sehen jetzt den Countdown.',
     'The timed hard reset is cancelled.': 'Der geplante Hard Reset ist abgebrochen.', 'Hard reset now…': 'Hard Reset läuft…',
     'Admin cheats on': 'Admin-Cheats an', 'The admin secret code works in every game except the stock market. Off: nobody can use it.': 'Der Admin-Geheimcode wirkt in allen Spielen außer der Börse. Aus: Niemand kann ihn benutzen.',
+    'My profile': 'Mein Profil', 'Your profile and settings': 'Dein Profil und deine Einstellungen', 'Night Mode': 'Nachtmodus', 'The whole casino in a darker night look. Switch it on and off here.': 'Das ganze Casino im dunkleren Nacht-Look. Hier an- und ausschalten.',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -4302,6 +4313,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     { id: 'goldCup', kind: 'cosmetic', shelf: 'trophy', group: 'trophy', name: 'Golden Cup', desc: 'The real deal: solid gold.', price: () => 100000 },
     { id: 'diamondTrophy', kind: 'cosmetic', shelf: 'trophy', group: 'trophy', name: 'Diamond Trophy', desc: 'A sparkling diamond on a gold base.', price: () => 500000 },
     { id: 'crownTrophy', kind: 'cosmetic', shelf: 'trophy', group: 'trophy', name: 'Royal Crown', desc: 'The rarest trophy in the house.', price: () => 2000000 },
+    { id: 'nightMode', kind: 'cosmetic', shelf: 'effect', name: 'Night Mode', desc: 'The whole casino in a darker night look. Switch it on and off here.', price: () => 5000 },
     { id: 'disco', kind: 'cosmetic', shelf: 'effect', name: 'Disco Bulbs', desc: 'The bulbs on top of the machine flash in every colour of the rainbow.', price: () => 8000 },
     { id: 'royalFelt', kind: 'cosmetic', shelf: 'effect', name: 'Royal Felt', desc: 'Purple velvet on the blackjack, roulette and poker tables.', price: () => 15000 },
     { id: 'goldBacks', kind: 'cosmetic', shelf: 'effect', name: 'Golden Card Backs', desc: 'Every face-down card gets a gold-and-black back.', price: () => 12000 },
@@ -9797,6 +9809,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     for (const id of ['gold', 'midnight', 'ruby', 'emerald', 'bubblegum', 'carbon']) cabinet.classList.toggle(id, cosOn(id));
     if (!$('shopPage').hidden) renderShop();
     for (const id of ['disco', 'royalFelt', 'goldBacks', 'ckGold']) document.body.classList.toggle('cos-' + id, cosOn(id));
+    if ((document.documentElement.dataset.theme === 'night') !== (!!account && cosOn('nightMode'))) setTheme(!!account && cosOn('nightMode'));
     const owned = GOODIES.filter(g => g.kind === 'level' ? state.owned[g.id] > 0 : state.owned[g.id]).length;
     $('shopOwned').textContent = `${owned} / ${GOODIES.length}`;
     // An <svg> has no working .hidden property, so set the attribute itself.
@@ -11007,10 +11020,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     setChat(false);
     stopDms();
     pkStopOnline();
-    $('pwForm').hidden = true;
     $('login').hidden = false;
     $('lobby').hidden = true;
     loadState({});
+    setTheme(false);
     renderBoards();
     $('loginUser').focus();
   }
@@ -11088,6 +11101,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const keep = { v: $('sendAmt')?.value, focus: document.activeElement === $('sendAmt') };
     if (!profileFor || $('profileModal').hidden && profileFor === null) return;
     const mine = profileFor === account?.id;
+    $('profileSettings').hidden = !mine;
+    if (!mine) $('pwMsg').textContent = '';
     const p = players.find(x => x.id === profileFor) || (mine ? { id: account.id, name: account.name, medals: [] } : null);
     if (!p) { $('profileModal').hidden = true; return; }
     const credits = mine ? state.credits : p.credits, best = mine ? state.best : p.best, level = mine ? state.level : p.level;
@@ -11095,7 +11110,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const picker = mine ? `<span class="profile-label">Your picture</span><div class="avatar-grid" id="avatarGrid">${AVATARS.map((svg, i) =>
       `<button type="button" data-av="${i}" aria-pressed="${state.avatar === i}" aria-label="${AVATAR_NAMES[i]}" title="${AVATAR_NAMES[i]}">${svg}</button>`).join('')}</div>` +
       `<button type="button" class="chip-btn" data-av="none"${state.avatar == null ? ' disabled' : ''}>Use my initial instead</button>` +
-      '<button type="button" class="link-btn" data-pw>Change password</button>' : '';
+      '' : '';
     const prestigeRow = mine && state.level >= MAX_LEVEL ? '<button type="button" class="prestige-btn" data-prestige>★ Max level reached – go Prestige</button>' : '';
     $('profileBody').innerHTML = `${avatarHtml(p.id, p.name, 'lg')}<h2 id="profileName">${nameHtml(p.id, p.name)}</h2>` +
       (prestigeOf(p.id) ? `<span class="prestige-line">Prestige ${roman(prestigeOf(p.id))}</span>` : '') + prestigeRow +
@@ -11207,12 +11222,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (cp) { navigator.clipboard?.writeText(cp.dataset.affCopy).then(() => { cp.textContent = i18n('Copied!'); setTimeout(() => { cp.textContent = i18n('Copy'); }, 1500); }).catch(() => {}); return; }
     if (e.target.closest('[data-prestige]')) { closeProfile(); openPrestige(); return; }
     if (e.target.closest('[data-send-max]')) { $('sendAmt').value = Math.max(0, Math.floor(state.credits)); return; }
-    if (e.target.closest('[data-pw]')) {
-      closeProfile();
-      if ($('pwForm').hidden) $('pwToggle').click();
-      $('pwOld').focus();
-      return;
-    }
     const b = e.target.closest('[data-av]');
     if (!b) return;
     state.avatar = b.dataset.av === 'none' ? null : Number(b.dataset.av);
@@ -11684,7 +11693,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       btn.type = 'button';
       btn.textContent = 'Admin';
       btn.addEventListener('click', openAdmin);
-      $('pwToggle').before(btn);
+      $('logout').before(btn);
     } else if (!want && btn) btn.remove();
   }
   let adminTouched = 0;
@@ -13599,11 +13608,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   $('loginUser').addEventListener('input', syncPick);
   $('modeBtn').addEventListener('click', () => { setMode(!signUpMode); $('loginUser').focus(); });
   $('logout').addEventListener('click', signOut);
-  $('pwToggle').addEventListener('click', () => {
-    $('pwForm').hidden = !$('pwForm').hidden;
-    $('pwMsg').textContent = '';
-    if (!$('pwForm').hidden) $('pwOld').focus();
-  });
   $('pwForm').addEventListener('submit', async e => {
     e.preventDefault();
     const msg = $('pwMsg');
