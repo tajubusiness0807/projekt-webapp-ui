@@ -10138,9 +10138,15 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   async function checkGifts() {
     if (!account || !backend?.giftsSince) return 0;
     const since = state.giftSeen || Date.now();
-    const gifts = await backend.giftsSince(since).catch(() => []);
+    // The database keeps microseconds and the page milliseconds, so a gift can come back at the edge of "since":
+    // remember the ones already shown and move the marker one millisecond past the newest.
+    const shown = new Set(Array.isArray(state.giftKeys) ? state.giftKeys : []);
+    const keyOf = g => `${g.aff ? 'a' : 'g'}|${g.from}|${g.amount}|${g.at}`;
+    const gifts = (await backend.giftsSince(since).catch(() => [])).filter(g => !shown.has(keyOf(g)));
     if (!gifts.length) return 0;
-    state.giftSeen = Math.max(...gifts.map(g => g.at));
+    state.giftSeen = Math.max(since, ...gifts.map(g => g.at + 1));
+    state.giftKeys = [...shown, ...gifts.map(keyOf)].slice(-40);
+    flush();
     for (const g of gifts) {
       const el = document.createElement('div');
       el.className = 'chat-pop gift-pop';
