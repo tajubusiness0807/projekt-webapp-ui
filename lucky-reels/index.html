@@ -2110,6 +2110,8 @@ body.has-reset .profile-card { max-height: calc(100dvh - 76px); }
 .profile-pill:hover { background: var(--accent); color: var(--ink); }
 .profile-settings { display: grid; gap: 8px; width: 100%; margin-top: 12px; padding-top: 12px; border-top: 1px solid #ffffff14; }
 .profile-settings[hidden] { display: none; }
+.profile-settings .admin-open { font-size: 16px; padding: 10px; }
+.profile-settings .admin-open[hidden] { display: none; }
 .profile-settings .pw-form { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
 .profile-settings .pw-form button { grid-column: 1 / -1; }
 @media (max-width: 520px) { .profile-settings .pw-form { grid-template-columns: minmax(0, 1fr); } }
@@ -3193,6 +3195,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     <button class="chat-close" id="profileClose" type="button" aria-label="Close profile">×</button>
     <div id="profileBody" class="profile-head"></div>
     <section class="profile-settings" id="profileSettings" hidden>
+      <button type="button" class="spin admin-open" id="adminBtn" hidden>🛠 Admin menu</button>
       <span class="profile-label">Change password</span>
       <form class="pw-form" id="pwForm">
         <input id="pwOld" type="password" autocomplete="current-password" placeholder="Current password" aria-label="Current password">
@@ -3807,6 +3810,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'A report was left lying around.': 'Ein Bericht blieb liegen.',
     'Higher positions pay more and bring new kinds of work.': 'Höhere Positionen zahlen mehr und bringen neue Aufgaben.',
     'buns': 'Brötchen', 'potatoes': 'Kartoffeln', 'cups': 'Becher', 'ketchup': 'Ketchup', 'napkins': 'Servietten', 'patties': 'Pattys',
+    '🛠 Admin menu': '🛠 Admin-Menü',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -11807,18 +11811,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
   // The Admin link only exists in the page while the signed-in account is an admin.
   function syncAdminButton() {
-    const want = !!account?.isAdmin;
-    let btn = document.getElementById('adminBtn');
-    if (want && !btn) {
-      btn = document.createElement('button');
-      btn.className = 'link-btn';
-      btn.id = 'adminBtn';
-      btn.type = 'button';
-      btn.textContent = 'Admin';
-      btn.addEventListener('click', openAdmin);
-      $('logout').before(btn);
-    } else if (!want && btn) btn.remove();
+    // The admin menu opens from the admin's own profile.
+    $('adminBtn').hidden = !account?.isAdmin;
   }
+  $('adminBtn').addEventListener('click', () => { closeProfile(); openAdmin(); });
   let adminTouched = 0;
   function lockAdmin(message = '') {
     const wasOpen = !$('adminModal').hidden;
