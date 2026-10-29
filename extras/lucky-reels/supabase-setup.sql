@@ -1951,7 +1951,10 @@ $$;
 -- before it explodes; at 200× it lands on the moon and pays everyone still
 -- on board. The database picks the explosion point when the round starts,
 -- keeps it secret until it happens and checks every cash-out against its
--- own clock. Over the long run about 96% of bets come back.
+-- own clock. One rocket in 300 is golden (shown at liftoff) and flies past
+-- 30× for sure; the ordinary ones explode a little earlier to pay for it, so
+-- over the long run about 96% of bets come back even when every golden
+-- rocket is held to 30×.
 -- If you ran an older copy of this part, run it again: it keeps the bets and
 -- only updates the timing.
 
@@ -1965,6 +1968,7 @@ create table if not exists public.rocket_rounds (
   settled boolean not null default false,
   created_at timestamptz not null default now()
 );
+alter table public.rocket_rounds add column if not exists golden boolean not null default false;
 alter table public.rocket_rounds enable row level security;
 revoke all on public.rocket_rounds from anon, authenticated;
 
@@ -2007,15 +2011,17 @@ declare
   bs bigint;
   c numeric;
   ca bigint;
+  gold boolean := random() < 1.0 / 300;
 begin
   select * into r from public.rocket_rounds order by id desc limit 1;
   if r.id is not null and now_ms < r.next_start then return r; end if;
   bs := case when r.id is null or now_ms - r.next_start > 10000 then now_ms else r.next_start end;
-  -- 4% of rockets blow up on the pad; otherwise P(reaching m) = 0.96 / m, up to the moon at 200.
-  c := least(200, greatest(1, floor(0.96 / (1 - random()) * 100) / 100));
+  -- Golden: P(reaching m) = 30 / m from 30× up. Ordinary: P(reaching m) = 0.87 / m (13% blow up on the pad). Moon at 200.
+  c := case when gold then least(200, floor(30 / (1 - random()) * 100) / 100)
+       else least(200, greatest(1, floor(0.87 / (1 - random()) * 100) / 100)) end;
   ca := bs + 25000 + round(40000 * ln(c) / ln(200));
-  insert into public.rocket_rounds (id, bet_start, launch, crash, crash_at, next_start)
-    values (coalesce(r.id, 0) + 1, bs, bs + 25000, c, ca, ca + case when c >= 200 then 8000 else 5000 end)
+  insert into public.rocket_rounds (id, bet_start, launch, crash, crash_at, next_start, golden)
+    values (coalesce(r.id, 0) + 1, bs, bs + 25000, c, ca, ca + case when c >= 200 then 9000 else 5000 end, gold)
     on conflict (id) do nothing;
   delete from public.rocket_bets where round_id < coalesce(r.id, 0) - 5000 and claimed;
   delete from public.rocket_rounds where id < coalesce(r.id, 0) - 5000;
@@ -2061,9 +2067,10 @@ begin
   done := now_ms >= r.crash_at;
   if done then perform public.rocket_settle(r.id); end if;
   return jsonb_build_object('id', r.id, 'now', now_ms, 'bet_start', r.bet_start, 'launch', r.launch,
+    'golden', now_ms >= r.launch and r.golden,
     'crash', case when done then r.crash end, 'crash_at', case when done then r.crash_at end, 'next_start', case when done then r.next_start end,
-    'recent', (select coalesce(jsonb_agg(crash order by id desc), '[]') from (
-      select id, crash from public.rocket_rounds where crash_at <= now_ms and id < r.id order by id desc limit 14) x));
+    'recent', (select coalesce(jsonb_agg(jsonb_build_object('c', crash, 'g', golden) order by id desc), '[]') from (
+      select id, crash, golden from public.rocket_rounds where crash_at <= now_ms and id < r.id order by id desc limit 14) x));
 end;
 $$;
 

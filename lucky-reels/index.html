@@ -1728,6 +1728,7 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
 .rk-view canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .rk-hist { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; min-height: 22px; }
 .rk-hist span { padding: 2px 7px; border-radius: 6px; font: 700 11px var(--font-mono); color: #fff; }
+.rk-hist .gold { background: linear-gradient(135deg, #a8741a, #fff2c4, #f3c94b, #a8741a); color: #3a2405; box-shadow: 0 0 10px #f3c94b88; }
 .rk-hist .lo { background: #e0414a; } .rk-hist .mid { background: #3d7bd9; } .rk-hist .hi { background: #3fae5a; } .rk-hist .moon { background: #f3c94b; color: #1d1714; }
 .rk-inputs { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 10px; }
 .rk-field { display: grid; gap: 4px; min-width: 0; }
@@ -2309,7 +2310,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       </div>
       <details class="bj-rules">
         <summary>Rocket rules</summary>
-        <p class="note">One rocket for everyone. For 25 seconds you can board it with a bet (and, if you like, an automatic cash-out). Then it lifts off and the multiplier climbs faster and faster: about 2× after 5 seconds, 10× after 17 seconds. Cash out whenever you like and your bet pays that multiplier; if the rocket explodes first, the bet is gone. The higher it goes, the likelier the explosion: about half of all rockets make it past 2×, one in ten past 10×. One in 25 blows up right on the pad. The few that reach 200× land on the moon and pay 200× to everyone still on board. Over the long run about 96% of bets come back, whenever you cash out. Space boards and cashes out.</p>
+        <p class="note">One rocket for everyone. For 25 seconds you can board it with a bet (and, if you like, an automatic cash-out). Then it lifts off and the multiplier climbs faster and faster: about 2× after 5 seconds, 10× after 17 seconds. Cash out whenever you like and your bet pays that multiplier; if the rocket explodes first, the bet is gone. The higher it goes, the likelier the explosion: about 43% of rockets make it past 2×, one in eleven past 10×, and about one in eight blows up right on the pad. But one rocket in 300 is golden: you see it at liftoff, and it flies past 30× for sure. The few that reach 200× land on the moon and pay 200× to everyone still on board. Over the long run about 96% of bets come back if you hold every golden rocket to 30×. Space boards and cashes out.</p>
       </details>
     </section>
 
@@ -2800,6 +2801,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Bet': 'Einsatz', 'Auto cash-out at': 'Auto-Auszahlung bei', 'off, e.g. 2.00': 'aus, z. B. 2.00', 'Board the rocket': 'Einsteigen', 'On board': 'An Bord',
     'Cash out': 'Auszahlen', 'Cashed out': 'Ausgezahlt', 'Moon landing': 'Mondlandung', 'Auto cash-out': 'Auto-Auszahlung', 'Blown up': 'Explodiert',
     'Next rocket soon': 'Gleich die nächste Rakete', 'boarding opens after this flight': 'Einsteigen nach diesem Flug', 'Nobody on board yet.': 'Noch niemand an Bord.',
+    'Golden rocket!': 'Goldene Rakete!', 'Golden rocket': 'Goldene Rakete', 'Golden flight': 'Goldener Flug', 'Touchdown!': 'Gelandet!',
     'Liftoff!': 'Abheben!', 'BOOM!': 'BUMM!', 'To the moon!': 'Zum Mond!', 'Live · next rocket soon': 'Live · gleich nächste Rakete',
     'Rocket · cash out before it blows · play credits': 'Rakete · auszahlen, bevor sie explodiert · Spiel-Credits',
     'Board it, watch the multiplier climb and cash out before it blows. 200× is the moon.': 'Einsteigen, den Multiplikator steigen sehen und auszahlen, bevor sie explodiert. 200× ist der Mond.',
@@ -2811,7 +2813,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'The rocket needs the “Rocket” part of supabase-setup.sql.': 'Die Rakete braucht den Abschnitt „Rocket“ aus supabase-setup.sql.',
     'The rocket needs the “Rocket” part of supabase-setup.sql. Ask the person who runs the game to run it.': 'Die Rakete braucht den Abschnitt „Rocket“ aus supabase-setup.sql. Bitte die Person, die das Spiel betreibt, ihn auszuführen.',
     'Sky High': 'Himmelhoch', 'Cash out a rocket at 10× or more.': 'Zahl eine Rakete bei 10× oder mehr aus.', 'To the Moon': 'Bis zum Mond', 'Ride the rocket all the way to the moon.': 'Flieg mit der Rakete bis zum Mond.',
-    'One rocket for everyone. For 25 seconds you can board it with a bet (and, if you like, an automatic cash-out). Then it lifts off and the multiplier climbs faster and faster: about 2× after 5 seconds, 10× after 17 seconds. Cash out whenever you like and your bet pays that multiplier; if the rocket explodes first, the bet is gone. The higher it goes, the likelier the explosion: about half of all rockets make it past 2×, one in ten past 10×. One in 25 blows up right on the pad. The few that reach 200× land on the moon and pay 200× to everyone still on board. Over the long run about 96% of bets come back, whenever you cash out. Space boards and cashes out.': 'Eine Rakete für alle. 25 Sekunden lang kannst du mit einem Einsatz einsteigen (und, wenn du willst, einer automatischen Auszahlung). Dann hebt sie ab und der Multiplikator steigt immer schneller: etwa 2× nach 5 Sekunden, 10× nach 17 Sekunden. Zahl aus, wann du willst, und dein Einsatz zahlt diesen Multiplikator; explodiert die Rakete vorher, ist der Einsatz weg. Je höher sie fliegt, desto wahrscheinlicher die Explosion: etwa die Hälfte aller Raketen schafft mehr als 2×, eine von zehn mehr als 10×. Eine von 25 explodiert schon auf der Startrampe. Die wenigen, die 200× erreichen, landen auf dem Mond und zahlen allen, die noch an Bord sind, 200×. Auf lange Sicht kommen etwa 96 % der Einsätze zurück, egal wann du auszahlst. Leertaste steigt ein und zahlt aus.',
+    'One rocket for everyone. For 25 seconds you can board it with a bet (and, if you like, an automatic cash-out). Then it lifts off and the multiplier climbs faster and faster: about 2× after 5 seconds, 10× after 17 seconds. Cash out whenever you like and your bet pays that multiplier; if the rocket explodes first, the bet is gone. The higher it goes, the likelier the explosion: about 43% of rockets make it past 2×, one in eleven past 10×, and about one in eight blows up right on the pad. But one rocket in 300 is golden: you see it at liftoff, and it flies past 30× for sure. The few that reach 200× land on the moon and pay 200× to everyone still on board. Over the long run about 96% of bets come back if you hold every golden rocket to 30×. Space boards and cashes out.': 'Eine Rakete für alle. 25 Sekunden lang kannst du mit einem Einsatz einsteigen (und, wenn du willst, einer automatischen Auszahlung). Dann hebt sie ab und der Multiplikator steigt immer schneller: etwa 2× nach 5 Sekunden, 10× nach 17 Sekunden. Zahl aus, wann du willst, und dein Einsatz zahlt diesen Multiplikator; explodiert die Rakete vorher, ist der Einsatz weg. Je höher sie fliegt, desto wahrscheinlicher die Explosion: etwa 43 % der Raketen schaffen mehr als 2×, eine von elf mehr als 10×, und etwa eine von acht explodiert schon auf der Startrampe. Aber eine von 300 Raketen ist golden: Du siehst es beim Abheben, und sie fliegt garantiert über 30×. Die wenigen, die 200× erreichen, landen auf dem Mond und zahlen allen, die noch an Bord sind, 200×. Auf lange Sicht kommen etwa 96 % der Einsätze zurück, wenn du jede goldene Rakete bis 30× hältst. Leertaste steigt ein und zahlt aus.',
     'other player online': 'anderer Spieler online', 'other players online': 'andere Spieler online', 'in the lobby': 'in der Lobby',
     'Nobody else is online right now.': 'Gerade ist sonst niemand online.', 'Lobby': 'Lobby',
     'Place your bets': 'Setzt eure Chips', 'No more bets': 'Nichts geht mehr', 'Spinning': 'Die Kugel rollt', 'Next round': 'Nächste Runde', 'At the table': 'Am Tisch',
@@ -2967,7 +2969,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['bet {a}', 'Einsatz {a}'], ['auto {a}', 'auto {a}'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['Golden rocket! This one flies past {a} for sure.', 'Goldene Rakete! Die fliegt garantiert über {a}.'], ['bet {a}', 'Einsatz {a}'], ['auto {a}', 'auto {a}'],
     ["You're on board with {a}. Auto cash-out at {b}.", 'Du bist mit {a} an Bord. Auto-Auszahlung bei {b}.'], ["You're on board with {a}. Cash out before it blows!", 'Du bist mit {a} an Bord. Zahl aus, bevor sie explodiert!'],
     ['To the moon! {a} · +{b}', 'Zum Mond! {a} · +{b}'], ['Cashed out at {a} · +{b}', 'Ausgezahlt bei {a} · +{b}'], ['Auto cash-out at {a} · +{b}', 'Auto-Auszahlung bei {a} · +{b}'],
     ['Boom at {a}. Your {b} went up in smoke.', 'Bumm bei {a}. Deine {b} sind in Rauch aufgegangen.'], ['Boom at {a}!', 'Bumm bei {a}!'],
@@ -6311,16 +6313,20 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // drawn and kept on the server, which also checks every cash-out against its own clock. Must match the "Rocket"
   // part of supabase-setup.sql.
   const RK_BET = 25000, RK_FULL = 40000, RK_CAP = 200;
+  // One rocket in 300 is golden and flies past 30× for sure (then P(reaching m) = 30 / m). To pay for that the
+  // ordinary rockets reach m with P = 0.87 / m, so a player who holds every golden one to 30× still gets about 96.7%.
+  const RK_GOLD = 30, RK_GOLD_CHANCE = 1 / 300, RK_EDGE = 0.87;
   const rkMult = ms => Math.min(RK_CAP, Math.floor(Math.pow(RK_CAP, Math.max(0, ms) / RK_FULL) * 100) / 100);
   const rkTimeFor = m => RK_FULL * Math.log(m) / Math.log(RK_CAP);
-  // Without the online database: fixed 71-second rounds, the explosion point from the round number.
+  // Without the online database: fixed 74-second rounds, the explosion point from the round number.
   function localRocket() {
-    const P = 71000;
+    const P = 74000;
     const key = () => 'lucky-reels-rk-' + (account?.id || '');
     const read = () => { try { return JSON.parse(localStorage.getItem(key()) || '[]'); } catch { return []; } };
     const write = l => { try { localStorage.setItem(key(), JSON.stringify(l.slice(-60))); } catch {} };
-    const crashOf = id => Math.min(RK_CAP, Math.max(1, Math.floor(0.96 / (1 - hrRng(id, 999)()) * 100) / 100));
-    const round = id => { const bs = id * P, c = crashOf(id); return { id, bet_start: bs, launch: bs + RK_BET, crash: c, crash_at: bs + RK_BET + Math.round(rkTimeFor(c)), next_start: (id + 1) * P }; };
+    const goldOf = id => hrRng(id, 997)() < RK_GOLD_CHANCE;
+    const crashOf = id => goldOf(id) ? Math.min(RK_CAP, Math.floor(RK_GOLD / (1 - hrRng(id, 999)()) * 100) / 100) : Math.min(RK_CAP, Math.max(1, Math.floor(RK_EDGE / (1 - hrRng(id, 999)()) * 100) / 100));
+    const round = id => { const bs = id * P, c = crashOf(id); return { id, bet_start: bs, launch: bs + RK_BET, crash: c, golden: goldOf(id), crash_at: bs + RK_BET + Math.round(rkTimeFor(c)), next_start: (id + 1) * P }; };
     const settle = b => {
       if (b.payout != null) return;
       const r = round(b.round_id);
@@ -6334,8 +6340,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       async state() {
         const now = Date.now(), id = Math.floor(now / P), r = round(id), done = now >= r.crash_at;
         const recent = [];
-        for (let k = id - 1; k >= id - 14; k--) recent.push(crashOf(k));
-        return { ...r, now, crash: done ? r.crash : null, crash_at: done ? r.crash_at : null, next_start: done ? r.next_start : null, recent };
+        for (let k = id - 1; k >= id - 14; k--) recent.push({ c: crashOf(k), g: goldOf(k) });
+        return { ...r, now, golden: now >= r.launch && r.golden, crash: done ? r.crash : null, crash_at: done ? r.crash_at : null, next_start: done ? r.next_start : null, recent };
       },
       async bet(id, amount, auto) {
         const now = Date.now(), r = round(id);
@@ -6377,10 +6383,18 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       const t0 = Date.now();
       const r = await backend.rocket.state();
       if (backend.rocket.shared && Number.isFinite(Number(r?.now))) { const off = Number(r.now) - (t0 + Date.now()) / 2; hrOffset = hrOffsetSet ? hrOffset * 0.7 + off * 0.3 : off; hrOffsetSet = true; }
-      const next = { id: Number(r.id), betStart: Number(r.bet_start), launch: Number(r.launch), crash: r.crash == null ? null : Number(r.crash), crashAt: r.crash_at == null ? null : Number(r.crash_at), nextStart: r.next_start == null ? null : Number(r.next_start) };
+      const next = { id: Number(r.id), betStart: Number(r.bet_start), launch: Number(r.launch), crash: r.crash == null ? null : Number(r.crash), crashAt: r.crash_at == null ? null : Number(r.crash_at), nextStart: r.next_start == null ? null : Number(r.next_start), golden: !!r.golden };
+      const wasGold = rkCur?.id === next.id && rkCur.golden;
       if (!rkCur || next.id !== rkCur.id) { rkCur = next; rkBets = []; rkBetsFor = -1; rkScene.reset(); renderRK(); rkLoadBets(); }
       else Object.assign(rkCur, next);
-      if (Array.isArray(r.recent)) state.rk.history = r.recent.map(Number).slice(0, 14);
+      // A golden rocket shows itself at liftoff: it will make it past 30×.
+      if (next.golden && !wasGold && state.mode === 'rk' && hrNow() - next.launch < 5000) {
+        rkSay(`Golden rocket! This one flies past ${RK_GOLD}× for sure.`, 'win');
+        sound.star(); sound.chime();
+        const b = $('rkView').getBoundingClientRect();
+        fxTop.burst(b.left + b.width / 2, b.top + b.height / 2, 90, 30, 8, false);
+      }
+      if (Array.isArray(r.recent)) state.rk.history = r.recent.map(x => x && typeof x === 'object' ? { c: Number(x.c), g: !!x.g } : { c: Number(x), g: false }).filter(x => Number.isFinite(x.c)).slice(0, 14);
       rkReady = true;
     } catch (e) {
       if (e?.code === 'PGRST202' || /could not find the function/i.test(e?.message || '')) { if (rkReady !== false) { rkReady = false; renderRK(); } }
@@ -6524,11 +6538,20 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const rkStars = Array.from({ length: 140 }, (_, i) => { const r = hrRng(i, 21); return { x: r(), y: r(), d: 0.2 + r() * 0.8, s: 0.6 + r() * 1.6, tw: r() * 6 }; });
   const rkScene = {
     parts: [], chutes: [], boomAt: 0, shake: 0, lastRound: -1, lastLaunch: 0,
-    reset() { this.parts = []; this.chutes = []; this.boomAt = 0; this.shake = 0; },
+    reset() { this.parts = []; this.chutes = []; this.boomAt = 0; this.shake = 0; this.dust = []; this.touched = false; },
     chute(pid, name, m) { if (!this.chutes.some(c => c.pid === pid)) this.chutes.push({ pid, name, m, at: performance.now(), x: (Math.random() - 0.5) * 0.3 }); },
   };
-  function rkRocket(c, x, y, s, flame, tilt) {
+  function rkRocket(c, x, y, s, flame, tilt, gold = false, legs = 0) {
     c.save(); c.translate(x, y); c.rotate(tilt); c.scale(s, s);
+    const trim = gold ? '#c98a24' : '#c8323a';
+    // landing legs
+    if (legs > 0) {
+      c.strokeStyle = gold ? '#a8741a' : '#7c7f8a'; c.lineWidth = 3; c.lineCap = 'round';
+      for (const d of [-1, 1]) {
+        c.beginPath(); c.moveTo(d * 11, 18); c.lineTo(d * (13 + 13 * legs), 30 + 11 * legs); c.stroke();
+        c.fillStyle = c.strokeStyle; c.fillRect(d * (13 + 13 * legs) - 5, 29 + 11 * legs, 10, 3);
+      }
+    }
     // flame
     if (flame > 0) {
       const fl = 26 + flame * 30 + Math.random() * 10;
@@ -6541,30 +6564,140 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       c.fillStyle = g; c.beginPath(); c.moveTo(-5, 30); c.quadraticCurveTo(0, 30 + fl * 0.7, 5, 30); c.fill();
     }
     // fins
-    c.fillStyle = '#c8323a';
+    c.fillStyle = trim;
     c.beginPath(); c.moveTo(-14, 8); c.lineTo(-28, 32); c.lineTo(-12, 28); c.fill();
     c.beginPath(); c.moveTo(14, 8); c.lineTo(28, 32); c.lineTo(12, 28); c.fill();
-    // body
+    // body (a golden rocket glows and has a light sweeping over it)
+    const body = new Path2D('M0 -46C18 -30 16 10 12 30L-12 30C-16 10 -18 -30 0 -46Z');
     const g = c.createLinearGradient(-15, 0, 15, 0);
-    g.addColorStop(0, '#c9c2b6'); g.addColorStop(0.45, '#ffffff'); g.addColorStop(1, '#9d968c');
+    if (gold) { g.addColorStop(0, '#a8741a'); g.addColorStop(0.45, '#fff2c4'); g.addColorStop(0.6, '#f3c94b'); g.addColorStop(1, '#8a5a12'); }
+    else { g.addColorStop(0, '#c9c2b6'); g.addColorStop(0.45, '#ffffff'); g.addColorStop(1, '#9d968c'); }
     c.fillStyle = g;
-    c.beginPath(); c.moveTo(0, -46); c.bezierCurveTo(18, -30, 16, 10, 12, 30); c.lineTo(-12, 30); c.bezierCurveTo(-16, 10, -18, -30, 0, -46); c.fill();
-    c.fillStyle = '#c8323a';
+    if (gold) { c.shadowColor = '#f3c94b'; c.shadowBlur = 26; }
+    c.fill(body);
+    c.shadowBlur = 0;
+    if (gold) {
+      c.save(); c.clip(body);
+      const sw = ((performance.now() / 900) % 1.6 - 0.3) * 110 - 55;
+      const sh = c.createLinearGradient(sw - 14, -40, sw + 14, 40);
+      sh.addColorStop(0, 'rgba(255,255,255,0)'); sh.addColorStop(0.5, 'rgba(255,255,255,0.85)'); sh.addColorStop(1, 'rgba(255,255,255,0)');
+      c.fillStyle = sh; c.fillRect(-30, -50, 60, 90);
+      c.restore();
+    }
+    c.fillStyle = gold ? '#e9a23b' : '#c8323a';
     c.beginPath(); c.moveTo(0, -46); c.bezierCurveTo(9, -38, 12, -30, 13.5, -24); c.lineTo(-13.5, -24); c.bezierCurveTo(-12, -30, -9, -38, 0, -46); c.fill();
     c.fillStyle = '#3a3f4a'; c.fillRect(-10, 28, 20, 5);
     // window
     c.fillStyle = '#e9a23b'; c.beginPath(); c.arc(0, -6, 8, 0, Math.PI * 2); c.fill();
     const wg = c.createRadialGradient(-2, -8, 1, 0, -6, 6); wg.addColorStop(0, '#bff3ff'); wg.addColorStop(1, '#2a6fb0');
     c.fillStyle = wg; c.beginPath(); c.arc(0, -6, 5.8, 0, Math.PI * 2); c.fill();
-    c.fillStyle = '#c8323a'; c.fillRect(-1.5, 12, 3, 14);
+    c.fillStyle = trim; c.fillRect(-1.5, 12, 3, 14);
     c.restore();
+  }
+  // The moon landing: the surface comes up, retro-burn, legs out, touchdown in a cloud of dust,
+  // then a little astronaut climbs out and plants the Lucky Reels flag while the Earth rises.
+  function rkMoonLanding(c, W, H, since, gold, t) {
+    const ease = f => 1 - Math.pow(1 - Math.min(1, Math.max(0, f)), 3);
+    c.fillStyle = '#04050e'; c.fillRect(0, 0, W, H);
+    for (const s of rkStars) { c.globalAlpha = 0.5 + 0.5 * Math.sin(t / 600 + s.tw); c.fillStyle = '#fff'; c.fillRect(s.x * W, s.y * H * 0.8, s.s, s.s); }
+    c.globalAlpha = 1;
+    // Earthrise
+    const ex = W * 0.2, ey = H * 0.32 - ease(since / 7000) * H * 0.08, er = Math.min(W, H) * 0.11;
+    c.save(); c.beginPath(); c.arc(ex, ey, er, 0, Math.PI * 2); c.clip();
+    c.fillStyle = '#2a6fd0'; c.fillRect(ex - er, ey - er, er * 2, er * 2);
+    c.fillStyle = '#3fae5a';
+    c.beginPath(); c.ellipse(ex - er * 0.3, ey - er * 0.1, er * 0.45, er * 0.3, 0.6, 0, Math.PI * 2); c.fill();
+    c.beginPath(); c.ellipse(ex + er * 0.45, ey + er * 0.35, er * 0.3, er * 0.22, -0.4, 0, Math.PI * 2); c.fill();
+    c.fillStyle = 'rgba(255,255,255,0.7)';
+    c.beginPath(); c.ellipse(ex + er * 0.1 + Math.sin(t / 3000) * er * 0.2, ey - er * 0.55, er * 0.6, er * 0.12, 0.2, 0, Math.PI * 2); c.fill();
+    c.fillStyle = 'rgba(0,0,20,0.45)'; c.beginPath(); c.arc(ex + er * 0.55, ey + er * 0.2, er * 1.05, 0, Math.PI * 2); c.fill();
+    c.restore();
+    c.strokeStyle = '#7fc4ff55'; c.lineWidth = 3; c.beginPath(); c.arc(ex, ey, er + 2, 0, Math.PI * 2); c.stroke();
+    // the surface rises into view
+    const fIn = ease(since / 2600);
+    const surf = H * 1.3 - fIn * H * 0.5;
+    const curve = W * 2.2;
+    const mg = c.createLinearGradient(0, surf - 20, 0, H);
+    mg.addColorStop(0, '#d9d2c2'); mg.addColorStop(1, '#8f877a');
+    c.fillStyle = mg; c.beginPath(); c.arc(W / 2, surf + curve, curve, 0, Math.PI * 2); c.fill();
+    c.fillStyle = '#a89f8c88';
+    for (let i = 0; i < 8; i++) { const q = hrRng(i, 41); const cx = q() * W, cy = surf + 14 + q() * (H - surf); c.beginPath(); c.ellipse(cx, cy, 14 + q() * 30, 4 + q() * 8, 0, 0, Math.PI * 2); c.fill(); }
+    // the rocket comes down
+    const rs = Math.max(0.7, Math.min(1.3, H / 300));
+    const down = Math.min(1, since / 2600);
+    const legs = Math.min(1, Math.max(0, (since - 1200) / 900));
+    const footY = 30 + 11 * legs + 3;
+    const restY = surf - footY * rs;
+    const ry = H * 0.22 + (restY - H * 0.22) * ease(down * 1.02);
+    const rx = W / 2 + Math.sin(since / 260) * 5 * (1 - down);
+    const burning = since < 2650;
+    rkRocket(c, rx, Math.min(ry, restY), rs, burning ? 0.25 + 0.6 * (1 - down) : 0, Math.sin(since / 400) * 0.05 * (1 - down), gold, legs);
+    // dust: a puff while the engine is close to the ground, a burst on touchdown
+    if (!rkScene.dust) rkScene.dust = [];
+    if (burning && restY - ry < 60 && Math.random() < 0.8) for (const d of [-1, 1]) rkScene.dust.push({ x: rx + d * 8, y: surf - 2, vx: d * (1 + Math.random() * 3), vy: -Math.random() * 0.8, life: 1, r: 4 + Math.random() * 5 });
+    if (since >= 2600 && !rkScene.touched) {
+      rkScene.touched = true;
+      if (since < 3400) { rkScene.shake = 7; sound.clunk(); for (let i = 0; i < 70; i++) { const d = Math.random() < 0.5 ? -1 : 1; rkScene.dust.push({ x: rx + d * Math.random() * 20, y: surf - 2, vx: d * (2 + Math.random() * 6), vy: -Math.random() * 2.2, life: 1, r: 4 + Math.random() * 9 }); } }
+    }
+    rkScene.dust = rkScene.dust.filter(q => (q.life -= 0.012) > 0);
+    for (const q of rkScene.dust) {
+      q.x += q.vx; q.y += q.vy; q.vx *= 0.97; q.vy += 0.03; q.r += 0.25;
+      c.fillStyle = `rgba(214,206,190,${q.life * 0.5})`; c.beginPath(); c.arc(q.x, Math.min(q.y, surf), q.r, 0, Math.PI * 2); c.fill();
+    }
+    // astronaut and flag
+    if (since > 3300) {
+      const walk = ease((since - 3300) / 1500);
+      const ax = rx + 18 * rs + walk * 58 * rs, hop = Math.abs(Math.sin((since - 3300) / 260)) * 7 * rs * (since < 4800 ? 1 : 0.6 + 0.4 * Math.sin(since / 500));
+      const ay = surf - hop;
+      const fx = rx + 92 * rs;
+      if (since > 4700) {
+        const up = ease((since - 4700) / 600);
+        c.strokeStyle = '#e9e2d4'; c.lineWidth = 2.5 * rs; c.beginPath(); c.moveTo(fx, surf); c.lineTo(fx, surf - 46 * rs * up); c.stroke();
+        if (up >= 1) {
+          const wv = Math.sin(t / 220);
+          c.fillStyle = '#e0414a';
+          c.beginPath(); c.moveTo(fx, surf - 46 * rs);
+          for (let i = 0; i <= 10; i++) c.lineTo(fx + i * 2.6 * rs, surf - 46 * rs + Math.sin(i / 1.6 + t / 220) * 2 * rs * (i / 10));
+          for (let i = 10; i >= 0; i--) c.lineTo(fx + i * 2.6 * rs, surf - 30 * rs + Math.sin(i / 1.6 + t / 220) * 2 * rs * (i / 10));
+          c.fill();
+          c.fillStyle = '#f3c94b'; c.font = `700 ${Math.round(9 * rs)}px Figtree, sans-serif`; c.textAlign = 'center'; c.textBaseline = 'middle';
+          c.fillText('LR', fx + 13 * rs, surf - 38 * rs + wv);
+        }
+      }
+      c.save(); c.translate(ax, ay); c.scale(rs, rs);
+      c.fillStyle = '#f6efe3';
+      c.fillRect(-5, -20, 10, 13);
+      c.fillRect(-5, -8, 4, 8); c.fillRect(1, -8, 4, 8);
+      c.fillStyle = '#d9d2c2'; c.fillRect(-9, -19, 4, 10);
+      c.beginPath(); c.arc(0, -25, 6.5, 0, Math.PI * 2); c.fill();
+      c.fillStyle = gold ? '#f3c94b' : '#4fa8e0'; c.beginPath(); c.ellipse(1.5, -25, 4, 3, 0, 0, Math.PI * 2); c.fill();
+      const wave = since > 5400 ? Math.sin(t / 160) * 0.6 : 0;
+      c.strokeStyle = '#f6efe3'; c.lineWidth = 3; c.lineCap = 'round';
+      c.beginPath(); c.moveTo(4, -18); c.lineTo(4 + Math.cos(-0.6 - wave) * 9, -18 + Math.sin(-0.6 - wave) * 9); c.stroke();
+      c.restore();
+    }
+    // texts
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    const big = (text, size, col, y) => { c.font = `400 ${size}px Bungee, Impact, sans-serif`; c.lineWidth = Math.max(4, size / 8); c.strokeStyle = '#0b0712'; c.strokeText(text, W / 2, y); c.fillStyle = col; c.fillText(text, W / 2, y); };
+    big(`${RK_CAP}×`, Math.min(78, H * 0.22), '#f3c94b', H * 0.16);
+    if (since > 2600 && since < 4300) big(i18n('Touchdown!'), Math.min(40, H * 0.12), '#ffffff', H * 0.32);
+    else big(i18n('To the moon!'), Math.min(34, H * 0.1), '#ffffff', H * 0.32);
+    if (since < 350) { c.fillStyle = `rgba(255,255,255,${1 - since / 350})`; c.fillRect(0, 0, W, H); }
   }
   function rkDraw(now) {
     const c = rkCtx, W = rkW, H = rkH, t = performance.now();
     const p = rkPhase(now), r = rkCur;
     const prog = Math.log(Math.max(1, p.m)) / Math.log(RK_CAP);
     const flying = p.phase === 'fly', moon = p.phase === 'moon', boom = p.phase === 'boom';
+    const gold = !!r?.golden && p.phase !== 'bet';
     const air = r ? Math.max(0, now - r.launch) / 1000 : 0;
+    if (moon) {
+      c.save();
+      if (rkScene.shake > 0) { c.translate((Math.random() - 0.5) * rkScene.shake, (Math.random() - 0.5) * rkScene.shake); rkScene.shake *= 0.9; if (rkScene.shake < 0.3) rkScene.shake = 0; }
+      rkMoonLanding(c, W, H, p.since, gold, t);
+      c.restore();
+      return p;
+    }
     // altitude in screen pixels: a gentle climb at first, faster as the multiplier grows
     const alt = flying || boom || moon ? air * 70 + prog * prog * 2600 : 0;
     // sky from dusk to deep space
@@ -6573,6 +6706,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const mix = (a, b, f) => `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * f)).join(',')})`;
     sky.addColorStop(0, mix([27, 45, 92], [4, 5, 16], k)); sky.addColorStop(0.7, mix([168, 92, 120], [10, 12, 34], k)); sky.addColorStop(1, mix([244, 154, 88], [18, 16, 40], k));
     c.fillStyle = sky; c.fillRect(0, 0, W, H);
+    if (gold) {
+      const neb = c.createRadialGradient(W * 0.5, H * 0.45, 10, W * 0.5, H * 0.45, Math.max(W, H) * 0.7);
+      neb.addColorStop(0, `rgba(243,201,75,${0.22 + 0.06 * Math.sin(t / 400)})`); neb.addColorStop(1, 'rgba(243,201,75,0)');
+      c.fillStyle = neb; c.fillRect(0, 0, W, H);
+    }
     c.save();
     if (rkScene.shake > 0) { c.translate((Math.random() - 0.5) * rkScene.shake, (Math.random() - 0.5) * rkScene.shake); rkScene.shake *= 0.9; if (rkScene.shake < 0.3) rkScene.shake = 0; }
     // stars stream past
@@ -6623,13 +6761,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const shakePad = p.phase === 'bet' && p.left < 3000 ? (3000 - p.left) / 3000 : 0;
     if (shakePad) rx += (Math.random() - 0.5) * 3 * shakePad;
     if (!boom || p.since < 30) {
-      rkRocket(c, rx, ry, rs, flying ? 0.6 + prog : moon ? Math.max(0, 1 - p.since / 2500) : shakePad, tilt);
-      // smoke trail
+      rkRocket(c, rx, ry, rs, flying ? 0.6 + prog : shakePad, tilt, gold);
+      // smoke trail (with gold sparkles behind a golden rocket)
       if ((flying || shakePad > 0) && !reduceMotion) for (let i = 0; i < (flying ? 3 : 1); i++) rkScene.parts.push({ x: rx + (Math.random() - 0.5) * 12, y: ry + 40 * rs, vx: (Math.random() - 0.5) * 1.4, vy: flying ? 2.5 + prog * 6 : 0.5, life: 1, r: 4 + Math.random() * 5, smoke: true });
-    }
-    if (moon && p.since > 2600) {
-      c.strokeStyle = '#d9cbb8'; c.lineWidth = 2; c.beginPath(); c.moveTo(rx + 34, ry + 30); c.lineTo(rx + 34, ry - 14); c.stroke();
-      c.fillStyle = '#e0414a'; c.fillRect(rx + 34, ry - 14, 22, 13); c.fillStyle = '#f3c94b'; c.font = '700 9px Figtree, sans-serif'; c.textAlign = 'left'; c.fillText('LR', rx + 38, ry - 4);
+      if (gold && flying && !reduceMotion) for (let i = 0; i < 2; i++) rkScene.parts.push({ x: rx + (Math.random() - 0.5) * 50, y: ry + (Math.random() - 0.3) * 60, vx: (Math.random() - 0.5) * 1.2, vy: 1.5 + prog * 4, life: 1, r: 2 + Math.random() * 3, spark: true });
     }
     // explosion
     if (boom && rkScene.boomAt !== r.id) {
@@ -6653,6 +6788,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     for (const q of rkScene.parts) {
       q.x += q.vx; q.y += q.vy;
       if (q.fire) { q.vx *= 0.94; q.vy = q.vy * 0.94 + 0.08; c.fillStyle = `rgba(255,${Math.round(120 + q.life * 120)},${Math.round(q.life * 80)},${q.life})`; c.beginPath(); c.arc(q.x, q.y, q.r * (1.6 - q.life), 0, Math.PI * 2); c.fill(); }
+      else if (q.spark) { q.vy *= 0.99; const rr = q.r * q.life; c.fillStyle = `rgba(255,${200 + Math.round(55 * q.life)},120,${q.life})`; c.beginPath(); c.moveTo(q.x, q.y - rr * 2); c.lineTo(q.x + rr * 0.5, q.y); c.lineTo(q.x, q.y + rr * 2); c.lineTo(q.x - rr * 0.5, q.y); c.fill(); c.fillRect(q.x - rr * 2, q.y - 0.5, rr * 4, 1); }
       else if (q.debris) { q.vy += 0.25; q.rot += 0.2; c.save(); c.translate(q.x, q.y); c.rotate(q.rot); c.fillStyle = `rgba(200,195,185,${q.life})`; c.fillRect(-q.r, -q.r / 2, q.r * 2, q.r); c.restore(); }
       else { q.r += 0.35; c.fillStyle = `rgba(220,215,230,${q.life * 0.35})`; c.beginPath(); c.arc(q.x, q.y, q.r, 0, Math.PI * 2); c.fill(); }
     }
@@ -6682,14 +6818,16 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     // the big number
     c.textAlign = 'center'; c.textBaseline = 'middle';
     const big = (text, size, col, y = H * 0.2) => { c.font = `400 ${size}px Bungee, Impact, sans-serif`; c.lineWidth = Math.max(4, size / 8); c.strokeStyle = '#0b0712'; c.strokeText(text, W / 2, y); c.fillStyle = col; c.fillText(text, W / 2, y); };
-    const col = p.m < 2 ? '#ffffff' : p.m < 10 ? '#7fd18b' : p.m < 50 ? '#f3c94b' : '#ff8a3c';
+    const col = gold ? '#ffe27a' : p.m < 2 ? '#ffffff' : p.m < 10 ? '#7fd18b' : p.m < 50 ? '#f3c94b' : '#ff8a3c';
     if (p.phase === 'bet') {
       const s = Math.ceil(p.left / 1000);
       if (s <= 5) big(s <= 0 ? i18n('Liftoff!') : String(s), Math.min(110, H * 0.32), '#fff2c4', H * 0.38);
       else big(`0:${String(s).padStart(2, '0')}`, Math.min(54, H * 0.17), '#ffffff', H * 0.2);
-    } else if (flying) big(`${p.m.toFixed(2)}×`, Math.min(78, H * 0.22) * (1 + Math.min(0.25, prog * 0.3)), col);
+    } else if (flying) {
+      big(`${p.m.toFixed(2)}×`, Math.min(78, H * 0.22) * (1 + Math.min(0.25, prog * 0.3)), col);
+      if (gold && air < 4) big(i18n('Golden rocket!'), Math.min(34, H * 0.1), '#fff2c4', H * 0.36);
+    }
     else if (boom) { big(`${p.m.toFixed(2)}×`, Math.min(70, H * 0.2), '#e0414a'); big(i18n('BOOM!'), Math.min(40, H * 0.12), '#ffb347', H * 0.36); }
-    else if (moon) { big(`${RK_CAP}×`, Math.min(78, H * 0.22), '#f3c94b'); big(i18n('To the moon!'), Math.min(36, H * 0.11), '#ffffff', H * 0.36); }
     else if (p.phase === 'wait') big(i18n('Fuelling…'), Math.min(30, H * 0.1), '#ffffff', H * 0.5);
     return p;
   }
@@ -6741,11 +6879,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       const res = cashedNow ? `<b class="hr-paid">${b.cashed.toFixed(2)}× · +${fmt(b.payout ?? Math.floor(b.amount * b.cashed))}</b>` : over ? (p.phase === 'moon' ? `<b class="hr-paid">${RK_CAP}× · +${fmt(b.amount * RK_CAP)}</b>` : '<span class="hr-lost">💥</span>') : p.phase === 'fly' ? '<span class="rk-flying">🚀</span>' : (b.auto ? `<span class="hr-lost">auto ${b.auto.toFixed(2)}×</span>` : '');
       return `<li><b class="name">${nameHtml(b.player, b.name)}</b><span>${fmt(b.amount)}</span><span class="hr-res">${res}</span></li>`;
     }).join('') : '<li class="empty">Nobody on board yet.</li>';
-    $('rkHist').innerHTML = state.rk.history.map(m => `<span class="${m >= RK_CAP ? 'moon' : m >= 10 ? 'hi' : m >= 2 ? 'mid' : 'lo'}">${m >= RK_CAP ? '🌕' : m.toFixed(2) + '×'}</span>`).join('');
+    $('rkHist').innerHTML = state.rk.history.map(({ c: m, g }) => `<span class="${m >= RK_CAP ? 'moon' : m >= 10 ? 'hi' : m >= 2 ? 'mid' : 'lo'}${g ? ' gold' : ''}"${g ? ' title="Golden rocket"' : ''}>${g ? '✨' : ''}${m >= RK_CAP ? '🌕' : m.toFixed(2) + '×'}</span>`).join('');
   }
   function renderRKClock(now) {
     const p = rkPhase(now);
-    $('rkPhase').textContent = p.phase === 'bet' ? 'Boarding' : p.phase === 'fly' ? 'In flight' : p.phase === 'boom' ? 'Exploded' : p.phase === 'moon' ? 'On the moon' : 'Fuelling';
+    $('rkPhase').textContent = p.phase === 'bet' ? 'Boarding' : p.phase === 'fly' ? (rkCur?.golden ? 'Golden flight' : 'In flight') : p.phase === 'boom' ? 'Exploded' : p.phase === 'moon' ? 'On the moon' : 'Fuelling';
     $('rkPhase').dataset.phase = p.phase === 'bet' ? 'bet' : p.phase === 'fly' ? 'live' : 'done';
     const nextIn = rkCur?.nextStart ? Math.max(0, Math.ceil((rkCur.nextStart - now) / 1000)) : null;
     $('rkClock').textContent = p.phase === 'bet' ? `0:${String(Math.ceil(p.left / 1000)).padStart(2, '0')}` : nextIn != null && p.phase !== 'fly' ? `${i18n('Next rocket')} 0:${String(nextIn).padStart(2, '0')}` : '';
@@ -6790,7 +6928,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (watching) { renderRKClock(now); if (p.phase !== 'fly' && performance.now() - (rkTick.list || 0) > 1000) { rkTick.list = performance.now(); renderRKList(); } }
     if (watching && p.phase === 'fly' && performance.now() - (rkTick.list || 0) > 500) { rkTick.list = performance.now(); renderRKList(); }
     const badge = $('rkBadge');
-    if (badge && !$('lobby').hidden) badge.textContent = p.phase === 'bet' ? `Live · 0:${String(Math.ceil(p.left / 1000)).padStart(2, '0')}` : p.phase === 'fly' ? `Live · ${p.m.toFixed(2)}×` : i18n('Live · next rocket soon');
+    if (badge && !$('lobby').hidden) badge.textContent = p.phase === 'bet' ? `Live · 0:${String(Math.ceil(p.left / 1000)).padStart(2, '0')}` : p.phase === 'fly' ? `Live · ${rkCur?.golden ? '✨ ' : ''}${p.m.toFixed(2)}×` : i18n('Live · next rocket soon');
   }
   $('rkPlace').addEventListener('click', rkPlace);
   $('rkCash').addEventListener('click', () => rkCashOut(false));
@@ -9000,7 +9138,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (!['easy', 'medium', 'hard'].includes(state.ck.diff)) state.ck.diff = 'medium';
     state.rk = Object.assign(fresh().rk, saved.rk);
     state.rk.open = (Array.isArray(state.rk.open) ? state.rk.open : []).filter(Number.isFinite).slice(-20);
-    state.rk.history = (Array.isArray(state.rk.history) ? state.rk.history : []).filter(Number.isFinite).slice(0, 14);
+    state.rk.history = (Array.isArray(state.rk.history) ? state.rk.history : []).map(x => x && typeof x === 'object' ? { c: Number(x.c), g: !!x.g } : { c: Number(x), g: false }).filter(x => Number.isFinite(x.c)).slice(0, 14);
     if (!(state.rk.auto >= 1.01 && state.rk.auto <= 200)) state.rk.auto = null;
     state.hr = Object.assign(fresh().hr, saved.hr);
     if (!['win', 'place'].includes(state.hr.kind)) state.hr.kind = 'win';
