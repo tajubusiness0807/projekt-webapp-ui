@@ -10231,6 +10231,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       if (on) cosSolo(g);
       sound.chip();
       render();
+      flush();
       return;
     }
     if (g.adminOnly && !account?.isAdmin) return;
@@ -10253,6 +10254,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     renderPaytable();
     checkAch();
     render();
+    flush();
   }
 
   function renderShop() {
@@ -11051,7 +11053,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     }
     // Every save counts up save_seq. A page whose count is behind (another device or tab saved since) may not
     // overwrite the newer game: it reloads instead.
-    let hasSaveSeq = true, saveSeq = null;
+    let hasSaveSeq = true, saveSeq = null, lastTry = null;
     const otherDevice = () => Object.assign(new Error('saved on another device'), { code: 'other_device' });
     async function row(uid) {
       let { data, error } = await sb.from('players').select(`id,name,credits,level,game${hasProfile ? ',avatar' : ''}${adminCols}${hasSaveSeq ? ',save_seq' : ''}`).eq('id', uid).maybeSingle();
@@ -11103,6 +11105,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         // Only write if no admin changed this account since it was loaded.
         const seqd = hasSaveSeq && saveSeq !== null;
         if (seqd) patch.save_seq = saveSeq + 1;
+        const tried = lastTry;
+        lastTry = seqd ? { seq: patch.save_seq, game: patch.game } : null;
         const send = () => {
           let q = sb.from('players').update(patch).eq('id', key);
           if (adminSchema) q = q.eq('admin_rev', adminRev || 0);
@@ -11154,12 +11158,18 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         if (error) throw error;
         if (!data?.length) {
           if ('save_seq' in patch) {
-            const { data: now } = await sb.from('players').select('admin_rev,save_seq').eq('id', key).maybeSingle();
+            const { data: now } = await sb.from('players').select('admin_rev,save_seq,game').eq('id', key).maybeSingle();
+            // our own earlier save arrived although its answer didn't: take its count and save again
+            if (now && tried && Number(now.save_seq) === tried.seq && now.game === tried.game) {
+              saveSeq = tried.seq;
+              return this.save(key, body);
+            }
             if (now && Number(now.save_seq) !== saveSeq && Number(now.admin_rev) === (adminRev || 0)) throw otherDevice();
           }
           throw adminChanged();
         }
         if ('save_seq' in patch) saveSeq = patch.save_seq;
+        lastTry = null;
       },
       loadOwn: async key => (await row(key))?.doc,
       async watchSettings(cb) {
@@ -11545,9 +11555,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         if (!flush.reloading) { flush.reloading = true; toast('Played somewhere else', 'Your game was saved on another device or tab. This page loads the newest state now.'); setTimeout(() => location.reload(), 2500); }
         return;
       }
-      toast('Not saved', e?.code === 'invalid_argument'
-        ? 'This link is view-only. Ask the owner for Contributor access to save progress.'
-        : 'Saving failed. Your progress stays on this page; it will retry.');
+      if (Date.now() - (flush.warned || 0) > 60000) {
+        flush.warned = Date.now();
+        toast('Not saved', e?.code === 'invalid_argument'
+          ? 'This link is view-only. Ask the owner for Contributor access to save progress.'
+          : 'Saving failed. Your progress stays on this page; it will retry.');
+      }
+      // try again by itself, also when nothing else changes (a goodie bought just before a dead spot)
+      if (e?.code !== 'invalid_argument') { clearTimeout(saveTimer); saveTimer = setTimeout(flush, 4000); }
     } finally {
       saving = false;
       if (saveAgain) { saveAgain = false; flush(); }
