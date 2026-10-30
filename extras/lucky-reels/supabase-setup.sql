@@ -4993,3 +4993,89 @@ do $$ begin
   if to_regclass('public.lotto_draws') is not null then alter table public.lotto_draws drop column if exists forced; end if;
 end $$;
 update public.settings set data = data - 'cheats' where id = 1;
+
+
+-- ---------------------------------------------------------------------------
+-- Russian roulette: 2 minutes to answer: run this part once (after "Russian roulette"). A challenge now
+-- waits 2 minutes instead of 90 seconds for an answer.
+create or replace function public.rr_tidy(p uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  g public.rr_games;
+begin
+  update public.rr_games set status = 'expired', ended_at = now() where status = 'pending' and created_at < now() - interval '2 minutes';
+  for g in select * from public.rr_games where status = 'active' and (challenger = p or opponent = p) and turn_at < now() - interval '45 seconds' for update loop
+    perform public.rr_settle(g, g.turn, 'timeout');
+  end loop;
+end;
+$$;
+revoke execute on function public.rr_tidy(uuid) from public, anon, authenticated;
+
+
+-- ---------------------------------------------------------------------------
+-- Jackpots are kept, saves in order: run this part once (after "Economy rework" and "Suspicious jumps").
+-- 1) The save check cut big wins: one save could add at most 6,000x the bet limit. A jackpot with the
+--    horseshoes, free spins, lightning and an event or happy hour can bring more, and the page then took
+--    the cut balance and the player lost the jackpot. The limit now grows with the happy hour and running
+--    events, and a save with a jackpot may bring far more.
+-- 2) A page that is behind (an old tab or another device) could save its older credits and level over the
+--    newer ones. Every save now counts up save_seq; a page whose count is behind reloads instead.
+alter table public.players add column if not exists save_seq bigint not null default 0;
+grant update (save_seq) on public.players to authenticated;
+
+-- how much the wins are multiplied right now: happy hour times the strongest running event
+create or replace function public.lr_win_boost()
+returns numeric
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  with s as (select coalesce(data, '{}'::jsonb) as d from public.settings where id = 1),
+  now_ms as (select floor(extract(epoch from now()) * 1000) as t)
+  select greatest(1, coalesce((select (d ->> 'winMultiplier')::numeric from s), 1))
+    * greatest(1, least(20, coalesce((
+        select max(greatest(1, coalesce((e -> 'fx' -> 'mult' ->> 'all')::numeric, 1))
+          * greatest(1, coalesce((select max(v::numeric) from jsonb_each_text(case when jsonb_typeof(e -> 'fx' -> 'mult') = 'object' then e -> 'fx' -> 'mult' else '{}'::jsonb end) x(k, v) where k <> 'all'), 1)))
+        from s, now_ms, jsonb_array_elements(case when jsonb_typeof(d -> 'events') = 'array' then d -> 'events' else '[]'::jsonb end) e
+        where (e ->> 'start')::numeric <= now_ms.t and (e ->> 'end')::numeric > now_ms.t), 1)))
+$$;
+
+create or replace function public.players_guard()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+declare
+  lim bigint;
+  boost numeric;
+  cap numeric;
+  jp_pay numeric;
+  cut boolean := false;
+begin
+  if current_user <> 'authenticated' then return new; end if;
+  if new.level > old.level + 2 then new.level := old.level + 2; cut := true; end if;
+  if new.prestige > old.prestige and (new.prestige > old.prestige + 1 or old.level < 20) then
+    new.prestige := old.prestige; new.level := greatest(new.level, old.level); cut := true;
+  end if;
+  lim := public.lr_bet_limit(old.level, old.prestige);
+  begin boost := public.lr_win_boost(); exception when others then boost := 1; end;
+  cap := lim * 6000 * boost + 250000;
+  if coalesce(new.jackpots, 0) > coalesce(old.jackpots, 0) then
+    -- three sevens: the jackpot pay plus 8 per horseshoe, the free spin multiplier, win streak up to x1.5, lightning up to x10
+    jp_pay := coalesce((select (data ->> 'jackpotPay')::numeric from public.settings where id = 1), 150) + 24;
+    cap := greatest(cap, lim * jp_pay * greatest(2, coalesce((select (data ->> 'freeMult')::numeric from public.settings where id = 1), 2)) * 1.5 * 10 * boost
+      * (new.jackpots - old.jackpots) * 1.2 + 250000);
+  end if;
+  if new.credits > old.credits + cap then new.credits := old.credits + floor(cap)::bigint; cut := true; end if;
+  -- a cut save also makes the page reload the balance from the database
+  if cut then new.capped_saves := old.capped_saves + 1; new.admin_rev := old.admin_rev + 1; end if;
+  return new;
+end;
+$$;
+drop trigger if exists players_guard on public.players;
+create trigger players_guard before update on public.players for each row execute function public.players_guard();

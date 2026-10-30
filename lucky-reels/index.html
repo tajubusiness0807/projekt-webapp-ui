@@ -486,6 +486,9 @@ body.wide .account-bar { max-width: 980px; }
 .rr-pick .gp-title { color: #ff4b55; text-shadow: 0 0 14px #ff1f2f88; }
 .rr-pick .gp-desc { display: block; max-width: none; margin-top: 4px; color: #e8c9c9; font-size: 13px; }
 .rr-pick .gp-go { background: linear-gradient(#ff4b55, #a8141c); color: #fff; }
+.rr-pick.invited { border-color: #ff3b47; animation: rrInvited 0.9s ease-in-out infinite; }
+.rr-pick.invited::before { content: "⚠ CHALLENGE WAITING"; position: absolute; top: 8px; right: 14px; z-index: 1; padding: 2px 8px; border-radius: 999px; background: #ff3b47; color: #fff; font: 700 11px var(--font-mono); }
+@keyframes rrInvited { 50% { box-shadow: 0 0 0 4px #ff3b4766, 0 0 40px #ff1f2f; } }
 @media (max-width: 520px) { .rr-pick { grid-template-columns: auto minmax(0, 1fr); } .rr-pick svg { width: 74px; } .rr-pick .gp-go { grid-column: 1 / -1; justify-self: stretch; text-align: center; } }
 .rr-today { margin: 0; padding: 10px 12px; border-radius: 10px; background: #7fd18b1a; border: 1px solid #7fd18b55; font-weight: 600; text-align: center; }
 .rr-today.off { background: #ffffff0a; border-color: #ffffff22; color: var(--muted); }
@@ -4197,6 +4200,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Suspicious': 'Auffällig', 'Clear the list': 'Liste leeren', 'Checked': 'Geprüft', 'Big jump': 'Großer Sprung', 'Fast growth': 'Schnelles Wachstum', 'Jackpot too big': 'Jackpot zu groß', 'bet limit': 'Einsatzlimit', 'in 10 minutes': 'in 10 Minuten', 'Stock market': 'Börse', 'Poker': 'Poker', 'Nothing suspicious so far.': 'Bisher nichts Auffälliges.', 'This needs the online database.': 'Das geht nur mit der Online-Datenbank.', 'This needs the “Suspicious jumps” part of supabase-setup.sql.': 'Dafür brauchst du den Teil „Suspicious jumps“ aus supabase-setup.sql.', 'Clear all?': 'Alles leeren?', 'The list is empty.': 'Die Liste ist leer.', 'Marked as checked.': 'Als geprüft markiert.', "The database checks every save a page sends. Noted are: one save with more than 60× the player's bet limit that didn't come with a jackpot (“big jump”), more than 300× the bet limit within 10 minutes without jackpots (“fast growth”) and jackpots far bigger than possible. Winnings the database pays itself (horses, roulette, rocket, lotto, stocks) and your admin changes are not checked. Nothing is blocked: look at it and decide yourself. Real luck can also land here, e.g. a long coin flip streak or an event gift.": 'Die Datenbank prüft jeden Spielstand, den eine Seite speichert. Notiert werden: ein Speichern mit mehr als dem 60-Fachen des Einsatzlimits, das nicht von einem Jackpot kommt („Großer Sprung“), mehr als das 300-Fache des Einsatzlimits innerhalb von 10 Minuten ohne Jackpots („Schnelles Wachstum“) und Jackpots, die viel größer sind als möglich. Gewinne, die die Datenbank selbst auszahlt (Pferde, Roulette, Rakete, Lotto, Börse), und deine Admin-Änderungen werden nicht geprüft. Gesperrt wird nichts: Schau es dir an und entscheide selbst. Auch echtes Glück kann hier landen, z. B. eine lange Münzwurf-Serie oder ein Event-Geschenk.',
     'Plan for this time': 'Für diese Zeit planen', 'Time for the planned pop-up': 'Zeit für das geplante Pop-up', 'Planned pop-ups': 'Geplante Pop-ups', 'The pop-up is planned. It goes out by itself at that time.': 'Das Pop-up ist geplant. Es geht zu dieser Zeit von selbst raus.', 'The planned pop-up is deleted.': 'Das geplante Pop-up ist gelöscht.',
     'Russian Roulette': 'Russisch Roulette', 'Russian roulette': 'Russisch Roulette', 'Challenge': 'Herausfordern', '1 against 1. Six chambers, one live round. The loser loses everything, the winner takes it all. Once a day.': '1 gegen 1. Sechs Kammern, eine scharfe Patrone. Der Verlierer verliert alles, der Gewinner bekommt alles. Einmal am Tag.', 'Pull the trigger': 'Abdrücken', 'Winner takes everything.': 'Der Gewinner bekommt alles.', 'Two players take turns pulling the trigger of a revolver with six chambers and one live round. Whoever gets the live round loses': 'Zwei Spieler drücken abwechselnd den Abzug eines Revolvers mit sechs Kammern und einer scharfen Patrone. Wer die scharfe Patrone erwischt, verliert', 'all credits, goodies and shares': 'alle Credits, Goodies und Aktien', 'to the other and starts over from the start, like a reset. Each player can play': 'an den anderen und fängt komplett von vorne an, wie bei einem Reset. Jeder Spieler kann', 'once a day': 'einmal am Tag spielen', ", from level 3. Whoever doesn't pull within 45 seconds loses too.": ', ab Level 3. Wer nicht innerhalb von 45 Sekunden abdrückt, verliert ebenfalls.', 'The loser loses': 'Der Verlierer verliert', 'everything': 'alles', ': credits, goodies and shares, and starts over. The winner takes it all. You can play once a day.': ': Credits, Goodies und Aktien, und fängt von vorne an. Der Gewinner bekommt alles. Du kannst einmal am Tag spielen.', 'No thanks': 'Nein danke', 'Accept': 'Annehmen', 'Take it back': 'Zurückziehen', 'Answer': 'Antworten', 'You': 'Du', 'offline': 'offline', 'played today': 'hat heute gespielt', 'in a game': 'im Spiel', 'below level 3': 'unter Level 3', 'Nobody else is here yet.': 'Hier ist noch niemand sonst.', 'You can play one game today.': 'Du kannst heute ein Spiel spielen.', 'You played today. The revolver is back tomorrow.': 'Du hast heute schon gespielt. Morgen gibt es den Revolver wieder.', 'Russian roulette opens at level 3.': 'Russisch Roulette gibt es ab Level 3.', 'Russian roulette needs the “Russian roulette” part of supabase-setup.sql.': 'Für Russisch Roulette brauchst du den Teil „Russian roulette“ aus supabase-setup.sql.', 'Really? Winner takes all': 'Wirklich? Gewinner bekommt alles', 'Sure? You can lose everything': 'Sicher? Du kannst alles verlieren', 'The cylinder spins… one live round, six chambers.': 'Die Trommel dreht sich … eine scharfe Patrone, sechs Kammern.', 'You go first.': 'Du fängst an.', 'It is not your turn.': 'Du bist nicht dran.', 'That did not work. Check the connection.': 'Das hat nicht geklappt. Prüf die Verbindung.', 'One of you already played today.': 'Einer von euch hat heute schon gespielt.', 'One of you is already in a game.': 'Einer von euch ist schon in einem Spiel.', 'Both players need level 3.': 'Beide Spieler brauchen Level 3.', 'That did not work.': 'Das hat nicht geklappt.', 'That challenge is gone.': 'Diese Herausforderung gibt es nicht mehr.', 'Nobody answered in time.': 'Niemand hat rechtzeitig geantwortet.', 'The challenge was taken back.': 'Die Herausforderung wurde zurückgezogen.', 'You said no.': 'Du hast abgelehnt.', 'Russian roulette: lost': 'Russisch Roulette: verloren', 'Russian roulette: won': 'Russisch Roulette: gewonnen', 'You lost everything and start over.': 'Du hast alles verloren und fängst von vorne an.', 'Chambers': 'Kammern', 'Russian roulette · winner takes all · once a day': 'Russisch Roulette · Gewinner bekommt alles · einmal am Tag',
+    '🔫 I challenge you to Russian roulette! Open the game (reload the page if nothing shows up): you have 2 minutes to accept.': '🔫 Ich fordere dich zum Russisch Roulette heraus! Öffne das Spiel (lade die Seite neu, falls nichts erscheint): Du hast 2 Minuten zum Annehmen.', 'Challenge!': 'Herausforderung!',
+    'Played somewhere else': 'Woanders weitergespielt', 'Your game was saved on another device or tab. This page loads the newest state now.': 'Dein Spiel wurde auf einem anderen Gerät oder Tab gespeichert. Diese Seite lädt jetzt den neuesten Stand.',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -4395,7 +4400,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['Waiting for {a} to answer… {b} s', 'Warte auf die Antwort von {a} … {b} s'], ['{a} challenges you! {b} s', '{a} fordert dich heraus! {b} s'], ['{a} challenges you to Russian roulette!', '{a} fordert dich zum Russisch Roulette heraus!'], ['{a} s to answer', 'Noch {a} s zum Antworten'], ['1 in {a}', '1 zu {a}'], ['{a} has to pull…', '{a} muss abdrücken …'], ['Your turn. {a} s left, or you lose.', 'Du bist dran. Noch {a} s, sonst verlierst du.'], ['{a} has the revolver. {b} s.', '{a} hat den Revolver. {b} s.'], ['{a} goes first.', '{a} fängt an.'], ['*click* … empty. You live. Now {a}.', '*klick* … leer. Du lebst. Jetzt {a}.'], ['*click* … empty. {a} lives. Your turn.', '*klick* … leer. {a} lebt. Du bist dran.'], ['You waited too long: that counts as lost. Everything goes to {a}.', 'Du hast zu lange gewartet: Das zählt als verloren. Alles geht an {a}.'], ['{a} waited too long and loses everything to you!', '{a} hat zu lange gewartet und verliert alles an dich!'], ['BANG. You lost everything to {a}. Your account starts over.', 'PENG. Du hast alles an {a} verloren. Dein Konto fängt von vorne an.'], ['{a} is out. You take everything: +{b}!', '{a} ist raus. Du bekommst alles: +{b}!'], ['Everything went to {a}.', 'Alles ging an {a}.'], ['+{a} from {b}.', '+{a} von {b}.'], ['{a} credits and {b} goodies', '{a} Credits und {b} Goodies'], ['{a} credits and {b} goodie', '{a} Credits und {b} Goodie'], ['{a} won Russian roulette against {b}.', '{a} hat beim Russisch Roulette gegen {b} gewonnen.'], ['{a} said no.', '{a} hat abgelehnt.'], ['Challenge sent. {a} has 90 seconds to answer.', 'Herausforderung geschickt. {a} hat 90 Sekunden zum Antworten.'], ['📺 Ad {a} s', '📺 Werbung {a} s'], ['Seconds (normal: {a})', 'Sekunden (normal: {a})'], ['Ad wait for {a} in seconds', 'Werbe-Wartezeit für {a} in Sekunden'], ['{a} has the normal ad wait again ({b} s).', '{a} hat wieder die normale Werbe-Wartezeit ({b} s).'], ['{a} can close the ad only after {b} seconds.', '{a} kann die Werbung erst nach {b} Sekunden schließen.'], ['Message {a}…', 'Nachricht an {a}…'], ['Sorry for the downtime! As a thank-you for your patience, everyone gets {a} credits.', 'Sorry für die Ausfallzeit! Als Dankeschön für eure Geduld bekommt jeder {a} Credits.'], ['Give everyone {a}?', 'Allen {a} geben?'], ['Everyone got {a} credits and sees a pop-up about it.', 'Alle haben {a} Credits bekommen und sehen ein Pop-up dazu.'], ['{a} now works as {b} at Lucky Burger.', '{a} arbeitet jetzt als {b} bei Lucky Burger.'], ['An admin made you {a}.', 'Ein Admin hat dich zu {a} gemacht.'], ['Lucky Burger position for {a}', 'Lucky-Burger-Position für {a}'], ['New password for {a} (6+)', 'Neues Passwort für {a} (6+)'], ['{a} has a new password now. Tell it to them yourself.', '{a} hat jetzt ein neues Passwort. Sag es ihm selbst.'], ['{a} can get credits from level {b} on.', '{a} kann erst ab Level {b} Credits bekommen.'], ['Got a code from a friend? You start with {a} credits instead of {b} (first account on this device only).', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits (nur beim ersten Konto auf diesem Gerät).'], ['Got a code from a friend? You start with {a} credits instead of {b}.', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits.'], ['New players who use it start with {a} credits.', 'Neue Spieler, die ihn nutzen, starten mit {a} Credits.'], ['New players who sign up with your code start with {a} credits.', 'Neue Spieler, die sich mit deinem Code anmelden, starten mit {a} Credits.'], ['You get {a} on top.', 'Du bekommst {a} obendrauf.'], ['{a} extra credits', '{a} Extra-Credits'], ['{a}% of your credits (at most {b})', '{a} % deiner Credits (höchstens {b})'], ['{a}% of your credits', '{a} % deiner Credits'], ['Example: a new player starts with {a} credits. A code owner with 50,000 credits gets {b}, one with 500,000 gets {c}.', 'Beispiel: Ein neuer Spieler startet mit {a} Credits. Ein Code-Besitzer mit 50,000 Credits bekommt {b}, einer mit 500,000 bekommt {c}.'], ['ends in {a}', 'endet in {a}'], ['starts in {a}', 'beginnt in {a}'], ['Event gift: +{a} credits!', 'Event-Geschenk: +{a} Credits!'], ['event ×{a}', 'Event ×{a}'], ['1st place', '1. Platz'], ['2nd place', '2. Platz'], ['3rd place', '3. Platz'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['Waiting for {a} to answer… {b} s', 'Warte auf die Antwort von {a} … {b} s'], ['{a} challenges you! {b} s', '{a} fordert dich heraus! {b} s'], ['{a} challenges you to Russian roulette!', '{a} fordert dich zum Russisch Roulette heraus!'], ['{a} s to answer', 'Noch {a} s zum Antworten'], ['1 in {a}', '1 zu {a}'], ['{a} has to pull…', '{a} muss abdrücken …'], ['Your turn. {a} s left, or you lose.', 'Du bist dran. Noch {a} s, sonst verlierst du.'], ['{a} has the revolver. {b} s.', '{a} hat den Revolver. {b} s.'], ['{a} goes first.', '{a} fängt an.'], ['*click* … empty. You live. Now {a}.', '*klick* … leer. Du lebst. Jetzt {a}.'], ['*click* … empty. {a} lives. Your turn.', '*klick* … leer. {a} lebt. Du bist dran.'], ['You waited too long: that counts as lost. Everything goes to {a}.', 'Du hast zu lange gewartet: Das zählt als verloren. Alles geht an {a}.'], ['{a} waited too long and loses everything to you!', '{a} hat zu lange gewartet und verliert alles an dich!'], ['BANG. You lost everything to {a}. Your account starts over.', 'PENG. Du hast alles an {a} verloren. Dein Konto fängt von vorne an.'], ['{a} is out. You take everything: +{b}!', '{a} ist raus. Du bekommst alles: +{b}!'], ['Everything went to {a}.', 'Alles ging an {a}.'], ['+{a} from {b}.', '+{a} von {b}.'], ['{a} credits and {b} goodies', '{a} Credits und {b} Goodies'], ['{a} credits and {b} goodie', '{a} Credits und {b} Goodie'], ['{a} won Russian roulette against {b}.', '{a} hat beim Russisch Roulette gegen {b} gewonnen.'], ['{a} said no.', '{a} hat abgelehnt.'], ['Challenge sent. {a} has 2 minutes to answer.', 'Herausforderung geschickt. {a} hat 2 Minuten zum Antworten.'], ['{a} challenges you!', '{a} fordert dich heraus!'], ['📺 Ad {a} s', '📺 Werbung {a} s'], ['Seconds (normal: {a})', 'Sekunden (normal: {a})'], ['Ad wait for {a} in seconds', 'Werbe-Wartezeit für {a} in Sekunden'], ['{a} has the normal ad wait again ({b} s).', '{a} hat wieder die normale Werbe-Wartezeit ({b} s).'], ['{a} can close the ad only after {b} seconds.', '{a} kann die Werbung erst nach {b} Sekunden schließen.'], ['Message {a}…', 'Nachricht an {a}…'], ['Sorry for the downtime! As a thank-you for your patience, everyone gets {a} credits.', 'Sorry für die Ausfallzeit! Als Dankeschön für eure Geduld bekommt jeder {a} Credits.'], ['Give everyone {a}?', 'Allen {a} geben?'], ['Everyone got {a} credits and sees a pop-up about it.', 'Alle haben {a} Credits bekommen und sehen ein Pop-up dazu.'], ['{a} now works as {b} at Lucky Burger.', '{a} arbeitet jetzt als {b} bei Lucky Burger.'], ['An admin made you {a}.', 'Ein Admin hat dich zu {a} gemacht.'], ['Lucky Burger position for {a}', 'Lucky-Burger-Position für {a}'], ['New password for {a} (6+)', 'Neues Passwort für {a} (6+)'], ['{a} has a new password now. Tell it to them yourself.', '{a} hat jetzt ein neues Passwort. Sag es ihm selbst.'], ['{a} can get credits from level {b} on.', '{a} kann erst ab Level {b} Credits bekommen.'], ['Got a code from a friend? You start with {a} credits instead of {b} (first account on this device only).', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits (nur beim ersten Konto auf diesem Gerät).'], ['Got a code from a friend? You start with {a} credits instead of {b}.', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits.'], ['New players who use it start with {a} credits.', 'Neue Spieler, die ihn nutzen, starten mit {a} Credits.'], ['New players who sign up with your code start with {a} credits.', 'Neue Spieler, die sich mit deinem Code anmelden, starten mit {a} Credits.'], ['You get {a} on top.', 'Du bekommst {a} obendrauf.'], ['{a} extra credits', '{a} Extra-Credits'], ['{a}% of your credits (at most {b})', '{a} % deiner Credits (höchstens {b})'], ['{a}% of your credits', '{a} % deiner Credits'], ['Example: a new player starts with {a} credits. A code owner with 50,000 credits gets {b}, one with 500,000 gets {c}.', 'Beispiel: Ein neuer Spieler startet mit {a} Credits. Ein Code-Besitzer mit 50,000 Credits bekommt {b}, einer mit 500,000 bekommt {c}.'], ['ends in {a}', 'endet in {a}'], ['starts in {a}', 'beginnt in {a}'], ['Event gift: +{a} credits!', 'Event-Geschenk: +{a} Credits!'], ['event ×{a}', 'Event ×{a}'], ['1st place', '1. Platz'], ['2nd place', '2. Platz'], ['3rd place', '3. Platz'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
     ['Rises in {a} of steps', 'Steigt in {a} der Schritte'], ['Usually {a} or {b}', 'Meist {a} oder {b}'], ['Swings: {a}', 'Schwankung: {a}'],
     ['Start {a} · bankrupt below {b} · takeover at {c}', 'Start {a} · Pleite unter {b} · Übernahme ab {c}'],
     ['Buy {a} for {b} · sell {c} for {d} (1% fee each way)', 'Kauf {a} für {b} · Verkauf {c} für {d} (je 1 % Gebühr)'],
@@ -10981,9 +10986,19 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       if (/session expired|not allowed/i.test(error.message || '')) { adminToken = null; throw adminLocked(); }
       throw error;
     }
+    // Every save counts up save_seq. A page whose count is behind (another device or tab saved since) may not
+    // overwrite the newer game: it reloads instead.
+    let hasSaveSeq = true, saveSeq = null;
+    const otherDevice = () => Object.assign(new Error('saved on another device'), { code: 'other_device' });
     async function row(uid) {
-      const { data, error } = await sb.from('players').select(`id,name,credits,level,game${hasProfile ? ',avatar' : ''}${adminCols}`).eq('id', uid).maybeSingle();
+      let { data, error } = await sb.from('players').select(`id,name,credits,level,game${hasProfile ? ',avatar' : ''}${adminCols}${hasSaveSeq ? ',save_seq' : ''}`).eq('id', uid).maybeSingle();
+      if (error && hasSaveSeq && /save_seq/.test(error.message || '')) {
+        hasSaveSeq = false;
+        ({ data, error } = await sb.from('players').select(`id,name,credits,level,game${hasProfile ? ',avatar' : ''}${adminCols}`).eq('id', uid).maybeSingle());
+      }
       if (error) throw error;
+      // the count is taken once, when the game is loaded; later reloads of the balance don't move it
+      if (data && hasSaveSeq && saveSeq === null) saveSeq = Number(data.save_seq) || 0;
       return data ? { key: uid, doc: { ...data, admin: !!data.is_admin, banned: !!data.is_banned, adminRev: Number(data.admin_rev) || 0 } } : null;
     }
     return {
@@ -11000,7 +11015,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         const { data } = await sb.auth.getSession();
         return data.session ? row(data.session.user.id).catch(() => null) : null;
       },
-      async signOut() { await sb.auth.signOut(); },
+      async signOut() { saveSeq = null; await sb.auth.signOut(); },
       canSignUp,
       async signUp(name, pw) {
         if (!canSignUp) return { status: 'closed' };
@@ -11023,9 +11038,12 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         const { adminRev, updatedAt, ...rest } = body;
         const patch = { ...rest, updated_at: new Date(updatedAt || Date.now()).toISOString() };
         // Only write if no admin changed this account since it was loaded.
+        const seqd = hasSaveSeq && saveSeq !== null;
+        if (seqd) patch.save_seq = saveSeq + 1;
         const send = () => {
           let q = sb.from('players').update(patch).eq('id', key);
           if (adminSchema) q = q.eq('admin_rev', adminRev || 0);
+          if (seqd && 'save_seq' in patch) q = q.eq('save_seq', saveSeq);
           return q.select('id');
         };
         if (!hasJackpots) delete patch.jackpots;
@@ -11064,8 +11082,21 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           delete patch.jackpots;
           ({ data, error } = await send());
         }
+        // before the "Saves in order" SQL runs there is no save_seq column
+        if (error && 'save_seq' in patch && /save_seq/.test(error.message || '')) {
+          hasSaveSeq = false;
+          delete patch.save_seq;
+          ({ data, error } = await send());
+        }
         if (error) throw error;
-        if (!data?.length) throw adminChanged();
+        if (!data?.length) {
+          if ('save_seq' in patch) {
+            const { data: now } = await sb.from('players').select('admin_rev,save_seq').eq('id', key).maybeSingle();
+            if (now && Number(now.save_seq) !== saveSeq && Number(now.admin_rev) === (adminRev || 0)) throw otherDevice();
+          }
+          throw adminChanged();
+        }
+        if ('save_seq' in patch) saveSeq = patch.save_seq;
       },
       loadOwn: async key => (await row(key))?.doc,
       async watchSettings(cb) {
@@ -11444,6 +11475,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       savedCredits = body.credits;
     } catch (e) {
       if (e?.code === 'admin_changed') { refreshOwn(); return; }
+      // this page is behind: the game was saved from another device or tab in the meantime
+      if (e?.code === 'other_device') {
+        if (!flush.reloading) { flush.reloading = true; toast('Played somewhere else', 'Your game was saved on another device or tab. This page loads the newest state now.'); setTimeout(() => location.reload(), 2500); }
+        return;
+      }
       toast('Not saved', e?.code === 'invalid_argument'
         ? 'This link is view-only. Ask the owner for Contributor access to save progress.'
         : 'Saving failed. Your progress stays on this page; it will retry.');
@@ -14610,7 +14646,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // ---------- Russian roulette ----------
   // Two players, one revolver: six chambers, one live round. They take turns; whoever gets the live round loses
   // everything to the other and starts over. The database holds the cylinder and does the transfer; this only shows it.
-  const RR_TURN = 45000, RR_INVITE = 90000;
+  const RR_TURN = 45000, RR_INVITE = 120000;
   let rr = null, rrLostAt = 0, rrFetchAt = 0, rrMissing = false, rrBusy = false, rrAnim = false, rrSeenShot = {}, rrSeenEnd = new Set(), rrInviteShown = null, rrBeatAt = 0;
   const rrGame = () => rr?.game || null;
   const rrOther = g => g && (g.challenger === account?.id ? { id: g.opponent, name: g.o_name } : { id: g.challenger, name: g.c_name });
@@ -14828,7 +14864,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   }
   async function rrChallenge(id, btn) {
     if (!confirmed(btn, 'Really? Winner takes all')) return;
-    try { await flush(); rrApply(await backend.rr.challenge(id)); rrSay(`Challenge sent. ${nameOf(id)} has 90 seconds to answer.`, 'hot'); sound.chime(); }
+    try {
+      await flush(); rrApply(await backend.rr.challenge(id)); rrSay(`Challenge sent. ${nameOf(id)} has 2 minutes to answer.`, 'hot'); sound.chime();
+      backend.dmSend?.(id, i18n('🔫 I challenge you to Russian roulette! Open the game (reload the page if nothing shows up): you have 2 minutes to accept.'))?.catch?.(() => {});
+    }
     catch (e) {
       const m = e?.message || '';
       rrSay(/played today/.test(m) ? 'One of you already played today.' : /busy/.test(m) ? 'One of you is already in a game.' : /level/.test(m) ? 'Both players need level 3.' : 'That did not work.', 'lose');
@@ -14852,6 +14891,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     rrInviteShown = g.id;
     $('rrInvite').hidden = false;
     renderRRInvite(g);
+    try { navigator.vibrate?.([200, 100, 200, 100, 400]); } catch {}
+    toast('Russian roulette', `${g.c_name} challenges you!`);
+    rrTitleFlash(true);
     sound.alarm?.() ?? sound.chime();
     rrHeart();
   }
@@ -14860,15 +14902,24 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     ltSet($('rrInviteText'), 'textContent', `${g.c_name} challenges you to Russian roulette!`);
     ltSet($('rrInviteLeft'), 'textContent', `${left} s to answer`);
   }
-  function rrInviteClose() { if (!$('rrInvite').hidden) $('rrInvite').hidden = true; rrInviteShown = null; }
+  function rrInviteClose() { if (!$('rrInvite').hidden) $('rrInvite').hidden = true; rrInviteShown = null; rrTitleFlash(false); }
+  // the tab title blinks while an invitation waits, so it is seen in another tab too
+  let rrTitleTimer = null, rrTitleWas = '';
+  function rrTitleFlash(on) {
+    if (on && !rrTitleTimer) {
+      rrTitleWas = document.title;
+      let k = 0;
+      rrTitleTimer = setInterval(() => { document.title = ++k % 2 ? '🔫 ' + i18n('Challenge!') : rrTitleWas; }, 900);
+    } else if (!on && rrTitleTimer) { clearInterval(rrTitleTimer); rrTitleTimer = null; document.title = rrTitleWas; }
+  }
   $('rrAccept').addEventListener('click', e => {
     const g = rrGame();
     if (!g || !confirmed(e.currentTarget, 'Sure? You can lose everything')) return;
-    $('rrInvite').hidden = true;
+    rrInviteClose();
     openRR();
     rrRespond(g.id, true);
   });
-  $('rrDecline').addEventListener('click', () => { const g = rrGame(); $('rrInvite').hidden = true; if (g) rrRespond(g.id, false); });
+  $('rrDecline').addEventListener('click', () => { const g = rrGame(); rrInviteClose(); if (g) rrRespond(g.id, false); });
   function openRR() {
     if (state.mode === 'rr' && $('lobby').hidden) return;
     if (gameBusy()) return;
@@ -14880,11 +14931,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   }
   $('rrPick').addEventListener('click', () => { sound.chime(); openRR(); });
   function rrEnter() { rrFetch(); renderRR(); }
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && account) rrFetch(); });
+  addEventListener('focus', () => { if (account) rrFetch(); });
   // asking: fast while a game runs or this game is open, slowly otherwise (for invitations)
   setInterval(() => {
     if (!account || !backend?.rr) return;
     const g = rrGame(), hot = g?.status === 'active' || g?.status === 'pending' || (state.mode === 'rr' && $('lobby').hidden);
-    if (Date.now() - rrFetchAt > (hot ? 1000 : document.hidden ? 30000 : 6000)) rrFetch();
+    if (Date.now() - rrFetchAt > (hot ? 1000 : document.hidden ? 15000 : 3000)) rrFetch();
     if (g?.status === 'active') {
       renderRR();
       // a heartbeat while it's your turn
@@ -14893,6 +14946,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       if (state.mode !== 'rr' || !$('lobby').hidden) openRR();
     }
     if (g?.status === 'pending') { renderRR(); if (!$('rrInvite').hidden) renderRRInvite(g); }
+    $('rrPick').classList.toggle('invited', g?.status === 'pending' && g.opponent === account.id);
   }, 250);
 
   // ----- The ad pop-up: every few minutes for every player, first a few seconds without a way to close it -----
