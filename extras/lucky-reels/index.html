@@ -11358,13 +11358,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   let profileFor = null, seenMedals = null;
   function openProfile(id) {
     profileFor = id;
+    $('profileBody').__html = '';
+    $('profileBody').__fresh = true;
     renderProfile();
     $('profileModal').hidden = false;
     $('profileClose').focus();
   }
   const GIFT_LEVEL = 3;
   function renderProfile() {
-    const keep = { v: $('sendAmt')?.value, focus: document.activeElement === $('sendAmt') };
     if (!profileFor || $('profileModal').hidden && profileFor === null) return;
     const mine = profileFor === account?.id;
     $('profileSettings').hidden = !mine;
@@ -11378,7 +11379,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       `<button type="button" class="chip-btn" data-av="none"${state.avatar == null ? ' disabled' : ''}>Use my initial instead</button>` +
       '' : '';
     const prestigeRow = mine && state.level >= MAX_LEVEL ? '<button type="button" class="prestige-btn" data-prestige>★ Max level reached – go Prestige</button>' : '';
-    $('profileBody').innerHTML = `${avatarHtml(p.id, p.name, 'lg')}<h2 id="profileName">${nameHtml(p.id, p.name)}</h2>` +
+    const html = `${avatarHtml(p.id, p.name, 'lg')}<h2 id="profileName">${nameHtml(p.id, p.name)}</h2>` +
       (prestigeOf(p.id) ? `<span class="prestige-line">Prestige ${roman(prestigeOf(p.id))}</span>` : '') + prestigeRow +
       `<div class="profile-stats"><div><b>${fmt(credits)}</b><span>Credits</span></div><div><b>${fmt(best)}</b><span>Best win</span></div><div><b>${level}</b><span>Level</span></div></div>` +
       (() => { const tro = trophiesOf(p.id).filter(Boolean); return tro.length ? `<span class="profile-label">Trophies (${tro.length})</span><div class="trophy-shelf">${tro.map(t => `<span title="${esc(GOODIES.find(g => g.id === t)?.name || '')}">${SHOP_ICONS[t]}</span>`).join('')}</div>` : ''; })() +
@@ -11390,7 +11391,23 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       (!mine && backend?.sendCredits && ((p.level || 1) >= GIFT_LEVEL || p.prestige) ? `<div class="send-box"><span class="profile-label">Send ${esc(p.name)} credits</span>
         <div class="send-row"><input id="sendAmt" type="number" min="1" step="1" inputmode="numeric" placeholder="Amount" aria-label="Credits to send"><button type="button" class="chip-btn" data-send-max>Max</button><button type="button" class="spin" id="sendBtn">Send</button></div>
         <small class="send-msg" id="sendMsg">You have ${fmt(state.credits)} credits.</small></div>` : '');
-    if (keep.v) { $('sendAmt').value = keep.v; if (keep.focus) $('sendAmt').focus(); }
+    // The profile redraws whenever any player's numbers change; that must not take away a field someone is typing in.
+    const body = $('profileBody');
+    if (body.__html === html) return;
+    body.__html = html;
+    const fresh = body.__fresh, active = document.activeElement, keep = {};
+    body.__fresh = false;
+    if (!fresh) body.querySelectorAll('input[id]').forEach(el => { keep[el.id] = { v: el.value, focus: el === active, a: el.selectionStart, b: el.selectionEnd }; });
+    const msgs = {};
+    if (!fresh) body.querySelectorAll('.send-msg[id]').forEach(el => { if (el.dataset.said) msgs[el.id] = [el.textContent, el.className]; });
+    body.innerHTML = html;
+    for (const [id, k] of Object.entries(keep)) {
+      const el = $(id);
+      if (!el) continue;
+      if (k.v) el.value = k.v;
+      if (k.focus) { el.focus({ preventScroll: true }); try { el.setSelectionRange(k.a, k.b); } catch {} }
+    }
+    for (const [id, [t, c]] of Object.entries(msgs)) { const el = $(id); if (el) { el.textContent = t; el.className = c; el.dataset.said = '1'; } }
   }
   // Affiliate code: my own (pick, change, copy, see who joined) or someone else's to pass on.
   let affStats = null, affStatsAt = 0, affMine = null;
@@ -11404,7 +11421,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       `<small class="send-msg" id="affMsg">${affStats?.uses ? `${affStats.uses} ${affStats.uses === 1 ? 'player' : 'players'} joined with your code · +${fmt(affStats.earned)} credits earned` : `<span>${esc(i18n(`New players who sign up with your code start with ${fmt(settings.startCredits + settings.affNew)} credits.`))}</span>${affOwnerText().length ? ` <span>${esc(i18n(`You get ${affOwnerText().map(i18n).join(' + ')} on top.`))}</span>` : ''}`}</small></div>`;
   }
   async function saveAffCode() {
-    const code = affNorm($('affIn')?.value), msg = t => { if ($('affMsg')) $('affMsg').textContent = t; };
+    const code = affNorm($('affIn')?.value), msg = t => { if ($('affMsg')) { $('affMsg').textContent = t; $('affMsg').dataset.said = '1'; } };
     if (!AFF_RE.test(code)) { msg('Use 3 to 12 letters or digits.'); return; }
     $('affSave').disabled = true;
     try {
@@ -11423,7 +11440,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   async function sendGift() {
     const to = profileFor, p = players.find(x => x.id === to);
     const amount = Math.floor(Number($('sendAmt')?.value));
-    const msg = text => { if ($('sendMsg')) { $('sendMsg').textContent = text; $('sendMsg').className = 'send-msg'; } };
+    const msg = text => { if ($('sendMsg')) { $('sendMsg').textContent = text; $('sendMsg').className = 'send-msg'; $('sendMsg').dataset.said = '1'; } };
     if (!p || sending) return;
     if (!(amount >= 1)) { msg('Enter how many credits to send.'); return; }
     if (amount > state.credits) { msg(`You only have ${fmt(state.credits)} credits.`); return; }
