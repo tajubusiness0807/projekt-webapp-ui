@@ -5004,6 +5004,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Goodie strengths. Simulated with best play (holds, nudges, free spins, streaks):
   // about 91% of bets come back without goodies and about 98% with all of them, so the house always wins in the long run.
   const HORSESHOE_JACKPOT = 8;
+  const SEVEN_REDRAW = 25;
   const GOLD_CHERRY_TRIPLE = 3.5;
   const PIGGY_REFUND = 0.02;
   // Lightning: chance per winning slot spin (out of 1000) and how likely each multiplier is.
@@ -5532,6 +5533,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     holds.forEach((h, i) => reels[i].classList.toggle('held', h));
 
     const targets = [0, 1, 2].map(i => holds[i] ? pos[i] : randInt(STRIP.length));
+    // Three sevens are a bit rarer than the reels alone make them: a quarter of them get the last free reel drawn again.
+    const free7 = [2, 1, 0].find(i => !holds[i]);
+    if (free7 !== undefined && lineSymbol(...targets.map(t => STRIP[t])) === 'seven' && randInt(100) < SEVEN_REDRAW) targets[free7] = randInt(STRIP.length);
 
     const sevenish = s => s === 'seven' || s === 'wild';
     const [s0, s1] = [STRIP[targets[0]], STRIP[targets[1]]];
