@@ -4232,3 +4232,53 @@ begin
     where id = round and public.horse_now_ms() < launch;
 end;
 $$;
+
+
+-- ---------------------------------------------------------------------------
+-- Affiliate settings: run this part once (after "Affiliate codes"). The admin menu's Affiliates tab sets
+-- what a new player and the code owner get; the code is redeemed with these numbers from the settings.
+create or replace function public.affiliate_redeem(code text, dev text default null)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  c text := upper(trim(code));
+  s jsonb := coalesce((select data from public.settings where id = 1), '{}');
+  one_device boolean := coalesce((s ->> 'affOneDevice')::boolean, true);
+  new_bonus bigint := greatest(0, least(1000000, coalesce((s ->> 'affNew')::numeric, 4500)))::bigint;
+  pct numeric := greatest(0, least(100, coalesce((s ->> 'affPct')::numeric, 5)));
+  cap bigint := greatest(0, coalesce((s ->> 'affMax')::numeric, 10000))::bigint;
+  fixed bigint := greatest(0, least(1000000, coalesce((s ->> 'affFixed')::numeric, 0)))::bigint;
+  me public.players;
+  aff public.players;
+  bonus bigint;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  if not coalesce((s ->> 'affOn')::boolean, true) then raise exception 'codes are off'; end if;
+  if exists (select 1 from public.affiliate_uses where new_player = auth.uid()) then raise exception 'code already used'; end if;
+  if (select created_at from auth.users where id = auth.uid()) < now() - interval '30 minutes' then raise exception 'only for new accounts'; end if;
+  if dev is null or length(dev) not between 8 and 64 then raise exception 'reload the page'; end if;
+  if one_device and (exists (select 1 from public.player_devices d where d.device = dev and d.player <> auth.uid())
+     or exists (select 1 from public.affiliate_uses u where u.device = dev)) then raise exception 'device already has an account'; end if;
+  select * into aff from public.players where affiliate_code = c for update;
+  if aff.id is null or aff.is_banned then raise exception 'no such code'; end if;
+  if aff.id = auth.uid() then raise exception 'not your own code'; end if;
+  select * into me from public.players where id = auth.uid() for update;
+  if me.id is null or me.is_banned then raise exception 'not allowed'; end if;
+  -- the set share of the code owner's credits (up to the limit, 0 = no limit), plus the fixed extra
+  bonus := floor(greatest(aff.credits, 0) * pct / 100)::bigint;
+  if cap > 0 then bonus := least(cap, bonus); end if;
+  bonus := bonus + fixed;
+  update public.players set credits = credits + bonus, admin_rev = admin_rev + 1, updated_at = now() where id = aff.id;
+  update public.players set credits = credits + new_bonus, admin_rev = admin_rev + 1, updated_at = now() where id = me.id;
+  -- the unique device index allows a device only once, so without the device rule it is not stored
+  insert into public.affiliate_uses (new_player, new_name, affiliate, code, bonus, device)
+    values (me.id, me.name, aff.id, c, bonus, case when one_device then dev end);
+  insert into public.player_devices (device, player) values (dev, me.id) on conflict do nothing;
+  return jsonb_build_object('credits', me.credits + new_bonus, 'rev', me.admin_rev + 1, 'affiliate', aff.name);
+end;
+$$;
+revoke execute on function public.affiliate_redeem(text, text) from public, anon;
+grant execute on function public.affiliate_redeem(text, text) to authenticated;

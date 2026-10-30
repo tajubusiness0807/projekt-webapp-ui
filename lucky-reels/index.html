@@ -1828,6 +1828,7 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
 
 /* Admin: the lotto tab */
 .lt-admin-draws { display: grid; gap: 10px; margin-top: 14px; }
+.aff-form { margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid #ffffff18; }
 .lt-admin-draw { padding: 12px 14px; border-radius: 12px; background: #ffffff0a; border: 1px solid #ffffff18; font-size: 13px; }
 .lt-admin-draw h4 { margin: 0 0 4px; font-size: 15px; }
 .lt-admin-draw ol { margin: 6px 0 0; padding-left: 20px; }
@@ -2559,7 +2560,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     <label class="field"><span class="label">Password</span><input id="loginPass" name="password" type="password" autocomplete="current-password"></label>
     <label class="field" id="pass2Field" hidden><span class="label">Repeat password</span><input id="loginPass2" name="password2" type="password" autocomplete="new-password"></label>
     <label class="field" id="affField" hidden><span class="label">Affiliate code (optional)</span><input id="loginAff" name="affiliate" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="12" placeholder="e.g. LUKAS7"></label>
-    <p class="login-hint" id="affHint" hidden>Got a code from a friend? You start with 5,000 credits instead of 500 (first account on this device only).</p>
+    <p class="login-hint" id="affHint" hidden></p>
     <p class="login-error" id="loginError" role="alert"></p>
     <button class="spin" id="loginBtn" type="submit" disabled>Connecting…</button>
     <p class="mode-switch" id="modeSwitch" hidden><span id="modeText">New here?</span><button type="button" class="link-btn" id="modeBtn">Create an account</button></p>
@@ -3448,13 +3449,23 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       </section>
 
       <section class="admin-section" data-pane="aff" hidden>
+        <form id="affForm" class="settings-grid aff-form">
+          <label class="setting check"><input type="checkbox" name="affOn"><span>Affiliate codes on</span><small>Off: the code field is gone from the sign-up and nobody gets a bonus.</small></label>
+          <label class="setting check"><input type="checkbox" name="affOneDevice"><span>Only the first account on a device</span><small>Stops extra accounts on one phone just to collect the bonus.</small></label>
+          <label class="setting"><span class="label">Extra credits for the new player</span><input name="affNew" type="number" min="0" max="1000000" step="100" inputmode="numeric"><small>On top of the start credits.</small></label>
+          <label class="setting"><span class="label">Code owner: % of their credits</span><input name="affPct" type="number" min="0" max="100" step="0.5" inputmode="decimal"><small>Per new player, from what the owner has at that moment. 0 = none.</small></label>
+          <label class="setting"><span class="label">Code owner: at most (credits)</span><input name="affMax" type="number" min="0" step="100" inputmode="numeric"><small>Limit for the % part. 0 = no limit.</small></label>
+          <label class="setting"><span class="label">Code owner: fixed extra credits</span><input name="affFixed" type="number" min="0" max="1000000" step="100" inputmode="numeric"><small>Always on top, also for owners with few credits.</small></label>
+          <p class="admin-note setting wide" id="affPreview"></p>
+          <div class="admin-row setting wide"><button class="abtn ok" type="submit">Save affiliate settings</button></div>
+        </form>
         <div class="aff-sum" id="affSum"></div>
         <div class="admin-tools">
           <input id="affSearch" type="search" placeholder="Search affiliates or invited players…" aria-label="Search affiliates" autocomplete="off">
           <button class="abtn" id="affReload" type="button">Refresh</button>
         </div>
         <div class="aff-list" id="affList"></div>
-        <p class="admin-note">Every player with an affiliate code, how many new players joined with it and how many credits the owner got for them (5% of their credits at that moment, at most 10,000). Open a row to see who joined and when.</p>
+        <p class="admin-note">Every player with an affiliate code, how many new players joined with it and how many credits the owner got for them. Open a row to see who joined and when.</p>
       </section>
 
       <section class="admin-section" data-pane="game" hidden>
@@ -3923,6 +3934,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     '🛠 Admin menu': '🛠 Admin-Menü',
     'Write a ticket: ideas, bugs or wishes for the admins': 'Ticket schreiben: Ideen, Fehler oder Wünsche an die Admins', 'Support ticket': 'Support-Ticket',
     'Events': 'Events', 'Event': 'Event', 'Event: live now!': 'Event: jetzt live!', 'Event: coming up': 'Event: demnächst', 'Event details': 'Event-Details', 'Event boost': 'Event-Boost', 'All games': 'Alle Spiele', 'Lucky Burger wage': 'Lucky-Burger-Lohn', 'Goodies': 'Goodies', 'Gift': 'Geschenk', 'New event': 'Neues Event', 'Edit event': 'Event bearbeiten', 'Title': 'Titel', 'Description': 'Beschreibung', 'Icon': 'Symbol', 'Starts': 'Beginn', 'Ends': 'Ende', 'e.g. Lucky Weekend': 'z. B. Glückswochenende', 'What is going on? Players read it in the pop-up and when they tap the event bar.': 'Was ist los? Die Spieler lesen es im Pop-up und wenn sie auf die Event-Leiste tippen.', 'Announce (minutes before)': 'Ankündigen (Minuten vorher)', 'From then on everyone sees a countdown at the top. 60 = one hour, 1440 = one day, 0 = only while it runs.': 'Ab dann sehen alle oben einen Countdown. 60 = eine Stunde, 1440 = ein Tag, 0 = nur während es läuft.', 'Win multipliers': 'Gewinn-Multiplikatoren', 'What a win brings on top of the bet is multiplied. Empty or 1 = normal. "All games" counts for every game and stacks with a single game and the happy hour.': 'Was ein Gewinn über den Einsatz hinaus bringt, wird multipliziert. Leer oder 1 = normal. „Alle Spiele“ gilt für jedes Spiel und stapelt sich mit einem einzelnen Spiel und der Happy Hour.', 'XP multiplier': 'XP-Multiplikator', 'At most ×5.': 'Höchstens ×5.', 'Lucky Burger wage multiplier': 'Lucky-Burger-Lohn-Multiplikator', 'Goodie discount (%)': 'Goodie-Rabatt (%)', 'Every goodie in the shop is that much cheaper.': 'Jedes Goodie im Shop ist um so viel günstiger.', 'Gift at the start (credits)': 'Geschenk zum Start (Credits)', 'Every player gets it once, the first time they are online while the event runs.': 'Jeder Spieler bekommt es einmal, sobald er während des Events online ist.', 'Pop-up at the start': 'Pop-up zum Start', 'Everyone gets a pop-up with the description and the boosts once and presses “Got it”, also whoever comes online later.': 'Alle bekommen einmal ein Pop-up mit Beschreibung und Boosts und drücken „Verstanden“, auch wer erst später online kommt.', 'Pop-up when it is announced': 'Pop-up bei der Ankündigung', 'One more pop-up as soon as the countdown starts.': 'Ein weiteres Pop-up, sobald der Countdown beginnt.', 'Fireworks at the start': 'Feuerwerk zum Start', 'For everyone who has the game open when it starts.': 'Für alle, die das Spiel beim Start offen haben.', 'Save event': 'Event speichern', 'Save changes': 'Änderungen speichern', 'Preview the pop-up': 'Pop-up-Vorschau', 'Empty form': 'Formular leeren', 'Planned and running events': 'Geplante und laufende Events', 'Events switch on and off by themselves at the set times on every page, also if no admin is online. Times are your local time. Several events at the same time stack. Ended events stay in the list for a week.': 'Events schalten sich zu den eingestellten Zeiten auf jeder Seite von selbst an und aus, auch wenn kein Admin online ist. Die Zeiten sind deine Ortszeit. Mehrere Events gleichzeitig stapeln sich. Beendete Events bleiben eine Woche in der Liste.', 'No events yet.': 'Noch keine Events.', 'over': 'vorbei', 'running now': 'läuft gerade', 'announced': 'angekündigt', 'planned': 'geplant', 'no boosts': 'keine Boosts', 'Edit': 'Bearbeiten', 'End now': 'Jetzt beenden', 'Start now': 'Jetzt starten', 'Start it now?': 'Jetzt starten?', 'End it now?': 'Jetzt beenden?', 'Give the event a title.': 'Gib dem Event einen Titel.', 'The end has to be after the start.': 'Das Ende muss nach dem Beginn liegen.', 'That end time is already over.': 'Dieses Ende liegt schon in der Vergangenheit.', 'Event saved. Everyone sees it within seconds.': 'Event gespeichert. Alle sehen es in wenigen Sekunden.', 'The event runs now.': 'Das Event läuft jetzt.', 'The event is over.': 'Das Event ist vorbei.', 'Event deleted.': 'Event gelöscht.',
+    'Affiliate codes on': 'Affiliate-Codes an', 'Off: the code field is gone from the sign-up and nobody gets a bonus.': 'Aus: Das Code-Feld verschwindet bei der Anmeldung und niemand bekommt einen Bonus.', 'Only the first account on a device': 'Nur das erste Konto auf einem Gerät', 'Stops extra accounts on one phone just to collect the bonus.': 'Verhindert Zweitkonten auf einem Handy, nur um den Bonus abzugreifen.', 'Extra credits for the new player': 'Extra-Credits für den neuen Spieler', 'On top of the start credits.': 'Zusätzlich zu den Start-Credits.', 'Code owner: % of their credits': 'Code-Besitzer: % seiner Credits', 'Per new player, from what the owner has at that moment. 0 = none.': 'Pro neuem Spieler, von dem, was der Besitzer in dem Moment hat. 0 = nichts.', 'Code owner: at most (credits)': 'Code-Besitzer: höchstens (Credits)', 'Limit for the % part. 0 = no limit.': 'Obergrenze für den %-Teil. 0 = keine Grenze.', 'Code owner: fixed extra credits': 'Code-Besitzer: feste Extra-Credits', 'Always on top, also for owners with few credits.': 'Immer obendrauf, auch für Besitzer mit wenig Credits.', 'Save affiliate settings': 'Affiliate-Einstellungen speichern', 'Affiliate codes are off.': 'Affiliate-Codes sind aus.', 'Affiliate settings saved. They count for the next new player.': 'Affiliate-Einstellungen gespeichert. Sie gelten ab dem nächsten neuen Spieler.', 'Affiliate codes are switched off right now. Leave the field empty.': 'Affiliate-Codes sind gerade ausgeschaltet. Lass das Feld leer.',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -3960,7 +3972,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'no code': 'kein Code', 'Joined': 'Beigetreten', 'Nobody has used this code yet.': 'Diesen Code hat noch niemand benutzt.', 'No match.': 'Kein Treffer.',
     'Nobody has an affiliate code yet.': 'Noch hat niemand einen Affiliate-Code.', 'Not available here.': 'Hier nicht verfügbar.',
     'This needs the “Admin: affiliate overview” part of supabase-setup.sql.': 'Dafür braucht es den Abschnitt „Admin: affiliate overview“ aus supabase-setup.sql.',
-    'Every player with an affiliate code, how many new players joined with it and how many credits the owner got for them (5% of their credits at that moment, at most 10,000). Open a row to see who joined and when.': 'Alle Spieler mit Affiliate-Code: wie viele neue Spieler sich damit angemeldet haben und wie viele Credits der Besitzer dafür bekommen hat (5 % seiner Credits zu dem Zeitpunkt, höchstens 10.000). Öffne eine Zeile, um zu sehen, wer wann beigetreten ist.',
+    'Every player with an affiliate code, how many new players joined with it and how many credits the owner got for them. Open a row to see who joined and when.': 'Alle Spieler mit Affiliate-Code: wie viele neue Spieler sich damit angemeldet haben und wie viele Credits der Besitzer dafür bekommen hat. Öffne eine Zeile, um zu sehen, wer wann beigetreten ist.',
     'joined with your affiliate code!': 'hat sich mit deinem Affiliate-Code angemeldet!', 'Affiliate bonus': 'Affiliate-Bonus', 'No affiliate bonus': 'Kein Affiliate-Bonus',
     'The affiliate bonus is only for the first account on a device. Leave the code empty to create the account without it.': 'Den Affiliate-Bonus gibt es nur für das erste Konto auf einem Gerät. Lass das Feld leer, um das Konto ohne Bonus zu erstellen.',
     'This device already has an account, so there is no affiliate bonus.': 'Auf diesem Gerät gibt es schon ein Konto, deshalb gibt es keinen Affiliate-Bonus.',
@@ -4121,7 +4133,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['ends in {a}', 'endet in {a}'], ['starts in {a}', 'beginnt in {a}'], ['Event gift: +{a} credits!', 'Event-Geschenk: +{a} Credits!'], ['event ×{a}', 'Event ×{a}'], ['1st place', '1. Platz'], ['2nd place', '2. Platz'], ['3rd place', '3. Platz'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['Got a code from a friend? You start with {a} credits instead of {b} (first account on this device only).', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits (nur beim ersten Konto auf diesem Gerät).'], ['Got a code from a friend? You start with {a} credits instead of {b}.', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits.'], ['New players who use it start with {a} credits.', 'Neue Spieler, die ihn nutzen, starten mit {a} Credits.'], ['New players who sign up with your code start with {a} credits.', 'Neue Spieler, die sich mit deinem Code anmelden, starten mit {a} Credits.'], ['You get {a} on top.', 'Du bekommst {a} obendrauf.'], ['{a} extra credits', '{a} Extra-Credits'], ['{a}% of your credits (at most {b})', '{a} % deiner Credits (höchstens {b})'], ['{a}% of your credits', '{a} % deiner Credits'], ['Example: a new player starts with {a} credits. A code owner with 50,000 credits gets {b}, one with 500,000 gets {c}.', 'Beispiel: Ein neuer Spieler startet mit {a} Credits. Ein Code-Besitzer mit 50,000 Credits bekommt {b}, einer mit 500,000 bekommt {c}.'], ['ends in {a}', 'endet in {a}'], ['starts in {a}', 'beginnt in {a}'], ['Event gift: +{a} credits!', 'Event-Geschenk: +{a} Credits!'], ['event ×{a}', 'Event ×{a}'], ['1st place', '1. Platz'], ['2nd place', '2. Platz'], ['3rd place', '3. Platz'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
     ['Rises in {a} of steps', 'Steigt in {a} der Schritte'], ['Usually {a} or {b}', 'Meist {a} oder {b}'], ['Swings: {a}', 'Schwankung: {a}'],
     ['Start {a} · bankrupt below {b} · takeover at {c}', 'Start {a} · Pleite unter {b} · Übernahme ab {c}'],
     ['Buy {a} for {b} · sell {c} for {d} (1% fee each way)', 'Kauf {a} für {b} · Verkauf {c} für {d} (je 1 % Gebühr)'],
@@ -4452,6 +4464,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     startCredits: 500, winMultiplier: 1, jackpotPay: 150, maxBet: 0,
     starGoal: 15, freeSpins: 6, freeMult: 2, nudgeChance: 12, holdChance: 15,
     econ: 2,
+    // Affiliate codes: what a new player and the code owner get
+    affOn: true, affOneDevice: true, affNew: 4500, affPct: 5, affMax: 10000, affFixed: 0,
     // Set by the admin's "ask everyone to reload" button; pages that see it go up show a reload prompt.
     reloadAt: 0,
   };
@@ -4460,6 +4474,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const SETTING_LIMITS = {
     startCredits: [0, 1e12], winMultiplier: [0.1, 100], jackpotPay: [1, 100000], maxBet: [0, Number.MAX_SAFE_INTEGER],
     starGoal: [3, 50], freeSpins: [1, 50], freeMult: [1, 20], nudgeChance: [0, 100], holdChance: [0, 100], econ: [0, 100], reloadAt: [0, Number.MAX_SAFE_INTEGER],
+    affNew: [0, 1000000], affPct: [0, 100], affMax: [0, 1e9], affFixed: [0, 1000000],
   };
   function cleanSettings(raw) {
     const out = { ...DEFAULT_SETTINGS };
@@ -4473,7 +4488,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         const n = Number(v);
         if (!Number.isFinite(n)) continue;
         const [lo, hi] = SETTING_LIMITS[k];
-        out[k] = Math.min(hi, Math.max(lo, k === 'winMultiplier' ? n : Math.round(n)));
+        out[k] = Math.min(hi, Math.max(lo, k === 'winMultiplier' || k === 'affPct' ? n : Math.round(n)));
       }
     }
     return out;
@@ -10447,18 +10462,19 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         return code;
       },
       async affiliateRedeem(key, code) {
-        if (seenAccounts().some(id => id !== key)) throw new Error('device already has an account');
+        if (!settings.affOn) throw new Error('codes are off');
+        if (settings.affOneDevice && seenAccounts().some(id => id !== key)) throw new Error('device already has an account');
         const me = await store.load(key), owner = players.find(p => p.affCode === code && !p.banned);
         if (!me || me.affUsed || (Number(me.spins) || 0) > 0) throw new Error('only for new accounts');
         if (!owner) throw new Error('no such code');
         if (owner.id === key) throw new Error('not your own code');
         const od = await store.load(owner.id);
-        const bonus = Math.min(10000, Math.floor((Number(od.credits) || 0) * 0.05));
+        const bonus = affOwnerBonus(Number(od.credits) || 0);
         const stats = od.affStats || { uses: 0, earned: 0 };
         const gifts = [...(Array.isArray(od.gifts) ? od.gifts : []), { from: me.name, amount: bonus, at: Date.now(), aff: true }].slice(-10);
         const refs = [{ name: me.name, bonus, at: Date.now() }, ...(Array.isArray(stats.refs) ? stats.refs : [])].slice(0, 100);
         await store.save(owner.id, { credits: (Number(od.credits) || 0) + bonus, adminRev: (Number(od.adminRev) || 0) + 1, gifts, affStats: { uses: stats.uses + 1, earned: stats.earned + bonus, refs } });
-        await store.save(key, { credits: (Number(me.credits) || 0) + 4500, affUsed: code, adminRev: (Number(me.adminRev) || 0) + 1 });
+        await store.save(key, { credits: (Number(me.credits) || 0) + settings.affNew, affUsed: code, adminRev: (Number(me.adminRev) || 0) + 1 });
         return { affiliate: od.name || owner.name };
       },
       async affiliateStats() { const d = await store.load(account.id); return d?.affStats || { uses: 0, earned: 0 }; },
@@ -11393,12 +11409,12 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   let affStats = null, affStatsAt = 0, affMine = null;
   function affBox(p, mine) {
     const code = mine ? (affMine ?? p.affCode) : p.affCode;
-    if (!mine) return code ? `<div class="aff-box"><span class="profile-label">Affiliate code</span><div class="aff-code"><b>${esc(code)}</b><button type="button" class="chip-btn" data-aff-copy="${esc(code)}">Copy</button></div><small class="send-msg">New players who use it start with 5,000 credits.</small></div>` : '';
+    if (!mine) return code ? `<div class="aff-box"><span class="profile-label">Affiliate code</span><div class="aff-code"><b>${esc(code)}</b><button type="button" class="chip-btn" data-aff-copy="${esc(code)}">Copy</button></div><small class="send-msg">${esc(i18n(`New players who use it start with ${fmt(settings.startCredits + settings.affNew)} credits.`))}</small></div>` : '';
     if (backend?.affiliateStats && Date.now() - affStatsAt > 15000) { affStatsAt = Date.now(); backend.affiliateStats().then(st => { affStats = st; if (profileFor === account?.id) renderProfile(); }).catch(() => {}); }
     return `<div class="aff-box"><span class="profile-label">Your affiliate code</span>` +
       (code ? `<div class="aff-code"><b>${esc(code)}</b><button type="button" class="chip-btn" data-aff-copy="${esc(code)}">Copy</button></div>` : '') +
       `<div class="send-row aff-row"><input id="affIn" maxlength="12" autocapitalize="characters" spellcheck="false" placeholder="${code ? 'New code' : 'e.g. ' + esc(account.name.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8) || 'LUCKY') + '7'}" aria-label="Affiliate code"><button type="button" class="spin" id="affSave">${code ? 'Change' : 'Create'}</button></div>` +
-      `<small class="send-msg" id="affMsg">${affStats?.uses ? `${affStats.uses} ${affStats.uses === 1 ? 'player' : 'players'} joined with your code · +${fmt(affStats.earned)} credits earned` : 'New players who sign up with your code start with 5,000 credits, and you get 5% of your credits on top (at most 10,000).'}</small></div>`;
+      `<small class="send-msg" id="affMsg">${affStats?.uses ? `${affStats.uses} ${affStats.uses === 1 ? 'player' : 'players'} joined with your code · +${fmt(affStats.earned)} credits earned` : `<span>${esc(i18n(`New players who sign up with your code start with ${fmt(settings.startCredits + settings.affNew)} credits.`))}</span>${affOwnerText().length ? ` <span>${esc(i18n(`You get ${affOwnerText().map(i18n).join(' + ')} on top.`))}</span>` : ''}`}</small></div>`;
   }
   async function saveAffCode() {
     const code = affNorm($('affIn')?.value), msg = t => { if ($('affMsg')) $('affMsg').textContent = t; };
@@ -11803,6 +11819,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (settings.cheats === false && rigged) { rigged = false; cabinet.classList.remove('armed'); }
     if (reloadSeen === null) reloadSeen = settings.reloadAt;
     else if (settings.reloadAt > reloadSeen) { reloadSeen = settings.reloadAt; $('reloadModal').hidden = false; $('reloadNow').focus(); }
+    if (typeof renderAffHint === 'function') try { renderAffHint(); } catch {}
     STAR_GOAL = settings.starGoal;
     FREE_SPINS = settings.freeSpins;
     FREE_MULT = settings.freeMult;
@@ -12137,13 +12154,52 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const q = $('affSearch').value.trim().toLowerCase();
     const list = adminAffs.filter(a => !q || a.name.toLowerCase().includes(q) || (a.code || '').toLowerCase().includes(q) || a.refs.some(r => String(r.name).toLowerCase().includes(q)));
     const users = adminAffs.reduce((s2, a) => s2 + a.uses, 0), paid = adminAffs.reduce((s2, a) => s2 + a.earned, 0);
-    $('affSum').innerHTML = `<div><b>${adminAffs.filter(a => a.code).length}</b><span>Codes</span></div><div><b>${users}</b><span>Players invited</span></div><div><b>${fmt(paid)}</b><span>Credits to affiliates</span></div><div><b>${fmt(users * 4500)}</b><span>Start bonus for new players</span></div>`;
+    $('affSum').innerHTML = `<div><b>${adminAffs.filter(a => a.code).length}</b><span>Codes</span></div><div><b>${users}</b><span>Players invited</span></div><div><b>${fmt(paid)}</b><span>Credits to affiliates</span></div><div><b>${fmt(adminAffs.reduce((s2, a) => s2 + a.refs.length, 0) ? users * settings.affNew : 0)}</b><span>Start bonus for new players</span></div>`;
     $('affList').innerHTML = list.length ? list.map((a, i) => `<details class="aff-item"${q && a.refs.some(r => String(r.name).toLowerCase().includes(q)) ? ' open' : ''}>
         <summary><span class="rank">${i + 1}</span>${avatarHtml(a.id, a.name)}<b class="name">${nameHtml(a.id, a.name)}</b>${a.code ? `<code class="aff-chip">${esc(a.code)}</code>` : '<span class="aff-chip none">no code</span>'}
           <span class="aff-n"><b>${a.uses}</b> ${a.uses === 1 ? 'player' : 'players'}</span><span class="aff-earned">+${fmt(a.earned)}</span></summary>
         ${a.refs.length ? `<table class="aff-refs"><thead><tr><th>Joined</th><th>Player</th><th>Bonus for ${esc(a.name)}</th></tr></thead><tbody>${a.refs.map(r => `<tr><td>${when(r.at)}</td><td class="name">${esc(r.name)}</td><td>+${fmt(Number(r.bonus) || 0)}</td></tr>`).join('')}</tbody></table>` : '<p class="note">Nobody has used this code yet.</p>'}
       </details>`).join('') : `<p class="note">${adminAffs.length ? 'No match.' : 'Nobody has an affiliate code yet.'}</p>`;
   }
+  // what the code owner gets per new player
+  function affOwnerBonus(credits, st = settings) {
+    const pct = Math.floor(Math.max(0, credits) * st.affPct / 100);
+    return (st.affMax > 0 ? Math.min(st.affMax, pct) : pct) + st.affFixed;
+  }
+  function affOwnerText(st = settings) {
+    const parts = [];
+    if (st.affPct > 0) parts.push(st.affMax > 0 ? `${String(st.affPct).replace('.', lang === 'de' ? ',' : '.')}% of your credits (at most ${fmt(st.affMax)})` : `${String(st.affPct).replace('.', lang === 'de' ? ',' : '.')}% of your credits`);
+    if (st.affFixed > 0) parts.push(`${fmt(st.affFixed)} extra credits`);
+    return parts;
+  }
+  function fillAffForm() {
+    const f = $('affForm').elements;
+    for (const k of ['affOn', 'affOneDevice']) f[k].checked = settings[k];
+    for (const k of ['affNew', 'affPct', 'affMax', 'affFixed']) f[k].value = settings[k];
+    affPreview();
+  }
+  function affFormValues() {
+    const f = $('affForm').elements, raw = { affOn: f.affOn.checked, affOneDevice: f.affOneDevice.checked };
+    for (const k of ['affNew', 'affPct', 'affMax', 'affFixed']) raw[k] = String(f[k].value).replace(',', '.') || 0;
+    const clean = cleanSettings(raw);
+    return Object.fromEntries(Object.keys(raw).map(k => [k, clean[k]]));
+  }
+  function affPreview() {
+    const st = { ...settings, ...affFormValues() };
+    ltSet($('affPreview'), 'textContent', !st.affOn ? 'Affiliate codes are off.'
+      : `Example: a new player starts with ${fmt(st.startCredits + st.affNew)} credits. A code owner with 50,000 credits gets ${fmt(affOwnerBonus(50000, st))}, one with 500,000 gets ${fmt(affOwnerBonus(500000, st))}.`);
+  }
+  $('affForm').addEventListener('input', affPreview);
+  $('affForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const patch = affFormValues();
+    adminDo('Affiliate settings saved. They count for the next new player.', async () => {
+      await backend.admin.saveSettings(patch);
+      applySettings({ ...rawSettings, ...patch });
+      fillAffForm();
+      renderAffHint();
+    });
+  });
   $('affSearch').addEventListener('input', renderAdminAffiliates);
   $('affReload').addEventListener('click', loadAdminAffiliates);
   function showTab(name) {
@@ -12154,7 +12210,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (name === 'game') { fillSettingsForm(); renderNewsAdmin(); renderResetAdmin(); }
     if (name === 'events') { if (!$('evForm').elements.title.value) evFill(null); renderAdminEvents(); }
     if (name === 'chat') renderAdminMsgs();
-    if (name === 'aff') loadAdminAffiliates();
+    if (name === 'aff') { fillAffForm(); loadAdminAffiliates(); }
     if (name === 'tickets') loadAdminTickets();
     if (name === 'lotto') { fillLottoForm(); renderAdminLotto(); ltFetchAt = 0; ltFetch(); }
     if (name === 'security') $('adminSecNote').hidden = backend.kind !== 'supabase';
@@ -12329,10 +12385,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       if (el) raw[k] = el.type === 'checkbox' ? el.checked : el.value;
     }
     raw.econ = DEFAULT_SETTINGS.econ;
-    const patch = cleanSettings(raw);
+    const clean = cleanSettings(raw), patch = Object.fromEntries(Object.keys(raw).map(k => [k, clean[k]]));
     adminDo('Settings saved. Everyone sees them within seconds.', async () => {
       await backend.admin.saveSettings(patch);
-      applySettings(patch);
+      applySettings({ ...rawSettings, ...patch });
       fillSettingsForm();
     });
   });
@@ -14063,13 +14119,19 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   });
 
   let signUpMode = false;
+  function renderAffHint() {
+    const a = fmt(settings.startCredits + settings.affNew), b = fmt(settings.startCredits);
+    ltSet($('affHint'), 'textContent', settings.affOneDevice ? `Got a code from a friend? You start with ${a} credits instead of ${b} (first account on this device only).` : `Got a code from a friend? You start with ${a} credits instead of ${b}.`);
+    if (signUpMode) $('affField').hidden = $('affHint').hidden = !settings.affOn;
+  }
   function setMode(up) {
     signUpMode = up;
     $('loginSub').textContent = up ? 'Create your account' : 'Sign in to play';
     $('pick').hidden = up;
     $('userHint').hidden = !up;
     $('pass2Field').hidden = !up;
-    $('affField').hidden = $('affHint').hidden = !up;
+    $('affField').hidden = $('affHint').hidden = !up || !settings.affOn;
+    renderAffHint();
     $('loginPass').autocomplete = up ? 'new-password' : 'current-password';
     $('loginBtn').textContent = !backend ? 'Connecting…' : up ? 'Create account' : 'Sign in';
     $('modeText').textContent = up ? 'Already have an account?' : 'New here?';
@@ -14114,7 +14176,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       : code && !AFF_RE.test(code) ? 'Affiliate codes have 3 to 12 letters or digits.' : '';
     if (problem) { err.textContent = problem; return; }
     // Check the code before the account exists, so a typo doesn't cost the bonus.
-    if (code && seenAccounts().length) { err.textContent = 'The affiliate bonus is only for the first account on a device. Leave the code empty to create the account without it.'; return; }
+    if (code && !settings.affOn) { err.textContent = 'Affiliate codes are switched off right now. Leave the field empty.'; return; }
+    if (code && settings.affOneDevice && seenAccounts().length) { err.textContent = 'The affiliate bonus is only for the first account on a device. Leave the code empty to create the account without it.'; return; }
     if (code) {
       const ok = await backend.affiliateCheck(code).catch(() => null);
       if (ok === null) { err.textContent = 'Affiliate codes need the “Affiliate codes” part of supabase-setup.sql.'; return; }
