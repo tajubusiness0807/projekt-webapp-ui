@@ -34,3 +34,8 @@ body = SOURCE.read_text(encoding="utf-8")
 TARGET.parent.mkdir(parents=True, exist_ok=True)
 TARGET.write_text(HEAD + body + FOOT, encoding="utf-8")
 print(f"wrote {TARGET.relative_to(ROOT)}")
+# images the page loads next to itself
+import shutil
+for name in ["werbung.jpg"]:
+    shutil.copyfile(HERE / name, TARGET.parent / name)
+    print(f"copied {name}")

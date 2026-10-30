@@ -1411,6 +1411,16 @@ html[data-lang="de"] .reel.held::after { content: "GEHALTEN"; }
 .lobby-job { background: var(--accent); color: var(--ink); padding: 10px 16px; animation: popIn 0.4s cubic-bezier(.2, 1.6, .4, 1); }
 .reload-now { background: var(--accent); color: var(--ink); }
 #reloadModal { z-index: 60; }
+/* The ad pop-up */
+#adModal { z-index: 58; background: #050302eb; }
+.ad-card { position: relative; width: min(920px, 100%); display: grid; gap: 8px; animation: adIn 0.35s cubic-bezier(.2, 1.3, .4, 1); }
+@keyframes adIn { from { transform: scale(0.9); opacity: 0; } }
+.ad-card img { display: block; width: 100%; height: auto; max-height: calc(100dvh - 110px); object-fit: contain; border-radius: 14px; border: 2px solid #ff8a1e; box-shadow: 0 0 0 4px #ff8a1e33, 0 30px 80px -20px #000; background: #111; }
+.ad-tag { justify-self: start; padding: 2px 8px; border-radius: 6px; background: #ffffff1a; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+.ad-close { position: absolute; top: -14px; right: -10px; min-width: 40px; height: 40px; padding: 0 12px; border-radius: 999px; background: var(--fg); color: var(--ink); font: 700 15px var(--font-mono); box-shadow: 0 6px 18px #000a; }
+.ad-close:disabled { opacity: 1; background: #3a2c24; color: var(--muted); cursor: wait; }
+@media (max-width: 600px) { .ad-close { top: -16px; right: -4px; } }
+@media (prefers-reduced-motion: reduce) { .ad-card { animation: none; } }
 .reload-info { font-weight: 400; color: var(--muted); line-height: 1.45; }
 .reload-row { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 10px; background: #e9a23b14; border: 1px dashed #e9a23b66; font-size: 13px; color: var(--muted); }
 .reload-row b { color: var(--fg); }
@@ -3294,6 +3304,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   </div>
 </div>
 
+<div class="modal" id="adModal" role="dialog" aria-modal="true" aria-label="Advertisement" hidden>
+  <div class="ad-card">
+    <span class="ad-tag">Ad</span>
+    <img id="adImg" alt="Thomas Fahrzeugaufbereitung e.K.: professionelle Fahrzeugpflege. Innen- und Außenreinigung, Lackaufbereitung und Politur, Keramikversiegelung, Smart Repair und Dellenentfernung, Leasingrückläufer-Aufbereitung. Ansprechpartner: Peter Thomas.">
+    <button type="button" class="ad-close" id="adClose" aria-label="Close the ad" disabled>3</button>
+  </div>
+</div>
+
 <div class="modal" id="reloadModal" role="alertdialog" aria-modal="true" aria-labelledby="reloadTitle" hidden>
   <div class="modal-card">
     <div class="eyebrow">Update</div>
@@ -3471,6 +3489,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           <label class="setting"><span class="label">Free spin win multiplier</span><input name="freeMult" type="number" min="1" max="20" step="1"></label>
           <label class="setting"><span class="label">Nudge chance after a loss (%)</span><input name="nudgeChance" type="number" min="0" max="100" step="1"></label>
           <label class="setting"><span class="label">Hold chance after a loss (%)</span><input name="holdChance" type="number" min="0" max="100" step="1"></label>
+          <label class="setting check"><input type="checkbox" name="adOn"><span>Ad pop-up on</span><small>Every player sees the ad image again and again while they play.</small></label>
+          <label class="setting"><span class="label">Ad: every (minutes)</span><input name="adEvery" type="number" min="1" max="1440" step="1"></label>
+          <label class="setting"><span class="label">Ad: can't be closed for (seconds)</span><input name="adLock" type="number" min="0" max="30" step="1"></label>
           <div class="setting wide news-admin">
             <span class="label">Pop-up for everyone</span>
             <input id="newsTitleIn" maxlength="80" placeholder="Title, e.g. Update 1.4: Coin flip!" aria-label="Pop-up title">
@@ -3922,6 +3943,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Events': 'Events', 'Event': 'Event', 'Event: live now!': 'Event: jetzt live!', 'Event: coming up': 'Event: demnächst', 'Event details': 'Event-Details', 'Event boost': 'Event-Boost', 'All games': 'Alle Spiele', 'Lucky Burger wage': 'Lucky-Burger-Lohn', 'Goodies': 'Goodies', 'Gift': 'Geschenk', 'New event': 'Neues Event', 'Edit event': 'Event bearbeiten', 'Title': 'Titel', 'Description': 'Beschreibung', 'Icon': 'Symbol', 'Starts': 'Beginn', 'Ends': 'Ende', 'e.g. Lucky Weekend': 'z. B. Glückswochenende', 'What is going on? Players read it in the pop-up and when they tap the event bar.': 'Was ist los? Die Spieler lesen es im Pop-up und wenn sie auf die Event-Leiste tippen.', 'Announce (minutes before)': 'Ankündigen (Minuten vorher)', 'From then on everyone sees a countdown at the top. 60 = one hour, 1440 = one day, 0 = only while it runs.': 'Ab dann sehen alle oben einen Countdown. 60 = eine Stunde, 1440 = ein Tag, 0 = nur während es läuft.', 'Win multipliers': 'Gewinn-Multiplikatoren', 'What a win brings on top of the bet is multiplied. Empty or 1 = normal. "All games" counts for every game and stacks with a single game and the happy hour.': 'Was ein Gewinn über den Einsatz hinaus bringt, wird multipliziert. Leer oder 1 = normal. „Alle Spiele“ gilt für jedes Spiel und stapelt sich mit einem einzelnen Spiel und der Happy Hour.', 'XP multiplier': 'XP-Multiplikator', 'At most ×5.': 'Höchstens ×5.', 'Lucky Burger wage multiplier': 'Lucky-Burger-Lohn-Multiplikator', 'Goodie discount (%)': 'Goodie-Rabatt (%)', 'Every goodie in the shop is that much cheaper.': 'Jedes Goodie im Shop ist um so viel günstiger.', 'Gift at the start (credits)': 'Geschenk zum Start (Credits)', 'Every player gets it once, the first time they are online while the event runs.': 'Jeder Spieler bekommt es einmal, sobald er während des Events online ist.', 'Pop-up at the start': 'Pop-up zum Start', 'Everyone gets a pop-up with the description and the boosts once and presses “Got it”, also whoever comes online later.': 'Alle bekommen einmal ein Pop-up mit Beschreibung und Boosts und drücken „Verstanden“, auch wer erst später online kommt.', 'Pop-up when it is announced': 'Pop-up bei der Ankündigung', 'One more pop-up as soon as the countdown starts.': 'Ein weiteres Pop-up, sobald der Countdown beginnt.', 'Fireworks at the start': 'Feuerwerk zum Start', 'For everyone who has the game open when it starts.': 'Für alle, die das Spiel beim Start offen haben.', 'Save event': 'Event speichern', 'Save changes': 'Änderungen speichern', 'Preview the pop-up': 'Pop-up-Vorschau', 'Empty form': 'Formular leeren', 'Planned and running events': 'Geplante und laufende Events', 'Events switch on and off by themselves at the set times on every page, also if no admin is online. Times are your local time. Several events at the same time stack. Ended events stay in the list for a week.': 'Events schalten sich zu den eingestellten Zeiten auf jeder Seite von selbst an und aus, auch wenn kein Admin online ist. Die Zeiten sind deine Ortszeit. Mehrere Events gleichzeitig stapeln sich. Beendete Events bleiben eine Woche in der Liste.', 'No events yet.': 'Noch keine Events.', 'over': 'vorbei', 'running now': 'läuft gerade', 'announced': 'angekündigt', 'planned': 'geplant', 'no boosts': 'keine Boosts', 'Edit': 'Bearbeiten', 'End now': 'Jetzt beenden', 'Start now': 'Jetzt starten', 'Start it now?': 'Jetzt starten?', 'End it now?': 'Jetzt beenden?', 'Give the event a title.': 'Gib dem Event einen Titel.', 'The end has to be after the start.': 'Das Ende muss nach dem Beginn liegen.', 'That end time is already over.': 'Dieses Ende liegt schon in der Vergangenheit.', 'Event saved. Everyone sees it within seconds.': 'Event gespeichert. Alle sehen es in wenigen Sekunden.', 'The event runs now.': 'Das Event läuft jetzt.', 'The event is over.': 'Das Event ist vorbei.', 'Event deleted.': 'Event gelöscht.',
     'Affiliate codes on': 'Affiliate-Codes an', 'Off: the code field is gone from the sign-up and nobody gets a bonus.': 'Aus: Das Code-Feld verschwindet bei der Anmeldung und niemand bekommt einen Bonus.', 'Only the first account on a device': 'Nur das erste Konto auf einem Gerät', 'Stops extra accounts on one phone just to collect the bonus.': 'Verhindert Zweitkonten auf einem Handy, nur um den Bonus abzugreifen.', 'Extra credits for the new player': 'Extra-Credits für den neuen Spieler', 'On top of the start credits.': 'Zusätzlich zu den Start-Credits.', 'Code owner: % of their credits': 'Code-Besitzer: % seiner Credits', 'Per new player, from what the owner has at that moment. 0 = none.': 'Pro neuem Spieler, von dem, was der Besitzer in dem Moment hat. 0 = nichts.', 'Code owner: at most (credits)': 'Code-Besitzer: höchstens (Credits)', 'Limit for the % part. 0 = no limit.': 'Obergrenze für den %-Teil. 0 = keine Grenze.', 'Code owner: fixed extra credits': 'Code-Besitzer: feste Extra-Credits', 'Always on top, also for owners with few credits.': 'Immer obendrauf, auch für Besitzer mit wenig Credits.', 'Save affiliate settings': 'Affiliate-Einstellungen speichern', 'Affiliate codes are off.': 'Affiliate-Codes sind aus.', 'Affiliate settings saved. They count for the next new player.': 'Affiliate-Einstellungen gespeichert. Sie gelten ab dem nächsten neuen Spieler.', 'Affiliate codes are switched off right now. Leave the field empty.': 'Affiliate-Codes sind gerade ausgeschaltet. Lass das Feld leer.',
     'Password': 'Passwort', 'Give this player a new password': 'Diesem Spieler ein neues Passwort geben', 'Change your own password in your profile': 'Dein eigenes Passwort änderst du in deinem Profil', 'Set password': 'Passwort setzen', 'This needs the “Admin: player passwords” part of supabase-setup.sql.': 'Dafür brauchst du den Teil „Admin: player passwords“ aus supabase-setup.sql.',
+    'Advertisement': 'Werbung', 'Ad': 'Anzeige', 'Close the ad': 'Werbung schließen', 'Ad pop-up on': 'Werbe-Pop-up an', 'Every player sees the ad image again and again while they play.': 'Jeder Spieler sieht das Werbebild immer wieder, während er spielt.', 'Ad: every (minutes)': 'Werbung: alle (Minuten)', "Ad: can't be closed for (seconds)": 'Werbung: nicht wegklickbar für (Sekunden)',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -4452,6 +4474,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     starGoal: 15, freeSpins: 6, freeMult: 2, nudgeChance: 12, holdChance: 15,
     econ: 2,
     // Affiliate codes: what a new player and the code owner get
+    // The ad pop-up: how often (minutes) and how long it can't be closed (seconds)
+    adOn: true, adEvery: 5, adLock: 3,
     affOn: true, affOneDevice: true, affNew: 4500, affPct: 5, affMax: 10000, affFixed: 0,
     // Set by the admin's "ask everyone to reload" button; pages that see it go up show a reload prompt.
     reloadAt: 0,
@@ -4461,6 +4485,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const SETTING_LIMITS = {
     startCredits: [0, 1e12], winMultiplier: [0.1, 100], jackpotPay: [1, 100000], maxBet: [0, Number.MAX_SAFE_INTEGER],
     starGoal: [3, 50], freeSpins: [1, 50], freeMult: [1, 20], nudgeChance: [0, 100], holdChance: [0, 100], econ: [0, 100], reloadAt: [0, Number.MAX_SAFE_INTEGER],
+    adEvery: [1, 1440], adLock: [0, 30],
     affNew: [0, 1000000], affPct: [0, 100], affMax: [0, 1e9], affFixed: [0, 1000000],
   };
   function cleanSettings(raw) {
@@ -14069,6 +14094,49 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (b.dataset.evStop && confirmed(b, 'End it now?')) evSaveList(evList().map(x => x.id === b.dataset.evStop ? { ...x, end: now } : x), 'The event is over.');
     if (b.dataset.evDel && confirmed(b, 'Delete?')) evSaveList(evList().filter(x => x.id !== b.dataset.evDel), 'Event deleted.');
   });
+
+  // ----- The ad pop-up: every few minutes for every player, first a few seconds without a way to close it -----
+  const AD_LS = 'lucky-reels-ad-at';
+  let adShownAt = 0, adTimer = null;
+  const adLast = () => { try { return Number(localStorage.getItem(AD_LS)) || 0; } catch { return 0; } };
+  function adCanShow() {
+    // never in the middle of a round, and not on top of other pop-ups
+    if (!account || !settings.adOn || gameBusy()) return false;
+    if (state.mode === 'rk' && rkMine() && rkMine().payout == null) return false;
+    if (typeof ltShow !== 'undefined' && ltShow.open) return false;
+    return ['newsModal', 'reloadModal', 'adminModal', 'prestigeModal', 'startOverModal'].every(id => !$(id) || $(id).hidden);
+  }
+  function showAd() {
+    if (!$('adImg').src) $('adImg').src = 'werbung.jpg';
+    const lock = settings.adLock, btn = $('adClose');
+    adShownAt = Date.now();
+    try { localStorage.setItem(AD_LS, String(adShownAt)); } catch {}
+    $('adModal').hidden = false;
+    btn.disabled = lock > 0;
+    btn.textContent = lock > 0 ? String(lock) : '✕';
+    clearInterval(adTimer);
+    if (lock > 0) adTimer = setInterval(() => {
+      const left = Math.ceil(lock - (Date.now() - adShownAt) / 1000);
+      if (left > 0) { btn.textContent = String(left); return; }
+      clearInterval(adTimer);
+      btn.disabled = false;
+      btn.textContent = '✕';
+      btn.focus();
+    }, 200);
+  }
+  function closeAd() { if ($('adClose').disabled) return; $('adModal').hidden = true; sound.chip(); }
+  $('adClose').addEventListener('click', closeAd);
+  $('adModal').addEventListener('keydown', e => { if (e.key === 'Escape') closeAd(); });
+  $('adModal').addEventListener('click', e => { if (e.target === $('adModal')) closeAd(); });
+  // the first one comes a little after signing in; the time is kept on the device so reloading doesn't skip or repeat it
+  let adSince = 0;
+  setInterval(() => {
+    if (!account) { adSince = 0; return; }
+    if (!adSince) adSince = Date.now();
+    if (!$('adModal').hidden) { if (!settings.adOn) $('adModal').hidden = true; return; }
+    const due = Math.max(adLast() + settings.adEvery * 60000, adSince + 15000);
+    if (Date.now() >= due && adCanShow()) showAd();
+  }, 1000);
 
   function renderAdminMsgs() {
     if (!adminUnlocked || $('adminModal').hidden) return;
