@@ -11222,13 +11222,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     $('boardGame').innerHTML = html;
     $('boardLogin').innerHTML = html;
 
-    const names = players.map(p => p.name).sort((a, b) => a.localeCompare(b)).slice(0, 12);
-    const pick = $('pick');
-    if (pick.dataset.names !== names.join('|')) {
-      pick.dataset.names = names.join('|');
-      pick.innerHTML = names.map(n => `<button type="button" class="pick-btn" data-user="${esc(n)}">${esc(n)}</button>`).join('');
-      syncPick();
-    }
+    // No name suggestions on the sign-in screen: everyone types their own name.
+    $('pick').innerHTML = '';
   }
   function syncPick() {
     document.querySelectorAll('.pick-btn').forEach(x => x.classList.toggle('on', idFor(x.dataset.user) === idFor($('loginUser').value)));
@@ -14375,7 +14370,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   function setMode(up) {
     signUpMode = up;
     $('loginSub').textContent = up ? 'Create your account' : 'Sign in to play';
-    $('pick').hidden = up;
+    $('pick').hidden = true;
     $('userHint').hidden = !up;
     $('pass2Field').hidden = !up;
     $('affField').hidden = $('affHint').hidden = !up || !settings.affOn;
