@@ -4642,3 +4642,109 @@ end;
 $$;
 drop trigger if exists players_admin_flair on public.players;
 create trigger players_admin_flair before insert or update on public.players for each row execute function public.players_admin_flair();
+
+
+-- ---------------------------------------------------------------------------
+-- Suspicious jumps: run this part once (after "Economy rework" and "Admin security"). Every save a page
+-- sends itself is checked; jumps in credits that are too big for the player's bet limit and don't come
+-- from a jackpot are written to a list the admin menu shows. Winnings the database pays itself (horses,
+-- roulette, rocket, lotto, stocks) and admin changes are not checked. Nothing is blocked, only noted.
+create table if not exists public.lr_suspicious (
+  id bigint generated always as identity primary key,
+  player uuid not null references public.players (id) on delete cascade,
+  name text not null,
+  at timestamptz not null default now(),
+  reason text not null,
+  gain bigint not null,
+  before bigint not null,
+  after bigint not null,
+  bet_limit bigint not null,
+  game text,
+  spins integer,
+  jackpots integer
+);
+create index if not exists lr_suspicious_at on public.lr_suspicious (at desc);
+alter table public.lr_suspicious enable row level security;
+revoke all on public.lr_suspicious from anon, authenticated;
+-- the check runs as the player who saves, so they may add rows about themselves only (and read none)
+grant insert on public.lr_suspicious to authenticated;
+drop policy if exists "Note own saves" on public.lr_suspicious;
+create policy "Note own saves" on public.lr_suspicious for insert to authenticated with check (player = auth.uid());
+
+-- credits won in the last 10 minutes (without jackpots), kept on the player row
+alter table public.players add column if not exists watch_from timestamptz;
+alter table public.players add column if not exists watch_gain bigint not null default 0;
+alter table public.players add column if not exists watch_noted boolean not null default false;
+
+create or replace function public.players_watch()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+declare
+  gain bigint := new.credits - old.credits;
+  lim bigint;
+  jp boolean := coalesce(new.jackpots, 0) > coalesce(old.jackpots, 0);
+  g text;
+  why text;
+begin
+  if current_user <> 'authenticated' or new.id <> auth.uid() then return new; end if;
+  lim := public.lr_bet_limit(old.level, old.prestige);
+  begin g := new.game::jsonb ->> 'mode'; exception when others then g := null; end;
+  -- one save: more than 60x the bet limit (a jackpot may bring far more)
+  if not jp and gain > greatest(lim * 60, 30000) then why := 'big jump';
+  elsif jp and gain > greatest(lim * 6000, 3000000) then why := 'jackpot too big';
+  end if;
+  -- 10 minutes: more than 300x the bet limit in total, jackpots not counted
+  if new.watch_from is null or new.watch_from < now() - interval '10 minutes' then
+    new.watch_from := now(); new.watch_gain := 0; new.watch_noted := false;
+  end if;
+  -- a jump already noted on its own doesn't count again, and a jackpot save is never "fast growth"
+  if not jp and why is null and gain > 0 then new.watch_gain := new.watch_gain + gain; end if;
+  if why is null and not jp and not new.watch_noted and new.watch_gain > greatest(lim * 300, 150000) then
+    why := 'fast growth'; new.watch_noted := true;
+  end if;
+  if why is not null then
+    insert into public.lr_suspicious (player, name, reason, gain, before, after, bet_limit, game, spins, jackpots)
+      values (new.id, new.name, why, case when why = 'fast growth' then new.watch_gain else gain end, old.credits, new.credits, lim, g,
+        coalesce(new.spins, 0) - coalesce(old.spins, 0), coalesce(new.jackpots, 0) - coalesce(old.jackpots, 0));
+  end if;
+  return new;
+exception when others then return new;
+end;
+$$;
+drop trigger if exists players_watch on public.players;
+create trigger players_watch before update on public.players for each row execute function public.players_watch();
+
+create or replace function public.admin_suspicious(tok uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  out jsonb;
+begin
+  perform public.admin_check(tok);
+  delete from public.lr_suspicious where at < now() - interval '30 days';
+  select coalesce(jsonb_agg(to_jsonb(s) order by s.at desc), '[]') into out
+    from (select * from public.lr_suspicious order by at desc limit 300) s;
+  return out;
+end;
+$$;
+revoke execute on function public.admin_suspicious(uuid) from public, anon;
+grant execute on function public.admin_suspicious(uuid) to authenticated;
+
+create or replace function public.admin_suspicious_clear(tok uuid, entry bigint default null)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.admin_check(tok);
+  if entry is null then delete from public.lr_suspicious; else delete from public.lr_suspicious where id = entry; end if;
+end;
+$$;
+revoke execute on function public.admin_suspicious_clear(uuid, bigint) from public, anon;
+grant execute on function public.admin_suspicious_clear(uuid, bigint) to authenticated;

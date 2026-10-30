@@ -1476,6 +1476,15 @@ html[data-lang="de"] .reel.held::after { content: "GEHALTEN"; }
 .aff-chip.none { border-color: #ffffff33; color: var(--muted); font-weight: 400; }
 .aff-n { font-size: 12px; color: var(--muted); white-space: nowrap; } .aff-n b { color: var(--fg); font-family: var(--font-mono); }
 .aff-earned { font: 700 13px var(--font-mono); color: var(--accent); white-space: nowrap; }
+.watch-list { display: grid; gap: 8px; margin: 10px 0 12px; }
+.watch-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; padding: 10px 12px; border-radius: 12px; background: #ffffff0a; border: 1px solid #e0414a55; font-size: 13px; }
+.watch-row.r-fast { border-color: #e9a23b66; }
+.watch-row .w-head { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+.watch-row .w-why { padding: 2px 8px; border-radius: 999px; background: #e0414a2e; color: #ff8a8f; font-size: 11px; font-weight: 700; }
+.watch-row.r-fast .w-why { background: #e9a23b2e; color: var(--accent); }
+.watch-row .w-gain { font: 700 15px var(--font-mono); color: var(--win); }
+.watch-row small { grid-column: 1; color: var(--muted); font-size: 12px; }
+.watch-row .abtn { grid-row: 1 / 3; grid-column: 2; }
 .aff-refs { width: calc(100% - 24px); margin: 0 12px 12px; border-collapse: collapse; font-size: 12px; }
 .aff-refs th { text-align: left; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 4px 6px; }
 .aff-refs td { padding: 6px; border-top: 1px solid #ffffff10; font-variant-numeric: tabular-nums; }
@@ -3415,6 +3424,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         <button class="tab" role="tab" data-tab="lotto" aria-selected="false">Lotto</button>
         <button class="tab" role="tab" data-tab="aff" aria-selected="false">Affiliates</button>
         <button class="tab" role="tab" data-tab="chat" aria-selected="false">Chat</button>
+        <button class="tab" role="tab" data-tab="watch" aria-selected="false">Suspicious<i class="tab-badge" id="watchTabBadge" hidden></i></button>
         <button class="tab" role="tab" data-tab="security" aria-selected="false">Security</button>
       </div>
       <p class="admin-status" id="adminStatus" role="status"></p>
@@ -3575,6 +3585,15 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         <h3 class="ev-head">Planned and running events</h3>
         <div class="ev-list" id="evList"></div>
         <p class="admin-note">Events switch on and off by themselves at the set times on every page, also if no admin is online. Times are your local time. Several events at the same time stack. Ended events stay in the list for a week.</p>
+      </section>
+
+      <section class="admin-section" data-pane="watch" hidden>
+        <div class="admin-tools">
+          <button class="abtn" id="watchReload" type="button">Refresh</button>
+          <button class="abtn warn" id="watchClear" type="button">Clear the list</button>
+        </div>
+        <div class="watch-list" id="watchList"></div>
+        <p class="admin-note">The database checks every save a page sends. Noted are: one save with more than 60× the player's bet limit that didn't come with a jackpot (“big jump”), more than 300× the bet limit within 10 minutes without jackpots (“fast growth”) and jackpots far bigger than possible. Winnings the database pays itself (horses, roulette, rocket, lotto, stocks) and your admin changes are not checked. Nothing is blocked: look at it and decide yourself. Real luck can also land here, e.g. a long coin flip streak or an event gift.</p>
       </section>
 
       <section class="admin-section" data-pane="security" hidden>
@@ -3978,6 +3997,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Private chat': 'Privater Chat', '← Back': '← Zurück', 'Pick who you want to write to': 'Wähle aus, wem du schreiben willst', 'Your chats': 'Deine Chats', 'Other players': 'Weitere Spieler', 'Players': 'Spieler', 'online': 'online', 'There is nobody else here yet.': 'Hier ist noch niemand sonst.',
     'Admin Name': 'Admin-Name', 'Only for admins, free: your name glows red with an ADMIN tag, for everyone to see.': 'Nur für Admins, gratis: Dein Name leuchtet rot mit ADMIN-Schild, für alle sichtbar.',
     'How long this player has to wait before closing the ad': 'Wie lange dieser Spieler warten muss, bevor er die Werbung schließen kann', '📺 Ad': '📺 Werbung', 'Set': 'Setzen', 'Normal again': 'Wieder normal', 'Enter 0 to 120 seconds.': 'Gib 0 bis 120 Sekunden ein.',
+    'Suspicious': 'Auffällig', 'Clear the list': 'Liste leeren', 'Checked': 'Geprüft', 'Big jump': 'Großer Sprung', 'Fast growth': 'Schnelles Wachstum', 'Jackpot too big': 'Jackpot zu groß', 'bet limit': 'Einsatzlimit', 'in 10 minutes': 'in 10 Minuten', 'Stock market': 'Börse', 'Poker': 'Poker', 'Nothing suspicious so far.': 'Bisher nichts Auffälliges.', 'This needs the online database.': 'Das geht nur mit der Online-Datenbank.', 'This needs the “Suspicious jumps” part of supabase-setup.sql.': 'Dafür brauchst du den Teil „Suspicious jumps“ aus supabase-setup.sql.', 'Clear all?': 'Alles leeren?', 'The list is empty.': 'Die Liste ist leer.', 'Marked as checked.': 'Als geprüft markiert.', "The database checks every save a page sends. Noted are: one save with more than 60× the player's bet limit that didn't come with a jackpot (“big jump”), more than 300× the bet limit within 10 minutes without jackpots (“fast growth”) and jackpots far bigger than possible. Winnings the database pays itself (horses, roulette, rocket, lotto, stocks) and your admin changes are not checked. Nothing is blocked: look at it and decide yourself. Real luck can also land here, e.g. a long coin flip streak or an event gift.": 'Die Datenbank prüft jeden Spielstand, den eine Seite speichert. Notiert werden: ein Speichern mit mehr als dem 60-Fachen des Einsatzlimits, das nicht von einem Jackpot kommt („Großer Sprung“), mehr als das 300-Fache des Einsatzlimits innerhalb von 10 Minuten ohne Jackpots („Schnelles Wachstum“) und Jackpots, die viel größer sind als möglich. Gewinne, die die Datenbank selbst auszahlt (Pferde, Roulette, Rakete, Lotto, Börse), und deine Admin-Änderungen werden nicht geprüft. Gesperrt wird nichts: Schau es dir an und entscheide selbst. Auch echtes Glück kann hier landen, z. B. eine lange Münzwurf-Serie oder ein Event-Geschenk.',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -10919,6 +10939,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         addAll: amount => adminRpc('admin_give_all', { amount }),
         hardReset: () => adminRpc('admin_hard_reset', {}),
         affiliates: () => adminRpcData('admin_affiliates', {}),
+        suspicious: () => adminRpcData('admin_suspicious', {}),
+        suspiciousClear: id => adminRpc('admin_suspicious_clear', { entry: id ?? null }),
         tickets: () => adminRpcData('admin_tickets', {}),
         ticketUpdate: (id, status, reply) => adminRpc('admin_ticket_update', { ticket: id, new_status: status ?? null, new_reply: reply ?? null }),
         ticketDelete: id => adminRpc('admin_ticket_delete', { ticket: id }),
@@ -12350,6 +12372,47 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       renderAffHint();
     });
   });
+  // ----- Admin: suspicious jumps the database noted -----
+  const WATCH_GAMES = { slots: 'Slots', bj: 'Blackjack', rl: 'Roulette', pl: 'Plinko', ck: 'Chicken', hr: 'Horse Racing', rk: 'Rocket', cf: 'Coin Flip', pk: 'Poker', jb: 'Lucky Burger', st: 'Stock market' };
+  const WATCH_WHY = { 'big jump': 'Big jump', 'fast growth': 'Fast growth', 'jackpot too big': 'Jackpot too big' };
+  let watchRows = [], watchSeen = 0;
+  try { watchSeen = Number(localStorage.getItem('lucky-reels-watch-seen')) || 0; } catch {}
+  async function loadWatch(quiet = false) {
+    if (!backend?.admin?.suspicious) { $('watchList').innerHTML = '<p class="note">This needs the online database.</p>'; return; }
+    try {
+      watchRows = await backend.admin.suspicious() || [];
+      renderWatch(quiet);
+    } catch (e) {
+      if (e?.code === 'admin_locked') { lockAdmin('The admin menu locked itself. Enter the admin password again.'); return; }
+      $('watchList').innerHTML = `<p class="note">${/could not find the function|PGRST202/i.test(e?.message || '') ? 'This needs the “Suspicious jumps” part of supabase-setup.sql.' : 'That did not work. Check the connection and try again.'}</p>`;
+    }
+  }
+  function renderWatch(quiet) {
+    const when = v => new Date(v).toLocaleString(lang === 'de' ? 'de-DE' : 'en-GB', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const open = !document.querySelector('[data-pane="watch"]').hidden && !$('adminModal').hidden;
+    const newest = watchRows.reduce((m, r) => Math.max(m, Date.parse(r.at) || 0), 0);
+    const fresh = watchRows.filter(r => (Date.parse(r.at) || 0) > watchSeen).length;
+    $('watchTabBadge').hidden = !fresh || open;
+    $('watchTabBadge').textContent = fresh;
+    if (open && newest > watchSeen) { watchSeen = newest; try { localStorage.setItem('lucky-reels-watch-seen', String(newest)); } catch {} }
+    if (quiet && !open) return;
+    $('watchList').innerHTML = watchRows.length ? watchRows.map(r => `<div class="watch-row${r.reason === 'fast growth' ? ' r-fast' : ''}">
+        <span class="w-head"><b class="name">${nameHtml(r.player, r.name)}</b><span class="w-why">${esc(i18n(WATCH_WHY[r.reason] || r.reason))}</span><span class="w-gain">+${fmt(Number(r.gain) || 0)}</span></span>
+        <small>${esc(when(r.at))} · ${esc(i18n(WATCH_GAMES[r.game] || r.game || '?'))} · ${fmt(Number(r.before) || 0)} → ${fmt(Number(r.after) || 0)} · ${esc(i18n('bet limit'))} ${fmt(Number(r.bet_limit) || 0)}${r.reason === 'fast growth' ? ' · ' + esc(i18n('in 10 minutes')) : ''}</small>
+        <button type="button" class="abtn" data-watch-del="${esc(r.id)}">Checked</button></div>`).join('')
+      : '<p class="note">Nothing suspicious so far.</p>';
+  }
+  $('watchReload').addEventListener('click', () => loadWatch());
+  $('watchClear').addEventListener('click', e => {
+    if (!confirmed(e.currentTarget, 'Clear all?')) return;
+    adminDo('The list is empty.', async () => { await backend.admin.suspiciousClear(null); await loadWatch(); });
+  });
+  $('watchList').addEventListener('click', e => {
+    const b = e.target.closest('[data-watch-del]');
+    if (b) adminDo('Marked as checked.', async () => { await backend.admin.suspiciousClear(Number(b.dataset.watchDel)); await loadWatch(); });
+  });
+  // new entries show as a number on the tab while the admin menu is unlocked
+  setInterval(() => { if (adminUnlocked && backend?.admin?.suspicious && backend.kind === 'supabase') loadWatch(true); }, 60000);
   $('affSearch').addEventListener('input', renderAdminAffiliates);
   $('affReload').addEventListener('click', loadAdminAffiliates);
   function showTab(name) {
@@ -12364,6 +12427,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (name === 'tickets') loadAdminTickets();
     if (name === 'lotto') { fillLottoForm(); renderAdminLotto(); ltFetchAt = 0; ltFetch(); }
     if (name === 'security') $('adminSecNote').hidden = backend.kind !== 'supabase';
+    if (name === 'watch') loadWatch();
   }
 
   function renderAdminPlayers(force = false) {
