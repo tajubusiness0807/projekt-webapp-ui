@@ -5100,3 +5100,61 @@ end;
 $$;
 drop trigger if exists players_seq on public.players;
 create trigger players_seq before update on public.players for each row execute function public.players_seq();
+
+
+-- ---------------------------------------------------------------------------
+-- Milestones: run this part once. Notes the moment each player first has 1 million, 10 million,
+-- 100 million and 1 billion credits, on every change of the balance (also payouts by the database).
+-- Players who are already above a mark when this runs are noted as "already above" without a time.
+create table if not exists public.lr_milestones (
+  player uuid not null references public.players (id) on delete cascade,
+  mark bigint not null,
+  name text not null,
+  reached_at timestamptz not null default now(),
+  credits bigint not null,
+  before_start boolean not null default false,
+  primary key (player, mark)
+);
+alter table public.lr_milestones enable row level security;
+revoke all on public.lr_milestones from anon, authenticated;
+
+create or replace function public.players_milestones()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  m bigint;
+begin
+  foreach m in array array[1000000, 10000000, 100000000, 1000000000]::bigint[] loop
+    if new.credits >= m and coalesce(old.credits, 0) < m then
+      insert into public.lr_milestones (player, mark, name, credits) values (new.id, m, new.name, new.credits) on conflict do nothing;
+    end if;
+  end loop;
+  return null;
+exception when others then return null;
+end;
+$$;
+drop trigger if exists players_milestones on public.players;
+create trigger players_milestones after update of credits on public.players for each row execute function public.players_milestones();
+
+insert into public.lr_milestones (player, mark, name, credits, before_start)
+  select p.id, m, p.name, p.credits, true from public.players p, unnest(array[1000000, 10000000, 100000000, 1000000000]::bigint[]) m
+  where p.credits >= m
+  on conflict do nothing;
+
+create or replace function public.admin_milestones(tok uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.admin_check(tok);
+  return coalesce((select jsonb_agg(jsonb_build_object('player', player, 'mark', mark, 'name', name, 'at', floor(extract(epoch from reached_at) * 1000),
+    'credits', credits, 'before', before_start) order by mark, before_start desc, reached_at) from public.lr_milestones), '[]'::jsonb);
+end;
+$$;
+revoke execute on function public.admin_milestones(uuid) from public, anon;
+grant execute on function public.admin_milestones(uuid) to authenticated;
