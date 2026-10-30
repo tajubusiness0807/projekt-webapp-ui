@@ -6796,7 +6796,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // the solo poker table as the page draws it
   function pkSrvNorm(st) {
     if (!st || typeof st !== 'object' || !Array.isArray(st.seats)) return null;
-    return { ...st, solo: true, deadline: null, seats: st.seats.map(s => s ? { ...s, has_cards: (s.cards || []).length === 2, cards: (s.cards || []).filter(c => c >= 0), bestCards: s.best || null } : null) };
+    // the player always sits in seat 0
+    return { ...st, solo: true, deadline: null, me: 0, seats: st.seats.map(s => s ? { ...s, has_cards: (s.cards || []).length === 2, cards: (s.cards || []).filter(c => c >= 0), bestCards: s.best || null } : null) };
   }
   // A slot spin the database draws; the reels then run to its result.
   async function spinSrv(free) {
