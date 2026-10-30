@@ -4977,3 +4977,19 @@ grant execute on function public.rr_state() to authenticated;
 grant execute on function public.rr_challenge(uuid) to authenticated;
 grant execute on function public.rr_respond(bigint, boolean) to authenticated;
 grant execute on function public.rr_pull(bigint) to authenticated;
+
+
+-- ---------------------------------------------------------------------------
+-- No cheat code any more: run this part once. The admin secret code is gone from the game; here go the
+-- database functions it used and the places where a forced result was kept, so horses, roulette, rocket and
+-- lotto can only ever be drawn at random.
+drop function if exists public.admin_rig_horse(bigint, integer);
+drop function if exists public.admin_rig_roulette(bigint);
+drop function if exists public.admin_rig_rocket(bigint);
+drop function if exists public.admin_rig_lotto(text);
+alter table public.horse_races drop column if exists forced;
+alter table public.roulette_rounds drop column if exists forced;
+do $$ begin
+  if to_regclass('public.lotto_draws') is not null then alter table public.lotto_draws drop column if exists forced; end if;
+end $$;
+update public.settings set data = data - 'cheats' where id = 1;
