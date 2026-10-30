@@ -2048,6 +2048,12 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
 .news-meta { margin: 0; font-size: 12px; color: var(--muted); }
 .news-ok { width: 100%; }
 .news-admin { display: grid; gap: 8px; }
+.news-plan-row input { flex: 0 1 220px; }
+.news-plan-list { display: grid; gap: 6px; }
+.news-plan-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; align-items: center; padding: 8px 10px; border-radius: 10px; background: #ffffff0a; border: 1px solid #ffffff18; font-size: 13px; }
+.news-plan-item b { overflow-wrap: anywhere; }
+.news-plan-item small { grid-column: 1; color: var(--muted); font-size: 12px; }
+.news-plan-item .abtn { grid-row: 1 / 3; grid-column: 2; }
 .news-admin textarea { width: 100%; resize: vertical; font: inherit; padding: 10px 12px; border-radius: 10px; border: 1px solid #ffffff22; background: #0006; color: var(--fg); }
 #voice[hidden] { display: none; }
 body.cos-ckGold .ck-chicken svg { filter: sepia(1) saturate(5) hue-rotate(-8deg) brightness(1.08) drop-shadow(0 0 6px #f3c94b); }
@@ -3551,7 +3557,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
             <textarea id="newsTextIn" maxlength="1500" rows="5" placeholder="What is new? Line breaks stay as you type them." aria-label="Pop-up text"></textarea>
             <small>Everyone online gets it right away and has to press “Got it”. Everyone else sees it once at their next sign-in. A new pop-up replaces the old one.</small>
             <div class="admin-row"><button class="abtn ok" type="button" id="newsSend">Send pop-up</button><button class="abtn" type="button" id="newsClear">Remove pop-up</button></div>
+            <div class="admin-row news-plan-row"><input id="newsAtIn" type="datetime-local" aria-label="Time for the planned pop-up"><button class="abtn" type="button" id="newsPlan">Plan for this time</button></div>
             <p class="admin-note" id="newsNow"></p>
+            <div class="news-plan-list" id="newsPlanList"></div>
           </div>
           <div class="setting wide news-admin">
             <span class="label">Timed hard reset</span>
@@ -4012,6 +4020,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Admin Name': 'Admin-Name', 'Only for admins, free: your name glows red with an ADMIN tag, for everyone to see.': 'Nur für Admins, gratis: Dein Name leuchtet rot mit ADMIN-Schild, für alle sichtbar.',
     'How long this player has to wait before closing the ad': 'Wie lange dieser Spieler warten muss, bevor er die Werbung schließen kann', '📺 Ad': '📺 Werbung', 'Set': 'Setzen', 'Normal again': 'Wieder normal', 'Enter 0 to 120 seconds.': 'Gib 0 bis 120 Sekunden ein.',
     'Suspicious': 'Auffällig', 'Clear the list': 'Liste leeren', 'Checked': 'Geprüft', 'Big jump': 'Großer Sprung', 'Fast growth': 'Schnelles Wachstum', 'Jackpot too big': 'Jackpot zu groß', 'bet limit': 'Einsatzlimit', 'in 10 minutes': 'in 10 Minuten', 'Stock market': 'Börse', 'Poker': 'Poker', 'Nothing suspicious so far.': 'Bisher nichts Auffälliges.', 'This needs the online database.': 'Das geht nur mit der Online-Datenbank.', 'This needs the “Suspicious jumps” part of supabase-setup.sql.': 'Dafür brauchst du den Teil „Suspicious jumps“ aus supabase-setup.sql.', 'Clear all?': 'Alles leeren?', 'The list is empty.': 'Die Liste ist leer.', 'Marked as checked.': 'Als geprüft markiert.', "The database checks every save a page sends. Noted are: one save with more than 60× the player's bet limit that didn't come with a jackpot (“big jump”), more than 300× the bet limit within 10 minutes without jackpots (“fast growth”) and jackpots far bigger than possible. Winnings the database pays itself (horses, roulette, rocket, lotto, stocks) and your admin changes are not checked. Nothing is blocked: look at it and decide yourself. Real luck can also land here, e.g. a long coin flip streak or an event gift.": 'Die Datenbank prüft jeden Spielstand, den eine Seite speichert. Notiert werden: ein Speichern mit mehr als dem 60-Fachen des Einsatzlimits, das nicht von einem Jackpot kommt („Großer Sprung“), mehr als das 300-Fache des Einsatzlimits innerhalb von 10 Minuten ohne Jackpots („Schnelles Wachstum“) und Jackpots, die viel größer sind als möglich. Gewinne, die die Datenbank selbst auszahlt (Pferde, Roulette, Rakete, Lotto, Börse), und deine Admin-Änderungen werden nicht geprüft. Gesperrt wird nichts: Schau es dir an und entscheide selbst. Auch echtes Glück kann hier landen, z. B. eine lange Münzwurf-Serie oder ein Event-Geschenk.',
+    'Plan for this time': 'Für diese Zeit planen', 'Time for the planned pop-up': 'Zeit für das geplante Pop-up', 'Planned pop-ups': 'Geplante Pop-ups', 'The pop-up is planned. It goes out by itself at that time.': 'Das Pop-up ist geplant. Es geht zu dieser Zeit von selbst raus.', 'The planned pop-up is deleted.': 'Das geplante Pop-up ist gelöscht.',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -13639,9 +13648,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
   // ----- News pop-up: an admin sends it, every player sees it once (now if online, otherwise at the next sign-in) -----
   const NEWS_LS = () => 'lucky-reels-news-' + (account?.id || '');
+  // The pop-up that is live: the one sent now or a planned one whose time has come, the newest of them.
+  const newsOk = n => n && typeof n === 'object' && n.id && (n.title || n.text);
+  const newsPlan = () => (Array.isArray(rawSettings?.popupPlan) ? rawSettings.popupPlan : []).filter(newsOk);
   function newsNow() {
-    const n = rawSettings?.popup;
-    return n && typeof n === 'object' && n.id && (n.title || n.text) ? n : null;
+    const now = evClock();
+    const list = [rawSettings?.popup, ...newsPlan()].filter(n => newsOk(n) && (Number(n.at) || 0) <= now);
+    return list.sort((a, b) => (Number(b.at) || 0) - (Number(a.at) || 0))[0] || null;
   }
   function newsSeen(id) {
     if (state.newsSeen === id) return true;
@@ -13680,7 +13693,17 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const n = newsNow();
     $('newsNow').textContent = n ? `Live now: “${n.title || n.text.slice(0, 40)}”, sent ${new Date(Number(n.at) || Date.now()).toLocaleString(lang === 'de' ? 'de-DE' : 'en-GB', { dateStyle: 'short', timeStyle: 'short' })}.` : 'No pop-up is live right now.';
     $('newsClear').disabled = !n;
+    const fmtAt = ms => new Date(ms).toLocaleString(lang === 'de' ? 'de-DE' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    const coming = newsPlan().filter(x => Number(x.at) > evClock()).sort((a, b) => a.at - b.at);
+    $('newsPlanList').innerHTML = coming.length ? `<span class="label">${esc(i18n('Planned pop-ups'))}</span>` + coming.map(x => `<div class="news-plan-item"><b class="news-title">${esc(x.title || x.text.slice(0, 60))}</b>
+      <small>${esc(fmtAt(Number(x.at)))}</small><button type="button" class="abtn warn" data-plan-del="${esc(x.id)}">Delete</button></div>`).join('') : '';
+    if (!$('newsAtIn').value) {
+      const d = new Date(Math.ceil((Date.now() + 3600000) / 3600000) * 3600000);
+      $('newsAtIn').value = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    }
   }
+  // a planned pop-up that has just gone out: the admin list follows
+  setInterval(() => { if (adminUnlocked && !$('adminModal').hidden && !document.querySelector('[data-pane="game"]').hidden) renderNewsAdmin(); }, 15000);
   $('newsSend').addEventListener('click', e => {
     const title = $('newsTitleIn').value.trim().slice(0, 80), text = $('newsTextIn').value.replace(/\r/g, '').trim().slice(0, 1500);
     if (!title && !text) { adminSay('Write a title or a text first.', false); return; }
@@ -13714,9 +13737,36 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   });
   $('newsClear').addEventListener('click', e => {
     if (!confirmed(e.currentTarget, 'Remove it?')) return;
+    // planned ones that are still to come stay
+    const plan = newsPlan().filter(n => Number(n.at) > evClock());
     adminDo('The pop-up is removed. Nobody sees it any more.', async () => {
-      await backend.admin.saveSettings({ popup: null });
-      rawSettings.popup = null;
+      await backend.admin.saveSettings({ popup: null, popupPlan: plan });
+      rawSettings.popup = null; rawSettings.popupPlan = plan;
+      renderNewsAdmin();
+    });
+  });
+  // Planning: the pop-up goes out by itself at the chosen time
+  $('newsPlan').addEventListener('click', e => {
+    const title = $('newsTitleIn').value.trim().slice(0, 80), text = $('newsTextIn').value.replace(/\r/g, '').trim().slice(0, 1500);
+    const at = new Date($('newsAtIn').value).getTime();
+    if (!title && !text) { adminSay('Write a title or a text first.', false); return; }
+    if (!(at > Date.now() + 30000)) { adminSay('Pick a time at least a minute from now.', false); return; }
+    const plan = [...newsPlan().filter(n => Number(n.at) > Date.now() - 7 * 86400000), { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7), title, text, at }]
+      .sort((a, b) => a.at - b.at).slice(-30);
+    adminDo('The pop-up is planned. It goes out by itself at that time.', async () => {
+      await backend.admin.saveSettings({ popupPlan: plan });
+      rawSettings.popupPlan = plan;
+      $('newsTitleIn').value = ''; $('newsTextIn').value = '';
+      renderNewsAdmin();
+    });
+  });
+  $('newsPlanList').addEventListener('click', e => {
+    const b = e.target.closest('[data-plan-del]');
+    if (!b || !confirmed(b, 'Delete?')) return;
+    const plan = newsPlan().filter(n => n.id !== b.dataset.planDel);
+    adminDo('The planned pop-up is deleted.', async () => {
+      await backend.admin.saveSettings({ popupPlan: plan });
+      rawSettings.popupPlan = plan;
       renderNewsAdmin();
     });
   });
