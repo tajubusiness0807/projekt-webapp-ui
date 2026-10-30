@@ -4561,3 +4561,50 @@ revoke execute on function public.lr_sweep() from public, anon, authenticated;
 analyze public.horse_bets;
 analyze public.roulette_bets;
 analyze public.rocket_bets;
+
+
+-- ---------------------------------------------------------------------------
+-- FIX for the Lucky Burger career trigger: run this part once (after "Admin: Lucky Burger career").
+-- The earlier version made the page reload after every save it corrected. With Night School the page
+-- rounded the time worked down (12.5 s per paycheck), so it sent a tiny bit less every time: correct,
+-- reload, save, correct, ... in an endless loop that flooded the database. Now the trigger only keeps
+-- the higher career quietly and never makes the page reload, and small differences are left alone.
+create or replace function public.players_keep_job()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+declare
+  o jsonb;
+  n jsonb;
+  oj jsonb;
+  nj jsonb;
+  om numeric;
+  nm numeric;
+begin
+  if current_user <> 'authenticated' or new.game is null or old.game is null then return new; end if;
+  begin
+    o := old.game::jsonb;
+    oj := o -> 'job';
+    if oj is null or jsonb_typeof(oj) <> 'object' then return new; end if;
+    n := new.game::jsonb;
+    om := coalesce((o ->> 'jobReset')::numeric, 0);
+    nm := coalesce((n ->> 'jobReset')::numeric, 0);
+    -- "Start over" on the page: a newer mark, the lower career goes through
+    if nm > om then return new; end if;
+    nj := case when jsonb_typeof(n -> 'job') = 'object' then n -> 'job' else '{}'::jsonb end;
+    if nm < om
+       or coalesce((oj ->> 'pos')::numeric, 0) > coalesce((nj ->> 'pos')::numeric, 0)
+       or coalesce((oj ->> 'worked')::numeric, 0) > coalesce((nj ->> 'worked')::numeric, 0) + 60 then
+      -- an old page: the career in the database stays (with an admin's mark, if any)
+      n := jsonb_set(n, '{job}', oj);
+      if o ? 'jobReset' then n := jsonb_set(n, '{jobReset}', o -> 'jobReset'); end if;
+      new.game := n::text;
+    end if;
+  exception when others then return new;
+  end;
+  return new;
+end;
+$$;
+drop trigger if exists players_keep_job on public.players;
+create trigger players_keep_job before update on public.players for each row execute function public.players_keep_job();

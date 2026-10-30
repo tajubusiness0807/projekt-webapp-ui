@@ -11247,7 +11247,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     // a stake still riding on the coin stays there
     const cr = state.cf.round;
     if (!(cr && cr.bet >= 1 && cr.mult >= 1 && cr.wins >= 0)) state.cf.round = null;
-    for (const k of ['worked', 'earned', 'shifts', 'pos']) state.job[k] = Math.max(0, Math.floor(Number(state.job[k]) || 0));
+    for (const k of ['worked', 'earned', 'shifts', 'pos']) state.job[k] = Math.max(0, k === 'worked' ? Number(state.job[k]) || 0 : Math.floor(Number(state.job[k]) || 0));
     if (state.pk.solo && !Array.isArray(state.pk.solo.seats)) state.pk.solo = null;
     if (typeof state.rl.bets !== 'object' || !state.rl.bets) state.rl.bets = {};
     if (!Array.isArray(state.bj.shoe)) state.bj.shoe = [];
@@ -11957,13 +11957,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           const theirMark = Number(theirs?.jobReset) || 0, myMark = state.jobReset || 0;
           if (theirs?.job && theirMark > myMark) {
             // an admin set the career
-            for (const k of ['worked', 'earned', 'shifts', 'pos']) state.job[k] = Math.max(0, Math.floor(Number(theirs.job[k]) || 0));
+            for (const k of ['worked', 'earned', 'shifts', 'pos']) state.job[k] = Math.max(0, Number(theirs.job[k]) || 0);
             state.jobReset = theirMark;
             jbRender();
             toast('Lucky Burger', `An admin made you ${i18n(JB_POS[jbIdx()].name)}.`);
           } else if (theirs?.job && theirMark === myMark) {
             const before = jbIdx();
-            for (const k of ['worked', 'earned', 'shifts', 'pos']) state.job[k] = Math.max(state.job[k] || 0, Math.floor(Number(theirs.job[k]) || 0));
+            for (const k of ['worked', 'earned', 'shifts', 'pos']) state.job[k] = Math.max(state.job[k] || 0, Number(theirs.job[k]) || 0);
             if (jbIdx() > before) jbRender();
           }
           // live-game winnings that came in: the games show them right away
