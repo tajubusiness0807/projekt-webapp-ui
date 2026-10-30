@@ -4366,3 +4366,27 @@ begin
     where id = draw;
 end;
 $$;
+
+
+-- ---------------------------------------------------------------------------
+-- Admin: player passwords: run this part once (after "Admin security"). An admin can give a player who
+-- forgot their password a new one. The player is signed out on their devices and signs in with the new one.
+create or replace function public.admin_set_password(tok uuid, target uuid, new_pw text)
+returns void
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+begin
+  perform public.admin_check(tok);
+  if new_pw is null or length(new_pw) < 6 then raise exception 'password too short'; end if;
+  if target = auth.uid() then raise exception 'change your own password in your profile'; end if;
+  if not exists (select 1 from public.players where id = target) then raise exception 'no such player'; end if;
+  update auth.users set encrypted_password = crypt(new_pw, gen_salt('bf')) where id = target;
+  -- end the player's open sessions so the old password is really gone
+  if to_regclass('auth.sessions') is not null then execute 'delete from auth.sessions where user_id = $1' using target; end if;
+  if to_regclass('auth.refresh_tokens') is not null then execute 'delete from auth.refresh_tokens where user_id = $1::text' using target; end if;
+end;
+$$;
+revoke execute on function public.admin_set_password(uuid, uuid, text) from public, anon;
+grant execute on function public.admin_set_password(uuid, uuid, text) to authenticated;
