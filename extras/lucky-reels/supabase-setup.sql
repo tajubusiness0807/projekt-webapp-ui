@@ -4514,3 +4514,50 @@ begin
   return new;
 end;
 $$;
+
+
+-- ---------------------------------------------------------------------------
+-- Database speed-up: run this part once (after "Economy rework"). With many players online, every page
+-- asked the database to settle finished rounds every few seconds, and all of them waited in one queue for
+-- each other; the search for unsettled bets also read every bet ever placed. Now the pages don't wait for
+-- each other and indexes find the open bets directly.
+create index if not exists horse_bets_unsettled on public.horse_bets (race_id) where payout is null;
+create index if not exists roulette_bets_unsettled on public.roulette_bets (round_id) where payout is null;
+create index if not exists rocket_bets_unsettled on public.rocket_bets (round_id) where payout is null;
+create index if not exists lotto_draws_unsettled on public.lotto_draws (draw_at) where not settled;
+create or replace function public.lr_sweep()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+  x bigint;
+  d text;
+begin
+  -- only one page at a time does the sweep; the others go on right away instead of queueing behind it
+  perform 1 from public.lr_sweep_at where id = 1 and at < now() - interval '2 seconds' for update skip locked;
+  if not found then return; end if;
+  update public.lr_sweep_at set at = now() where id = 1;
+  for x in select distinct race_id from public.horse_bets where payout is null and race_id * 180000 + 120000 <= now_ms limit 20 loop
+    perform public.horse_settle(x);
+  end loop;
+  for x in select distinct round_id from public.roulette_bets where payout is null and round_id * 45000 + 34000 <= now_ms limit 20 loop
+    perform public.roulette_settle(x);
+  end loop;
+  for x in select distinct b.round_id from public.rocket_bets b join public.rocket_rounds r on r.id = b.round_id
+      where b.payout is null and r.crash_at <= now_ms limit 20 loop
+    perform public.rocket_settle(x);
+  end loop;
+  if to_regclass('public.lotto_draws') is not null then
+    for d in select id from public.lotto_draws where not settled and draw_at <= now() limit 5 loop
+      perform public.lotto_settle(d);
+    end loop;
+  end if;
+end;
+$$;
+revoke execute on function public.lr_sweep() from public, anon, authenticated;
+analyze public.horse_bets;
+analyze public.roulette_bets;
+analyze public.rocket_bets;
