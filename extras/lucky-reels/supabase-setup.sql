@@ -4282,3 +4282,40 @@ end;
 $$;
 revoke execute on function public.affiliate_redeem(text, text) from public, anon;
 grant execute on function public.affiliate_redeem(text, text) to authenticated;
+
+
+-- ---------------------------------------------------------------------------
+-- Gifts only from level 3: run this part once (after "Sending credits" and "Lotto"). Credits can only be sent
+-- to players who reached level 3 (or went Prestige), the same rule as for sending.
+create or replace function public.send_credits(target uuid, amount bigint)
+returns bigint
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  me public.players;
+  them public.players;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  -- While lotto tickets are on sale, nobody can move credits: the ticket price depends on everyone's balance.
+  if public.lotto_selling() then raise exception 'lotto sales running'; end if;
+  if target = auth.uid() then raise exception 'cannot send to yourself'; end if;
+  if amount is null or amount < 1 then raise exception 'send at least 1'; end if;
+  -- Lock both rows in a fixed order so two gifts at once can't deadlock.
+  perform 1 from public.players where id in (auth.uid(), target) order by id for update;
+  select * into me from public.players where id = auth.uid();
+  select * into them from public.players where id = target;
+  if me is null or me.is_banned then raise exception 'not allowed'; end if;
+  if them is null or them.is_banned then raise exception 'no such player'; end if;
+  if me.level < 3 and me.prestige = 0 then raise exception 'reach level 3 first'; end if;
+  if them.level < 3 and them.prestige = 0 then raise exception 'recipient below level 3'; end if;
+  if me.credits < amount then raise exception 'not enough credits'; end if;
+  update public.players set credits = credits - amount, admin_rev = admin_rev + 1, updated_at = now() where id = me.id;
+  update public.players set credits = credits + amount, admin_rev = admin_rev + 1, updated_at = now() where id = them.id;
+  insert into public.transfers (sender, recipient, sender_name, amount) values (me.id, them.id, me.name, amount);
+  return me.credits - amount;
+end;
+$$;
+revoke execute on function public.send_credits(uuid, bigint) from public, anon;
+grant execute on function public.send_credits(uuid, bigint) to authenticated;

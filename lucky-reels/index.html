@@ -4133,7 +4133,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['Got a code from a friend? You start with {a} credits instead of {b} (first account on this device only).', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits (nur beim ersten Konto auf diesem Gerät).'], ['Got a code from a friend? You start with {a} credits instead of {b}.', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits.'], ['New players who use it start with {a} credits.', 'Neue Spieler, die ihn nutzen, starten mit {a} Credits.'], ['New players who sign up with your code start with {a} credits.', 'Neue Spieler, die sich mit deinem Code anmelden, starten mit {a} Credits.'], ['You get {a} on top.', 'Du bekommst {a} obendrauf.'], ['{a} extra credits', '{a} Extra-Credits'], ['{a}% of your credits (at most {b})', '{a} % deiner Credits (höchstens {b})'], ['{a}% of your credits', '{a} % deiner Credits'], ['Example: a new player starts with {a} credits. A code owner with 50,000 credits gets {b}, one with 500,000 gets {c}.', 'Beispiel: Ein neuer Spieler startet mit {a} Credits. Ein Code-Besitzer mit 50,000 Credits bekommt {b}, einer mit 500,000 bekommt {c}.'], ['ends in {a}', 'endet in {a}'], ['starts in {a}', 'beginnt in {a}'], ['Event gift: +{a} credits!', 'Event-Geschenk: +{a} Credits!'], ['event ×{a}', 'Event ×{a}'], ['1st place', '1. Platz'], ['2nd place', '2. Platz'], ['3rd place', '3. Platz'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['{a} can get credits from level {b} on.', '{a} kann erst ab Level {b} Credits bekommen.'], ['Got a code from a friend? You start with {a} credits instead of {b} (first account on this device only).', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits (nur beim ersten Konto auf diesem Gerät).'], ['Got a code from a friend? You start with {a} credits instead of {b}.', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits.'], ['New players who use it start with {a} credits.', 'Neue Spieler, die ihn nutzen, starten mit {a} Credits.'], ['New players who sign up with your code start with {a} credits.', 'Neue Spieler, die sich mit deinem Code anmelden, starten mit {a} Credits.'], ['You get {a} on top.', 'Du bekommst {a} obendrauf.'], ['{a} extra credits', '{a} Extra-Credits'], ['{a}% of your credits (at most {b})', '{a} % deiner Credits (höchstens {b})'], ['{a}% of your credits', '{a} % deiner Credits'], ['Example: a new player starts with {a} credits. A code owner with 50,000 credits gets {b}, one with 500,000 gets {c}.', 'Beispiel: Ein neuer Spieler startet mit {a} Credits. Ein Code-Besitzer mit 50,000 Credits bekommt {b}, einer mit 500,000 bekommt {c}.'], ['ends in {a}', 'endet in {a}'], ['starts in {a}', 'beginnt in {a}'], ['Event gift: +{a} credits!', 'Event-Geschenk: +{a} Credits!'], ['event ×{a}', 'Event ×{a}'], ['1st place', '1. Platz'], ['2nd place', '2. Platz'], ['3rd place', '3. Platz'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
     ['Rises in {a} of steps', 'Steigt in {a} der Schritte'], ['Usually {a} or {b}', 'Meist {a} oder {b}'], ['Swings: {a}', 'Schwankung: {a}'],
     ['Start {a} · bankrupt below {b} · takeover at {c}', 'Start {a} · Pleite unter {b} · Übernahme ab {c}'],
     ['Buy {a} for {b} · sell {c} for {d} (1% fee each way)', 'Kauf {a} für {b} · Verkauf {c} für {d} (je 1 % Gebühr)'],
@@ -10433,6 +10433,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         if (ltSelling()) throw Object.assign(new Error('lotto sales running'), { code: 'gift_lotto' });
         const me = await store.load(account.id), them = await store.load(to);
         if (!them) throw Object.assign(new Error('no such player'), { code: 'gift_player' });
+        if ((Number(them.level) || 1) < GIFT_LEVEL && !(Number(them.prestige) > 0)) throw Object.assign(new Error('recipient below level 3'), { code: 'gift_target' });
         if ((Number(me?.credits) || 0) < amount) throw Object.assign(new Error('not enough credits'), { code: 'gift_credits' });
         await store.save(account.id, { credits: Number(me.credits) - amount, adminRev: (Number(me.adminRev) || 0) + 1 });
         const gifts = [...(Array.isArray(them.gifts) ? them.gifts : []), { from: account.name, amount, at: Date.now() }].slice(-10);
@@ -10892,7 +10893,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         if (!error) return;
         const m = error.message || '';
         throw Object.assign(error, { code: error.code === 'PGRST202' || /could not find the function/i.test(m) ? 'gift_setup' : /lotto/i.test(m) ? 'gift_lotto'
-          : /level/i.test(m) ? 'gift_level' : /credits/i.test(m) ? 'gift_credits' : /player|yourself|blocked/i.test(m) ? 'gift_player' : 'gift_error' });
+          : /recipient/i.test(m) ? 'gift_target' : /level/i.test(m) ? 'gift_level' : /credits/i.test(m) ? 'gift_credits' : /player|yourself|blocked/i.test(m) ? 'gift_player' : 'gift_error' });
       },
       async giftsSince(since) {
         const { data, error } = await sb.from('transfers').select('id,sender_name,amount,created_at').eq('recipient', account.id)
@@ -11400,7 +11401,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       (medals.length ? `<div class="medal-list">${medals.map(m => `<div class="medal-row">${medalSvg(m)}<span><b>${esc(m.name)}</b><small>${esc(m.desc)}</small></span></div>`).join('')}</div>`
         : `<p class="note">${mine ? 'No medals yet. Admins award them for special moments.' : 'No medals yet.'}</p>`) + picker +
       affBox(p, mine) +
-      (!mine && backend?.sendCredits ? `<div class="send-box"><span class="profile-label">Send ${esc(p.name)} credits</span>
+      (!mine && backend?.sendCredits && (p.level || 1) < GIFT_LEVEL && !p.prestige ? `<div class="send-box"><span class="profile-label">Send ${esc(p.name)} credits</span><small class="send-msg">${esc(i18n(`${p.name} can get credits from level ${GIFT_LEVEL} on.`))}</small></div>` : '') +
+      (!mine && backend?.sendCredits && ((p.level || 1) >= GIFT_LEVEL || p.prestige) ? `<div class="send-box"><span class="profile-label">Send ${esc(p.name)} credits</span>
         <div class="send-row"><input id="sendAmt" type="number" min="1" step="1" inputmode="numeric" placeholder="Amount" aria-label="Credits to send"><button type="button" class="chip-btn" data-send-max>Max</button><button type="button" class="spin" id="sendBtn">Send</button></div>
         <small class="send-msg" id="sendMsg">You have ${fmt(state.credits)} credits.</small></div>` : '');
     if (keep.v) { $('sendAmt').value = keep.v; if (keep.focus) $('sendAmt').focus(); }
@@ -11444,6 +11446,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const sale = ltSelling();
     if (sale) { msg(`No sending while lotto tickets are on sale (until ${ltClock(sale.closeAt)}).`); return; }
     if (state.level < GIFT_LEVEL && !state.prestige) { msg(`Reach level ${GIFT_LEVEL} to send credits.`); return; }
+    if ((p.level || 1) < GIFT_LEVEL && !p.prestige) { msg(`${p.name} can get credits from level ${GIFT_LEVEL} on.`); return; }
     if (gameBusy()) { msg('Let the current round finish first.'); return; }
     sending = true;
     $('sendBtn').disabled = true;
@@ -11460,7 +11463,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       renderProfile();
     } catch (e) {
       msg({ gift_setup: 'Sending credits needs the “Sending credits” part of supabase-setup.sql.', gift_level: `Reach level ${GIFT_LEVEL} to send credits.`,
-        gift_credits: 'Not enough credits for that.', gift_player: 'That player cannot get credits right now.', gift_lotto: 'No sending while lotto tickets are on sale.' }[e?.code] || 'That did not work. Check the connection and try again.');
+        gift_credits: 'Not enough credits for that.', gift_player: 'That player cannot get credits right now.', gift_lotto: 'No sending while lotto tickets are on sale.', gift_target: `${p.name} can get credits from level ${GIFT_LEVEL} on.` }[e?.code] || 'That did not work. Check the connection and try again.');
     }
     sending = false;
     if ($('sendBtn')) $('sendBtn').disabled = false;
