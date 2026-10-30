@@ -3977,6 +3977,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Compensation per player, e.g. 10000': 'Entschädigung pro Spieler, z. B. 10000', 'Compensation per player': 'Entschädigung pro Spieler', 'Message (optional)': 'Nachricht (optional)', 'Message for the compensation': 'Nachricht zur Entschädigung', '🎁 Compensation for the downtime': '🎁 Entschädigung für die Ausfallzeit', 'Compensation': 'Entschädigung', 'credits': 'Credits', 'Enter how many credits every player gets.': 'Gib ein, wie viele Credits jeder Spieler bekommt.',
     'Private chat': 'Privater Chat', '← Back': '← Zurück', 'Pick who you want to write to': 'Wähle aus, wem du schreiben willst', 'Your chats': 'Deine Chats', 'Other players': 'Weitere Spieler', 'Players': 'Spieler', 'online': 'online', 'There is nobody else here yet.': 'Hier ist noch niemand sonst.',
     'Admin Name': 'Admin-Name', 'Only for admins, free: your name glows red with an ADMIN tag, for everyone to see.': 'Nur für Admins, gratis: Dein Name leuchtet rot mit ADMIN-Schild, für alle sichtbar.',
+    'How long this player has to wait before closing the ad': 'Wie lange dieser Spieler warten muss, bevor er die Werbung schließen kann', '📺 Ad': '📺 Werbung', 'Set': 'Setzen', 'Normal again': 'Wieder normal', 'Enter 0 to 120 seconds.': 'Gib 0 bis 120 Sekunden ein.',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -4175,7 +4176,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['Message {a}…', 'Nachricht an {a}…'], ['Sorry for the downtime! As a thank-you for your patience, everyone gets {a} credits.', 'Sorry für die Ausfallzeit! Als Dankeschön für eure Geduld bekommt jeder {a} Credits.'], ['Give everyone {a}?', 'Allen {a} geben?'], ['Everyone got {a} credits and sees a pop-up about it.', 'Alle haben {a} Credits bekommen und sehen ein Pop-up dazu.'], ['{a} now works as {b} at Lucky Burger.', '{a} arbeitet jetzt als {b} bei Lucky Burger.'], ['An admin made you {a}.', 'Ein Admin hat dich zu {a} gemacht.'], ['Lucky Burger position for {a}', 'Lucky-Burger-Position für {a}'], ['New password for {a} (6+)', 'Neues Passwort für {a} (6+)'], ['{a} has a new password now. Tell it to them yourself.', '{a} hat jetzt ein neues Passwort. Sag es ihm selbst.'], ['{a} can get credits from level {b} on.', '{a} kann erst ab Level {b} Credits bekommen.'], ['Got a code from a friend? You start with {a} credits instead of {b} (first account on this device only).', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits (nur beim ersten Konto auf diesem Gerät).'], ['Got a code from a friend? You start with {a} credits instead of {b}.', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits.'], ['New players who use it start with {a} credits.', 'Neue Spieler, die ihn nutzen, starten mit {a} Credits.'], ['New players who sign up with your code start with {a} credits.', 'Neue Spieler, die sich mit deinem Code anmelden, starten mit {a} Credits.'], ['You get {a} on top.', 'Du bekommst {a} obendrauf.'], ['{a} extra credits', '{a} Extra-Credits'], ['{a}% of your credits (at most {b})', '{a} % deiner Credits (höchstens {b})'], ['{a}% of your credits', '{a} % deiner Credits'], ['Example: a new player starts with {a} credits. A code owner with 50,000 credits gets {b}, one with 500,000 gets {c}.', 'Beispiel: Ein neuer Spieler startet mit {a} Credits. Ein Code-Besitzer mit 50,000 Credits bekommt {b}, einer mit 500,000 bekommt {c}.'], ['ends in {a}', 'endet in {a}'], ['starts in {a}', 'beginnt in {a}'], ['Event gift: +{a} credits!', 'Event-Geschenk: +{a} Credits!'], ['event ×{a}', 'Event ×{a}'], ['1st place', '1. Platz'], ['2nd place', '2. Platz'], ['3rd place', '3. Platz'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['📺 Ad {a} s', '📺 Werbung {a} s'], ['Seconds (normal: {a})', 'Sekunden (normal: {a})'], ['Ad wait for {a} in seconds', 'Werbe-Wartezeit für {a} in Sekunden'], ['{a} has the normal ad wait again ({b} s).', '{a} hat wieder die normale Werbe-Wartezeit ({b} s).'], ['{a} can close the ad only after {b} seconds.', '{a} kann die Werbung erst nach {b} Sekunden schließen.'], ['Message {a}…', 'Nachricht an {a}…'], ['Sorry for the downtime! As a thank-you for your patience, everyone gets {a} credits.', 'Sorry für die Ausfallzeit! Als Dankeschön für eure Geduld bekommt jeder {a} Credits.'], ['Give everyone {a}?', 'Allen {a} geben?'], ['Everyone got {a} credits and sees a pop-up about it.', 'Alle haben {a} Credits bekommen und sehen ein Pop-up dazu.'], ['{a} now works as {b} at Lucky Burger.', '{a} arbeitet jetzt als {b} bei Lucky Burger.'], ['An admin made you {a}.', 'Ein Admin hat dich zu {a} gemacht.'], ['Lucky Burger position for {a}', 'Lucky-Burger-Position für {a}'], ['New password for {a} (6+)', 'Neues Passwort für {a} (6+)'], ['{a} has a new password now. Tell it to them yourself.', '{a} hat jetzt ein neues Passwort. Sag es ihm selbst.'], ['{a} can get credits from level {b} on.', '{a} kann erst ab Level {b} Credits bekommen.'], ['Got a code from a friend? You start with {a} credits instead of {b} (first account on this device only).', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits (nur beim ersten Konto auf diesem Gerät).'], ['Got a code from a friend? You start with {a} credits instead of {b}.', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits.'], ['New players who use it start with {a} credits.', 'Neue Spieler, die ihn nutzen, starten mit {a} Credits.'], ['New players who sign up with your code start with {a} credits.', 'Neue Spieler, die sich mit deinem Code anmelden, starten mit {a} Credits.'], ['You get {a} on top.', 'Du bekommst {a} obendrauf.'], ['{a} extra credits', '{a} Extra-Credits'], ['{a}% of your credits (at most {b})', '{a} % deiner Credits (höchstens {b})'], ['{a}% of your credits', '{a} % deiner Credits'], ['Example: a new player starts with {a} credits. A code owner with 50,000 credits gets {b}, one with 500,000 gets {c}.', 'Beispiel: Ein neuer Spieler startet mit {a} Credits. Ein Code-Besitzer mit 50,000 Credits bekommt {b}, einer mit 500,000 bekommt {c}.'], ['ends in {a}', 'endet in {a}'], ['starts in {a}', 'beginnt in {a}'], ['Event gift: +{a} credits!', 'Event-Geschenk: +{a} Credits!'], ['event ×{a}', 'Event ×{a}'], ['1st place', '1. Platz'], ['2nd place', '2. Platz'], ['3rd place', '3. Platz'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
     ['Rises in {a} of steps', 'Steigt in {a} der Schritte'], ['Usually {a} or {b}', 'Meist {a} oder {b}'], ['Swings: {a}', 'Schwankung: {a}'],
     ['Start {a} · bankrupt below {b} · takeover at {c}', 'Start {a} · Pleite unter {b} · Übernahme ab {c}'],
     ['Buy {a} for {b} · sell {c} for {d} (1% fee each way)', 'Kauf {a} für {b} · Verkauf {c} für {d} (je 1 % Gebühr)'],
@@ -12387,6 +12388,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           <button class="abtn${p.title === 'bugabuser' ? ' warn' : ''}" data-act="title" title="${p.title === 'bugabuser' ? 'Take the title away again' : 'Give this player the title Bug Abuser'}">${p.title === 'bugabuser' ? 'Remove “Bug Abuser”' : '🐞 Bug Abuser'}</button>
           <button class="abtn" data-act="admin"${me ? ' disabled' : ''}>${p.admin ? 'Remove admin' : 'Make admin'}</button>
           <button class="abtn" data-act="job" title="Set the Lucky Burger career">🍔 Burger</button>
+          <button class="abtn${rawSettings?.adLockFor?.[p.id] != null ? ' warn' : ''}" data-act="adlock" title="How long this player has to wait before closing the ad">📺 ${rawSettings?.adLockFor?.[p.id] != null ? `Ad ${adLockOf(p.id)} s` : 'Ad'}</button>
           <button class="abtn" data-act="pw"${me ? ' disabled title="Change your own password in your profile"' : ' title="Give this player a new password"'}>Password</button>
           <span class="gap"></span>
           <button class="abtn warn" data-act="reset">Reset</button>
@@ -12461,6 +12463,22 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       const pw = tr.querySelector('.new-admin-pw').value;
       if (pw.length < 8) { adminSay('Admin passwords need at least 8 characters.', false); return; }
       adminDo(`${p.name} is now an admin. Tell them their admin password yourself.`, () => backend.admin.setAdmin(p.id, true, pw));
+    } else if (act === 'adlock') {
+      const acts = btn.closest('.acts'), cur = rawSettings?.adLockFor?.[p.id];
+      acts.innerHTML = `<input type="number" class="new-adlock" min="0" max="120" step="1" inputmode="numeric" value="${cur ?? ''}" placeholder="Seconds (normal: ${settings.adLock})" aria-label="Ad wait for ${esc(p.name)} in seconds">` +
+        '<button class="abtn ok" data-act="adlock-ok">Set</button><button class="abtn" data-act="adlock-clear">Normal again</button><button class="abtn" data-act="admin-cancel">Cancel</button>';
+      acts.querySelector('input').focus();
+    } else if (act === 'adlock-ok' || act === 'adlock-clear') {
+      const raw = tr.querySelector('.new-adlock').value.trim(), v = Math.floor(Number(raw));
+      const clear = act === 'adlock-clear' || raw === '';
+      if (!clear && !(v >= 0 && v <= 120)) { adminSay('Enter 0 to 120 seconds.', false); return; }
+      const map = { ...(rawSettings.adLockFor || {}) };
+      if (clear) delete map[p.id]; else map[p.id] = v;
+      adminDo(clear ? `${p.name} has the normal ad wait again (${settings.adLock} s).` : `${p.name} can close the ad only after ${v} seconds.`, async () => {
+        await backend.admin.saveSettings({ adLockFor: map });
+        rawSettings.adLockFor = map;
+        renderAdminPlayers(true);
+      });
     } else if (act === 'job') {
       const acts = btn.closest('.acts');
       acts.innerHTML = `<select class="new-job" aria-label="Lucky Burger position for ${esc(p.name)}">${JB_POS.map((x, i) => `<option value="${i}">${esc(i18n(x.name))} · ${x.wage} / 10 s</option>`).join('')}</select>` +
@@ -14221,6 +14239,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
   // ----- The ad pop-up: every few minutes for every player, first a few seconds without a way to close it -----
   const AD_LS = 'lucky-reels-ad-at';
+  // an admin can give single players a longer wait before the ad can be closed
+  function adLockOf(id) {
+    const v = Number(rawSettings?.adLockFor?.[id]);
+    return Number.isFinite(v) && v >= 0 ? Math.min(120, Math.floor(v)) : settings.adLock;
+  }
   let adShownAt = 0, adTimer = null;
   const adLast = () => { try { return Number(localStorage.getItem(AD_LS)) || 0; } catch { return 0; } };
   function adCanShow() {
@@ -14232,7 +14255,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   }
   function showAd() {
     if (!$('adImg').src) $('adImg').src = 'werbung.jpg';
-    const lock = settings.adLock, btn = $('adClose');
+    const lock = adLockOf(account?.id), btn = $('adClose');
     adShownAt = Date.now();
     try { localStorage.setItem(AD_LS, String(adShownAt)); } catch {}
     $('adModal').hidden = false;
