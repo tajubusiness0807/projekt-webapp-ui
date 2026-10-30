@@ -1838,6 +1838,8 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
 
 /* Admin: the lotto tab */
 .lt-admin-draws { display: grid; gap: 10px; margin-top: 14px; }
+.comp-row { margin-top: 8px; padding: 10px; border-radius: 10px; background: #7fd18b14; border: 1px dashed #7fd18b66; }
+.comp-row #compText { flex: 2 1 200px; }
 .aff-form { margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid #ffffff18; }
 .lt-admin-draw { padding: 12px 14px; border-radius: 12px; background: #ffffff0a; border: 1px solid #ffffff18; font-size: 13px; }
 .lt-admin-draw h4 { margin: 0 0 4px; font-size: 15px; }
@@ -3414,6 +3416,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           <input id="giveAllAmount" type="number" inputmode="numeric" placeholder="Credits for everyone, e.g. 1000 or -500" aria-label="Credits for everyone">
           <button class="abtn ok" id="giveAll" type="button">Give to everyone</button>
         </div>
+        <div class="admin-row comp-row">
+          <input id="compAmount" type="number" inputmode="numeric" min="1" placeholder="Compensation per player, e.g. 10000" aria-label="Compensation per player">
+          <input id="compText" maxlength="300" placeholder="Message (optional)" aria-label="Message for the compensation">
+          <button class="abtn ok" id="compSend" type="button">🎁 Compensation for the downtime</button>
+        </div>
         <div class="admin-tools">
           <input id="adminSearch" type="search" placeholder="Search players…" aria-label="Search players" autocomplete="off">
           <select id="adminSort" aria-label="Sort players"><option value="name">A–Z</option><option value="credits">Credits</option><option value="level">Level</option><option value="online">Online first</option></select>
@@ -3959,6 +3966,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Password': 'Passwort', 'Give this player a new password': 'Diesem Spieler ein neues Passwort geben', 'Change your own password in your profile': 'Dein eigenes Passwort änderst du in deinem Profil', 'Set password': 'Passwort setzen', 'This needs the “Admin: player passwords” part of supabase-setup.sql.': 'Dafür brauchst du den Teil „Admin: player passwords“ aus supabase-setup.sql.',
     'Advertisement': 'Werbung', 'Ad': 'Anzeige', 'Close the ad': 'Werbung schließen', 'Ad pop-up on': 'Werbe-Pop-up an', 'Every player sees the ad image again and again while they play.': 'Jeder Spieler sieht das Werbebild immer wieder, während er spielt.', 'Ad: every (minutes)': 'Werbung: alle (Minuten)', "Ad: can't be closed for (seconds)": 'Werbung: nicht wegklickbar für (Sekunden)',
     'Set the Lucky Burger career': 'Lucky-Burger-Karriere einstellen', 'Set position': 'Position setzen', 'This needs the “Admin: Lucky Burger career” part of supabase-setup.sql.': 'Dafür brauchst du den Teil „Admin: Lucky Burger career“ aus supabase-setup.sql.', 'That player has not played yet, so there is no career to set.': 'Dieser Spieler hat noch nicht gespielt, es gibt noch keine Karriere zum Einstellen.',
+    'Compensation per player, e.g. 10000': 'Entschädigung pro Spieler, z. B. 10000', 'Compensation per player': 'Entschädigung pro Spieler', 'Message (optional)': 'Nachricht (optional)', 'Message for the compensation': 'Nachricht zur Entschädigung', '🎁 Compensation for the downtime': '🎁 Entschädigung für die Ausfallzeit', 'Compensation': 'Entschädigung', 'credits': 'Credits', 'Enter how many credits every player gets.': 'Gib ein, wie viele Credits jeder Spieler bekommt.',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -4157,7 +4165,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['{a} now works as {b} at Lucky Burger.', '{a} arbeitet jetzt als {b} bei Lucky Burger.'], ['An admin made you {a}.', 'Ein Admin hat dich zu {a} gemacht.'], ['Lucky Burger position for {a}', 'Lucky-Burger-Position für {a}'], ['New password for {a} (6+)', 'Neues Passwort für {a} (6+)'], ['{a} has a new password now. Tell it to them yourself.', '{a} hat jetzt ein neues Passwort. Sag es ihm selbst.'], ['{a} can get credits from level {b} on.', '{a} kann erst ab Level {b} Credits bekommen.'], ['Got a code from a friend? You start with {a} credits instead of {b} (first account on this device only).', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits (nur beim ersten Konto auf diesem Gerät).'], ['Got a code from a friend? You start with {a} credits instead of {b}.', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits.'], ['New players who use it start with {a} credits.', 'Neue Spieler, die ihn nutzen, starten mit {a} Credits.'], ['New players who sign up with your code start with {a} credits.', 'Neue Spieler, die sich mit deinem Code anmelden, starten mit {a} Credits.'], ['You get {a} on top.', 'Du bekommst {a} obendrauf.'], ['{a} extra credits', '{a} Extra-Credits'], ['{a}% of your credits (at most {b})', '{a} % deiner Credits (höchstens {b})'], ['{a}% of your credits', '{a} % deiner Credits'], ['Example: a new player starts with {a} credits. A code owner with 50,000 credits gets {b}, one with 500,000 gets {c}.', 'Beispiel: Ein neuer Spieler startet mit {a} Credits. Ein Code-Besitzer mit 50,000 Credits bekommt {b}, einer mit 500,000 bekommt {c}.'], ['ends in {a}', 'endet in {a}'], ['starts in {a}', 'beginnt in {a}'], ['Event gift: +{a} credits!', 'Event-Geschenk: +{a} Credits!'], ['event ×{a}', 'Event ×{a}'], ['1st place', '1. Platz'], ['2nd place', '2. Platz'], ['3rd place', '3. Platz'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['Sorry for the downtime! As a thank-you for your patience, everyone gets {a} credits.', 'Sorry für die Ausfallzeit! Als Dankeschön für eure Geduld bekommt jeder {a} Credits.'], ['Give everyone {a}?', 'Allen {a} geben?'], ['Everyone got {a} credits and sees a pop-up about it.', 'Alle haben {a} Credits bekommen und sehen ein Pop-up dazu.'], ['{a} now works as {b} at Lucky Burger.', '{a} arbeitet jetzt als {b} bei Lucky Burger.'], ['An admin made you {a}.', 'Ein Admin hat dich zu {a} gemacht.'], ['Lucky Burger position for {a}', 'Lucky-Burger-Position für {a}'], ['New password for {a} (6+)', 'Neues Passwort für {a} (6+)'], ['{a} has a new password now. Tell it to them yourself.', '{a} hat jetzt ein neues Passwort. Sag es ihm selbst.'], ['{a} can get credits from level {b} on.', '{a} kann erst ab Level {b} Credits bekommen.'], ['Got a code from a friend? You start with {a} credits instead of {b} (first account on this device only).', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits (nur beim ersten Konto auf diesem Gerät).'], ['Got a code from a friend? You start with {a} credits instead of {b}.', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits.'], ['New players who use it start with {a} credits.', 'Neue Spieler, die ihn nutzen, starten mit {a} Credits.'], ['New players who sign up with your code start with {a} credits.', 'Neue Spieler, die sich mit deinem Code anmelden, starten mit {a} Credits.'], ['You get {a} on top.', 'Du bekommst {a} obendrauf.'], ['{a} extra credits', '{a} Extra-Credits'], ['{a}% of your credits (at most {b})', '{a} % deiner Credits (höchstens {b})'], ['{a}% of your credits', '{a} % deiner Credits'], ['Example: a new player starts with {a} credits. A code owner with 50,000 credits gets {b}, one with 500,000 gets {c}.', 'Beispiel: Ein neuer Spieler startet mit {a} Credits. Ein Code-Besitzer mit 50,000 Credits bekommt {b}, einer mit 500,000 bekommt {c}.'], ['ends in {a}', 'endet in {a}'], ['starts in {a}', 'beginnt in {a}'], ['Event gift: +{a} credits!', 'Event-Geschenk: +{a} Credits!'], ['event ×{a}', 'Event ×{a}'], ['1st place', '1. Platz'], ['2nd place', '2. Platz'], ['3rd place', '3. Platz'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
     ['Rises in {a} of steps', 'Steigt in {a} der Schritte'], ['Usually {a} or {b}', 'Meist {a} oder {b}'], ['Swings: {a}', 'Schwankung: {a}'],
     ['Start {a} · bankrupt below {b} · takeover at {c}', 'Start {a} · Pleite unter {b} · Übernahme ab {c}'],
     ['Buy {a} for {b} · sell {c} for {d} (1% fee each way)', 'Kauf {a} für {b} · Verkauf {c} für {d} (je 1 % Gebühr)'],
@@ -13527,6 +13535,21 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       persist();
       $('newsTitleIn').value = ''; $('newsTextIn').value = '';
       renderNewsAdmin();
+    });
+  });
+  // Compensation: credits for every player plus a pop-up that says why
+  $('compSend').addEventListener('click', e => {
+    const v = Math.floor(Number($('compAmount').value));
+    if (!(v >= 1)) { adminSay('Enter how many credits every player gets.', false); return; }
+    if (!confirmed(e.currentTarget, `Give everyone ${fmt(v)}?`)) return;
+    const text = $('compText').value.trim().slice(0, 300) || i18n(`Sorry for the downtime! As a thank-you for your patience, everyone gets ${fmt(v)} credits.`);
+    const popup = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7), title: `🎁 ${i18n('Compensation')}: +${fmt(v)} ${i18n('credits')}`, text, at: Date.now() };
+    adminDo(`Everyone got ${fmt(v)} credits and sees a pop-up about it.`, async () => {
+      await backend.admin.addAll(v);
+      await backend.admin.saveSettings({ popup });
+      rawSettings.popup = popup;
+      $('compAmount').value = ''; $('compText').value = '';
+      for (let k = 0; k < 40; k++) fxTop.confetti(['#7fd18b', '#e9a23b', '#fff2c4']);
     });
   });
   $('newsClear').addEventListener('click', e => {
