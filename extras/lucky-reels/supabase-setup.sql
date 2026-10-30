@@ -4621,3 +4621,24 @@ begin
   end if;
 end;
 $$;
+
+
+-- ---------------------------------------------------------------------------
+-- Admin name: run this part once (after "Shop: name styles and trophies"). Allows the red admin name
+-- style, and only on admins: anyone else who sends it gets no name style.
+alter table public.players drop constraint if exists players_flair_check;
+alter table public.players add constraint players_flair_check
+  check (flair is null or flair in ('neon', 'gold', 'fire', 'ice', 'galaxy', 'admin'));
+
+create or replace function public.players_admin_flair()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+begin
+  if new.flair = 'admin' and not new.is_admin then new.flair := null; end if;
+  return new;
+end;
+$$;
+drop trigger if exists players_admin_flair on public.players;
+create trigger players_admin_flair before insert or update on public.players for each row execute function public.players_admin_flair();

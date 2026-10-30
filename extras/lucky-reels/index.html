@@ -88,7 +88,11 @@ body {
 .name-ice { font-weight: 700; color: transparent; background: linear-gradient(90deg, #4fe3ff, #ffffff, #9fd8ff, #4fe3ff) 0 0 / 200% 100%; -webkit-background-clip: text; background-clip: text; filter: drop-shadow(0 0 4px #4fe3ff99); animation: neonShift 3.5s linear infinite; }
 .name-galaxy { font-weight: 700; color: transparent; background: radial-gradient(circle at 20% 40%, #fff 0 1px, transparent 1.5px) 0 0 / 9px 9px, linear-gradient(90deg, #6c3bd9, #d9c2ff, #4f9dff, #a77bff, #6c3bd9) 0 0 / 300% 100%; -webkit-background-clip: text; background-clip: text; filter: drop-shadow(0 0 5px #a77bffaa); animation: galaxyDrift 5s linear infinite; }
 @keyframes galaxyDrift { to { background-position: 9px 9px, 300% 0; } }
-@media (prefers-reduced-motion: reduce) { .name-gold, .name-fire, .name-ice, .name-galaxy { animation: none; } }
+/* The admin name: bold red with a pulsing glow and an ADMIN tag, so everyone sees who runs the game */
+.name-admin { font-weight: 800; color: #ff3b47; text-shadow: 0 0 6px #ff1f2fcc, 0 0 14px #ff1f2f77; letter-spacing: 0.02em; animation: adminGlow 1.6s ease-in-out infinite; }
+.name-admin::after { content: "ADMIN"; display: inline-block; margin-left: 6px; padding: 1px 5px; border-radius: 4px; background: #e0141f; color: #fff; font: 800 9px/1.4 var(--font-mono); letter-spacing: 0.08em; text-shadow: none; vertical-align: 2px; box-shadow: 0 0 8px #ff1f2f99; }
+@keyframes adminGlow { 50% { color: #ff6b74; text-shadow: 0 0 10px #ff1f2f, 0 0 22px #ff1f2f99; } }
+@media (prefers-reduced-motion: reduce) { .name-gold, .name-fire, .name-ice, .name-galaxy, .name-admin { animation: none; } }
 .name-trophy { display: inline-block; width: 1.4em; height: 1.4em; margin-left: 3px; vertical-align: -0.35em; filter: drop-shadow(0 0 3px #f3c94b66); }
 .name-trophy svg { width: 100%; height: 100%; display: block; }
 .trophy-shelf { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; width: 100%; padding: 10px 8px 14px; border-radius: 10px; background: linear-gradient(transparent calc(100% - 10px), #7a5236 0), var(--panel); }
@@ -3972,6 +3976,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Set the Lucky Burger career': 'Lucky-Burger-Karriere einstellen', 'Set position': 'Position setzen', 'This needs the “Admin: Lucky Burger career” part of supabase-setup.sql.': 'Dafür brauchst du den Teil „Admin: Lucky Burger career“ aus supabase-setup.sql.', 'That player has not played yet, so there is no career to set.': 'Dieser Spieler hat noch nicht gespielt, es gibt noch keine Karriere zum Einstellen.',
     'Compensation per player, e.g. 10000': 'Entschädigung pro Spieler, z. B. 10000', 'Compensation per player': 'Entschädigung pro Spieler', 'Message (optional)': 'Nachricht (optional)', 'Message for the compensation': 'Nachricht zur Entschädigung', '🎁 Compensation for the downtime': '🎁 Entschädigung für die Ausfallzeit', 'Compensation': 'Entschädigung', 'credits': 'Credits', 'Enter how many credits every player gets.': 'Gib ein, wie viele Credits jeder Spieler bekommt.',
     'Private chat': 'Privater Chat', '← Back': '← Zurück', 'Pick who you want to write to': 'Wähle aus, wem du schreiben willst', 'Your chats': 'Deine Chats', 'Other players': 'Weitere Spieler', 'Players': 'Spieler', 'online': 'online', 'There is nobody else here yet.': 'Hier ist noch niemand sonst.',
+    'Admin Name': 'Admin-Name', 'Only for admins, free: your name glows red with an ADMIN tag, for everyone to see.': 'Nur für Admins, gratis: Dein Name leuchtet rot mit ADMIN-Schild, für alle sichtbar.',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -4456,7 +4461,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const cupIcon = (body, dark, gem) => `<svg viewBox="0 0 48 48"><path d="M14 8h20v8a10 10 0 0 1-20 0z" fill="${body}" stroke="${dark}" stroke-width="2" stroke-linejoin="round"/><path d="M14 11H8a6 6 0 0 0 7 8M34 11h6a6 6 0 0 1-7 8" fill="none" stroke="${dark}" stroke-width="2.5"/><path d="M22 26h4v6h-4z" fill="${dark}"/><rect x="15" y="32" width="18" height="5" rx="1.5" fill="${body}" stroke="${dark}" stroke-width="2"/><rect x="12" y="37" width="24" height="5" rx="1.5" fill="${dark}"/><path d="M18 11q1 5 4 7" stroke="#fff8" stroke-width="2" fill="none" stroke-linecap="round"/>${gem ? `<path d="M24 12l3 3-3 4-3-4z" fill="${gem}" stroke="#fff" stroke-width=".8"/>` : ''}</svg>`;
   Object.assign(SHOP_ICONS, {
     ruby: cabIcon('#7a1820', '#e0414a', '#ffb3b8'), emerald: cabIcon('#0f4a33', '#3fd1a4', '#c8ffe4'), bubblegum: cabIcon('#8a3a6c', '#ff8fb8', '#ffe0ef'), carbon: cabIcon('#1b1b1e', '#9aa3b5', '#d6dae4'),
-    goldName: nameIcon('#f3c94b', '#e9a23b', '#8a5a12'), fireName: nameIcon('#ff8a3c', '#e0414a', '#7a1a20'), iceName: nameIcon('#bff3ff', '#4fe3ff', '#1d7a99'), galaxyName: nameIcon('#d9c2ff', '#a77bff', '#3a1f6e'),
+    goldName: nameIcon('#f3c94b', '#e9a23b', '#8a5a12'), fireName: nameIcon('#ff8a3c', '#e0414a', '#7a1a20'), iceName: nameIcon('#bff3ff', '#4fe3ff', '#1d7a99'), galaxyName: nameIcon('#d9c2ff', '#a77bff', '#3a1f6e'), adminName: nameIcon('#ff6b74', '#e0141f', '#5a0a10'),
     bronzeCup: cupIcon('#c98a4b', '#7a4a22'), silverCup: cupIcon('#d6dae4', '#7a8396'), goldCup: cupIcon('#f3c94b', '#a8741a'), diamondTrophy: cupIcon('#f3c94b', '#a8741a', '#4fe3ff'), crownTrophy: '<svg viewBox="0 0 48 48"><path d="M8 34L5 12l10 8 9-13 9 13 10-8-3 22z" fill="#f3c94b" stroke="#a8741a" stroke-width="2" stroke-linejoin="round"/><rect x="8" y="34" width="32" height="7" rx="2" fill="#c98a24" stroke="#a8741a" stroke-width="2"/><circle cx="24" cy="26" r="3.5" fill="#e0414a"/><circle cx="14" cy="28" r="2.2" fill="#4fe3ff"/><circle cx="34" cy="28" r="2.2" fill="#7fd18b"/><circle cx="5" cy="12" r="2" fill="#fff2c4"/><circle cx="24" cy="7" r="2" fill="#fff2c4"/><circle cx="43" cy="12" r="2" fill="#fff2c4"/></svg>',
     midnight: '<svg viewBox="0 0 48 48"><rect x="9" y="4" width="30" height="40" rx="6" fill="#14203a" stroke="#4fe3ff" stroke-width="2"/><rect x="13" y="14" width="22" height="13" rx="2" fill="#0b1222" stroke="#4fe3ff88"/><path d="M27 17a4 4 0 1 0 3 6 5 5 0 0 1-3-6z" fill="#bff3ff"/><circle cx="24" cy="36" r="3" fill="#4fe3ff"/></svg>',
     disco: '<svg viewBox="0 0 48 48"><circle cx="24" cy="22" r="14" fill="#9aa3b5"/><path d="M10 22h28M24 8v28M13 14h22M13 30h22M17 9.5c-3 8-3 17 0 25M31 9.5c3 8 3 17 0 25" stroke="#5b6478" stroke-width="1.2" fill="none"/><circle cx="19" cy="16" r="3" fill="#fff"/><g stroke-linecap="round" stroke-width="3"><path d="M6 42l4-4" stroke="#ff4fd8"/><path d="M24 44v-5" stroke="#4fe3ff"/><path d="M42 42l-4-4" stroke="#7dff6a"/></g></svg>',
@@ -4578,7 +4583,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     jbBadge: '<svg viewBox="0 0 48 48"><rect x="10" y="8" width="28" height="34" rx="5" fill="#d62828" stroke="#a4161a" stroke-width="2"/><rect x="14" y="12" width="20" height="8" rx="2" fill="#ffc72c"/><text x="24" y="34" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="11" fill="#fff">+10%</text></svg>',
     jbSchool: '<svg viewBox="0 0 48 48"><path d="M4 18l20-9 20 9-20 9z" fill="#3a3640" stroke="#1d1714" stroke-width="2" stroke-linejoin="round"/><path d="M12 22v9q12 7 24 0v-9" fill="#4a4652" stroke="#1d1714" stroke-width="2"/><path d="M40 20v12" stroke="#ffc72c" stroke-width="3"/><circle cx="40" cy="34" r="3" fill="#ffc72c"/></svg>',
   });
-  const NAME_FLAIRS = ['neon', 'gold', 'fire', 'ice', 'galaxy'];
+  const NAME_FLAIRS = ['neon', 'gold', 'fire', 'ice', 'galaxy', 'admin'];
   const TROPHY_IDS = ['bronzeCup', 'silverCup', 'goldCup', 'diamondTrophy', 'crownTrophy'];
   const GOODIES = [
     { id: 'horseshoe', kind: 'level', max: 3, name: 'Lucky Horseshoe', desc: 'Three sevens pay 8× more per level. Stack up to three.', price: () => 2000 * 3 ** state.owned.horseshoe },
@@ -4598,6 +4603,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     { id: 'fireName', kind: 'cosmetic', shelf: 'name', group: 'name', flair: 'fire', name: 'Fire Name', desc: 'Your name burns in flickering flames.', price: () => 22000 },
     { id: 'iceName', kind: 'cosmetic', shelf: 'name', group: 'name', flair: 'ice', name: 'Ice Name', desc: 'Your name sparkles like frost.', price: () => 22000 },
     { id: 'galaxyName', kind: 'cosmetic', shelf: 'name', group: 'name', flair: 'galaxy', name: 'Galaxy Name', desc: 'Your name drifts through a starry galaxy.', price: () => 50000 },
+    { id: 'adminName', kind: 'cosmetic', shelf: 'name', group: 'name', flair: 'admin', adminOnly: true, name: 'Admin Name', desc: 'Only for admins, free: your name glows red with an ADMIN tag, for everyone to see.', price: () => 0 },
     { id: 'bronzeCup', kind: 'cosmetic', shelf: 'trophy', group: 'trophy', name: 'Bronze Cup', desc: 'A trophy next to your name and on your profile shelf.', price: () => 5000 },
     { id: 'silverCup', kind: 'cosmetic', shelf: 'trophy', group: 'trophy', name: 'Silver Cup', desc: 'Shiny silver, for everyone to see.', price: () => 25000 },
     { id: 'goldCup', kind: 'cosmetic', shelf: 'trophy', group: 'trophy', name: 'Golden Cup', desc: 'The real deal: solid gold.', price: () => 100000 },
@@ -9976,7 +9982,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Switching a cosmetic on switches off the others of its group.
   function cosSolo(g) { if (g.group) for (const o of GOODIES) if (o.group === g.group && o.id !== g.id) state.cosOff[o.id] = true; }
   const activeIn = group => GOODIES.find(g => g.group === group && cosOn(g.id));
-  const myFlair = () => activeIn('name')?.flair || null;
+  const myFlair = () => { const f = activeIn('name')?.flair || null; return f === 'admin' && !account?.isAdmin ? null : f; };
   const myTrophies = () => { const top = activeIn('trophy'); const all = GOODIES.filter(g => g.shelf === 'trophy' && state.owned[g.id]).map(g => g.id); return top ? [top.id, ...all.filter(x => x !== top.id)] : all.length ? ['', ...all] : []; };
   function buy(g) {
     if (busy) return;
@@ -9989,6 +9995,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       render();
       return;
     }
+    if (g.adminOnly && !account?.isAdmin) return;
     const price = priceOf(g);
     if (state.credits < price) return;
     if (g.kind === 'level') {
@@ -10013,6 +10020,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   function renderShop() {
     $('shopCredits').textContent = fmt(state.credits);
     for (const g of GOODIES) {
+      if (g.adminOnly) goodieEls[g.id].btn.closest('.ware').hidden = !account?.isAdmin;
       goodieEls[g.id].btn.closest('.ware').classList.toggle('owned', g.kind !== 'level' && !!state.owned[g.id]);
       goodieEls[g.id].btn.closest('.ware').classList.toggle('on', g.kind === 'cosmetic' && cosOn(g.id));
       const sale = evDiscount(), forSale = g.kind === 'level' ? state.owned[g.id] < g.max : !state.owned[g.id];
@@ -10032,7 +10040,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         status.textContent = on ? 'On' : 'Off';
       } else {
         const owned = state.owned[g.id];
-        btn.textContent = owned ? 'Owned' : fmt(priceOf(g));
+        btn.textContent = owned ? 'Owned' : priceOf(g) ? fmt(priceOf(g)) : 'Free';
         btn.disabled = owned || busy || state.credits < priceOf(g);
         status.textContent = owned ? 'Active' : '';
       }
@@ -10140,8 +10148,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (!$('shopPage').hidden) renderShop();
     for (const id of ['disco', 'royalFelt', 'goldBacks', 'ckGold']) document.body.classList.toggle('cos-' + id, cosOn(id));
     if ((document.documentElement.dataset.theme === 'night') !== (!!account && cosOn('nightMode'))) setTheme(!!account && cosOn('nightMode'));
-    const owned = GOODIES.filter(g => g.kind === 'level' ? state.owned[g.id] > 0 : state.owned[g.id]).length;
-    $('shopOwned').textContent = `${owned} / ${GOODIES.length}`;
+    const forMe = GOODIES.filter(g => !g.adminOnly || account?.isAdmin);
+    const owned = forMe.filter(g => g.kind === 'level' ? state.owned[g.id] > 0 : state.owned[g.id]).length;
+    $('shopOwned').textContent = `${owned} / ${forMe.length}`;
     // An <svg> has no working .hidden property, so set the attribute itself.
 
     const need = xpNeed(state.level);
@@ -11394,7 +11403,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const partnerOf = m => m.from === account?.id ? m.to : m.from;
   // A player's name as HTML, glowing if they own the Neon Name (your own shows right away).
   const nameHtml = (id, name) => {
-    const flair = id === account?.id ? myFlair() : players.find(p => p.id === id)?.flair;
+    let flair = id === account?.id ? myFlair() : players.find(p => p.id === id)?.flair;
+    // the admin name only on someone who is an admin right now
+    if (flair === 'admin' && id !== account?.id && !players.find(p => p.id === id)?.admin) flair = null;
     const cls = flair === 'neon' ? 'neon-name' : NAME_FLAIRS.includes(flair) ? 'name-' + flair : '';
     const t = TITLES.find(x => x.id === players.find(p => p.id === id)?.title);
     return (cls ? `<span class="${cls}">${esc(name)}</span>` : esc(name)) + prestigeBadge(prestigeOf(id)) +
