@@ -4236,6 +4236,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     "Events and the happy hour don't raise Chicken wins.": 'Events und die Happy Hour erhöhen bei Chicken keine Gewinne.',
     'Force reload now': 'Neuladen erzwingen', 'Reload everyone?': 'Alle neu laden?', 'The game reloads in 3 seconds.': 'Das Spiel lädt in 3 Sekunden neu.', 'Every open page saves and reloads in 3 seconds (yours stays).': 'Jede offene Seite speichert und lädt in 3 Sekunden neu (deine bleibt).',
     "Events and the happy hour don't raise coin flip wins.": 'Events und die Happy Hour erhöhen beim Münzwurf keine Gewinne.',
+    'Loading the game…': 'Spiel wird geladen…',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -5495,6 +5496,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   function say(text, kind = '') { showMessage($('message'), text, kind); }
 
   function gainXp(n) {
+    // XP comes from the database (for the live games once their bets are settled)
+    if (srvOn()) return;
     if (state.level >= MAX_LEVEL) { state.xp = xpNeed(MAX_LEVEL); return; }
     const evXp = Math.min(5, evFactor('xp'));
     state.xp += evXp > 1 ? Math.round(n * evXp) : n;
@@ -5507,6 +5510,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   }
 
   async function spin(free = false) {
+    if (srvOn()) return spinSrv(free);
     if (!free && state.bet > betLimit()) state.bet = betLimit();
     const bet = free ? state.freeBet : state.bet;
     const cost = free ? 0 : spinCost();
@@ -5664,6 +5668,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   }
 
   async function nudge(i) {
+    if (srvOn()) return nudgeSrv(i);
     if (busy || !nudgeOpen || state.nudges < 1) return;
     busy = true;
     state.nudges--;
@@ -5746,15 +5751,26 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   }
   function hideCard(el) { el.className = 'card back'; el.innerHTML = ''; }
 
-  function openGamble() {
+  async function openGamble() {
     if (busy || !gambleOffer) return;
     busy = true;
     let stake = gambleOffer, rounds = 0, over = false, revealing = false;
-    let card = drawCard();
-    gambleOffer = 0;
-    state.credits -= stake;
+    let card;
+    if (srvOn()) {
+      let res;
+      try { res = await srvCall('game_gamble', { p_act: 'open' }); }
+      catch (e) { srvFail(e, say); busy = false; gambleOffer = 0; render(); return; }
+      const gm = srvApply(res).gm;
+      stake = gm.stake;
+      card = { rank: gm.rank, suit: SUITS[gm.suit] };
+      gambleOffer = 0;
+    } else {
+      card = drawCard();
+      gambleOffer = 0;
+      state.credits -= stake;
+      flush();
+    }
     render();
-    flush();
     const modal = $('gambleModal'), hi = $('gHi'), lo = $('gLo'), collect = $('gCollect');
     const ladder = [...$('ladder').children];
     showCard($('cardNow'), card);
@@ -5777,10 +5793,17 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       collect.disabled = revealing;
       collect.textContent = stake ? `Collect ${fmt(stake)}` : 'Close';
     }
-    function guess(higher) {
+    async function guess(higher) {
       if (revealing || over) return;
       revealing = true;
-      const next = drawCard();
+      let next, res = null;
+      if (srvOn()) {
+        update();
+        try { res = await srvCall('game_gamble', { p_act: higher ? 'hi' : 'lo' }); }
+        catch (e) { revealing = false; update(srvErr(e)); return; }
+        const r = srvApply(res);
+        next = { rank: r.next.rank, suit: SUITS[r.next.suit] };
+      } else next = drawCard();
       showCard($('cardNext'), next);
       sound.tick();
       update();
@@ -5788,13 +5811,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         if (next.rank === card.rank) {
           update('Same rank. Your stake stays, go again.');
         } else if ((next.rank > card.rank) === higher) {
-          stake = Math.min(MAX, Math.floor(stake * factor(higher)));
+          stake = res ? res.r.stake : Math.min(MAX, Math.floor(stake * factor(higher)));
           rounds++;
           sound.bigWin();
           const b = $('cardNext').getBoundingClientRect();
           fxTop.coinBurst(b.left + b.width / 2, b.top + b.height / 2, 24, 8);
-          mission('gamble');
-          if (rounds >= GAMBLE_MAX) checkAch({ gambleFull: true });
+          if (res) srvShowOut(res.out);
+          else { mission('gamble'); if (rounds >= GAMBLE_MAX) checkAch({ gambleFull: true }); }
           update(rounds >= GAMBLE_MAX ? `Five in a row! Take your ${fmt(stake)}.` : `Correct! Stake is now ${fmt(stake)}.`);
         } else {
           stake = 0;
@@ -5812,12 +5835,20 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     }
     hi.onclick = () => guess(true);
     lo.onclick = () => guess(false);
-    collect.onclick = () => {
+    collect.onclick = async () => {
       if (revealing) return;
       if (stake) {
-        state.credits = Math.min(MAX, state.credits + stake);
-        state.lastWin = stake;
-        state.best = Math.max(state.best, stake);
+        if (srvOn()) {
+          revealing = true;
+          update();
+          try { const res = await srvCall('game_gamble', { p_act: 'collect' }); srvApply(res); srvShowOut(res.out); }
+          catch (e) { revealing = false; update(srvErr(e)); return; }
+          revealing = false;
+        } else {
+          state.credits = Math.min(MAX, state.credits + stake);
+          state.lastWin = stake;
+          state.best = Math.max(state.best, stake);
+        }
         sound.chime();
         say(`Gamble collected: ${fmt(stake)}.`, 'win');
         floatText('+' + fmt(stake));
@@ -5947,7 +5978,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     let left = bet;
     for (const [v, color] of [...BJ_CHIPS].reverse()) while (left >= v && stack.length < 6) { stack.push(color); left -= v; }
     $('chipStack').innerHTML = stack.map((c, i) => `<i style="--chip:${c};transform:translateY(${-i * 4}px)"></i>`).join('');
-    $('shoeLeft').textContent = state.bj.shoe.length || BJ_DECKS * 52;
+    $('shoeLeft').textContent = srvOn() ? state.bj.shoeLeft ?? BJ_DECKS * 52 : state.bj.shoe.length || BJ_DECKS * 52;
     // Strategy Card: the best move for this hand against the dealer's open card.
     const ct = $('bjCount'), rr = state.bj.round, hand = rr && rr.phase === 'player' ? rr.hands[rr.active] : null;
     const tip = hasG('bjShoe') && hand && !hand.done && rr.dealer.length ? bjAdvice(hand, rr.dealer[0], rr) : '';
@@ -6010,6 +6041,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
   async function bjDeal() {
     if (bjBusy || bjActive() || !account || busy) return;
+    if (srvWait(bjSay)) return;
+    if (srvOn()) return bjSrv('deal');
     if (settings.maintenance && !account.isAdmin) { bjSay('The game is paused by an admin. Try again later.', 'lose'); return; }
     const bet = Math.min(state.bj.bet, betLimit());
     if (!bet) { bjSay('Tap the chips to place a bet first.', 'lose'); return; }
@@ -6054,6 +6087,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (bjBusy || !h) return;
     if (kind === 'double' && (h.cards.length !== 2 || state.credits < h.bet)) return;
     if (kind === 'split' && (r.hands.length > 1 || h.cards.length !== 2 || bjValue(h.cards[0]) !== bjValue(h.cards[1]) || state.credits < h.bet)) return;
+    if (srvWait(bjSay)) return;
+    if (srvOn()) return bjSrv(kind);
     bjBusy = true;
     renderBJControls();
     if (kind === 'hit' || kind === 'double') {
@@ -6640,10 +6675,600 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     return { w: rlRoll.w + RL_WW * t, b: rlRoll.b - (RL_V0 * t - RL_DEC * t * t / 2), wb: RL_V0 - RL_DEC * t };
   }
   const rlPayout = (bets, n, mult = 1) => Object.entries(bets || {}).reduce((a, [k, v]) => a + (rlHit(k, n) ? Math.floor(v * (1 + rlPays(k) * mult)) : 0), 0);
+  // ----- Games on the server -----
+  // With the "Games on the server" part of supabase-setup.sql the database draws every result and keeps the
+  // balance, level, goodies, missions, achievements and the burger career. The page only says what the player
+  // does and shows what comes back; anything it changes on those itself is ignored by the database.
+  // SRV: false (this page plays itself: no database, or the SQL is not installed yet), null (still asking), true.
+  var SRV = false, srvHold = 0, srvCreditsNow = null, srvLiveTimer = 0, srvGiftAt = 0;
+  const srvOn = () => SRV === true;
+  // while the page still asks the database which way it plays, games wait a moment
+  function srvWait(sayFn) { if (SRV !== null) return false; sayFn?.('Loading the game…', ''); return true; }
+  const srvCall = (fn, args = {}) => backend.games.call(fn, args);
+  function srvState(g) {
+    if (!g || typeof g !== 'object') return;
+    for (const k of ['level', 'prestige', 'spins', 'jackpots', 'best', 'lastWin', 'xp', 'streak', 'stars', 'starBank', 'freeSpins', 'freeBet', 'freeTotal', 'nudges', 'missionsDone', 'jobReset', 'rrAt'])
+      if (typeof g[k] === 'number') state[k] = g[k];
+    state.owned = Object.assign(fresh().owned, g.owned || {});
+    state.ach = Object.assign({}, g.ach);
+    if (Array.isArray(g.missions)) state.missions = g.missions.filter(m => MISSIONS[m?.t]);
+    if (g.job && typeof g.job === 'object') for (const k of ['worked', 'earned', 'shifts', 'pos']) state.job[k] = Number(g.job[k]) || 0;
+    state.evGifts = Array.isArray(g.evGifts) ? g.evGifts : [];
+    state.sl = g.sl && typeof g.sl === 'object' ? g.sl : {};
+    if (g.bj) { state.bj.round = g.bj.round || null; state.bj.hands = Number(g.bj.hands) || 0; state.bj.lastBet = Number(g.bj.lastBet) || 0; if (g.bj.shoeLeft != null) state.bj.shoeLeft = Number(g.bj.shoeLeft); state.bj.shoe = []; }
+    if (g.pl) state.pl.drops = Number(g.pl.drops) || 0;
+    if (g.ck) { state.ck.round = g.ck.round || null; state.ck.games = Number(g.ck.games) || 0; }
+    if (g.cf) { state.cf.round = g.cf.round || null; state.cf.flips = Number(g.cf.flips) || 0; }
+    if (g.pk) { state.pk.solo = pkSrvNorm(g.pk.solo); state.pk.hands = Number(g.pk.hands) || 0; }
+    if (typeof g.credits === 'number') { srvCreditsNow = g.credits; state.credits = Math.max(0, g.credits - srvHold); savedCredits = state.credits; }
+  }
+  // hold: winnings the page shows only once the animation gets there (srvRelease)
+  function srvApply(res, hold = 0) { srvHold += Math.max(0, hold || 0); srvState(res?.g); return res?.r || {}; }
+  function srvRelease(amount) {
+    srvHold = Math.max(0, srvHold - Math.max(0, amount || 0));
+    if (srvCreditsNow != null) state.credits = Math.max(0, srvCreditsNow - srvHold);
+    render();
+  }
+  // what happened on the way: new levels (shown by the games once their round is over), missions, achievements, goodie extras
+  function srvShowOut(out) {
+    if (!out) return;
+    for (const lv of out.levels || []) pendingLevels.push(lv);
+    let delay = 0;
+    for (const m of out.missions || []) {
+      setTimeout(() => { toast('Mission complete', `${MISSIONS[m.t]?.text(m.goal) || ''} · +${fmt(m.reward)} credits`); sound.chime(); }, delay);
+      delay += 450;
+    }
+    for (const a of out.ach || []) {
+      const d = ACH.find(x => x.id === a.id);
+      setTimeout(() => { toast('Achievement unlocked', `${d?.name || a.id} · +${fmt(a.reward)} credits`); sound.chime(); }, delay);
+      delay += 450;
+    }
+    for (const b of out.bonus || []) b.id === 'event' ? evPop(b.amount) : goodiePop(b.amount, b.id);
+    renderMissions();
+    renderAch();
+  }
+  function srvErr(e) {
+    const m = e?.message || '';
+    if (/credits/.test(m)) return 'Not enough credits for that.';
+    if (/paused/.test(m)) return 'The game is paused by an admin. Try again later.';
+    return 'That did not work. Check the connection and try again.';
+  }
+  async function srvSync() {
+    try { srvState((await srvCall('game_state'))?.g); } catch {}
+    render();
+  }
+  function srvFail(e, sayFn) { sayFn?.(srvErr(e), 'lose'); srvSync(); }
+  // Once after signing in: does the database play the games? (it does once the SQL part is installed)
+  async function srvInit() {
+    SRV = false; srvHold = 0; srvCreditsNow = null;
+    if (!backend?.games || !account) return;
+    SRV = null;
+    const who = account.id;
+    for (let i = 0; i < 6; i++) {
+      try {
+        const res = await srvCall('game_state');
+        if (account?.id !== who) return;
+        SRV = true;
+        srvState(res?.g);
+        if (Array.isArray(state.sl.pos) && state.sl.pos.length === 3) { pos = state.sl.pos.slice(); pos.forEach((p, k) => place(k, p)); }
+        nudgeOpen = !!state.sl.nudgeOpen; holdOffer = !!state.sl.holdOffer; gambleOffer = Number(state.sl.gamble) || 0;
+        // a gamble left open when the page closed: its stake comes back onto the balance
+        if (state.sl.gm) srvCall('game_gamble', { p_act: 'collect' }).then(r => { srvApply(r); render(); }).catch(() => {});
+        bjShown.clear();
+        renderBJTable(false); renderPaytable(); renderAch(); renderMissions(); renderShop(); jbRender();
+        if (state.mode === 'pk') { renderPK(false); pkScheduleSrv(); }
+        render();
+        srvLiveSoon(500);
+        return;
+      } catch (e) {
+        if (account?.id !== who) return;
+        if (e?.code === 'PGRST202' || /could not find the function|game_state/i.test(e?.message || '')) { SRV = false; return; }
+        await sleep(2000 * (i + 1));
+      }
+    }
+    SRV = false;
+  }
+  // Live games (roulette, horses, rocket, lotto) pay in the database; their goodie and event extras, XP and
+  // achievements come from it too, a moment after their winnings.
+  function srvLiveSoon(ms = 1200) {
+    if (!srvOn()) return;
+    clearTimeout(srvLiveTimer);
+    srvLiveTimer = setTimeout(async () => {
+      try {
+        const res = await srvCall('game_live');
+        if (res?.g) { srvState(res.g); srvShowOut(res.out); while (pendingLevels.length && !gameBusy()) levelUp(pendingLevels.shift()); render(); }
+      } catch {}
+    }, ms);
+  }
+  // an event's gift: the database pays it once per player
+  async function srvGifts() {
+    if (!srvOn() || Date.now() - srvGiftAt < 15000) return;
+    srvGiftAt = Date.now();
+    try {
+      const res = await srvCall('game_gifts');
+      for (const x of res?.r?.gifts || []) {
+        toast(`${x.icon || '🎉'} ${x.title || 'Event'}`, `Event gift: +${fmt(x.gift)} credits!`);
+        audio.kaching();
+      }
+      if (res?.g) { srvState(res.g); render(); }
+    } catch {}
+  }
+  // the solo poker table as the page draws it
+  function pkSrvNorm(st) {
+    if (!st || typeof st !== 'object' || !Array.isArray(st.seats)) return null;
+    return { ...st, solo: true, deadline: null, seats: st.seats.map(s => s ? { ...s, has_cards: (s.cards || []).length === 2, cards: (s.cards || []).filter(c => c >= 0), bestCards: s.best || null } : null) };
+  }
+  // A slot spin the database draws; the reels then run to its result.
+  async function spinSrv(free) {
+    if (!free && state.bet > betLimit()) state.bet = betLimit();
+    const raised = !free && held.some(Boolean) && state.bet > lastBet;
+    const want = free || raised ? [false, false, false] : held.slice();
+    held = [false, false, false];
+    holdOffer = false;
+    nudgeOpen = false;
+    gambleOffer = 0;
+    let res;
+    try { res = await srvCall('game_spin', { p_bet: state.bet, p_holds: want, p_auto: !!autoLeft }); }
+    catch (e) { srvFail(e, say); return null; }
+    const r = res.r || {}, back = (r.win || 0) + (r.refund || 0);
+    srvApply(res, back);
+    free = !!r.free;
+    const holds = r.held || [false, false, false], bet = r.bet, targets = r.targets;
+    reels.forEach(x => x.classList.remove('win', 'star', 'wild'));
+    cabinet.classList.add('spinning');
+    say(free ? `Free spin ${freeDone} · wins ×${FREE_MULT}` : raised ? 'Bet raised, so the holds are off. Spinning…' : holds.some(Boolean) ? 'Spinning the reels you did not hold…' : 'Spinning…', free ? 'bonus' : '');
+    render();
+    holds.forEach((h, i) => reels[i].classList.toggle('held', h));
+    try {
+      const sevenish = s => s === 'seven' || s === 'wild';
+      const [s0, s1] = [STRIP[targets[0]], STRIP[targets[1]]];
+      const tease = sevenish(s0) && sevenish(s1) && (s0 === 'seven' || s1 === 'seven');
+      const durations = free ? [700, 1000, tease ? 3200 : 1300] : [1100, 1550, tease ? 4200 : 2000];
+      const stops = targets.map((t, i) => holds[i] ? Promise.resolve() : animateReel(i, t, reduceMotion ? 0 : durations[i]));
+      stops.forEach((p, i) => p.then(() => {
+        if (holds[i]) return;
+        const sym = STRIP[targets[i]];
+        if (sym === 'star') { reels[i].classList.add('star'); sound.star(); }
+        if (sym === 'wild') { reels[i].classList.add('wild'); sound.star(); }
+      }));
+      if (tease) stops[1].then(() => {
+        cabinet.classList.add('tease');
+        say('Two sevens… come on!', 'hot');
+        for (let k = 0; k < 14; k++) setTimeout(() => sound.tease(), k * 180);
+      });
+      await Promise.all(stops);
+    } finally {
+      cabinet.classList.remove('tease', 'spinning');
+      reels.forEach(x => x.classList.remove('held'));
+      pos = targets.slice();
+      srvRelease(back);
+    }
+    const syms = r.syms, line = r.line, base = r.base, sMult = r.smult, bolt = r.bolt, win = r.win, refund = r.refund, ratio = win / bet;
+    const starCount = r.stars, triggered = r.triggered;
+    if (starCount) floatText(`+${starCount} ★`, 'star');
+    const extras = [];
+    if (line && syms.includes('wild')) extras.push('wild');
+    if (base && sMult > 1) extras.push(`streak ×${sMult.toFixed(2)}`);
+    if (free && base) extras.push(`bonus ×${FREE_MULT}`);
+    if (base && settings.winMultiplier !== 1) extras.push(`happy hour ×${settings.winMultiplier}`);
+    if (base && evMult('slots') > 1) extras.push(`event ${evX(evMult('slots'))}`);
+    if (bolt) extras.push(`lightning ×${bolt}`);
+    const tail = extras.length ? ` (${extras.join(', ')})` : '';
+    const jackpot = !!r.jackpot;
+    let result = win ? 'win' : 'lose';
+    if (base) markWin(syms, line);
+    if (line) say(`Three ${NAMES[line]}! +${fmt(win)}${tail}`, 'win');
+    else if (win) say(`Cherries pay ${fmt(win)}${tail}`, 'win');
+    else if (state.credits < 1 && !state.freeSpins) say('Out of credits. Earn some at Lucky Burger!', 'lose');
+    else if (starCount) say(`No win, but +${starCount} bonus star${starCount > 1 ? 's' : ''}.`, 'bonus');
+    else say(refund ? `No win. Piggy Bank returns ${fmt(refund)}.` : 'No win. Try again.', 'lose');
+    lastBet = bet;
+    nudgeOpen = !!state.sl.nudgeOpen;
+    holdOffer = !!state.sl.holdOffer;
+    gambleOffer = Number(state.sl.gamble) || 0;
+    if (r.nudgesAdded) { floatText(`+${r.nudgesAdded} nudge${r.nudgesAdded > 1 ? 's' : ''}`, 'nudge'); sound.chime(); }
+    if (!win && (holdOffer || nudgeOpen)) say(
+      holdOffer && nudgeOpen ? 'No win. Nudge a reel now, or hold reels for the next spin.'
+        : holdOffer ? 'No win. Hold up to two reels for the next spin.'
+        : `No win. Nudge a reel down now? ${state.nudges} nudge${state.nudges > 1 ? 's' : ''}, gone after the next spin.`, 'hot');
+    if (win) floatText('+' + fmt(win));
+    if (ratio >= 10) fireworks(ratio >= 75 ? 12 : 6);
+    render();
+    if (jackpot) {
+      result = 'jackpot';
+      if (bolt) await lightningStrike(bolt);
+      await celebrate(win, r.mult);
+    } else if (win) {
+      if (bolt) await lightningStrike(bolt);
+      await celebrateTier(win, ratio);
+    }
+    if (triggered) {
+      sound.levelUp();
+      for (let k = 0; k < 40; k++) fxTop.confetti(BONUS_CONFETTI);
+      await banner('FREE SPINS', 'bonus', 2600, null, `${FREE_SPINS + (state.owned.starPlus ? 1 : 0)} spins · every win ×${FREE_MULT}`);
+    }
+    srvShowOut(res.out);
+    render();
+    return result;
+  }
+
+  async function nudgeSrv(i) {
+    if (busy || !nudgeOpen || state.nudges < 1) return;
+    busy = true;
+    holdOffer = false;
+    held = [false, false, false];
+    render();
+    let res;
+    try { res = await srvCall('game_nudge', { p_reel: i }); }
+    catch (e) { srvFail(e, say); busy = false; render(); return; }
+    const r = res.r || {};
+    srvApply(res, r.win);
+    const len = STRIP.length, from = pos[i];
+    await slide(i, len + from, len + from - 1, 260);
+    pos = r.pos.slice();
+    place(i, pos[i]);
+    sound.clunk();
+    if (r.star) floatText('+1 ★', 'star');
+    srvRelease(r.win);
+    nudgeOpen = !!state.sl.nudgeOpen;
+    gambleOffer = Number(state.sl.gamble) || 0;
+    if (r.base) {
+      markWin(r.syms, r.line);
+      say(`Nudge win! ${r.line ? `Three ${NAMES[r.line]}` : 'Cherries'} pay ${fmt(r.win)}.`, 'win');
+      floatText('+' + fmt(r.win));
+      render();
+      if (r.jackpot) await celebrate(r.win, Math.round(r.base * r.smult * 100) / 100);
+      else await celebrateTier(r.win, r.win / r.bet);
+    } else say(state.nudges ? `Still nothing. ${state.nudges} nudge${state.nudges > 1 ? 's' : ''} left.` : 'Out of nudges.', 'lose');
+    if (r.triggered) {
+      sound.levelUp();
+      for (let k = 0; k < 40; k++) fxTop.confetti(BONUS_CONFETTI);
+      await banner('FREE SPINS', 'bonus', 2600, null, `${FREE_SPINS + (state.owned.starPlus ? 1 : 0)} spins · every win ×${FREE_MULT}`);
+    }
+    srvShowOut(res.out);
+    if (r.base) while (pendingLevels.length) levelUp(pendingLevels.shift());
+    busy = false;
+    render();
+  }
+  // Blackjack the database deals: the page lays the new cards down one by one, then shows the result.
+  async function bjSrv(kind) {
+    if (bjBusy || !account || busy) return;
+    const prev = bjActive() ? JSON.parse(JSON.stringify(bjRound())) : null;
+    let bet = 0;
+    if (kind === 'deal') {
+      if (bjActive()) return;
+      if (settings.maintenance && !account.isAdmin) { bjSay('The game is paused by an admin. Try again later.', 'lose'); return; }
+      bet = Math.min(state.bj.bet, betLimit());
+      if (!bet) { bjSay('Tap the chips to place a bet first.', 'lose'); return; }
+      if (bet > state.credits) { bjSay(`Not enough credits for a ${fmt(bet)} bet.`, 'lose'); return; }
+    } else if (!bjHand()) return;
+    bjBusy = true;
+    renderBJControls();
+    let res;
+    try { res = await srvCall('game_bj', { p_act: kind, p_bet: bet }); }
+    catch (e) { bjBusy = false; srvFail(e, bjSay); renderBJTable(false); render(); return; }
+    const next = res.g?.bj?.round;
+    const done = next?.phase === 'done';
+    const back = done ? next.hands.reduce((a, h) => a + (h.win || 0), 0) + (res.out?.bonus || []).reduce((a, b) => a + (b.amount || 0), 0) : 0;
+    srvApply(res, back);
+    try {
+      if (kind === 'deal') {
+        state.bj.lastBet = bet;
+        bjShown.clear();
+        if (res.r?.shuffled) {
+          bjSay('Shuffling a fresh shoe…', 'hot');
+          $('shoe').classList.add('shuffling');
+          for (let k = 0; k < 6; k++) setTimeout(() => sound.card(), k * 90);
+          await bjWait(900);
+          $('shoe').classList.remove('shuffling');
+        }
+      }
+      // the table as it was, then each new card in the order it came off the shoe
+      const show = prev || { ...next, hands: next.hands.map(h => ({ ...h, cards: [], result: null, win: 0, done: false })), dealer: [], phase: 'player', hole: true };
+      if (next.hands.length !== show.hands.length) show.hands = next.hands.map(h => ({ ...h, cards: h.cards.slice(0, 1), result: null, win: 0, done: false }));
+      show.phase = 'player';
+      state.bj.round = show;
+      if (kind === 'deal') { bjSay('Dealing…'); renderBJTable(); }
+      if (kind === 'double' || kind === 'split') sound.chip();
+      const lay = async (put, ms = 340) => { put(); sound.card(); renderBJTable(); render(); await bjWait(ms); };
+      if (kind === 'deal') {
+        await lay(() => show.hands[0].cards.push(next.hands[0].cards[0]));
+        await lay(() => show.dealer.push(next.dealer[0]));
+        await lay(() => show.hands[0].cards.push(next.hands[0].cards[1]));
+        await lay(() => show.dealer.push(next.dealer[1]));
+      } else {
+        if (kind === 'split') { bjShown.add('h1-0'); bjShown.delete('h0-1'); renderBJTable(); await bjWait(300); }
+        for (let i = 0; i < next.hands.length; i++) {
+          const h = show.hands[i], to = next.hands[i];
+          h.bet = to.bet;
+          while (h.cards.length < to.cards.length) await lay(() => h.cards.push(to.cards[h.cards.length]), 380);
+          if (to.result === 'bust' && !h.result) {
+            h.result = 'bust';
+            sound.lose();
+            bjSay(`Bust with ${bjTotal(h.cards).total}.`, 'lose');
+            renderBJTable();
+            await bjWait(600);
+          }
+        }
+      }
+      if (!done) {
+        state.bj.round = next;
+        const h = next.hands[next.active];
+        bjSay(next.hands.length > 1 ? `Hand ${next.active + 1}: ${bjLabel(h.cards)}. Hit or stand?` : `You have ${bjLabel(h.cards)}. Hit or stand?`);
+        return;
+      }
+      // the dealer turns the hidden card and draws
+      show.phase = 'dealer';
+      show.hole = false;
+      show.dealer = next.dealer.slice(0, 2);
+      renderBJTable();
+      $('dealerHand').children[1]?.classList.add('flip');
+      sound.card();
+      await bjWait(650);
+      while (show.dealer.length < next.dealer.length) {
+        bjSay(`Dealer has ${bjTotal(show.dealer).total} and draws…`);
+        show.dealer.push(next.dealer[show.dealer.length]);
+        sound.card();
+        renderBJTable();
+        await bjWait(600);
+      }
+      state.bj.round = next;
+    } finally {
+      srvRelease(back);
+      if (!done) { bjBusy = false; renderBJTable(false); render(); }
+    }
+    const r = next, d = bjTotal(r.dealer).total, net = r.net, staked = r.hands.reduce((a, h) => a + h.bet, 0);
+    const wins = r.hands.filter(h => h.result === 'win' || h.result === 'blackjack').length;
+    renderBJTable();
+    const natural = r.hands.some(h => h.result === 'blackjack');
+    if (natural) { bjSay(`Blackjack! +${fmt(net)}`, 'win'); fireworks(5); }
+    else if (r.dealerBJ) bjSay('Dealer has blackjack.', 'lose');
+    else if (net > 0) bjSay(`${d > 21 ? `Dealer busts with ${d}. ` : ''}You win +${fmt(net)}.`, 'win');
+    else if (net === 0) bjSay(`Push. Your ${fmt(staked)} comes back.`, '');
+    else bjSay(`${r.hands.every(h => h.result === 'bust') ? 'Bust.' : `Dealer wins with ${d}.`} −${fmt(-net)}`, 'lose');
+    if (wins) {
+      natural ? sound.bigWin() : sound.win();
+      [...$('bjPlayers').children].forEach((seat, i) => {
+        const res2 = r.hands[i]?.result;
+        if (res2 !== 'win' && res2 !== 'blackjack') return;
+        const b = seat.getBoundingClientRect();
+        fxTop.coinBurst(b.left + b.width / 2, b.top + b.height / 3, res2 === 'blackjack' ? 40 : 18, res2 === 'blackjack' ? 11 : 8);
+        if (res2 === 'blackjack') fxTop.burst(b.left + b.width / 2, b.top, 70, 42, 7, false);
+      });
+      floatText('+' + fmt(net));
+    } else if (net < 0) sound.lose();
+    srvShowOut(res.out);
+    bjBusy = false;
+    renderBJTable(false);
+    render();
+    while (pendingLevels.length) levelUp(pendingLevels.shift());
+  }
+  // Plinko: the database drops the ball; the page lets it bounce down to the slot it already landed in.
+  let plInFlight = 0;
+  async function plDropSrv(bet) {
+    if (plInFlight + plBalls.length >= PL_MAX_BALLS) return;
+    plInFlight++;
+    state.pl.bet = bet;
+    let res;
+    try { res = await srvCall('game_plinko', { p_bet: bet, p_rows: state.pl.rows, p_risk: state.pl.risk, p_count: 1 }); }
+    catch (e) { plInFlight--; plAutoLeft = 0; srvFail(e, plSay); renderPLControls(); return; }
+    plInFlight--;
+    const balls = res.r?.balls || [];
+    srvApply(res, balls.reduce((a, b) => a + (b.pay || 0), 0));
+    for (const b of balls) {
+      const path = b.path.map(x => (x ? 1 : -1));
+      const rights = [0];
+      for (const d of path) rights.push(rights[rights.length - 1] + (d > 0 ? 1 : 0));
+      const ball = { id: plNextId++, bet: b.bet, pay: b.pay, mult: b.mult, slot: b.slot, path, rights, gold: b.gold, srv: true, out: res.out,
+        x: PL_W / 2 + (Math.random() - 0.5) * plBoard.g * 0.2, y: PL_TOP - plBoard.rowGap * 0.9, vx: (Math.random() - 0.5) * 30, vy: 0, row: -1 };
+      res.out = null;
+      // the board changed while the ball was on its way: it lands right away
+      if (reduceMotion || path.length !== plBoard.R) { plLand(ball); continue; }
+      plBalls.push(ball);
+    }
+    sound.chip();
+    plKick();
+    render();
+  }
+
+  // Chicken: every hop is decided by the database.
+  async function ckGoSrv() {
+    if (!account || ckAnim) return;
+    let r = ckRound();
+    const start = !r;
+    let bet = r?.bet || 0;
+    if (start) {
+      if (settings.maintenance && !account.isAdmin) { ckSay('The game is paused by an admin. Try again later.', 'lose'); return; }
+      bet = Math.floor(Number($('ckBet').value));
+      if (!(bet >= 1)) { ckSay('Enter a bet of at least 1.', 'lose'); return; }
+      if (bet > betLimit()) { ckSay(limitMsg(), 'lose'); return; }
+      if (bet > state.credits) { ckSay(`Not enough credits for a ${fmt(bet)} bet.`, 'lose'); return; }
+      state.ck.bet = bet;
+    }
+    ckAnim = true;
+    renderCKControls();
+    let res;
+    try { res = await srvCall('game_chicken', { p_act: 'go', p_bet: bet, p_diff: start ? state.ck.diff : r.diff }); }
+    catch (e) { ckAnim = false; srvFail(e, ckSay); renderCKControls(); return; }
+    const x = res.r || {};
+    if (start) {
+      state.ck.round = { bet: x.bet, diff: x.diff, lane: 0 };
+      ckBuild();
+      sound.chip();
+      ckSay('Off we go! Hop into the first lane.', 'hot');
+    }
+    r = { bet: x.bet, diff: x.diff, lane: x.lane };
+    const next = x.lane;
+    const hold = x.cashed ? (x.pay || 0) : 0;
+    srvApply(res, hold);
+    if (!x.hit && !x.cashed) state.ck.round = r;
+    else if (x.hit) state.ck.round = null;
+    ckClearLane(next);
+    const ch = $('ckChicken');
+    ch.classList.remove('hop'); void ch.offsetWidth; ch.classList.add('hop');
+    sound.tone(520, 0, 0.06, 'square', 0.04); sound.tone(780, 0.08, 0.06, 'square', 0.04);
+    if (x.hit) {
+      const px = ckSideW() + (next - 0.5) * ckLaneW();
+      ch.style.left = px + 'px';
+      await sleep(reduceMotion ? 0 : 380);
+      ckSpawn(next, 'killer');
+      sound.tone(300, 0, 0.3, 'sawtooth', 0.04);
+      await sleep(reduceMotion ? 0 : 340);
+      ch.classList.remove('hop'); ch.classList.add('splat');
+      $('ckTrack').querySelector(`.ck-lane[data-k="${next}"]`)?.classList.add('dead');
+      $('ckView').classList.remove('shake'); void $('ckView').offsetWidth; $('ckView').classList.add('shake');
+      sound.boom();
+      const cr = ch.getBoundingClientRect();
+      for (let k = 0; k < 26; k++) fxTop.confetti(['#ffffff', '#f6efe3', '#f3a73b']);
+      fxTop.burst(cr.left + cr.width / 2, cr.top + cr.height / 2, 40, 30, 6, false);
+      ckSay(next === 1 ? 'Splat! Hit in the very first lane.' : `Splat! Hit in lane ${next}. The ${fmt(r.bet)} is gone.`, 'lose');
+      srvShowOut(res.out);
+      await sleep(reduceMotion ? 0 : 1300);
+      ckAnim = false;
+      ckBuild();
+      render();
+      while (pendingLevels.length) levelUp(pendingLevels.shift());
+      return;
+    }
+    if (x.cashed) state.ck.round = { ...r };
+    ckPlace(true);
+    await sleep(reduceMotion ? 0 : 430);
+    ckAnim = false;
+    if (x.cashed) { state.ck.round = null; srvRelease(hold); ckCashShow(r, x.mult, x.pay, true, res.out); return; }
+    sound.ping(next / CK_LANES);
+    const m = ckMult(next, r.diff);
+    ckSay(`Lane ${next} made it! ×${m.toFixed(2)} · cash out ${fmt(ckPay(r.bet, m))} or keep going.`, 'win');
+    render();
+  }
+  async function ckCashOutSrv() {
+    const r = ckRound();
+    if (!r || !r.lane || ckAnim) return;
+    ckAnim = true;
+    let res;
+    try { res = await srvCall('game_chicken', { p_act: 'cash' }); }
+    catch (e) { ckAnim = false; srvFail(e, ckSay); renderCKControls(); return; }
+    const x = srvApply(res);
+    ckAnim = false;
+    ckCashShow(r, x.mult, x.pay, false, res.out);
+  }
+  function ckCashShow(r, m, pay, crossed, out) {
+    const ch = $('ckChicken');
+    ch?.classList.add('win');
+    const cr = ch?.getBoundingClientRect();
+    if (cr) fxTop.coinBurst(cr.left + cr.width / 2, cr.top, crossed ? 50 : 22, crossed ? 11 : 8);
+    if (crossed) {
+      sound.bigWin();
+      for (let k = 0; k < 60; k++) fxTop.confetti(CONFETTI);
+      fireworks(8);
+      ckSay(`Made it across! ×${m.toFixed(2)} · +${fmt(pay)}`, 'win');
+    } else { sound.win(); ckSay(`Cashed out at lane ${r.lane}: ×${m.toFixed(2)} · +${fmt(pay)}`, 'win'); }
+    srvShowOut(out);
+    render();
+    ckAnim = true;
+    setTimeout(() => { ckAnim = false; ckBuild(); render(); while (pendingLevels.length) levelUp(pendingLevels.shift()); }, reduceMotion ? 0 : 1600);
+  }
+  // Solo poker the database deals: the bots play there, the page shows their moves one after another.
+  async function pkSrv(act, amount = 0) {
+    if (pkWorking) return;
+    clearTimeout(pkTimer);
+    pkWorking = true;
+    renderPKControls();
+    let res;
+    try { res = await srvCall('game_poker', { p_act: act, p_amount: amount }); }
+    catch (e) {
+      pkWorking = false;
+      pkSay(/not your turn/i.test(e?.message || '') ? 'Too late: the turn moved on.' : /small/i.test(e?.message || '') ? 'That raise is too small.' : /credits/i.test(e?.message || '') ? 'Not enough credits for that buy-in.' : 'The move did not go through. Try again.', 'lose');
+      await srvSync();
+      renderPK(false);
+      pkScheduleSrv();
+      return;
+    }
+    const frames = res.r?.frames || [];
+    srvApply(res);
+    const last = state.pk.solo;
+    for (let k = 0; k < frames.length; k++) {
+      if (state.mode !== 'pk' || pkView() !== 'solo') break;
+      state.pk.solo = pkSrvNorm(frames[k]);
+      renderPK();
+      render();
+      const f = frames[k];
+      if (k < frames.length - 1) await sleep(reduceMotion ? 150 : f.to_act < 0 ? 1200 : 650 + Math.random() * 900);
+    }
+    state.pk.solo = last;
+    pkWorking = false;
+    if (res.r?.busted) pkSay('You are out of chips. Buy in again to keep playing.', 'lose');
+    if (act === 'leave') toast('Left the table', `${fmt(res.r?.left || 0)} chips went back to your credits.`);
+    srvShowOut(res.out);
+    renderPK(false);
+    render();
+    pkScheduleSrv();
+  }
+  function pkScheduleSrv() {
+    clearTimeout(pkTimer);
+    const st = state.pk.solo;
+    if (!st || pkWorking || state.mode !== 'pk' || pkView() !== 'solo' || !account) return;
+    if (st.phase === 'showdown') {
+      pkTimer = setTimeout(() => { while (pendingLevels.length) levelUp(pendingLevels.shift()); pkSrv('next'); }, Math.max(600, Number(st.pause) || 3200));
+    } else if (st.phase === 'waiting' || st.to_act < 0) pkTimer = setTimeout(() => pkSrv('next'), 1200);
+  }
+
+  // Lucky Burger: the paycheck comes from the database, at most one per 10 seconds.
+  async function jbPaydaySrv() {
+    const mood = jb.mood, done = jb.done;
+    if (!(mood >= 30 && done > 0)) {
+      jbSay(done ? 'The boss is not happy with you: no wage for these 10 seconds.' : 'You did nothing for 10 seconds: no wage.', 'lose');
+      sound.lose();
+      jbRender();
+      return;
+    }
+    let res;
+    try { res = await srvCall('game_job', { p_act: 'pay', p_mood: Math.round(mood) }); } catch { return; }
+    const x = srvApply(res);
+    if (!(x.pay > 0)) { jbRender(); return; }
+    jb.paidShift += x.pay;
+    jb.payFlash = true;
+    $('jbPayTxt').textContent = `Paycheck: +${x.pay} credits!`;
+    setTimeout(() => { jb.payFlash = false; }, 1800);
+    audio.coins(4);
+    const b = $('jbPayBar').getBoundingClientRect();
+    fxTop.coinBurst(b.right - 10, b.top, 10, 6);
+    if (x.promoted) jbPromote(x.pos);
+    srvShowOut(res.out);
+    while (pendingLevels.length) levelUp(pendingLevels.shift());
+    render();
+    jbRender();
+  }
+
+  async function buySrv(g) {
+    busy = true;
+    render();
+    let res;
+    try { res = await srvCall('game_buy', { p_id: g.id }); }
+    catch (e) { busy = false; toast('Shop', srvErr(e)); srvSync(); return; }
+    srvApply(res);
+    busy = false;
+    if (g.kind === 'cosmetic') { state.cosOff[g.id] = false; cosSolo(g); }
+    toast('Goodie bought', g.name);
+    sound.chime();
+    const b = goodieEls[g.id].btn.getBoundingClientRect();
+    fxTop.burst(b.left + b.width / 2, b.top + b.height / 2, 40, 42, 5, false);
+    renderPaytable();
+    srvShowOut(res.out);
+    render();
+    flush();
+  }
+
   // A balance change the server made too: apply it here unless something else changed the account meanwhile.
   // savedCredits: the balance the database last agreed with. Credits won or lost on this page since then are
   // kept on top when the database changes the balance (offline winnings, gifts, admins).
   function serverCredits(res, delta) {
+    if (srvOn()) {
+      if (res?.credits != null) { srvCreditsNow = Number(res.credits) || 0; state.credits = Math.max(0, srvCreditsNow - srvHold); }
+      else state.credits = Math.max(0, Math.min(MAX, state.credits + delta));
+      if (res?.rev != null) state.adminRev = Math.max(state.adminRev || 0, Number(res.rev));
+      srvLiveSoon();
+      return;
+    }
     if (res?.rev != null) {
       const rev = Number(res.rev);
       if (rev === (state.adminRev || 0) + 1) { state.credits += delta; if (savedCredits != null) savedCredits += delta; }
@@ -7137,6 +7762,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (bet > betLimit()) { plSay(limitMsg(), 'lose'); return false; }
     if (bet > state.credits) { plSay(`Not enough credits for a ${fmt(bet)} ball.`, 'lose'); return false; }
     if (plBalls.length >= PL_MAX_BALLS) return false;
+    if (srvWait(plSay)) return false;
+    if (srvOn()) { plDropSrv(bet); return true; }
     const R = plBoard.R;
     // The result is drawn here, fair and up front: R coin flips.
     const path = Array.from({ length: R }, () => (randInt(2) ? 1 : -1));
@@ -7168,7 +7795,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     state.pl.pending = state.pl.pending.filter(x => x.id !== ball.id);
     const sl = plBoard.slots[ball.slot];
     if (sl) sl.bump = 1;
-    state.credits = Math.min(MAX, state.credits + ball.pay);
+    if (ball.srv) srvRelease(ball.pay);
+    else state.credits = Math.min(MAX, state.credits + ball.pay);
     const net = ball.pay - ball.bet;
     state.lastWin = ball.pay;
     state.best = Math.max(state.best, net);
@@ -7186,7 +7814,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       fireworks(ball.mult >= 100 ? 10 : 4);
     } else if (ball.mult >= 1) { plSay(`${label} · +${fmt(ball.pay)}`, 'win'); sound.win(); }
     else plSay(`${label} · ${fmt(ball.pay)} back`, ball.pay ? '' : 'lose');
-    checkAch({ win: Math.max(0, net), bet: ball.bet, plinkoMult: ball.mult });
+    if (ball.srv) srvShowOut(ball.out);
+    else checkAch({ win: Math.max(0, net), bet: ball.bet, plinkoMult: ball.mult });
     render();
     plKick();
     if (!plBalls.length && !plAutoLeft) while (pendingLevels.length) levelUp(pendingLevels.shift());
@@ -7332,6 +7961,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
   async function ckGo() {
     if (!account || ckAnim) return;
+    if (srvWait(ckSay)) return;
+    if (srvOn()) return ckGoSrv();
     let r = ckRound();
     if (!r) {
       if (settings.maintenance && !account.isAdmin) { ckSay('The game is paused by an admin. Try again later.', 'lose'); return; }
@@ -7397,6 +8028,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   function ckCashOut(crossed = false) {
     const r = ckRound();
     if (!r || !r.lane || ckAnim) return;
+    if (srvOn()) return ckCashOutSrv();
     const m = ckMult(r.lane, r.diff);
     const pay = ckPay(r.bet, m);
     state.credits = Math.min(MAX, state.credits + pay);
@@ -7526,21 +8158,35 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       if (!(bet >= 1)) { cfSay('Enter a bet of at least 1.', 'lose'); return; }
       if (bet > betLimit()) { cfSay(limitMsg(), 'lose'); return; }
       if (bet > state.credits) { cfSay(`Not enough credits for a ${fmt(bet)} bet.`, 'lose'); return; }
-      state.credits -= bet;
+      if (srvWait(cfSay)) return;
       state.cf.bet = bet;
-      r = state.cf.round = { bet, mult: 1, wins: 0 };
+      r = { bet, mult: 1, wins: 0 };
+      if (!srvOn()) { state.credits -= bet; state.cf.round = r; }
     }
     const pick = state.cf.side, at = cfPayOf(r);
-    // decided right away and saved, so a closed page keeps the result
-    const edge = randInt(hasG('cfThumb') ? CF_EDGE_IN / 2 : CF_EDGE_IN) === 0;
-    const res = edge ? 'edge' : randInt(2) ? 'heads' : 'tails';
-    const won = edge || res === pick;
-    const mult = r.mult * (edge ? CF_EDGE : 2);
-    if (won) { r.mult = mult; r.wins++; } else state.cf.round = null;
-    state.cf.flips++;
+    let edge, res, won, mult, sres = null;
+    if (srvOn()) {
+      // the database flips the coin
+      cfBusy = true;
+      renderCFControls();
+      try { sres = await srvCall('game_coin', { p_act: 'flip', p_bet: r.bet, p_side: pick }); }
+      catch (e) { cfBusy = false; srvFail(e, cfSay); renderCFControls(); return; }
+      const x = sres.r || {};
+      res = x.res; won = !!x.won; edge = res === 'edge'; mult = x.mult;
+      srvApply(sres, x.cashed ? x.pay : 0);
+      r = won && !x.cashed ? state.cf.round : { bet: x.bet, mult: won ? mult : r.mult, wins: x.wins };
+    } else {
+      // decided right away and saved, so a closed page keeps the result
+      edge = randInt(hasG('cfThumb') ? CF_EDGE_IN / 2 : CF_EDGE_IN) === 0;
+      res = edge ? 'edge' : randInt(2) ? 'heads' : 'tails';
+      won = edge || res === pick;
+      mult = r.mult * (edge ? CF_EDGE : 2);
+      if (won) { r.mult = mult; r.wins++; } else state.cf.round = null;
+      state.cf.flips++;
+    }
     cfBusy = true;
     render();
-    flush();
+    if (!sres) flush();
     renderCFControls();
     $('cfBig').hidden = true;
     $('cfStage').classList.remove('idle', 'flash');
@@ -7609,28 +8255,42 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     render();
     renderCFControls();
     while (pendingLevels.length) levelUp(pendingLevels.shift());
+    if (sres && !sres.r.cashed) srvShowOut(sres.out);
     // ten wins in a row is the most a coin can carry: it pays out by itself
-    if (won && r.wins >= CF_MAX_WINS) setTimeout(() => { cfSay(`${CF_MAX_WINS} wins in a row: the most a coin can carry. It pays out now.`, 'win'); cfCashOut(); }, 1400);
+    if (won && r.wins >= CF_MAX_WINS) setTimeout(() => { cfSay(`${CF_MAX_WINS} wins in a row: the most a coin can carry. It pays out now.`, 'win'); sres ? cfCashOut({ r, pay: sres.r.pay, out: sres.out }) : cfCashOut(); }, 1400);
   }
-  function cfCashOut() {
-    const r = cfRound();
-    if (!r || cfBusy || !account) return;
-    const pay = cfPayOf(r);
-    state.credits = Math.min(MAX, state.credits + pay);
-    state.cf.round = null;
-    state.lastWin = pay;
-    state.best = Math.max(state.best, pay - r.bet);
+  // done: the database already paid this cash-out (ten wins in a row)
+  async function cfCashOut(done) {
+    let r = cfRound(), pay, out = null;
+    if (done?.r) { r = done.r; pay = done.pay; out = done.out; srvRelease(pay); }
+    else {
+      if (!r || cfBusy || !account) return;
+      pay = cfPayOf(r);
+      if (srvOn()) {
+        cfBusy = true;
+        renderCFControls();
+        try { const s = await srvCall('game_coin', { p_act: 'cash' }); pay = srvApply(s).pay; out = s.out || {}; }
+        catch (e) { cfBusy = false; srvFail(e, cfSay); renderCFControls(); return; }
+        cfBusy = false;
+      } else {
+        state.credits = Math.min(MAX, state.credits + pay);
+        state.cf.round = null;
+        state.lastWin = pay;
+        state.best = Math.max(state.best, pay - r.bet);
+      }
+    }
     cfBigText(`+${fmt(pay)}`);
     cfSay(`Cashed out after ${r.wins} ${r.wins === 1 ? 'win' : 'wins'}: ×${fmt(r.mult)} · +${fmt(pay)}`, 'win');
     const b = $('cfCash').getBoundingClientRect();
     fxTop.coinBurst(b.left + b.width / 2, b.top, Math.min(70, 20 + r.wins * 8), 10);
     if (r.mult >= 16) { sound.bigWin(); fireworks(5); } else { sound.win(); audio.kaching(); }
-    checkAch({ win: pay - r.bet, bet: r.bet, coinStreak: r.wins });
+    if (out) srvShowOut(out);
+    else checkAch({ win: pay - r.bet, bet: r.bet, coinStreak: r.wins });
     render();
     renderCFControls();
     while (pendingLevels.length) levelUp(pendingLevels.shift());
   }
-  $('cfCash').addEventListener('click', cfCashOut);
+  $('cfCash').addEventListener('click', () => cfCashOut());
   $('cfFlip').addEventListener('click', cfFlip);
   $('cfPick').addEventListener('click', e => {
     const b = e.target.closest('[data-side]');
@@ -9738,6 +10398,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const amount = act === 'raise' ? pkRaiseTo : 0;
     if (act === 'raise' && !L.canRaise) return;
     sound.chip();
+    if (pkView() === 'solo' && srvOn()) { pkSrv(act, amount); return; }
     if (pkView() === 'solo') {
       const err = pkAct(st, me, act, amount);
       if (err) { pkSay(err, 'lose'); return; }
@@ -9785,6 +10446,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     pkSchedule();
   }
   function pkSchedule() {
+    if (srvOn()) return pkScheduleSrv();
     clearTimeout(pkTimer);
     const st = state.pk.solo;
     if (!st || state.mode !== 'pk' || pkView() !== 'solo' || !account) return;
@@ -9822,6 +10484,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (buyIn > state.credits) { pkSay(`You only have ${fmt(state.credits)} credits.`, 'lose'); return; }
     state.pk.buyIn = buyIn;
     sound.chip();
+    if (pkView() === 'solo' && srvWait(pkSay)) return;
+    if (pkView() === 'solo' && srvOn()) { pkSrv('sit', buyIn); return; }
     if (pkView() === 'solo') {
       state.credits -= buyIn;
       const seats = Array(8).fill(null);
@@ -9847,6 +10511,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   }
   $('pkLeave').addEventListener('click', async () => {
     if (pkWorking) return;
+    if (pkView() === 'solo' && srvOn()) { if (state.pk.solo) pkSrv('leave'); return; }
     if (pkView() === 'solo') {
       const st = state.pk.solo;
       const me = pkMySeat(st);
@@ -9955,6 +10620,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     while (state.missions.length < 3) state.missions.push(newMission(state.missions.map(m => m.t)));
   }
   function mission(type, amount = 1) {
+    if (srvOn()) return;
     let changed = false;
     state.missions.forEach((m, i) => {
       if (m.t !== type) return;
@@ -9985,6 +10651,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const btn = e.target.closest('[data-swap]');
     if (!btn || busy || state.credits < swapCost()) return;
     const i = Number(btn.dataset.swap);
+    if (SRV === null) return;
+    if (srvOn()) {
+      srvCall('game_swap', { p_i: i }).then(res => { srvApply(res); sound.tick(); renderMissions(); render(); }).catch(e => toast('Missions', srvErr(e)));
+      return;
+    }
     state.credits -= swapCost();
     state.missions[i] = newMission(state.missions.map(m => m.t));
     sound.tick();
@@ -10015,6 +10686,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
   async function play() {
     if (busy || !account) return null;
+    if (srvWait(say)) return null;
     if (settings.maintenance && !account.isAdmin) { say('The game is paused by an admin. Try again later.', 'lose'); return null; }
     if (state.bet > betLimit()) state.bet = betLimit();
     busy = true;
@@ -10079,8 +10751,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Each new level pays LEVEL_REWARD × level credits.
   function levelUp(level) {
     const prize = LEVEL_REWARD * level;
-    state.credits = Math.min(MAX, state.credits + prize);
-    flush();
+    // with the games on the server it already paid the prize
+    if (!srvOn()) { state.credits = Math.min(MAX, state.credits + prize); flush(); }
     toast(`Level ${level}!`, `+${fmt(prize)} credits · bet limit now ${fmt(betLimit())}`);
     if (level >= MAX_LEVEL) setTimeout(() => toast('Max level!', 'You can go Prestige now: open your profile.'), 1200);
     floatText(`Level ${level} · +${fmt(prize)}`, 'star');
@@ -10194,6 +10866,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   }
 
   function checkAch(ctx) {
+    if (srvOn()) { renderAch(); return; }
     let delay = 0;
     for (const a of ACH) {
       if (state.ach[a.id] || !a.test(ctx)) continue;
@@ -10278,6 +10951,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (g.adminOnly && !account?.isAdmin) return;
     const price = priceOf(g);
     if (state.credits < price) return;
+    if (SRV === null) { toast('Shop', i18n('Loading the game…')); return; }
+    if (srvOn()) { if (g.kind === 'level' ? state.owned[g.id] < g.max : !state.owned[g.id]) buySrv(g); return; }
     if (g.kind === 'level') {
       if (state.owned[g.id] >= g.max) return;
       state.owned[g.id]++;
@@ -10366,17 +11041,24 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
   // Extra credits from a game goodie, with a little pop so you see what it brought.
   function goodieBonus(amount, id) {
+    // the database pays the goodie extras of the live games itself
+    if (srvOn()) { srvLiveSoon(); return 0; }
     amount = Math.floor(amount);
     if (!(amount > 0)) return 0;
     state.credits = Math.min(MAX, state.credits + amount);
+    goodiePop(amount, id);
+    persist();
+    return amount;
+  }
+  function goodiePop(amount, id) {
+    amount = Math.floor(amount);
+    if (!(amount > 0)) return;
     const g = GOODIES.find(x => x.id === id);
     const el = document.createElement('div');
     el.className = 'gb-pop';
     el.innerHTML = `<span aria-hidden="true">${SHOP_ICONS[id] || ''}</span><b>+${fmt(amount)}</b><small>${esc(i18n(g?.name || ''))}</small>`;
     document.body.append(el);
     setTimeout(() => el.remove(), 2200);
-    persist();
-    return amount;
   }
   const hasG = id => !!state.owned[id];
   // Each game shows its goodies (owned ones lit) with a way to the shop shelf.
@@ -10528,11 +11210,17 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   $('prestigeNo').addEventListener('click', () => { $('prestigeModal').hidden = true; });
   $('prestigeDone').addEventListener('click', () => { $('prestigeModal').hidden = true; });
   $('prestigeModal').addEventListener('keydown', e => { if (e.key === 'Escape') $('prestigeModal').hidden = true; });
-  $('prestigeYes').addEventListener('click', () => {
-    if (state.level < MAX_LEVEL) return;
-    state.prestige = (state.prestige || 0) + 1;
-    state.level = 1;
-    state.xp = 0;
+  $('prestigeYes').addEventListener('click', async () => {
+    if (state.level < MAX_LEVEL || SRV === null) return;
+    let out = null;
+    if (srvOn()) {
+      try { const res = await srvCall('game_prestige'); srvApply(res); out = res.out; }
+      catch (e) { toast('Prestige', srvErr(e)); return; }
+    } else {
+      state.prestige = (state.prestige || 0) + 1;
+      state.level = 1;
+      state.xp = 0;
+    }
     const n = state.prestige;
     $('prestigeModal').classList.add('celebrate');
     $('prestigeTitle').textContent = `Prestige ${roman(n)}!`;
@@ -10546,7 +11234,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const r = $('prestigeShow').getBoundingClientRect();
     fxTop.burst(r.left + r.width / 2, r.top + r.height / 2, 140, 42, 10, false);
     fireworks(8);
-    checkAch({ prestige: n });
+    if (out) srvShowOut(out); else checkAch({ prestige: n });
     render();
     renderBoards();
     if (!$('profileModal').hidden) renderProfile();
@@ -10606,9 +11294,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   $('startOverNo').addEventListener('click', closeStartOver);
   $('startOverModal').addEventListener('click', e => { if (e.target === $('startOverModal')) closeStartOver(); });
   $('startOverModal').addEventListener('keydown', e => { if (e.key === 'Escape') closeStartOver(); });
-  $('startOverYes').addEventListener('click', () => {
+  $('startOverYes').addEventListener('click', async () => {
     closeStartOver();
-    if (gameBusy()) return;
+    if (gameBusy() || SRV === null) return;
+    let res = null;
+    if (srvOn()) {
+      try { res = await srvCall('game_restart'); } catch (e) { toast('Start over', srvErr(e)); return; }
+    }
     Object.assign(state, fresh(), { sound: state.sound, adminRev: state.adminRev, credits: settings.startCredits, mode: state.mode, avatar: state.avatar, giftSeen: state.giftSeen, newsSeen: state.newsSeen, evSeen: state.evSeen, prestige: state.prestige, jobReset: Date.now() });
     bjShown.clear();
     renderBJTable(false);
@@ -10616,9 +11308,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     held = [false, false, false];
     holdOffer = nudgeOpen = false;
     gambleOffer = 0;
-    fillMissions();
+    if (res) { srvHold = 0; srvState(res.g); } else fillMissions();
     reels.forEach(r => r.classList.remove('win', 'star'));
     buildReels();
+    if (res && Array.isArray(state.sl.pos)) { pos = state.sl.pos.slice(); pos.forEach((p, k) => place(k, p)); }
     renderPaytable();
     renderAch();
     say('Fresh start: 500 credits, level 1, no goodies.');
@@ -11110,6 +11803,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     }
     return {
       kind: 'supabase',
+      games: {
+        async call(fn, args) {
+          const { data, error } = await sb.rpc(fn, args);
+          if (error) throw Object.assign(new Error(error.message || 'error'), { code: error.code });
+          return data;
+        },
+      },
       async signIn(name, pw) {
         if (!validId(idFor(name))) return null;
         const { data, error } = await sb.auth.signInWithPassword({ email: email(name), password: pw });
@@ -11148,7 +11848,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         const seqd = hasSaveSeq && saveSeq !== null;
         if (seqd) patch.save_seq = saveSeq + 1;
         const tried = lastTry;
-        lastTry = seqd ? { seq: patch.save_seq, game: patch.game } : null;
+        // a mark in the save: the database changes the rest of a saved game (what only it may change), this stays
+        const sid = Math.random().toString(36).slice(2, 10);
+        if (typeof patch.game === 'string' && patch.game.startsWith('{"')) patch.game = '{"saveId":"' + sid + '",' + patch.game.slice(1);
+        lastTry = seqd ? { seq: patch.save_seq, sid } : null;
         const send = () => {
           let q = sb.from('players').update(patch).eq('id', key);
           if (adminSchema) q = q.eq('admin_rev', adminRev || 0);
@@ -11202,7 +11905,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           if ('save_seq' in patch) {
             const { data: now } = await sb.from('players').select('admin_rev,save_seq,game').eq('id', key).maybeSingle();
             // our own earlier save arrived although its answer didn't: take its count and save again
-            if (now && tried && Number(now.save_seq) === tried.seq && now.game === tried.game) {
+            let theirSid = null;
+            try { theirSid = JSON.parse(now?.game || '{}').saveId; } catch {}
+            if (now && tried && Number(now.save_seq) === tried.seq && theirSid === tried.sid) {
               saveSeq = tried.seq;
               return this.save(key, body);
             }
@@ -11689,7 +12394,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     say('Pick a bet and pull.');
     bjShown.clear();
     applyGameMode();
-    if (account) bjRepair();
+    // with the games on the server the database finishes rounds itself (srvInit decides which way it plays)
+    if (account && !backend?.games) bjRepair();
   }
 
   function enterGame({ key, doc }) {
@@ -11710,6 +12416,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     lastSaved = '';
     loadState(saved);
     savedCredits = state.credits;
+    srvInit().then(() => { if (SRV === false && account?.id === key && backend?.games) bjRepair(); });
     $('whoami').textContent = account.name;
     renderMyAvatar();
     seenMedals = null;
@@ -12392,6 +13099,20 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           if (Date.now() - rrLostAt < 30000) toast('Russian roulette', 'You lost everything and start over.');
           else toast('Game reset', 'An admin reset your game.');
           if (account) { renderMyAvatar(); applyGameMode(); }
+        } else if (srvOn()) {
+          // the database keeps the game: take its numbers as they are
+          state.adminRev = rev;
+          let theirs = null;
+          try { theirs = typeof doc.game === 'string' ? JSON.parse(doc.game) : doc.game; } catch {}
+          const lvBefore = state.level, posBefore = jbIdx();
+          srvState({ ...(theirs || {}), credits: Number(doc.credits) || 0, level: Number(doc.level) || state.level });
+          renderShop?.();
+          if (jbIdx() !== posBefore) jbRender();
+          hrClaimSoon = rlClaimSoon = rkClaimSoon = ltClaimSoon = true;
+          const gifts = await checkGifts();
+          const liveBets = state.hr.open.length || state.rl.open.length || state.rk.open.length || (lt?.slots || []).some(x => ltMineOf(x));
+          if (state.level !== lvBefore && !gifts) toast('Level changed', `An admin set you to level ${state.level}.`);
+          else if (!gifts && !liveBets && Date.now() > quietCreditsUntil) toast('Credits updated', `Your balance is now ${fmt(state.credits)}.`);
         } else {
           // keep what was won or lost here since the last save on top of the database's balance
           const local = savedCredits == null ? 0 : state.credits - savedCredits;
@@ -13970,7 +14691,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     jbClearDom();
     const now = performance.now();
     jb = { ...jbNew(), on: true, cycle: now, next: now + 400, lastAct: now };
-    state.job.shifts++;
+    if (srvOn()) srvCall('game_job', { p_act: 'start' }).then(res => { srvApply(res); jbRender(); }).catch(() => {});
+    else state.job.shifts++;
     jbSay('Clocked in! Keep busy: the boss pays only while you work.', 'win');
     sound.chime();
     jbRender();
@@ -13988,6 +14710,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   }
   $('jbShift').addEventListener('click', () => { if (jb.on) jbStop(); else jbStart(); });
   function jbPayday() {
+    if (srvOn()) { jbPaydaySrv(); return; }
     const i = jbIdx(), pos = JB_POS[i];
     if (jb.mood >= 30 && jb.done > 0) {
       // Good work pays: the happier the boss, the bigger the paycheck (80% to 120% of the wage), +10% with the badge.
@@ -14646,17 +15369,23 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   function priceOf(g) { const d = evDiscount(); return d ? Math.max(1, Math.floor(g.price() * (1 - d))) : g.price(); }
   // Horses, roulette and the rocket pay in the database; the event's share of a win comes on top here, like a goodie.
   function eventBonus(profit, game) {
+    if (srvOn()) { srvLiveSoon(); return 0; }
     const extra = Math.floor((profit || 0) * (evMult(game) - 1));
     if (!(extra > 0)) return 0;
     state.credits = Math.min(MAX, state.credits + extra);
+    evPop(extra);
+    persist();
+    return extra;
+  }
+  function evPop(extra) {
+    extra = Math.floor(extra);
+    if (!(extra > 0)) return;
     const e = evActive()[0];
     const el = document.createElement('div');
     el.className = 'gb-pop ev-pop';
     el.innerHTML = `<span aria-hidden="true">${esc(e?.icon || '🎉')}</span><b>+${fmt(extra)}</b><small class="ev-t">${esc(e?.title || 'Event')}</small>`;
     document.body.append(el);
     setTimeout(() => el.remove(), 2200);
-    persist();
-    return extra;
   }
   function evX(v) { return '×' + String(+Number(v).toFixed(2)).replace('.', lang === 'de' ? ',' : '.'); }
   function evSummary(e) {
@@ -14758,6 +15487,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     // once per player: the gift, the start pop-up and, if wanted, the announcement pop-up
     for (const x of live) {
       const gift = Math.floor(evNum(x.fx?.gift || 0, 0, EV_GIFT_MAX));
+      if (srvOn()) { if (gift > 0 && !(state.evGifts || []).includes(String(x.id))) srvGifts(); continue; }
       if (gift > 0 && !evSeen('g:' + x.id)) {
         state.credits = Math.min(MAX, state.credits + gift);
         evSeenSet('g:' + x.id);
