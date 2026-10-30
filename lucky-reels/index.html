@@ -1514,11 +1514,20 @@ html[data-lang="de"] .reel.held::after { content: "GEHALTEN"; }
   display: flex; align-items: center; gap: 8px;
   padding: 12px 18px;
   border-radius: 999px;
-  background: linear-gradient(#f3b956, #c7801f);
-  box-shadow: 0 5px 0 #7a4a12, 0 12px 24px -8px #000;
+  background: linear-gradient(#ffd36b, #e9a23b 55%, #c7801f);
+  border: 2px solid #fff2c4;
+  box-shadow: 0 5px 0 #7a4a12, 0 12px 24px -8px #000, 0 0 0 0 #ffd36b99;
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: 18px;
+  animation: chatFabGlow 2.6s ease-in-out infinite;
 }
+.chat-fab-ico { font-size: 22px; line-height: 1; animation: chatFabWiggle 2.6s ease-in-out infinite; }
+.chat-fab:hover { filter: brightness(1.1); transform: translateY(-2px); }
+.chat-fab:has(.badge:not([hidden])) { animation: chatFabRing 1.1s ease-out infinite; }
+@keyframes chatFabGlow { 50% { box-shadow: 0 5px 0 #7a4a12, 0 12px 24px -8px #000, 0 0 22px 4px #ffd36b88; } }
+@keyframes chatFabRing { 0% { box-shadow: 0 5px 0 #7a4a12, 0 12px 24px -8px #000, 0 0 0 0 #ff5a5fcc; } 100% { box-shadow: 0 5px 0 #7a4a12, 0 12px 24px -8px #000, 0 0 0 16px #ff5a5f00; } }
+@keyframes chatFabWiggle { 0%, 80%, 100% { rotate: 0deg; } 85% { rotate: -14deg; } 90% { rotate: 12deg; } 95% { rotate: -6deg; } }
+@media (prefers-reduced-motion: reduce) { .chat-fab, .chat-fab-ico, .chat-fab:has(.badge:not([hidden])) { animation: none; } }
 .chat-fab .badge {
   min-width: 22px; height: 22px; padding: 0 6px;
   border-radius: 11px;
@@ -1544,11 +1553,20 @@ html[data-lang="de"] .reel.held::after { content: "GEHALTEN"; }
 .chat-head h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 18px; color: var(--accent); }
 .chat-head span { font-size: 12px; color: var(--muted); }
 .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--win); box-shadow: 0 0 6px var(--win); margin-right: 6px; vertical-align: 1px; flex: none; }
-.chat-online { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 10px 14px 0; }
+.chat-online { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 10px 14px; border-bottom: 1px solid #ffffff14; }
 .chat-online .label { flex-basis: 100%; }
 .online-chip { display: inline-flex; align-items: center; padding: 5px 10px; border-radius: 999px; background: var(--panel); color: var(--fg); font-size: 12px; font-weight: 600; border: 1px solid #7fd18b55; }
 .online-chip:hover { border-color: var(--win); }
 .online-none { font-size: 12px; color: var(--muted); }
+.chat-tabs .chat-tab { flex: 1 1 0; justify-content: center; padding: 8px 12px; font-size: 13px; }
+.dm-bar { display: flex; align-items: center; gap: 8px; width: 100%; }
+.dm-back { padding: 5px 10px; border-radius: 999px; background: var(--panel); color: var(--fg); font-size: 12px; font-weight: 600; }
+.dm-who { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: 14px; min-width: 0; }
+.dm-pick { display: grid; gap: 6px; }
+.dm-pick .label { margin-top: 4px; }
+.dm-person { display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 10px; border-radius: 10px; background: var(--panel); color: var(--fg); font-size: 13px; font-weight: 600; text-align: left; }
+.dm-person:hover { outline: 1px solid var(--accent); }
+.dm-person .dm-state { margin-left: auto; font-size: 11px; color: var(--muted); font-weight: 500; }
 .chat-tabs { display: flex; gap: 6px; padding: 10px 14px; overflow-x: auto; border-bottom: 1px solid #ffffff14; scrollbar-width: thin; }
 .chat-tab { display: inline-flex; align-items: center; flex: none; padding: 6px 12px; border-radius: 999px; background: var(--panel); color: var(--muted); font-size: 12px; font-weight: 600; }
 .chat-tab[aria-pressed="true"] { background: var(--accent); color: var(--ink); }
@@ -2552,7 +2570,7 @@ body:not(.signed-in) .lang-toggle.floating { display: flex; }
   .account-bar .link-btn { font-size: 12px; }
   .account-bar .lang-toggle span { padding: 4px 7px; font-size: 10px; }
   body.signed-in { padding-bottom: 76px; }
-  .chat-fab { padding: 10px 14px; font-size: 14px; }
+  .chat-fab { padding: 10px 16px; font-size: 16px; }
   input, select, textarea { font-size: 16px !important; }
   .marquee p { letter-spacing: 0.1em; }
   .rl-wheel-wrap { width: min(250px, 64vw); }
@@ -3588,11 +3606,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
 <button class="lang-toggle floating" type="button" aria-label="Sprache wechseln"><span data-l="de">DE</span><span data-l="en">EN</span></button>
 <div class="chat-pops" id="chatPops" aria-live="polite"></div>
-<button class="chat-fab" id="chatFab" type="button" hidden>Chat <span class="badge" id="chatBadge" hidden>0</span></button>
+<button class="chat-fab" id="chatFab" type="button" hidden><span class="chat-fab-ico" aria-hidden="true">💬</span>Chat <span class="badge" id="chatBadge" hidden>0</span></button>
 <section class="chat-panel" id="chatPanel" aria-labelledby="chatTitle" hidden>
   <div class="chat-head"><div><h2 id="chatTitle">Chat</h2><span id="chatSub">Everyone playing Lucky Reels</span></div><button class="chat-close" id="chatClose" type="button" aria-label="Close chat">×</button></div>
-  <div class="chat-online" id="chatOnline"></div>
   <div class="chat-tabs" id="chatTabs" role="tablist" aria-label="Conversations"></div>
+  <div class="chat-online" id="chatOnline"></div>
   <div class="chat-log" id="chatLog" aria-live="polite"></div>
   <form class="chat-form" id="chatForm">
     <input id="chatInput" maxlength="300" autocomplete="off" placeholder="Say something…" aria-label="Message">
@@ -3967,6 +3985,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Advertisement': 'Werbung', 'Ad': 'Anzeige', 'Close the ad': 'Werbung schließen', 'Ad pop-up on': 'Werbe-Pop-up an', 'Every player sees the ad image again and again while they play.': 'Jeder Spieler sieht das Werbebild immer wieder, während er spielt.', 'Ad: every (minutes)': 'Werbung: alle (Minuten)', "Ad: can't be closed for (seconds)": 'Werbung: nicht wegklickbar für (Sekunden)',
     'Set the Lucky Burger career': 'Lucky-Burger-Karriere einstellen', 'Set position': 'Position setzen', 'This needs the “Admin: Lucky Burger career” part of supabase-setup.sql.': 'Dafür brauchst du den Teil „Admin: Lucky Burger career“ aus supabase-setup.sql.', 'That player has not played yet, so there is no career to set.': 'Dieser Spieler hat noch nicht gespielt, es gibt noch keine Karriere zum Einstellen.',
     'Compensation per player, e.g. 10000': 'Entschädigung pro Spieler, z. B. 10000', 'Compensation per player': 'Entschädigung pro Spieler', 'Message (optional)': 'Nachricht (optional)', 'Message for the compensation': 'Nachricht zur Entschädigung', '🎁 Compensation for the downtime': '🎁 Entschädigung für die Ausfallzeit', 'Compensation': 'Entschädigung', 'credits': 'Credits', 'Enter how many credits every player gets.': 'Gib ein, wie viele Credits jeder Spieler bekommt.',
+    'Private chat': 'Privater Chat', '← Back': '← Zurück', 'Pick who you want to write to': 'Wähle aus, wem du schreiben willst', 'Your chats': 'Deine Chats', 'Other players': 'Weitere Spieler', 'Players': 'Spieler', 'online': 'online', 'There is nobody else here yet.': 'Hier ist noch niemand sonst.',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -4165,7 +4184,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['Sorry for the downtime! As a thank-you for your patience, everyone gets {a} credits.', 'Sorry für die Ausfallzeit! Als Dankeschön für eure Geduld bekommt jeder {a} Credits.'], ['Give everyone {a}?', 'Allen {a} geben?'], ['Everyone got {a} credits and sees a pop-up about it.', 'Alle haben {a} Credits bekommen und sehen ein Pop-up dazu.'], ['{a} now works as {b} at Lucky Burger.', '{a} arbeitet jetzt als {b} bei Lucky Burger.'], ['An admin made you {a}.', 'Ein Admin hat dich zu {a} gemacht.'], ['Lucky Burger position for {a}', 'Lucky-Burger-Position für {a}'], ['New password for {a} (6+)', 'Neues Passwort für {a} (6+)'], ['{a} has a new password now. Tell it to them yourself.', '{a} hat jetzt ein neues Passwort. Sag es ihm selbst.'], ['{a} can get credits from level {b} on.', '{a} kann erst ab Level {b} Credits bekommen.'], ['Got a code from a friend? You start with {a} credits instead of {b} (first account on this device only).', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits (nur beim ersten Konto auf diesem Gerät).'], ['Got a code from a friend? You start with {a} credits instead of {b}.', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits.'], ['New players who use it start with {a} credits.', 'Neue Spieler, die ihn nutzen, starten mit {a} Credits.'], ['New players who sign up with your code start with {a} credits.', 'Neue Spieler, die sich mit deinem Code anmelden, starten mit {a} Credits.'], ['You get {a} on top.', 'Du bekommst {a} obendrauf.'], ['{a} extra credits', '{a} Extra-Credits'], ['{a}% of your credits (at most {b})', '{a} % deiner Credits (höchstens {b})'], ['{a}% of your credits', '{a} % deiner Credits'], ['Example: a new player starts with {a} credits. A code owner with 50,000 credits gets {b}, one with 500,000 gets {c}.', 'Beispiel: Ein neuer Spieler startet mit {a} Credits. Ein Code-Besitzer mit 50,000 Credits bekommt {b}, einer mit 500,000 bekommt {c}.'], ['ends in {a}', 'endet in {a}'], ['starts in {a}', 'beginnt in {a}'], ['Event gift: +{a} credits!', 'Event-Geschenk: +{a} Credits!'], ['event ×{a}', 'Event ×{a}'], ['1st place', '1. Platz'], ['2nd place', '2. Platz'], ['3rd place', '3. Platz'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['Message {a}…', 'Nachricht an {a}…'], ['Sorry for the downtime! As a thank-you for your patience, everyone gets {a} credits.', 'Sorry für die Ausfallzeit! Als Dankeschön für eure Geduld bekommt jeder {a} Credits.'], ['Give everyone {a}?', 'Allen {a} geben?'], ['Everyone got {a} credits and sees a pop-up about it.', 'Alle haben {a} Credits bekommen und sehen ein Pop-up dazu.'], ['{a} now works as {b} at Lucky Burger.', '{a} arbeitet jetzt als {b} bei Lucky Burger.'], ['An admin made you {a}.', 'Ein Admin hat dich zu {a} gemacht.'], ['Lucky Burger position for {a}', 'Lucky-Burger-Position für {a}'], ['New password for {a} (6+)', 'Neues Passwort für {a} (6+)'], ['{a} has a new password now. Tell it to them yourself.', '{a} hat jetzt ein neues Passwort. Sag es ihm selbst.'], ['{a} can get credits from level {b} on.', '{a} kann erst ab Level {b} Credits bekommen.'], ['Got a code from a friend? You start with {a} credits instead of {b} (first account on this device only).', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits (nur beim ersten Konto auf diesem Gerät).'], ['Got a code from a friend? You start with {a} credits instead of {b}.', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits.'], ['New players who use it start with {a} credits.', 'Neue Spieler, die ihn nutzen, starten mit {a} Credits.'], ['New players who sign up with your code start with {a} credits.', 'Neue Spieler, die sich mit deinem Code anmelden, starten mit {a} Credits.'], ['You get {a} on top.', 'Du bekommst {a} obendrauf.'], ['{a} extra credits', '{a} Extra-Credits'], ['{a}% of your credits (at most {b})', '{a} % deiner Credits (höchstens {b})'], ['{a}% of your credits', '{a} % deiner Credits'], ['Example: a new player starts with {a} credits. A code owner with 50,000 credits gets {b}, one with 500,000 gets {c}.', 'Beispiel: Ein neuer Spieler startet mit {a} Credits. Ein Code-Besitzer mit 50,000 Credits bekommt {b}, einer mit 500,000 bekommt {c}.'], ['ends in {a}', 'endet in {a}'], ['starts in {a}', 'beginnt in {a}'], ['Event gift: +{a} credits!', 'Event-Geschenk: +{a} Credits!'], ['event ×{a}', 'Event ×{a}'], ['1st place', '1. Platz'], ['2nd place', '2. Platz'], ['3rd place', '3. Platz'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
     ['Rises in {a} of steps', 'Steigt in {a} der Schritte'], ['Usually {a} or {b}', 'Meist {a} oder {b}'], ['Swings: {a}', 'Schwankung: {a}'],
     ['Start {a} · bankrupt below {b} · takeover at {c}', 'Start {a} · Pleite unter {b} · Übernahme ab {c}'],
     ['Buy {a} for {b} · sell {c} for {d} (1% fee each way)', 'Kauf {a} für {b} · Verkauf {c} für {d} (je 1 % Gebühr)'],
@@ -11364,7 +11383,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   let dms = [];
   let dmStop = null;
   let chatOpen = false;
-  let chatWith = null;
+  let chatWith = null, chatPrivate = false;
   let online = new Set();
   let lastRead = {};
   const seenMsgs = new Set();
@@ -11790,15 +11809,28 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     renderAdminMsgs();
     if (!chatOpen) return;
 
-    const others = players.filter(p => online.has(p.id) && p.id !== account?.id).sort(byName);
-    $('chatOnline').innerHTML = `<span class="label">Online now · ${others.length + 1}</span>` + (others.length
-      ? others.map(p => `<button type="button" class="online-chip" data-dm="${esc(p.id)}" title="Send ${esc(p.name)} a private message"><i class="dot"></i>${avatarHtml(p.id, p.name)}${nameHtml(p.id, p.name)}</button>`).join('')
-      : '<span class="online-none">Nobody else is online right now.</span>');
-
-    const tabs = [{ id: '', label: 'Everyone', unread: unreadIn('all'), on: false, active: !chatWith },
-      ...convs.map(id => ({ id, label: nameOf(id), unread: unreadIn(id), on: online.has(id), active: id === chatWith }))];
-    $('chatTabs').innerHTML = tabs.map(t =>
-      `<button type="button" class="chat-tab" role="tab" data-conv="${esc(t.id)}" aria-pressed="${t.active}">${t.on ? '<i class="dot"></i>' : ''}${esc(t.label)}${t.unread ? `<span class="tab-badge">${t.unread}</span>` : ''}</button>`).join('');
+    const nOnline = players.filter(p => online.has(p.id)).length || 1;
+    const dmUnread = convs.reduce((n, id) => n + unreadIn(id), 0);
+    const tabs = [{ id: 'all', label: 'Everyone', unread: unreadIn('all'), active: !chatPrivate }, { id: 'dm', label: 'Private chat', unread: dmUnread, active: chatPrivate }];
+    const tabsHtml = tabs.map(t =>
+      `<button type="button" class="chat-tab" role="tab" data-conv="${t.id}" aria-pressed="${t.active}">${esc(t.label)}${t.unread ? `<span class="tab-badge">${t.unread}</span>` : ''}</button>`).join('');
+    if ($('chatTabs').__html !== tabsHtml) $('chatTabs').innerHTML = $('chatTabs').__html = tabsHtml;
+    $('chatOnline').innerHTML = chatWith
+      ? `<div class="dm-bar"><button type="button" class="dm-back" data-conv="dm">← Back</button><span class="dm-who">${online.has(chatWith) ? '<i class="dot"></i>' : ''}${avatarHtml(chatWith, nameOf(chatWith))}${nameHtml(chatWith, nameOf(chatWith))}</span></div>`
+      : `<span class="label">Online now · ${nOnline}</span>`;
+    // the private chat without a partner yet: pick someone
+    if (chatPrivate && !chatWith) {
+      $('chatSub').textContent = 'Pick who you want to write to';
+      $('chatForm').hidden = true;
+      const recent = convs.filter(id => id !== account?.id);
+      const rest = players.filter(p => p.id !== account?.id && !recent.includes(p.id)).sort((a, b) => online.has(b.id) - online.has(a.id) || byName(a, b));
+      const row = (id, name, note) => `<button type="button" class="dm-person" data-dm="${esc(id)}">${online.has(id) ? '<i class="dot"></i>' : ''}${avatarHtml(id, name)}${nameHtml(id, name)}<span class="dm-state">${note}</span></button>`;
+      $('chatLog').innerHTML = `<div class="dm-pick">` +
+        (recent.length ? `<span class="label">Your chats</span>` + recent.map(id => row(id, nameOf(id), unreadIn(id) ? `<span class="tab-badge">${unreadIn(id)}</span>` : online.has(id) ? i18n('online') : '')).join('') : '') +
+        (rest.length ? `<span class="label">${recent.length ? 'Other players' : 'Players'}</span>` + rest.map(p => row(p.id, p.name, online.has(p.id) ? i18n('online') : '')).join('') : '') +
+        (!recent.length && !rest.length ? '<p class="chat-empty">There is nobody else here yet.</p>' : '') + '</div>';
+      return;
+    }
 
     $('chatSub').textContent = chatWith
       ? `Private chat with ${nameOf(chatWith)}${online.has(chatWith) ? ' · online' : ''}`
@@ -11837,6 +11869,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   }
   function openConversation(id) {
     chatWith = id && id !== account?.id ? id : null;
+    chatPrivate = !!chatWith;
     renderChat.scrolled = false;
     setChat(true);
   }
@@ -11847,7 +11880,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const dm = e.target.closest('[data-dm]');
     const tab = e.target.closest('[data-conv]');
     if (dm) openConversation(dm.dataset.dm);
-    else if (tab) openConversation(tab.dataset.conv || null);
+    else if (tab && tab.dataset.conv === 'dm') { chatWith = null; chatPrivate = true; renderChat.scrolled = false; renderChat(); }
+    else if (tab) openConversation(null);
   });
   $('boardGame').addEventListener('click', e => {
     const prof = e.target.closest('[data-profile]');
