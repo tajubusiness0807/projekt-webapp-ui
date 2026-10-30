@@ -4250,7 +4250,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     "Events and the happy hour don't raise Chicken wins.": 'Events und die Happy Hour erhöhen bei Chicken keine Gewinne.',
     'Force reload now': 'Neuladen erzwingen', 'Reload everyone?': 'Alle neu laden?', 'The game reloads in 3 seconds.': 'Das Spiel lädt in 3 Sekunden neu.', 'Every open page saves and reloads in 3 seconds (yours stays).': 'Jede offene Seite speichert und lädt in 3 Sekunden neu (deine bleibt).',
     "Events and the happy hour don't raise coin flip wins.": 'Events und die Happy Hour erhöhen beim Münzwurf keine Gewinne.',
-    'Loading the game…': 'Spiel wird geladen…',
+    'Level 20 reached: back to level 1, with a new badge next to your name.': 'Level 20 erreicht: zurück auf Level 1, mit einem neuen Abzeichen neben deinem Namen.',
+    'Loading the game…': 'Spiel wird geladen…', 'The games need the online database. Check the connection and reload the page.': 'Die Spiele brauchen die Online-Datenbank. Prüf die Verbindung und lade die Seite neu.',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -5509,254 +5510,19 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   }
   function say(text, kind = '') { showMessage($('message'), text, kind); }
 
-  function gainXp(n) {
-    // XP comes from the database (for the live games once their bets are settled)
-    if (srvOn()) return;
-    if (state.level >= MAX_LEVEL) { state.xp = xpNeed(MAX_LEVEL); return; }
-    const evXp = Math.min(5, evFactor('xp'));
-    state.xp += evXp > 1 ? Math.round(n * evXp) : n;
-    while (state.level < MAX_LEVEL && state.xp >= xpNeed(state.level)) {
-      state.xp -= xpNeed(state.level);
-      state.level++;
-      pendingLevels.push(state.level);
-    }
-    if (state.level >= MAX_LEVEL) state.xp = xpNeed(MAX_LEVEL);
-  }
 
   async function spin(free = false) {
-    if (srvOn()) return spinSrv(free);
-    if (!free && state.bet > betLimit()) state.bet = betLimit();
-    const bet = free ? state.freeBet : state.bet;
-    const cost = free ? 0 : spinCost();
-    if (state.credits < cost) return null;
-    const raised = !free && held.some(Boolean) && state.bet > lastBet;
-    const holds = free || raised ? [false, false, false] : held.slice();
-    held = [false, false, false];
-    state.nudges = 0;
-    holdOffer = false;
-    nudgeOpen = false;
-    gambleOffer = 0;
-    state.credits -= cost;
-    state.spins++;
-    // saved now: reloading when the reels look bad must not bring the stake or the free spin back
-    flush();
-    reels.forEach(r => r.classList.remove('win', 'star', 'wild'));
-    cabinet.classList.add('spinning');
-    say(free ? `Free spin ${freeDone} · wins ×${FREE_MULT}` : raised ? 'Bet raised, so the holds are off. Spinning…' : holds.some(Boolean) ? 'Spinning the reels you did not hold…' : 'Spinning…', free ? 'bonus' : '');
-    render();
-    holds.forEach((h, i) => reels[i].classList.toggle('held', h));
-
-    const targets = [0, 1, 2].map(i => holds[i] ? pos[i] : randInt(STRIP.length));
-    // Three sevens are a bit rarer than the reels alone make them: a quarter of them get the last free reel drawn again.
-    const free7 = [2, 1, 0].find(i => !holds[i]);
-    if (free7 !== undefined && lineSymbol(...targets.map(t => STRIP[t])) === 'seven' && randInt(100) < SEVEN_REDRAW) targets[free7] = randInt(STRIP.length);
-
-    const sevenish = s => s === 'seven' || s === 'wild';
-    const [s0, s1] = [STRIP[targets[0]], STRIP[targets[1]]];
-    const tease = sevenish(s0) && sevenish(s1) && (s0 === 'seven' || s1 === 'seven');
-    const durations = free ? [700, 1000, tease ? 3200 : 1300] : [1100, 1550, tease ? 4200 : 2000];
-    const stops = targets.map((t, i) => holds[i] ? Promise.resolve() : animateReel(i, t, reduceMotion ? 0 : durations[i]));
-    stops.forEach((p, i) => p.then(() => {
-      if (holds[i]) return;
-      const sym = STRIP[targets[i]];
-      if (sym === 'star') { reels[i].classList.add('star'); sound.star(); }
-      if (sym === 'wild') { reels[i].classList.add('wild'); sound.star(); }
-    }));
-    if (tease) stops[1].then(() => {
-      cabinet.classList.add('tease');
-      say('Two sevens… come on!', 'hot');
-      for (let k = 0; k < 14; k++) setTimeout(() => sound.tease(), k * 180);
-    });
-    await Promise.all(stops);
-    cabinet.classList.remove('tease', 'spinning');
-    reels.forEach(r => r.classList.remove('held'));
-    pos = targets;
-
-    const syms = targets.map(t => STRIP[t]);
-    const line = lineSymbol(...syms);
-    const base = payout(...syms);
-    const sMult = base ? streakMult() : 1;
-    const mult = base * (free ? FREE_MULT : 1) * sMult * winMult('slots');
-    const bolt = state.owned.lightning && base && randInt(1000) < LIGHTNING_CHANCE ? pickLightning() : 0;
-    const win = Math.min(MAX, Math.floor(mult * bet * (bolt || 1)));
-    const ratio = win / bet;
-    const refund = !base && state.owned.piggy ? Math.floor(bet * PIGGY_REFUND) : 0;
-    state.credits = Math.min(MAX, state.credits + win + refund);
-    state.lastWin = win;
-    state.best = Math.max(state.best, win);
-    if (free) state.freeTotal += win;
-    state.streak = base ? state.streak + 1 : 0;
-
-    // Held reels don't count their star or wild again.
-    const landed = syms.filter((_, i) => !holds[i]);
-    const starCount = landed.filter(x => x === 'star').length;
-    const wildCount = landed.filter(x => x === 'wild').length;
-    let triggered = false;
-    if (starCount) {
-      state.stars += starCount;
-      state.starBank = (state.starBank || 0) + bet * starCount;
-      floatText(`+${starCount} ★`, 'star');
-      if (state.stars >= STAR_GOAL) {
-        const avg = Math.max(1, Math.floor(state.starBank / state.stars));
-        state.stars -= STAR_GOAL;
-        state.starBank = avg * state.stars;
-        if (!state.freeSpins && !inBonus) state.freeBet = avg;
-        state.freeSpins += FREE_SPINS + (state.owned.starPlus ? 1 : 0);
-        triggered = true;
-      }
-    }
-    gainXp(10 + Math.floor(Math.log10(bet) * 8) + (base ? 8 : 0) + (line ? 30 : 0));
-
-    mission('spins');
-    if (win) { mission('wins'); mission('earn', ratio); }
-    if (line) mission('three');
-    if (starCount) mission('stars', starCount);
-    if (wildCount) mission('wilds', wildCount);
-    mission('streak', state.streak);
-    if (win && holds.some(Boolean)) mission('hold');
-
-    const extras = [];
-    if (line && syms.includes('wild')) extras.push('wild');
-    if (base && sMult > 1) extras.push(`streak ×${sMult.toFixed(2)}`);
-    if (free && base) extras.push(`bonus ×${FREE_MULT}`);
-    if (base && settings.winMultiplier !== 1) extras.push(`happy hour ×${settings.winMultiplier}`);
-    if (base && evMult('slots') > 1) extras.push(`event ${evX(evMult('slots'))}`);
-    if (bolt) extras.push(`lightning ×${bolt}`);
-    const tail = extras.length ? ` (${extras.join(', ')})` : '';
-    const jackpot = line === 'seven';
-    let result = win ? 'win' : 'lose';
-    if (base) markWin(syms, line);
-
-    if (line) {
-      say(`Three ${NAMES[line]}! +${fmt(win)}${tail}`, 'win');
-    } else if (win) {
-      say(`Cherries pay ${fmt(win)}${tail}`, 'win');
-    } else if (state.credits < 1 && !state.freeSpins) {
-      say('Out of credits. Earn some at Lucky Burger!', 'lose');
-    } else if (starCount) {
-      say(`No win, but +${starCount} bonus star${starCount > 1 ? 's' : ''}.`, 'bonus');
-    } else {
-      say(refund ? `No win. Piggy Bank returns ${fmt(refund)}.` : 'No win. Try again.', 'lose');
-    }
-
-    // Fruit-machine features after a paid spin: gamble a win, or hold and nudge after a loss.
-    lastBet = bet;
-    if (!free && !autoLeft) {
-      if (win) gambleOffer = win;
-      else {
-        if (randInt(100) < NUDGE_CHANCE) {
-          const n = randInt(5) === 0 ? 2 : 1;
-          state.nudges += n;
-          floatText(`+${n} nudge${n > 1 ? 's' : ''}`, 'nudge');
-          sound.chime();
-        }
-        nudgeOpen = state.nudges > 0;
-        holdOffer = randInt(100) < HOLD_CHANCE;
-        if (holdOffer || nudgeOpen) say(
-          holdOffer && nudgeOpen ? 'No win. Nudge a reel now, or hold reels for the next spin.'
-            : holdOffer ? 'No win. Hold up to two reels for the next spin.'
-            : `No win. Nudge a reel down now? ${state.nudges} nudge${state.nudges > 1 ? 's' : ''}, gone after the next spin.`, 'hot');
-      }
-    }
-    if (win) floatText('+' + fmt(win));
-    if (ratio >= 10) fireworks(ratio >= 75 ? 12 : 6);
-    render();
-
-    if (jackpot) {
-      result = 'jackpot';
-      state.jackpots++;
-      if (bolt) await lightningStrike(bolt);
-      await celebrate(win, Math.round(mult * (bolt || 1) * 100) / 100);
-    } else if (win) {
-      if (bolt) await lightningStrike(bolt);
-      await celebrateTier(win, ratio);
-    }
-    if (triggered) {
-      sound.levelUp();
-      for (let k = 0; k < 40; k++) fxTop.confetti(BONUS_CONFETTI);
-      await banner('FREE SPINS', 'bonus', 2600, null, `${FREE_SPINS + (state.owned.starPlus ? 1 : 0)} spins · every win ×${FREE_MULT}`);
-    }
-    checkAch({ win, three: !!line, ratio, jackpot, triggered, bet, wildLine: !!line && syms.includes('wild') });
-    render();
-    return result;
+    if (!srvOn()) return null;
+    return spinSrv(free);
   }
 
-  async function nudge(i) {
-    if (srvOn()) return nudgeSrv(i);
-    if (busy || !nudgeOpen || state.nudges < 1) return;
-    busy = true;
-    state.nudges--;
-    holdOffer = false;
-    held = [false, false, false];
-    render();
-    const len = STRIP.length, from = pos[i], to = (from - 1 + len) % len;
-    await slide(i, len + from, len + from - 1, 260);
-    place(i, to);
-    pos[i] = to;
-    sound.clunk();
-
-    // A star nudged onto the line counts like a landed one (also the second of two stars in a row).
-    let starBonus = false;
-    if (STRIP[to] === 'star') {
-      state.stars += 1;
-      state.starBank = (state.starBank || 0) + lastBet;
-      floatText('+1 ★', 'star');
-      mission('stars', 1);
-      if (state.stars >= STAR_GOAL) {
-        const avg = Math.max(1, Math.floor(state.starBank / state.stars));
-        state.stars -= STAR_GOAL;
-        state.starBank = avg * state.stars;
-        if (!state.freeSpins && !inBonus) state.freeBet = avg;
-        state.freeSpins += FREE_SPINS + (state.owned.starPlus ? 1 : 0);
-        starBonus = true;
-      }
-      render();
-      persist();
-    }
-
-    const syms = pos.map(p => STRIP[p]);
-    const line = lineSymbol(...syms);
-    const base = payout(...syms);
-    if (base) {
-      const bet = lastBet;
-      const sMult = streakMult();
-      const win = Math.min(MAX, Math.floor(base * bet * sMult * winMult('slots')));
-      state.credits = Math.min(MAX, state.credits + win);
-      state.lastWin = win;
-      state.best = Math.max(state.best, win);
-      state.streak++;
-      nudgeOpen = false;
-      markWin(syms, line);
-      say(`Nudge win! ${line ? `Three ${NAMES[line]}` : 'Cherries'} pay ${fmt(win)}.`, 'win');
-      floatText('+' + fmt(win));
-      mission('nudge'); mission('wins'); mission('earn', win / bet); mission('streak', state.streak);
-      if (line) mission('three');
-      gainXp(8 + (line ? 30 : 0));
-      render();
-      if (line === 'seven') state.jackpots++;
-      if (line === 'seven') await celebrate(win, Math.round(base * sMult * 100) / 100);
-      else await celebrateTier(win, win / bet);
-      gambleOffer = win;
-      checkAch({ win, three: !!line, ratio: win / bet, jackpot: line === 'seven', bet, nudgeWin: true, wildLine: !!line && syms.includes('wild') });
-      while (pendingLevels.length) levelUp(pendingLevels.shift());
-    } else {
-      nudgeOpen = state.nudges > 0;
-      say(state.nudges ? `Still nothing. ${state.nudges} nudge${state.nudges > 1 ? 's' : ''} left.` : 'Out of nudges.', 'lose');
-    }
-    if (starBonus) {
-      sound.levelUp();
-      for (let k = 0; k < 40; k++) fxTop.confetti(BONUS_CONFETTI);
-      await banner('FREE SPINS', 'bonus', 2600, null, `${FREE_SPINS + (state.owned.starPlus ? 1 : 0)} spins · every win ×${FREE_MULT}`);
-      checkAch({ triggered: true });
-    }
-    busy = false;
-    render();
+  function nudge(i) {
+    if (srvOn()) nudgeSrv(i);
   }
 
   // ---------- Gamble ----------
   const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
   const SUITS = [['♠', false], ['♥', true], ['♦', true], ['♣', false]];
-  const drawCard = () => ({ rank: randInt(13), suit: SUITS[randInt(4)] });
   function showCard(el, c) {
     el.className = 'card' + (c.suit[1] ? ' red' : '');
     el.innerHTML = `<span>${RANKS[c.rank]}</span><span class="suit">${c.suit[0]}</span>`;
@@ -5770,7 +5536,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     busy = true;
     let stake = gambleOffer, rounds = 0, over = false, revealing = false;
     let card;
-    if (srvOn()) {
+    {
       let res;
       try { res = await srvCall('game_gamble', { p_act: 'open' }); }
       catch (e) { srvFail(e, say); busy = false; gambleOffer = 0; render(); return; }
@@ -5778,11 +5544,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       stake = gm.stake;
       card = { rank: gm.rank, suit: SUITS[gm.suit] };
       gambleOffer = 0;
-    } else {
-      card = drawCard();
-      gambleOffer = 0;
-      state.credits -= stake;
-      flush();
     }
     render();
     const modal = $('gambleModal'), hi = $('gHi'), lo = $('gLo'), collect = $('gCollect');
@@ -5811,13 +5572,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       if (revealing || over) return;
       revealing = true;
       let next, res = null;
-      if (srvOn()) {
+      {
         update();
         try { res = await srvCall('game_gamble', { p_act: higher ? 'hi' : 'lo' }); }
         catch (e) { revealing = false; update(srvErr(e)); return; }
         const r = srvApply(res);
         next = { rank: r.next.rank, suit: SUITS[r.next.suit] };
-      } else next = drawCard();
+      }
       showCard($('cardNext'), next);
       sound.tick();
       update();
@@ -5825,13 +5586,12 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         if (next.rank === card.rank) {
           update('Same rank. Your stake stays, go again.');
         } else if ((next.rank > card.rank) === higher) {
-          stake = res ? res.r.stake : Math.min(MAX, Math.floor(stake * factor(higher)));
+          stake = res.r.stake;
           rounds++;
           sound.bigWin();
           const b = $('cardNext').getBoundingClientRect();
           fxTop.coinBurst(b.left + b.width / 2, b.top + b.height / 2, 24, 8);
-          if (res) srvShowOut(res.out);
-          else { mission('gamble'); if (rounds >= GAMBLE_MAX) checkAch({ gambleFull: true }); }
+          srvShowOut(res.out);
           update(rounds >= GAMBLE_MAX ? `Five in a row! Take your ${fmt(stake)}.` : `Correct! Stake is now ${fmt(stake)}.`);
         } else {
           stake = 0;
@@ -5852,17 +5612,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     collect.onclick = async () => {
       if (revealing) return;
       if (stake) {
-        if (srvOn()) {
-          revealing = true;
-          update();
-          try { const res = await srvCall('game_gamble', { p_act: 'collect' }); srvApply(res); srvShowOut(res.out); }
-          catch (e) { revealing = false; update(srvErr(e)); return; }
-          revealing = false;
-        } else {
-          state.credits = Math.min(MAX, state.credits + stake);
-          state.lastWin = stake;
-          state.best = Math.max(state.best, stake);
-        }
+        revealing = true;
+        update();
+        try { const res = await srvCall('game_gamble', { p_act: 'collect' }); srvApply(res); srvShowOut(res.out); }
+        catch (e) { revealing = false; update(srvErr(e)); return; }
+        revealing = false;
         sound.chime();
         say(`Gamble collected: ${fmt(stake)}.`, 'win');
         floatText('+' + fmt(stake));
@@ -5871,7 +5625,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       }
       modal.hidden = true;
       busy = false;
-      checkAch();
       render();
     };
   }
@@ -5891,15 +5644,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     return { total, soft: aces > 0 };
   }
   const bjNatural = h => h.cards.length === 2 && !h.split && bjTotal(h.cards).total === 21;
-  function bjShuffle() {
-    const shoe = [];
-    for (let d = 0; d < BJ_DECKS; d++) for (let c = 0; c < 52; c++) shoe.push(c);
-    for (let i = shoe.length - 1; i > 0; i--) { const j = randInt(i + 1); [shoe[i], shoe[j]] = [shoe[j], shoe[i]]; }
-    return shoe;
-  }
-  const bjDraw = () => { if (!state.bj.shoe.length) state.bj.shoe = bjShuffle(); return state.bj.shoe.pop(); };
-  // A card is saved in its hand before it is turned over, so reloading can't undo a hit or peek at the shoe.
-  const bjCommit = () => flushNow();
   const bjRound = () => state.bj.round;
   const bjActive = () => !!bjRound() && bjRound().phase !== 'done';
   const bjHand = () => { const r = bjRound(); return r?.phase === 'player' ? r.hands[r.active] : null; };
@@ -5992,7 +5736,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     let left = bet;
     for (const [v, color] of [...BJ_CHIPS].reverse()) while (left >= v && stack.length < 6) { stack.push(color); left -= v; }
     $('chipStack').innerHTML = stack.map((c, i) => `<i style="--chip:${c};transform:translateY(${-i * 4}px)"></i>`).join('');
-    $('shoeLeft').textContent = srvOn() ? state.bj.shoeLeft ?? BJ_DECKS * 52 : state.bj.shoe.length || BJ_DECKS * 52;
+    $('shoeLeft').textContent = state.bj.shoeLeft ?? BJ_DECKS * 52;
     // Strategy Card: the best move for this hand against the dealer's open card.
     const ct = $('bjCount'), rr = state.bj.round, hand = rr && rr.phase === 'player' ? rr.hands[rr.active] : null;
     const tip = hasG('bjShoe') && hand && !hand.done && rr.dealer.length ? bjAdvice(hand, rr.dealer[0], rr) : '';
@@ -6053,187 +5797,20 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   $('bjX2').addEventListener('click', () => setBjBet(state.bj.bet * 2));
   $('bjMax').addEventListener('click', () => setBjBet(state.credits));
 
-  async function bjDeal() {
+  function bjDeal() {
     if (bjBusy || bjActive() || !account || busy) return;
     if (srvWait(bjSay)) return;
-    if (srvOn()) return bjSrv('deal');
-    if (settings.maintenance && !account.isAdmin) { bjSay('The game is paused by an admin. Try again later.', 'lose'); return; }
-    const bet = Math.min(state.bj.bet, betLimit());
-    if (!bet) { bjSay('Tap the chips to place a bet first.', 'lose'); return; }
-    if (bet > state.credits) { bjSay(`Not enough credits for a ${fmt(bet)} bet.`, 'lose'); return; }
-    bjBusy = true;
-    if (state.bj.shoe.length < (BJ_DECKS * 52) / 4) {
-      state.bj.shoe = bjShuffle();
-      bjSay('Shuffling a fresh shoe…', 'hot');
-      $('shoe').classList.add('shuffling');
-      for (let k = 0; k < 6; k++) setTimeout(() => sound.card(), k * 90);
-      await bjWait(900);
-      $('shoe').classList.remove('shuffling');
-    }
-    state.credits -= bet;
-    state.bj.lastBet = bet;
-    state.bj.round = { hands: [{ cards: [], bet, split: false, result: null, win: 0, done: false }], dealer: [], active: 0, phase: 'player', hole: true };
-    bjShown.clear();
-    bjSay('Dealing…');
-    renderBJTable();
-    render();
-    const r = bjRound();
-    for (const to of ['p', 'd', 'p', 'd']) {
-      const card = bjDraw();
-      (to === 'p' ? r.hands[0].cards : r.dealer).push(card);
-      const pause = bjWait(340);
-      await bjCommit();
-      sound.card();
-      renderBJTable();
-      await pause;
-    }
-    // The dealer checks for blackjack straight away; a player blackjack ends the hand too.
-    if (bjNatural(r.hands[0]) || bjTotal(r.dealer).total === 21) await bjFinish();
-    else bjSay(`You have ${bjLabel(r.hands[0].cards)}. Hit or stand?`);
-    bjBusy = false;
-    renderBJTable(false);
-    render();
+    bjSrv('deal');
   }
 
-  async function bjAct(kind) {
+  function bjAct(kind) {
     const r = bjRound();
     const h = bjHand();
     if (bjBusy || !h) return;
     if (kind === 'double' && (h.cards.length !== 2 || state.credits < h.bet)) return;
     if (kind === 'split' && (r.hands.length > 1 || h.cards.length !== 2 || bjValue(h.cards[0]) !== bjValue(h.cards[1]) || state.credits < h.bet)) return;
     if (srvWait(bjSay)) return;
-    if (srvOn()) return bjSrv(kind);
-    bjBusy = true;
-    renderBJControls();
-    if (kind === 'hit' || kind === 'double') {
-      if (kind === 'double') { state.credits -= h.bet; h.bet *= 2; sound.chip(); }
-      h.cards.push(bjDraw());
-      await bjCommit();
-      sound.card();
-      renderBJTable();
-      render();
-      await bjWait(380);
-      const t = bjTotal(h.cards).total;
-      if (t > 21) {
-        h.result = 'bust';
-        sound.lose();
-        bjSay(`Bust with ${t}.`, 'lose');
-        renderBJTable();
-        await bjWait(600);
-        await bjNext();
-      } else if (t === 21 || kind === 'double') {
-        await bjNext();
-      } else bjSay(`You have ${bjLabel(h.cards)}. Hit or stand?`);
-    } else if (kind === 'stand') {
-      await bjNext();
-    } else if (kind === 'split') {
-      state.credits -= h.bet;
-      sound.chip();
-      const [a, b] = h.cards;
-      r.hands = [
-        { cards: [a], bet: h.bet, split: true, result: null, win: 0, done: false },
-        { cards: [b], bet: h.bet, split: true, result: null, win: 0, done: false },
-      ];
-      bjShown.add('h1-0');
-      bjShown.delete('h0-1');
-      renderBJTable();
-      render();
-      await bjWait(300);
-      for (const hand of r.hands) { hand.cards.push(bjDraw()); await bjCommit(); sound.card(); renderBJTable(); await bjWait(340); }
-      if (bjRank(a) === 0) {
-        // Split aces get one card each.
-        r.hands.forEach(x => { x.done = true; });
-        await bjFinish();
-      } else if (bjTotal(r.hands[0].cards).total === 21) await bjNext();
-      else bjSay(`Hand 1: ${bjLabel(r.hands[0].cards)}. Hit or stand?`);
-    }
-    bjBusy = false;
-    renderBJTable(false);
-    render();
-  }
-
-  async function bjNext() {
-    const r = bjRound();
-    r.hands[r.active].done = true;
-    const next = r.hands.findIndex(h => !h.done);
-    if (next >= 0) {
-      r.active = next;
-      renderBJTable();
-      bjSay(`Hand ${next + 1}: ${bjLabel(r.hands[next].cards)}. Hit or stand?`);
-      if (bjTotal(r.hands[next].cards).total === 21) { await bjWait(400); await bjNext(); }
-      return;
-    }
-    await bjFinish();
-  }
-
-  async function bjFinish() {
-    const r = bjRound();
-    r.phase = 'dealer';
-    r.hole = false;
-    await bjCommit();
-    renderBJTable();
-    $('dealerHand').children[1]?.classList.add('flip');
-    sound.card();
-    await bjWait(650);
-    const dealerBJ = bjTotal(r.dealer).total === 21 && r.dealer.length === 2;
-    const someoneStands = r.hands.some(h => h.result !== 'bust' && !bjNatural(h));
-    if (someoneStands && !dealerBJ) {
-      while (bjTotal(r.dealer).total < 17) {
-        bjSay(`Dealer has ${bjTotal(r.dealer).total} and draws…`);
-        r.dealer.push(bjDraw());
-        await bjCommit();
-        sound.card();
-        renderBJTable();
-        await bjWait(600);
-      }
-    }
-    const d = bjTotal(r.dealer).total;
-    let back = 0, staked = 0, wins = 0;
-    for (const h of r.hands) {
-      staked += h.bet;
-      const t = bjTotal(h.cards).total;
-      if (h.result === 'bust') h.win = 0;
-      else if (bjNatural(h) && !dealerBJ) { h.result = 'blackjack'; h.win = h.bet * (hasG('bjChip') ? 2.55 : 2.5); }
-      else if (dealerBJ && !bjNatural(h)) { h.result = 'lose'; h.win = 0; }
-      else if (d > 21 || t > d) { h.result = 'win'; h.win = h.bet * 2; }
-      else if (t === d) { h.result = 'push'; h.win = h.bet; }
-      else { h.result = 'lose'; h.win = 0; }
-      // Happy hour from the admin menu multiplies the winnings, not the returned stake.
-      if (h.win > h.bet) h.win = h.bet + (h.win - h.bet) * winMult('bj');
-      h.win = Math.min(MAX, Math.floor(h.win));
-      back += h.win;
-      if (h.result === 'win' || h.result === 'blackjack') wins++;
-    }
-    state.credits = Math.min(MAX, state.credits + back);
-    // Dealer's Peek: against a dealer blackjack only the first bet is lost; doubles and splits come back.
-    if (dealerBJ && hasG('bjPeek') && staked > state.bj.lastBet) { const extra = staked - state.bj.lastBet; back += extra; goodieBonus(extra, 'bjPeek'); }
-    const net = back - staked;
-    state.lastWin = Math.max(0, net);
-    state.best = Math.max(state.best, net);
-    state.bj.hands++;
-    r.phase = 'done';
-    renderBJTable();
-    const natural = r.hands.some(h => h.result === 'blackjack');
-    if (natural) { bjSay(`Blackjack! +${fmt(net)}`, 'win'); fireworks(5); }
-    else if (dealerBJ) bjSay('Dealer has blackjack.', 'lose');
-    else if (net > 0) bjSay(`${d > 21 ? `Dealer busts with ${d}. ` : ''}You win +${fmt(net)}.`, 'win');
-    else if (net === 0) bjSay(`Push. Your ${fmt(staked)} comes back.`, '');
-    else bjSay(`${r.hands.every(h => h.result === 'bust') ? 'Bust.' : `Dealer wins with ${d}.`} −${fmt(-net)}`, 'lose');
-    if (wins) {
-      natural ? sound.bigWin() : sound.win();
-      [...$('bjPlayers').children].forEach((seat, i) => {
-        const res = r.hands[i]?.result;
-        if (res !== 'win' && res !== 'blackjack') return;
-        const b = seat.getBoundingClientRect();
-        fxTop.coinBurst(b.left + b.width / 2, b.top + b.height / 3, res === 'blackjack' ? 40 : 18, res === 'blackjack' ? 11 : 8);
-        if (res === 'blackjack') fxTop.burst(b.left + b.width / 2, b.top, 70, 42, 7, false);
-      });
-      floatText('+' + fmt(net));
-    } else if (net < 0) sound.lose();
-    gainXp(8 + wins * 6);
-    checkAch({ natural, splitBoth: r.hands.length === 2 && wins === 2, win: Math.max(0, net), bet: staked });
-    render();
-    while (pendingLevels.length) levelUp(pendingLevels.shift());
+    bjSrv(kind);
   }
 
   $('bjDeal').addEventListener('click', bjDeal);
@@ -6249,22 +5826,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   });
 
   // A reload can land mid-deal or mid-dealer-turn; complete the deal and let the dealer finish.
-  function bjRepair() {
-    const r = bjRound();
-    if (!r || r.phase === 'done') return;
-    for (const h of r.hands) while (h.cards.length < 2 && !(h.split && h.done)) h.cards.push(bjDraw());
-    while (r.dealer.length < 2) r.dealer.push(bjDraw());
-    if (r.active >= r.hands.length) r.active = 0;
-    renderBJTable(false);
-    if (r.phase === 'dealer' || r.hands.every(h => h.done)) {
-      bjBusy = true;
-      bjFinish().finally(() => { bjBusy = false; renderBJTable(false); render(); });
-    } else if (r.hands.length === 1 && (bjNatural(r.hands[0]) || bjTotal(r.dealer).total === 21)) {
-      bjBusy = true;
-      bjFinish().finally(() => { bjBusy = false; renderBJTable(false); render(); });
-    } else bjSay(`You have ${bjLabel(r.hands[r.active].cards)}. Hit or stand?`);
-  }
-
   const MODE_SUBS = {
     slots: 'Three reels · one payline · play credits',
     bj: 'Blackjack · pays 3 to 2 · play credits',
@@ -6693,11 +6254,15 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // With the "Games on the server" part of supabase-setup.sql the database draws every result and keeps the
   // balance, level, goodies, missions, achievements and the burger career. The page only says what the player
   // does and shows what comes back; anything it changes on those itself is ignored by the database.
-  // SRV: false (this page plays itself: no database, or the SQL is not installed yet), null (still asking), true.
+  // SRV: false (no online database: the games stay closed), null (still asking), true.
   var SRV = false, srvHold = 0, srvCreditsNow = null, srvLiveTimer = 0, srvGiftAt = 0;
   const srvOn = () => SRV === true;
   // while the page still asks the database which way it plays, games wait a moment
-  function srvWait(sayFn) { if (SRV !== null) return false; sayFn?.('Loading the game…', ''); return true; }
+  function srvWait(sayFn) {
+    if (SRV === true) return false;
+    sayFn?.(SRV === null ? 'Loading the game…' : 'The games need the online database. Check the connection and reload the page.', SRV === null ? '' : 'lose');
+    return true;
+  }
   const srvCall = (fn, args = {}) => backend.games.call(fn, args);
   function srvState(g) {
     if (!g || typeof g !== 'object') return;
@@ -6738,6 +6303,18 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       delay += 450;
     }
     for (const b of out.bonus || []) b.id === 'event' ? evPop(b.amount) : goodiePop(b.amount, b.id);
+    // level 20 reached: the database made it the next prestige
+    for (const n of out.prestige || []) {
+      pendingLevels.length = 0;
+      setTimeout(() => {
+        toast(`Prestige ${roman(n)}!`, 'Level 20 reached: back to level 1, with a new badge next to your name.');
+        sound.levelUp();
+        for (let k = 0; k < 120; k++) fxTop.confetti(['#fff2c4', '#e9a23b', '#ff8fb8', '#4fe3ff', '#a77bff']);
+        fireworks(8);
+        renderBoards();
+      }, delay);
+      delay += 450;
+    }
     renderMissions();
     renderAch();
   }
@@ -7284,17 +6861,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       srvLiveSoon();
       return;
     }
-    if (res?.rev != null) {
-      const rev = Number(res.rev);
-      if (rev === (state.adminRev || 0) + 1) { state.credits += delta; if (savedCredits != null) savedCredits += delta; }
-      else if (rev > (state.adminRev || 0)) {
-        const local = savedCredits == null ? 0 : state.credits - savedCredits;
-        savedCredits = Number(res.credits) || 0;
-        state.credits = savedCredits + local;
-      }
-      state.adminRev = Math.max(state.adminRev || 0, rev);
-    } else state.credits += delta;
-    state.credits = Math.max(0, Math.min(MAX, state.credits));
+    state.credits = Math.max(0, Math.min(MAX, state.credits + delta));
   }
   // Without the online database the number comes from the round number (bets stay in this browser).
   function localRoulette() {
@@ -7518,10 +7085,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         if (b.result === 0 && hasG('rlZero') && ['red', 'black', 'odd', 'even', 'low', 'high'].includes(k)) zeroBonus += Number(v) * 0.5;
         if (k[0] !== 'n' && rlHit(k, b.result) && hasG('rlOutside')) outsideBonus += Number(v) * rlPays(k) * 0.02;
       }
-      goodieBonus(straightBonus, 'rlStraight');
-      goodieBonus(outsideBonus, 'rlOutside');
-      goodieBonus(zeroBonus, 'rlZero');
-      eventBonus(rows.reduce((a, b) => a + Math.max(0, b.payout - b.total), 0), 'rl');
       const rounds = new Set(rows.map(b => b.round_id));
       state.rl.open = state.rl.open.filter(r => !rounds.has(r) && r >= Math.floor(hrNow() / RL_PERIOD) - 1);
       if (rows.length) {
@@ -7530,8 +7093,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         const net = won - staked;
         state.lastWin = Math.max(0, net);
         state.best = Math.max(state.best, net);
-        gainXp(6 + rows.length * 2);
-        checkAch({ bullseye: straight, win: Math.max(0, net), bet: staked });
         if (won > 0 && state.mode !== 'rl') {
           const el = document.createElement('button');
           el.type = 'button';
@@ -7610,10 +7171,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   function plBusy() { return plBalls.length > 0 || plAutoLeft > 0; }
   function plSay(text, kind = '') { showMessage($('plMsg'), text, kind); }
   const plMults = () => PL_TABLES[state.pl.rows][state.pl.risk];
-  // Events and the happy hour count less here: with dozens of balls at once, a full boost on the rare big
-  // slots would pay out more than goes in. They raise hits up to 5× by at most 15%; a happy hour below 1 counts fully.
-  const plBoost = mult => { const w = winMult('pl'); return w < 1 ? w : mult <= 5 ? Math.min(1.15, 1 + 0.15 * (w - 1)) : 1; };
-  const plPay = (bet, eff, mult) => Math.min(MAX, Math.floor(eff > 1 ? bet + bet * (eff - 1) * plBoost(mult) : bet * eff));
   const plFmtMult = m => (m >= 100 ? String(Math.round(m)) : m >= 10 ? String(+m.toFixed(1)) : String(+m.toFixed(2))) + '×';
   // Colour of a slot: hot red at the edges, gold in the middle.
   function plSlotColor(k, R) {
@@ -7778,47 +7335,20 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (bet > state.credits) { plSay(`Not enough credits for a ${fmt(bet)} ball.`, 'lose'); return false; }
     if (plBalls.length >= PL_MAX_BALLS) return false;
     if (srvWait(plSay)) return false;
-    if (srvOn()) { plDropSrv(bet); return true; }
-    const R = plBoard.R;
-    // The result is drawn here, fair and up front: R coin flips.
-    const path = Array.from({ length: R }, () => (randInt(2) ? 1 : -1));
-    const rights = [0];
-    for (const d of path) rights.push(rights[rights.length - 1] + (d > 0 ? 1 : 0));
-    const slot = rights[R];
-    const mult = plMults()[slot];
-    // Goodies: one ball in 60 is golden and pays double; slots under 1× pay 3% more; the outermost slots 5% more.
-    const gold = hasG('plGold') && randInt(60) === 0;
-    const edgeSlot = slot === 0 || slot === R;
-    const eff = (mult < 1 && hasG('plSoft') ? mult * 1.03 : mult) * (edgeSlot && hasG('plBump') ? 1.05 : 1) * (gold ? 2 : 1);
-    const pay = plPay(bet, eff, mult);
-    const id = plNextId++;
-    state.pl.bet = bet;
-    state.credits -= bet;
-    state.pl.pending.push({ id, pay });
-    if (Date.now() - (plDrop.savedAt || 0) > 1500) { plDrop.savedAt = Date.now(); flush(); }
-    state.pl.drops++;
-    const ball = { id, bet, pay, mult, slot, path, rights, gold, x: PL_W / 2 + (Math.random() - 0.5) * plBoard.g * 0.2, y: PL_TOP - plBoard.rowGap * 0.9, vx: (Math.random() - 0.5) * 30, vy: 0, row: -1 };
-    if (reduceMotion) { plLand(ball); render(); return true; }
-    plBalls.push(ball);
-    sound.chip();
-    plKick();
-    render();
+    plDropSrv(bet);
     return true;
   }
   function plLand(ball) {
     plBalls = plBalls.filter(x => x !== ball);
-    state.pl.pending = state.pl.pending.filter(x => x.id !== ball.id);
     const sl = plBoard.slots[ball.slot];
     if (sl) sl.bump = 1;
-    if (ball.srv) srvRelease(ball.pay);
-    else state.credits = Math.min(MAX, state.credits + ball.pay);
+    srvRelease(ball.pay);
     const net = ball.pay - ball.bet;
     state.lastWin = ball.pay;
     state.best = Math.max(state.best, net);
     state.pl.history.unshift({ m: ball.mult, k: ball.slot, R: plBoard.R });
     state.pl.history.length = Math.min(state.pl.history.length, 12);
     renderPLHistory();
-    gainXp(3 + (ball.mult >= 2 ? 4 : 0));
     const label = plFmtMult(ball.mult) + (ball.gold ? ' ×2 ✨' : '');
     if (ball.gold) { const r0 = plCanvas.getBoundingClientRect(), sc0 = r0.width / PL_W; fxTop.burst(r0.left + (sl?.x || PL_W / 2) * sc0, r0.top + plBoard.slotY * sc0, 50, 30, 6, false); }
     if (ball.mult >= 10) {
@@ -7829,8 +7359,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       fireworks(ball.mult >= 100 ? 10 : 4);
     } else if (ball.mult >= 1) { plSay(`${label} · +${fmt(ball.pay)}`, 'win'); sound.win(); }
     else plSay(`${label} · ${fmt(ball.pay)} back`, ball.pay ? '' : 'lose');
-    if (ball.srv) srvShowOut(ball.out);
-    else checkAch({ win: Math.max(0, net), bet: ball.bet, plinkoMult: ball.mult });
+    srvShowOut(ball.out);
     render();
     plKick();
     if (!plBalls.length && !plAutoLeft) while (pendingLevels.length) levelUp(pendingLevels.shift());
@@ -7904,8 +7433,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // so every stopping point returns 96% on average and no strategy beats the house.
   const CK_LANES = 10, CK_EDGE = 0.95;
   const CK_SURVIVE = { easy: 0.92, medium: 0.84, hard: 0.75 };
-  // Happy hour from the admin menu multiplies the winnings, never the stake that comes back (as in blackjack and roulette).
-  const happyPay = (bet, m, game) => Math.min(MAX, Math.floor(m > 1 ? bet + bet * (m - 1) * winMult(game) : bet * m));
   // Chicken lets you choose how far to go, so any boost on the far lanes would pay out more than goes in:
   // events and the happy hour don't raise Chicken wins (a happy hour below 1 still counts).
   const ckPay = (bet, m) => Math.min(MAX, Math.floor(m > 1 ? bet + bet * (m - 1) * Math.min(1, settings.winMultiplier) : bet * m));
@@ -7974,99 +7501,15 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   }
   function ckClearLane(k) { $('ckTrack').querySelectorAll(`.ck-lane[data-k="${k}"] .ck-car`).forEach(c => { c.classList.add('gone'); setTimeout(() => c.remove(), 220); }); }
 
-  async function ckGo() {
+  function ckGo() {
     if (!account || ckAnim) return;
     if (srvWait(ckSay)) return;
-    if (srvOn()) return ckGoSrv();
-    let r = ckRound();
-    if (!r) {
-      if (settings.maintenance && !account.isAdmin) { ckSay('The game is paused by an admin. Try again later.', 'lose'); return; }
-      const bet = Math.floor(Number($('ckBet').value));
-      if (!(bet >= 1)) { ckSay('Enter a bet of at least 1.', 'lose'); return; }
-      if (bet > betLimit()) { ckSay(limitMsg(), 'lose'); return; }
-      if (bet > state.credits) { ckSay(`Not enough credits for a ${fmt(bet)} bet.`, 'lose'); return; }
-      state.credits -= bet;
-      state.ck.bet = bet;
-      state.ck.round = r = { bet, diff: state.ck.diff, lane: 0 };
-      ckBuild();
-      sound.chip();
-      ckSay('Off we go! Hop into the first lane.', 'hot');
-      render();
-    }
-    // One hop: decided now, with the lane's survival odds.
-    ckAnim = true;
-    renderCKControls();
-    const next = r.lane + 1;
-    const hit = randInt(10000) >= CK_SURVIVE[r.diff] * 10000;
-    ckClearLane(next);
-    r.lane = next;
-    // The outcome is saved before it is shown: reloading when the car comes must not bring the chicken back.
-    if (hit) { state.ck.round = null; state.ck.games++; state.lastWin = 0; }
-    const saved = flushNow();
-    const ch = $('ckChicken');
-    ch.classList.remove('hop'); void ch.offsetWidth; ch.classList.add('hop');
-    sound.tone(520, 0, 0.06, 'square', 0.04); sound.tone(780, 0.08, 0.06, 'square', 0.04);
-    if (hit) {
-      // Show the hop into the lane, then the car that ends it (once the loss is saved).
-      const x = ckSideW() + (next - 0.5) * ckLaneW();
-      ch.style.left = x + 'px';
-      await Promise.all([sleep(reduceMotion ? 0 : 380), saved]);
-      ckSpawn(next, 'killer');
-      sound.tone(300, 0, 0.3, 'sawtooth', 0.04);
-      await sleep(reduceMotion ? 0 : 340);
-      ch.classList.remove('hop'); ch.classList.add('splat');
-      $('ckTrack').querySelector(`.ck-lane[data-k="${next}"]`)?.classList.add('dead');
-      $('ckView').classList.remove('shake'); void $('ckView').offsetWidth; $('ckView').classList.add('shake');
-      sound.boom();
-      const cr = ch.getBoundingClientRect();
-      for (let k = 0; k < 26; k++) fxTop.confetti(['#ffffff', '#f6efe3', '#f3a73b']);
-      fxTop.burst(cr.left + cr.width / 2, cr.top + cr.height / 2, 40, 30, 6, false);
-      if (hasG('ckHelmet')) goodieBonus(r.bet * 0.02, 'ckHelmet');
-      gainXp(3 + next);
-      ckSay(next === 1 ? 'Splat! Hit in the very first lane.' : `Splat! Hit in lane ${next}. The ${fmt(r.bet)} is gone.`, 'lose');
-      await sleep(reduceMotion ? 0 : 1300);
-      ckAnim = false;
-      ckBuild();
-      render();
-      while (pendingLevels.length) levelUp(pendingLevels.shift());
-      return;
-    }
-    ckPlace(true);
-    await sleep(reduceMotion ? 0 : 430);
-    ckAnim = false;
-    if (next >= CK_LANES) { ckCashOut(true); return; }
-    sound.ping(next / CK_LANES);
-    const m = ckMult(next, r.diff);
-    ckSay(`Lane ${next} made it! ×${m.toFixed(2)} · cash out ${fmt(ckPay(r.bet, m))} or keep going.`, 'win');
-    render();
+    ckGoSrv();
   }
-  function ckCashOut(crossed = false) {
+  function ckCashOut() {
     const r = ckRound();
     if (!r || !r.lane || ckAnim) return;
-    if (srvOn()) return ckCashOutSrv();
-    const m = ckMult(r.lane, r.diff);
-    const pay = ckPay(r.bet, m);
-    state.credits = Math.min(MAX, state.credits + pay);
-    if (hasG('ckFeather')) goodieBonus(pay * 0.02, 'ckFeather');
-    state.lastWin = pay;
-    state.best = Math.max(state.best, pay - r.bet);
-    state.ck.round = null;
-    state.ck.games++;
-    gainXp(4 + r.lane * 2);
-    const ch = $('ckChicken');
-    ch?.classList.add('win');
-    const cr = ch?.getBoundingClientRect();
-    if (cr) fxTop.coinBurst(cr.left + cr.width / 2, cr.top, crossed ? 50 : 22, crossed ? 11 : 8);
-    if (crossed) {
-      sound.bigWin();
-      for (let k = 0; k < 60; k++) fxTop.confetti(CONFETTI);
-      fireworks(8);
-      ckSay(`Made it across! ×${m.toFixed(2)} · +${fmt(pay)}`, 'win');
-    } else { sound.win(); ckSay(`Cashed out at lane ${r.lane}: ×${m.toFixed(2)} · +${fmt(pay)}`, 'win'); }
-    checkAch({ win: pay - r.bet, bet: r.bet, chickenCrossed: crossed });
-    render();
-    ckAnim = true;
-    setTimeout(() => { ckAnim = false; ckBuild(); render(); while (pendingLevels.length) levelUp(pendingLevels.shift()); }, reduceMotion ? 0 : 1600);
+    if (srvOn()) ckCashOutSrv();
   }
   function renderCKControls() {
     const r = ckRound();
@@ -8173,14 +7616,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       if (!(bet >= 1)) { cfSay('Enter a bet of at least 1.', 'lose'); return; }
       if (bet > betLimit()) { cfSay(limitMsg(), 'lose'); return; }
       if (bet > state.credits) { cfSay(`Not enough credits for a ${fmt(bet)} bet.`, 'lose'); return; }
-      if (srvWait(cfSay)) return;
       state.cf.bet = bet;
       r = { bet, mult: 1, wins: 0 };
-      if (!srvOn()) { state.credits -= bet; state.cf.round = r; }
     }
+    if (srvWait(cfSay)) return;
     const pick = state.cf.side, at = cfPayOf(r);
     let edge, res, won, mult, sres = null;
-    if (srvOn()) {
+    {
       // the database flips the coin
       cfBusy = true;
       renderCFControls();
@@ -8190,18 +7632,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       res = x.res; won = !!x.won; edge = res === 'edge'; mult = x.mult;
       srvApply(sres, x.cashed ? x.pay : 0);
       r = won && !x.cashed ? state.cf.round : { bet: x.bet, mult: won ? mult : r.mult, wins: x.wins };
-    } else {
-      // decided right away and saved, so a closed page keeps the result
-      edge = randInt(hasG('cfThumb') ? CF_EDGE_IN / 2 : CF_EDGE_IN) === 0;
-      res = edge ? 'edge' : randInt(2) ? 'heads' : 'tails';
-      won = edge || res === pick;
-      mult = r.mult * (edge ? CF_EDGE : 2);
-      if (won) { r.mult = mult; r.wins++; } else state.cf.round = null;
-      state.cf.flips++;
     }
     cfBusy = true;
     render();
-    if (!sres) flush();
     renderCFControls();
     $('cfBig').hidden = true;
     $('cfStage').classList.remove('idle', 'flash');
@@ -8239,7 +7672,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     $('cfToss').getAnimations().forEach(a => { a.commitStyles?.(); a.cancel(); });
     $('cfShadow').getAnimations().forEach(a => a.cancel());
     state.cf.history = [{ r: res, w: won }, ...state.cf.history].slice(0, 14);
-    gainXp(3);
     const box = $('cfStage').getBoundingClientRect(), cx = box.left + box.width / 2, cy = box.top + box.height * 0.55;
     const now = won ? cfPay(r.bet, mult) : 0;
     if (edge) {
@@ -8251,7 +7683,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       fxTop.coinBurst(cx, cy, 80, 12);
       for (let k = 0; k < 80; k++) fxTop.confetti(CONFETTI);
       fireworks(10);
-      checkAch({ coinEdge: true });
     } else if (won) {
       cfBigText(`${res === 'heads' ? 'HEADS' : 'TAILS'}! ×${fmt(mult)}`);
       cfSay(`${res === 'heads' ? 'Heads' : 'Tails'}! ${fmt(now)} on the coin. Cash out or flip again for ×${fmt(mult * 2)}.`, 'win');
@@ -8270,9 +7701,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     render();
     renderCFControls();
     while (pendingLevels.length) levelUp(pendingLevels.shift());
-    if (sres && !sres.r.cashed) srvShowOut(sres.out);
+    if (!sres.r.cashed) srvShowOut(sres.out);
     // ten wins in a row is the most a coin can carry: it pays out by itself
-    if (won && r.wins >= CF_MAX_WINS) setTimeout(() => { cfSay(`${CF_MAX_WINS} wins in a row: the most a coin can carry. It pays out now.`, 'win'); sres ? cfCashOut({ r, pay: sres.r.pay, out: sres.out }) : cfCashOut(); }, 1400);
+    if (won && r.wins >= CF_MAX_WINS) setTimeout(() => { cfSay(`${CF_MAX_WINS} wins in a row: the most a coin can carry. It pays out now.`, 'win'); cfCashOut({ r, pay: sres.r.pay, out: sres.out }); }, 1400);
   }
   // done: the database already paid this cash-out (ten wins in a row)
   async function cfCashOut(done) {
@@ -8280,27 +7711,19 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (done?.r) { r = done.r; pay = done.pay; out = done.out; srvRelease(pay); }
     else {
       if (!r || cfBusy || !account) return;
-      pay = cfPayOf(r);
-      if (srvOn()) {
-        cfBusy = true;
-        renderCFControls();
-        try { const s = await srvCall('game_coin', { p_act: 'cash' }); pay = srvApply(s).pay; out = s.out || {}; }
-        catch (e) { cfBusy = false; srvFail(e, cfSay); renderCFControls(); return; }
-        cfBusy = false;
-      } else {
-        state.credits = Math.min(MAX, state.credits + pay);
-        state.cf.round = null;
-        state.lastWin = pay;
-        state.best = Math.max(state.best, pay - r.bet);
-      }
+      if (srvWait(cfSay)) return;
+      cfBusy = true;
+      renderCFControls();
+      try { const s = await srvCall('game_coin', { p_act: 'cash' }); pay = srvApply(s).pay; out = s.out || {}; }
+      catch (e) { cfBusy = false; srvFail(e, cfSay); renderCFControls(); return; }
+      cfBusy = false;
     }
     cfBigText(`+${fmt(pay)}`);
     cfSay(`Cashed out after ${r.wins} ${r.wins === 1 ? 'win' : 'wins'}: ×${fmt(r.mult)} · +${fmt(pay)}`, 'win');
     const b = $('cfCash').getBoundingClientRect();
     fxTop.coinBurst(b.left + b.width / 2, b.top, Math.min(70, 20 + r.wins * 8), 10);
     if (r.mult >= 16) { sound.bigWin(); fireworks(5); } else { sound.win(); audio.kaching(); }
-    if (out) srvShowOut(out);
-    else checkAch({ win: pay - r.bet, bet: r.bet, coinStreak: r.wins });
+    srvShowOut(out);
     render();
     renderCFControls();
     while (pendingLevels.length) levelUp(pendingLevels.shift());
@@ -8787,10 +8210,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       const won = bets.reduce((a, b) => a + b.payout, 0);
       serverCredits(res, won);
       // Goodies: winning Win or Place bets pay 6% more; the Saddle Bag gives 2% of losing bets back.
-      if (hasG('hrSaddle')) goodieBonus(bets.filter(b => !b.payout).reduce((a, b) => a + b.amount * 0.02, 0), 'hrSaddle');
-      goodieBonus(bets.filter(b => b.payout > 0 && b.kind === 'win' && hasG('hrCrop')).reduce((a, b) => a + b.payout * 0.06, 0), 'hrCrop');
-      goodieBonus(bets.filter(b => b.payout > 0 && b.kind === 'place' && hasG('hrBino')).reduce((a, b) => a + b.payout * 0.06, 0), 'hrBino');
-      eventBonus(bets.reduce((a, b) => a + Math.max(0, b.payout - b.amount), 0), 'hr');
       const races = new Set(bets.map(b => b.race_id));
       state.hr.open = state.hr.open.filter(r => !races.has(r) && r >= Math.floor(hrNow() / HR_PERIOD) - 1);
       if (bets.length) {
@@ -8800,8 +8219,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           state.hr.won += won;
           state.lastWin = won;
           state.best = Math.max(state.best, won - bets.filter(b => b.payout > 0).reduce((a, b) => a + b.amount, 0));
-          gainXp(6);
-          checkAch({ horseWin: true, horseOdds: best, win: won });
           const el = document.createElement('button');
           el.type = 'button';
           el.className = 'chat-pop gift-pop';
@@ -8973,7 +8390,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       state.credits = Math.max(0, state.credits);
       state.hr.bet = amount;
       if (!state.hr.open.includes(id)) { state.hr.open.push(id); state.hr.races++; }
-      gainXp(3);
       if (hrBetsFor === id) hrBetList.push({ race_id: id, player: account.id, name: account.name, horse: h, kind, amount, odds: Number(res?.odds) || (kind === 'win' ? race.win : race.place)[h - 1] });
       sound.chip();
       const btn = document.querySelector(`[data-hb="${h}"]`)?.getBoundingClientRect();
@@ -9200,7 +8616,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       if (!state.rk.open.includes(rkCur.id)) state.rk.open.push(rkCur.id);
       rkBets = rkBets.filter(b => b.player !== account.id).concat({ player: account.id, name: account.name, amount, auto, cashed: null, payout: null });
       rkBetsFor = rkCur.id;
-      gainXp(3);
       sound.chip();
       rkSay(auto ? `You're on board with ${fmt(amount)}. Auto cash-out at ${auto.toFixed(2)}×.` : `You're on board with ${fmt(amount)}. Cash out before it blows!`, 'win');
       lastSaved = '';
@@ -9230,8 +8645,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       const m = Number(res.mult), pay = Number(res.payout) || 0;
       serverCredits(res, pay);
       audio.kaching();
-      if (hasG('rkTurbo')) goodieBonus(pay * 0.02, 'rkTurbo');
-      eventBonus(pay - mine.amount, 'rk');
       mine.cashed = m; mine.payout = pay; mine.claimed = true;
       state.rk.open = state.rk.open.filter(r => r !== rkCur.id);
       rkWin(mine.amount, m, pay, auto);
@@ -9252,8 +8665,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     state.lastWin = pay;
     state.best = Math.max(state.best, pay - amount);
     state.rk.wins++;
-    gainXp(6);
-    checkAch({ win: pay - amount, bet: amount, rocketMult: m });
     if (state.mode === 'rk') {
       rkSay(m >= RK_CAP ? `To the moon! ${RK_CAP}× · +${fmt(pay)}` : `${auto ? 'Auto cash-out' : 'Cashed out'} at ${m.toFixed(2)}× · +${fmt(pay)}`, 'win');
       const b = $('rkCash').getBoundingClientRect();
@@ -9272,9 +8683,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       const won = rows.reduce((a, b) => a + b.payout, 0);
       serverCredits(res, won);
       // Goodies: auto cash-outs and moon landings pay 2% more; a parachute gives 2% back after an explosion.
-      if (hasG('rkTurbo')) goodieBonus(rows.reduce((a, b) => a + b.payout * 0.02, 0), 'rkTurbo');
-      if (hasG('rkChute')) goodieBonus(rows.filter(b => !b.payout).reduce((a, b) => a + b.amount * 0.02, 0), 'rkChute');
-      eventBonus(rows.reduce((a, b) => a + Math.max(0, b.payout - b.amount), 0), 'rk');
       const ids = new Set(rows.map(b => b.round_id));
       state.rk.open = state.rk.open.filter(r => !ids.has(r) && r >= (rkCur?.id ?? 0) - 1);
       for (const b of rows) if (b.payout > 0) {
@@ -9976,136 +9384,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     { name: 'Lucky Lou', tight: 0.4, aggr: 0.55, bluff: 0.09, av: '#7fd18b' },
   ];
   const pkBotByName = name => PK_BOTS.find(b => b.name === name) || PK_BOTS[0];
-  const pkSeat = (pid, name, stack, bot = null) => ({ pid, name, stack, bet: 0, committed: 0, in_hand: false, folded: false, allin: false, acted: false, last: null, leaving: false, won: 0, hand_name: null, cards: [], revealed: false, bot });
   const pkPotOf = st => st.seats.reduce((a, s) => a + (s ? s.committed : 0), 0);
 
-  // ----- solo engine (same rules as the online dealer in the database) -----
-  function pkNextSeat(st, from, test) {
-    for (let k = 1; k <= 8; k++) { const i = (((from + k) % 8) + 8) % 8; const s = st.seats[i]; if (s && test(s)) return i; }
-    return -1;
-  }
-  const pkCanAct = s => s.in_hand && !s.folded && !s.allin;
-  function pkPut(st, i, amt) {
-    const s = st.seats[i];
-    amt = Math.max(0, Math.min(amt, s.stack));
-    s.stack -= amt; s.bet += amt; s.committed += amt;
-    if (s.stack === 0 && s.in_hand) s.allin = true;
-  }
-  function pkStartHand(st) {
-    st.seats.forEach((s, i) => {
-      if (!s) return;
-      if (s.bot && s.stack <= 0) st.seats[i] = pkSeat('bot:' + s.bot + st.hand, s.bot, 2000, s.bot);
-      else if (!s.bot && (s.stack <= 0 || s.leaving)) st.seats[i] = null;
-    });
-    for (const s of st.seats) if (s) Object.assign(s, { in_hand: false, folded: false, allin: false, acted: false, bet: 0, committed: 0, cards: [], last: null, won: 0, hand_name: null, revealed: false });
-    const live = st.seats.map((s, i) => s && s.stack > 0 ? i : -1).filter(i => i >= 0);
-    st.board = []; st.result = null; st.winners = [];
-    if (live.length < 2 || !st.seats.some(s => s && !s.bot)) { st.phase = 'waiting'; st.to_act = -1; st.deadline = null; return; }
-    st.button = pkNextSeat(st, st.button, s => s.stack > 0);
-    const deck = [...Array(52).keys()];
-    for (let i = deck.length - 1; i > 0; i--) { const j = randInt(i + 1); [deck[i], deck[j]] = [deck[j], deck[i]]; }
-    live.forEach(i => { st.seats[i].in_hand = true; });
-    for (let round = 0; round < 2; round++) {
-      let i = st.button;
-      for (let k = 0; k < live.length; k++) { i = pkNextSeat(st, i, s => s.in_hand); st.seats[i].cards.push(deck.pop()); }
-    }
-    st.deck = deck;
-    const sbSeat = live.length === 2 ? st.button : pkNextSeat(st, st.button, s => s.in_hand);
-    const bbSeat = pkNextSeat(st, sbSeat, s => s.in_hand);
-    pkPut(st, sbSeat, st.sb); st.seats[sbSeat].last = 'Small blind';
-    pkPut(st, bbSeat, st.bb); st.seats[bbSeat].last = 'Big blind';
-    st.current_bet = st.bb; st.min_raise = st.bb; st.phase = 'preflop'; st.hand++;
-    st.to_act = pkNextSeat(st, bbSeat, pkCanAct);
-    st.deadline = null;
-    if (st.to_act < 0) pkAdvance(st);
-  }
-  function pkAct(st, i, act, amount = 0) {
-    const s = st.seats[i];
-    if (!s || st.to_act !== i || !['preflop', 'flop', 'turn', 'river'].includes(st.phase)) return 'Not your turn.';
-    const need = st.current_bet - s.bet;
-    if (act === 'fold') { s.folded = true; s.last = 'Fold'; }
-    else if (act === 'check') { if (need > 0) return 'You cannot check.'; s.last = 'Check'; }
-    else if (act === 'call') { pkPut(st, i, need); s.last = s.allin ? 'All-in' : need ? 'Call' : 'Check'; }
-    else if (act === 'raise') {
-      const cap = s.bet + s.stack;
-      const target = Math.min(Math.floor(amount), cap);
-      if (target <= st.current_bet) return 'Raise more than the current bet.';
-      if (target - st.current_bet < st.min_raise && target < cap) return `The smallest raise is to ${fmt(st.current_bet + st.min_raise)}.`;
-      const by = target - st.current_bet;
-      const was = st.current_bet;
-      pkPut(st, i, target - s.bet);
-      if (by >= st.min_raise) {
-        st.min_raise = by;
-        st.seats.forEach((o, j) => { if (o && j !== i && pkCanAct(o)) o.acted = false; });
-      }
-      st.current_bet = target;
-      s.last = s.allin ? 'All-in' : was ? `Raise ${shortAmt(target)}` : `Bet ${shortAmt(target)}`;
-    } else return 'Unknown move.';
-    s.acted = true;
-    pkAdvance(st);
-    return null;
-  }
-  function pkAdvance(st) {
-    const alive = st.seats.filter(s => s && s.in_hand && !s.folded);
-    if (alive.length === 1) { pkFinish(st, false); return; }
-    const canAct = alive.filter(s => !s.allin);
-    const facing = canAct.some(s => s.bet < st.current_bet);
-    if (canAct.length >= 2 || facing) {
-      const from = st.to_act >= 0 ? st.to_act : st.button;
-      const nxt = pkNextSeat(st, from, s => pkCanAct(s) && (!s.acted || s.bet < st.current_bet));
-      if (nxt >= 0) { st.to_act = nxt; st.deadline = st.solo ? null : Date.now() + PK_TURN_MS; return; }
-    }
-    for (const s of st.seats) if (s) { s.bet = 0; s.acted = false; if (s.in_hand && !s.folded && !s.allin) s.last = null; }
-    st.current_bet = 0; st.min_raise = st.bb;
-    if (st.phase === 'river') { pkFinish(st, true); return; }
-    const deal = st.phase === 'preflop' ? 3 : 1;
-    for (let k = 0; k < deal; k++) st.board.push(st.deck.pop());
-    st.phase = { preflop: 'flop', flop: 'turn', turn: 'river' }[st.phase];
-    if (canAct.length < 2) { st.to_act = -1; st.deadline = Date.now() + 1300; return; }
-    st.to_act = pkNextSeat(st, st.button, pkCanAct);
-    st.deadline = st.solo ? null : Date.now() + PK_TURN_MS;
-  }
-  function pkFinish(st, showdown) {
-    const contenders = st.seats.map((s, i) => s && s.in_hand && !s.folded ? i : -1).filter(i => i >= 0);
-    const pot = pkPotOf(st);
-    st.winners = [];
-    if (!showdown) {
-      const w = st.seats[contenders[0]];
-      w.stack += pot; w.won = pot;
-      st.winners = [contenders[0]];
-      st.result = `${w.name} wins ${fmt(pot)}`;
-    } else {
-      const score = {};
-      for (const i of contenders) {
-        const s = st.seats[i];
-        const best = pkBest([...s.cards, ...st.board]);
-        score[i] = best.score; s.hand_name = pkHandName(best.score); s.revealed = true; s.bestCards = best.cards;
-      }
-      const levels = [...new Set(contenders.map(i => st.seats[i].committed))].sort((a, b) => a - b);
-      let prev = 0, paid = 0, lastWinners = [];
-      for (const lvl of levels) {
-        const part = st.seats.reduce((a, s) => a + (s ? Math.min(s.committed, lvl) - Math.min(s.committed, prev) : 0), 0);
-        const elig = contenders.filter(i => st.seats[i].committed >= lvl);
-        const top = Math.max(...elig.map(i => score[i]));
-        const winners = elig.filter(i => score[i] === top);
-        const share = Math.floor(part / winners.length);
-        winners.forEach(i => { st.seats[i].stack += share; st.seats[i].won += share; });
-        const odd = part - share * winners.length;
-        if (odd) { const first = pkNextSeat(st, st.button, s => winners.includes(st.seats.indexOf(s))); st.seats[first >= 0 ? first : winners[0]].stack += odd; st.seats[first >= 0 ? first : winners[0]].won += odd; }
-        paid += part; prev = lvl; lastWinners = winners;
-      }
-      if (pot > paid && lastWinners.length) { st.seats[lastWinners[0]].stack += pot - paid; st.seats[lastWinners[0]].won += pot - paid; }
-      st.winners = contenders.filter(i => st.seats[i].won > 0);
-      const top = [...st.winners].sort((a, b) => st.seats[b].won - st.seats[a].won);
-      st.result = top.length > 1
-        ? `Split pot: ${top.map(i => st.seats[i].name).join(' & ')} · ${st.seats[top[0]].hand_name}`
-        : `${st.seats[top[0]].name} wins ${fmt(st.seats[top[0]].won)} with ${st.seats[top[0]].hand_name.toLowerCase()}`;
-    }
-    st.phase = 'showdown'; st.to_act = -1;
-    st.deadline = Date.now() + (showdown ? 5200 : 3200);
-  }
-
-  // ----- bots -----
+  // how strong a hand is (0 to 1), for the Poker Coach
   function pkStrength(hole, board) {
     if (!board.length) {
       const [a, b] = hole.map(pkR).sort((x, y) => y - x);
@@ -10133,24 +9414,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     }
     return Math.min(1, v);
   }
-  function pkBotMove(st, i) {
-    const s = st.seats[i], bot = pkBotByName(s.bot);
-    const need = st.current_bet - s.bet, pot = pkPotOf(st);
-    const str = pkStrength(s.cards, st.board);
-    const r = Math.random();
-    const raiseTo = f => Math.min(s.bet + s.stack, Math.max(st.current_bet + st.min_raise, st.current_bet + Math.round(((pot + need) * f) / st.bb) * st.bb));
-    if (need === 0) {
-      if (str > 0.6 + bot.tight * 0.2 && r < 0.35 + bot.aggr * 0.5) return ['raise', raiseTo(0.45 + Math.random() * 0.5)];
-      if (r < bot.bluff) return ['raise', raiseTo(0.5)];
-      return ['check'];
-    }
-    const odds = need / (pot + need);
-    if (str > 0.8 && r < 0.25 + bot.aggr * 0.5) return ['raise', raiseTo(0.6 + Math.random() * 0.6)];
-    if (str >= odds + 0.1 * bot.tight || (need <= st.bb && str > 0.25)) return ['call'];
-    if (r < bot.bluff * 0.5) return ['raise', raiseTo(0.7)];
-    return ['fold'];
-  }
-
   // ----- views -----
   let pkTimer = null, pkShown = new Set(), pkLastHand = -1, pkLastResultHand = -1, pkWorking = false, pkRaiseTo = 0;
   // ready: null while checking, true once the database table answers, false when it is missing.
@@ -10413,11 +9676,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const amount = act === 'raise' ? pkRaiseTo : 0;
     if (act === 'raise' && !L.canRaise) return;
     sound.chip();
-    if (pkView() === 'solo' && srvOn()) { pkSrv(act, amount); return; }
     if (pkView() === 'solo') {
-      const err = pkAct(st, me, act, amount);
-      if (err) { pkSay(err, 'lose'); return; }
-      pkAfterSolo();
+      if (!srvWait(pkSay)) pkSrv(act, amount);
     } else {
       pkWorking = true; renderPKControls();
       try { await backend.poker.act(act, amount); }
@@ -10438,54 +9698,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   });
 
   // ----- solo flow -----
-  function pkAfterSolo() {
-    const st = state.pk.solo;
-    if (st?.phase === 'showdown' && !st.counted) {
-      st.counted = true;
-      const me = pkMySeat(st);
-      if (me >= 0 && st.seats[me].in_hand) {
-        state.pk.hands++;
-        const won = st.seats[me].won > 0;
-        // The house takes a rake from pots you win against the bots: 5% (2.5% with the Chip Magnet), at most 20 big blinds.
-        if (won) {
-          const rake = Math.min(PK_BB * (hasG('pkMagnet') ? 10 : 20), Math.floor(st.seats[me].won * (hasG('pkMagnet') ? 0.025 : 0.05)));
-          if (rake > 0) { st.seats[me].stack -= rake; st.rake = rake; }
-        }
-        gainXp(6 + (won ? 8 : 0));
-        checkAch({ pokerWin: won, pokerSF: won && st.seats[me].hand_name && /straight flush|royal/i.test(st.seats[me].hand_name) });
-      }
-    }
-    flush();
-    renderPK();
-    render();
-    pkSchedule();
-  }
-  function pkSchedule() {
-    if (srvOn()) return pkScheduleSrv();
-    clearTimeout(pkTimer);
-    const st = state.pk.solo;
-    if (!st || state.mode !== 'pk' || pkView() !== 'solo' || !account) return;
-    if (st.phase === 'showdown') {
-      pkTimer = setTimeout(async () => {
-        while (pendingLevels.length) levelUp(pendingLevels.shift());
-        const me = st.seats.findIndex(s => s && !s.bot);
-        if (me < 0 || st.seats[me].stack <= 0) { state.pk.solo = null; pkSay('You are out of chips. Buy in again to keep playing.', 'lose'); renderPK(false); render(); return; }
-        pkStartHand(st);
-        pkAfterSolo();
-      }, Math.max(600, st.deadline - Date.now()));
-      return;
-    }
-    if (st.phase === 'waiting') return;
-    if (st.to_act < 0) { pkTimer = setTimeout(() => { pkAdvance(st); pkAfterSolo(); }, 1200); return; }
-    const s = st.seats[st.to_act];
-    if (s?.bot) {
-      pkTimer = setTimeout(() => {
-        const [act, amt] = pkBotMove(st, st.to_act);
-        if (pkAct(st, st.to_act, act, amt)) pkAct(st, st.to_act, st.current_bet > s.bet ? 'call' : 'check');
-        pkAfterSolo();
-      }, 650 + Math.random() * 900);
-    }
-  }
+  function pkSchedule() { pkScheduleSrv(); }
 
   $('pkLayer').addEventListener('click', e => {
     const b = e.target.closest('[data-sit]');
@@ -10500,17 +9713,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     state.pk.buyIn = buyIn;
     sound.chip();
     if (pkView() === 'solo' && srvWait(pkSay)) return;
-    if (pkView() === 'solo' && srvOn()) { pkSrv('sit', buyIn); return; }
-    if (pkView() === 'solo') {
-      state.credits -= buyIn;
-      const seats = Array(8).fill(null);
-      seats[0] = pkSeat(account.id, account.name, buyIn);
-      [1, 3, 4, 5, 7].forEach((at, k) => { seats[at] = pkSeat('bot:' + PK_BOTS[k].name, PK_BOTS[k].name, 2000, PK_BOTS[k].name); });
-      state.pk.solo = { solo: true, phase: 'waiting', hand: 0, button: -1, sb: PK_SB, bb: PK_BB, board: [], deck: [], current_bet: 0, min_raise: PK_BB, to_act: -1, deadline: null, result: null, seats, winners: [] };
-      pkStartHand(state.pk.solo);
-      pkAfterSolo();
-      return;
-    }
+    if (pkView() === 'solo') { pkSrv('sit', buyIn); return; }
     pkWorking = true; renderPKControls();
     try {
       await flush();
@@ -10526,23 +9729,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   }
   $('pkLeave').addEventListener('click', async () => {
     if (pkWorking) return;
-    if (pkView() === 'solo' && srvOn()) { if (state.pk.solo) pkSrv('leave'); return; }
-    if (pkView() === 'solo') {
-      const st = state.pk.solo;
-      const me = pkMySeat(st);
-      if (me < 0) return;
-      // Chips in the current pot stay there; the rest goes back to your credits.
-      if (['preflop', 'flop', 'turn', 'river'].includes(st.phase) && st.seats[me].in_hand && !st.seats[me].folded) {
-        if (st.to_act === me) pkAct(st, me, 'fold'); else st.seats[me].folded = true;
-      }
-      state.credits = Math.min(MAX, state.credits + st.seats[me].stack);
-      toast('Left the table', `${fmt(st.seats[me].stack)} chips went back to your credits.`);
-      state.pk.solo = null;
-      clearTimeout(pkTimer);
-      renderPK(false);
-      render();
-      return;
-    }
+    if (pkView() === 'solo') { if (state.pk.solo && srvOn()) pkSrv('leave'); return; }
     pkWorking = true; renderPKControls();
     try {
       quietCreditsUntil = Date.now() + 8000;
@@ -10579,8 +9766,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         state.pk.lastOnlineHand = st.hand;
         state.pk.hands++;
         const won = st.seats[st.me].won > 0;
-        gainXp(6 + (won ? 8 : 0));
-        checkAch({ pokerWin: won, pokerSF: won && /straight flush|royal/i.test(st.seats[st.me].hand_name || '') });
         render();
       }
       if (state.mode === 'pk' && pkView() === 'online') {
@@ -10625,32 +9810,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   addEventListener('resize', () => { if (state.mode === 'pk') renderPK(false); });
 
   // ---------- Missions ----------
-  function newMission(exclude) {
-    const types = Object.keys(MISSIONS).filter(t => !exclude.includes(t));
-    const t = types[randInt(types.length)];
-    const tier = randInt(MISSIONS[t].goals.length);
-    return { t, goal: MISSIONS[t].goals[tier], prog: 0, reward: 150 * state.level * (tier + 1) };
-  }
-  function fillMissions() {
-    while (state.missions.length < 3) state.missions.push(newMission(state.missions.map(m => m.t)));
-  }
-  function mission(type, amount = 1) {
-    if (srvOn()) return;
-    let changed = false;
-    state.missions.forEach((m, i) => {
-      if (m.t !== type) return;
-      changed = true;
-      m.prog = MISSIONS[type].max ? Math.max(m.prog, amount) : m.prog + amount;
-      if (m.prog < m.goal) return;
-      state.credits = Math.min(MAX, state.credits + m.reward);
-      state.missionsDone++;
-      toast('Mission complete', `${MISSIONS[m.t].text(m.goal)} · +${fmt(m.reward)} credits`);
-      sound.chime();
-      state.missions[i] = newMission(state.missions.map(x => x.t));
-      checkAch();
-    });
-    if (changed) renderMissions();
-  }
   const swapCost = () => 25 * state.level;
   function renderMissions() {
     $('missionList').innerHTML = state.missions.map((m, i) => `
@@ -10666,16 +9825,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const btn = e.target.closest('[data-swap]');
     if (!btn || busy || state.credits < swapCost()) return;
     const i = Number(btn.dataset.swap);
-    if (SRV === null) return;
-    if (srvOn()) {
-      srvCall('game_swap', { p_i: i }).then(res => { srvApply(res); sound.tick(); renderMissions(); render(); }).catch(e => toast('Missions', srvErr(e)));
-      return;
-    }
-    state.credits -= swapCost();
-    state.missions[i] = newMission(state.missions.map(m => m.t));
-    sound.tick();
-    renderMissions();
-    render();
+    if (!srvOn()) return;
+    srvCall('game_swap', { p_i: i }).then(res => { srvApply(res); sound.tick(); renderMissions(); render(); }).catch(e => toast('Missions', srvErr(e)));
   });
 
   async function runBonus() {
@@ -10766,14 +9917,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Each new level pays LEVEL_REWARD × level credits.
   function levelUp(level) {
     const prize = LEVEL_REWARD * level;
-    // with the games on the server it already paid the prize
-    if (!srvOn()) { state.credits = Math.min(MAX, state.credits + prize); flush(); }
+    // the database already paid the prize
     toast(`Level ${level}!`, `+${fmt(prize)} credits · bet limit now ${fmt(betLimit())}`);
     if (level >= MAX_LEVEL) setTimeout(() => toast('Max level!', 'You can go Prestige now: open your profile.'), 1200);
     floatText(`Level ${level} · +${fmt(prize)}`, 'star');
     sound.levelUp();
     for (let k = 0; k < 40; k++) fxTop.confetti(CONFETTI);
-    checkAch();
+    renderAch();
     render();
   }
 
@@ -10880,18 +10030,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     $('achBar').style.width = `${(n / ACH.length) * 100}%`;
   }
 
-  function checkAch(ctx) {
-    if (srvOn()) { renderAch(); return; }
-    let delay = 0;
-    for (const a of ACH) {
-      if (state.ach[a.id] || !a.test(ctx)) continue;
-      state.ach[a.id] = true;
-      state.credits = Math.min(MAX, state.credits + a.reward);
-      setTimeout(() => { toast('Achievement unlocked', `${a.name} · +${fmt(a.reward)} credits`); sound.chime(); }, delay);
-      delay += 450;
-    }
-    renderAch();
-  }
 
   // ---------- Shop ----------
   const goodieEls = {};
@@ -10966,26 +10104,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (g.adminOnly && !account?.isAdmin) return;
     const price = priceOf(g);
     if (state.credits < price) return;
-    if (SRV === null) { toast('Shop', i18n('Loading the game…')); return; }
-    if (srvOn()) { if (g.kind === 'level' ? state.owned[g.id] < g.max : !state.owned[g.id]) buySrv(g); return; }
-    if (g.kind === 'level') {
-      if (state.owned[g.id] >= g.max) return;
-      state.owned[g.id]++;
-    } else {
-      if (state.owned[g.id]) return;
-      state.owned[g.id] = true;
-    }
-    state.credits -= price;
-    if (g.kind === 'cosmetic') { state.cosOff[g.id] = false; cosSolo(g); }
-    if (g.id === 'horseshoe') buildReels();
-    toast('Goodie bought', g.name);
-    sound.chime();
-    const b = goodieEls[g.id].btn.getBoundingClientRect();
-    fxTop.burst(b.left + b.width / 2, b.top + b.height / 2, 40, 42, 5, false);
-    renderPaytable();
-    checkAch();
-    render();
-    flush();
+    if (!srvOn()) { toast('Shop', i18n(SRV === null ? 'Loading the game…' : 'The games need the online database. Check the connection and reload the page.')); return; }
+    if (g.kind === 'level' ? state.owned[g.id] < g.max : !state.owned[g.id]) buySrv(g);
   }
 
   function renderShop() {
@@ -11055,16 +10175,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   }
 
   // Extra credits from a game goodie, with a little pop so you see what it brought.
-  function goodieBonus(amount, id) {
-    // the database pays the goodie extras of the live games itself
-    if (srvOn()) { srvLiveSoon(); return 0; }
-    amount = Math.floor(amount);
-    if (!(amount > 0)) return 0;
-    state.credits = Math.min(MAX, state.credits + amount);
-    goodiePop(amount, id);
-    persist();
-    return amount;
-  }
   function goodiePop(amount, id) {
     amount = Math.floor(amount);
     if (!(amount > 0)) return;
@@ -11226,16 +10336,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   $('prestigeDone').addEventListener('click', () => { $('prestigeModal').hidden = true; });
   $('prestigeModal').addEventListener('keydown', e => { if (e.key === 'Escape') $('prestigeModal').hidden = true; });
   $('prestigeYes').addEventListener('click', async () => {
-    if (state.level < MAX_LEVEL || SRV === null) return;
+    if (state.level < MAX_LEVEL || !srvOn()) return;
     let out = null;
-    if (srvOn()) {
-      try { const res = await srvCall('game_prestige'); srvApply(res); out = res.out; }
-      catch (e) { toast('Prestige', srvErr(e)); return; }
-    } else {
-      state.prestige = (state.prestige || 0) + 1;
-      state.level = 1;
-      state.xp = 0;
-    }
+    try { const res = await srvCall('game_prestige'); srvApply(res); out = res.out; }
+    catch (e) { toast('Prestige', srvErr(e)); return; }
     const n = state.prestige;
     $('prestigeModal').classList.add('celebrate');
     $('prestigeTitle').textContent = `Prestige ${roman(n)}!`;
@@ -11249,7 +10353,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const r = $('prestigeShow').getBoundingClientRect();
     fxTop.burst(r.left + r.width / 2, r.top + r.height / 2, 140, 42, 10, false);
     fireworks(8);
-    if (out) srvShowOut(out); else checkAch({ prestige: n });
+    srvShowOut(out);
     render();
     renderBoards();
     if (!$('profileModal').hidden) renderProfile();
@@ -11311,11 +10415,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   $('startOverModal').addEventListener('keydown', e => { if (e.key === 'Escape') closeStartOver(); });
   $('startOverYes').addEventListener('click', async () => {
     closeStartOver();
-    if (gameBusy() || SRV === null) return;
-    let res = null;
-    if (srvOn()) {
-      try { res = await srvCall('game_restart'); } catch (e) { toast('Start over', srvErr(e)); return; }
-    }
+    if (gameBusy() || !srvOn()) return;
+    let res;
+    try { res = await srvCall('game_restart'); } catch (e) { toast('Start over', srvErr(e)); return; }
     Object.assign(state, fresh(), { sound: state.sound, adminRev: state.adminRev, credits: settings.startCredits, mode: state.mode, avatar: state.avatar, giftSeen: state.giftSeen, newsSeen: state.newsSeen, evSeen: state.evSeen, prestige: state.prestige, jobReset: Date.now() });
     bjShown.clear();
     renderBJTable(false);
@@ -11323,10 +10425,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     held = [false, false, false];
     holdOffer = nudgeOpen = false;
     gambleOffer = 0;
-    if (res) { srvHold = 0; srvState(res.g); } else fillMissions();
+    srvHold = 0;
+    srvState(res.g);
     reels.forEach(r => r.classList.remove('win', 'star'));
     buildReels();
-    if (res && Array.isArray(state.sl.pos)) { pos = state.sl.pos.slice(); pos.forEach((p, k) => place(k, p)); }
+    if (Array.isArray(state.sl.pos)) { pos = state.sl.pos.slice(); pos.forEach((p, k) => place(k, p)); }
     renderPaytable();
     renderAch();
     say('Fresh start: 500 credits, level 1, no goodies.');
@@ -12347,7 +11450,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (!saved.giftSeen) state.giftSeen = Date.now();
     if (state.level > MAX_LEVEL) { state.level = MAX_LEVEL; state.xp = xpNeed(MAX_LEVEL); }
     // The Lucky Cat goodie is gone; whoever bought it gets the 8,000 credits back once.
-    if (saved.owned?.luckyCat) { state.credits = Math.min(MAX, (state.credits || 0) + 8000); delete state.owned.luckyCat; setTimeout(() => toast('Lucky Cat retired', 'The cat left the shop: you got your 8,000 credits back.'), 1500); }
     delete state.catSpins;
     delete state.boost;
     if (saved.starBank === undefined) state.starBank = (state.stars || 0) * Math.min(state.bet || 1, 1000);
@@ -12373,8 +11475,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (state.ck.round && !(state.ck.round.lane >= 0 && state.ck.round.bet > 0 && CK_SURVIVE[state.ck.round.diff])) state.ck.round = null;
     if (![8, 12, 16].includes(state.pl.rows)) state.pl.rows = 12;
     if (!['low', 'medium', 'high'].includes(state.pl.risk)) state.pl.risk = 'medium';
-    // Balls still falling when the page closed: their result was already drawn, so pay it now.
-    if (Array.isArray(state.pl.pending) && state.pl.pending.length) state.credits = Math.min(MAX, state.credits + state.pl.pending.reduce((a, b) => a + (Number(b.pay) || 0), 0));
     state.pl.pending = [];
     state.pk = Object.assign(fresh().pk, saved.pk);
     state.job = Object.assign(fresh().job, saved.job);
@@ -12382,8 +11482,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     state.st = Object.assign(fresh().st, saved.st);
     if (!['heads', 'tails'].includes(state.cf.side)) state.cf.side = 'heads';
     state.cf.history = (Array.isArray(state.cf.history) ? state.cf.history : []).filter(h => h && ['heads', 'tails', 'edge'].includes(h.r)).slice(0, 14);
-    // older saves: a coin still in the air paid out as "pending"
-    if (Number(state.cf.pending) > 0) state.credits = Math.min(MAX, state.credits + Math.floor(Number(state.cf.pending)));
     delete state.cf.pending;
     // a stake still riding on the coin stays there
     const cr = state.cf.round;
@@ -12402,15 +11500,12 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     cabinet.classList.remove('bonus', 'tease');
     reels.forEach(r => r.classList.remove('win', 'star', 'wild', 'held'));
     buildReels();
-    fillMissions();
     renderPaytable();
     renderAch();
     shownCredits = state.credits;
     say('Pick a bet and pull.');
     bjShown.clear();
     applyGameMode();
-    // with the games on the server the database finishes rounds itself (srvInit decides which way it plays)
-    if (account && !backend?.games) bjRepair();
   }
 
   function enterGame({ key, doc }) {
@@ -12431,7 +11526,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     lastSaved = '';
     loadState(saved);
     savedCredits = state.credits;
-    srvInit().then(() => { if (SRV === false && account?.id === key && backend?.games) bjRepair(); });
+    srvInit();
     $('whoami').textContent = account.name;
     renderMyAvatar();
     seenMedals = null;
@@ -13114,7 +12209,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           if (Date.now() - rrLostAt < 30000) toast('Russian roulette', 'You lost everything and start over.');
           else toast('Game reset', 'An admin reset your game.');
           if (account) { renderMyAvatar(); applyGameMode(); }
-        } else if (srvOn()) {
+        } else {
           // the database keeps the game: take its numbers as they are
           state.adminRev = rev;
           let theirs = null;
@@ -13128,42 +12223,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           const liveBets = state.hr.open.length || state.rl.open.length || state.rk.open.length || (lt?.slots || []).some(x => ltMineOf(x));
           if (state.level !== lvBefore && !gifts) toast('Level changed', `An admin set you to level ${state.level}.`);
           else if (!gifts && !liveBets && Date.now() > quietCreditsUntil) toast('Credits updated', `Your balance is now ${fmt(state.credits)}.`);
-        } else {
-          // keep what was won or lost here since the last save on top of the database's balance
-          const local = savedCredits == null ? 0 : state.credits - savedCredits;
-          savedCredits = Number(doc.credits) || 0;
-          state.credits = Math.max(0, savedCredits + local);
-          state.adminRev = rev;
-          let theirs = null;
-          try { theirs = typeof doc.game === 'string' ? JSON.parse(doc.game) : doc.game; } catch {}
-          // won at Russian roulette: the loser's goodies were added in the database
-          if (theirs?.owned && (Number(theirs.rrAt) || 0) > (state.rrAt || 0)) {
-            for (const [k, v] of Object.entries(theirs.owned)) {
-              if (typeof v === 'number' && v > (Number(state.owned[k]) || 0)) state.owned[k] = v;
-              else if (v === true && !state.owned[k]) { state.owned[k] = true; if (GOODIES.find(x => x.id === k)?.kind === 'cosmetic') state.cosOff[k] = true; }
-            }
-            state.rrAt = Number(theirs.rrAt);
-            renderShop?.();
-          }
-          const theirMark = Number(theirs?.jobReset) || 0, myMark = state.jobReset || 0;
-          if (theirs?.job && theirMark > myMark) {
-            // an admin set the career
-            for (const k of ['worked', 'earned', 'shifts', 'pos']) state.job[k] = Math.max(0, Number(theirs.job[k]) || 0);
-            state.jobReset = theirMark;
-            jbRender();
-            toast('Lucky Burger', `An admin made you ${i18n(JB_POS[jbIdx()].name)}.`);
-          } else if (theirs?.job && theirMark === myMark) {
-            const before = jbIdx();
-            for (const k of ['worked', 'earned', 'shifts', 'pos']) state.job[k] = Math.max(state.job[k] || 0, Number(theirs.job[k]) || 0);
-            if (jbIdx() > before) jbRender();
-          }
-          // live-game winnings that came in: the games show them right away
-          hrClaimSoon = rlClaimSoon = rkClaimSoon = ltClaimSoon = true;
-          const lv = adminLevel(doc);
-          if (lv && lv !== state.level) { state.level = lv; state.xp = lv >= MAX_LEVEL ? xpNeed(MAX_LEVEL) : 0; toast('Level changed', `An admin set you to level ${lv}.`); }
-          const gifts = await checkGifts();
-          const liveBets = state.hr.open.length || state.rl.open.length || state.rk.open.length || (lt?.slots || []).some(x => ltMineOf(x));
-          if (!gifts && !lv && !liveBets && Date.now() > quietCreditsUntil) toast('Credits updated', `Your balance is now ${fmt(state.credits)}.`);
         }
         lastSaved = '';
         render();
@@ -14043,7 +13102,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       serverCredits(res, -paid);
       s.people.push({ player: account.id, name: account.name, cost: paid });
       s.people.sort((a, b) => b.cost - a.cost);
-      gainXp(5);
       lastSaved = '';
       persist(); render();
       sound.chime(); audio.kaching();
@@ -14707,7 +13765,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const now = performance.now();
     jb = { ...jbNew(), on: true, cycle: now, next: now + 400, lastAct: now };
     if (srvOn()) srvCall('game_job', { p_act: 'start' }).then(res => { srvApply(res); jbRender(); }).catch(() => {});
-    else state.job.shifts++;
     jbSay('Clocked in! Keep busy: the boss pays only while you work.', 'win');
     sound.chime();
     jbRender();
@@ -14725,31 +13782,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   }
   $('jbShift').addEventListener('click', () => { if (jb.on) jbStop(); else jbStart(); });
   function jbPayday() {
-    if (srvOn()) { jbPaydaySrv(); return; }
-    const i = jbIdx(), pos = JB_POS[i];
-    if (jb.mood >= 30 && jb.done > 0) {
-      // Good work pays: the happier the boss, the bigger the paycheck (80% to 120% of the wage), +10% with the badge.
-      const pay = Math.round(pos.wage * (0.8 + 0.4 * jb.mood / 100) * (hasG('jbBadge') ? 1.1 : 1) * evFactor('wage'));
-      state.credits = Math.min(MAX, state.credits + pay);
-      state.job.worked += JB_PAY_EVERY / 1000 * (hasG('jbSchool') ? 1.25 : 1);
-      state.job.earned += pay;
-      jb.paidShift += pay;
-      jb.payFlash = true;
-      $('jbPayTxt').textContent = `Paycheck: +${pay} credits!`;
-      setTimeout(() => { jb.payFlash = false; }, 1800);
-      audio.coins(4);
-      const b = $('jbPayBar').getBoundingClientRect();
-      fxTop.coinBurst(b.right - 10, b.top, 10, 6);
-      const now = jbIdx();
-      checkAch({ jobPaid: true, jobPos: now });
-      if (now > state.job.pos) { state.job.pos = now; jbPromote(now); }
-      render();
-      persist();
-    } else {
-      jbSay(jb.done ? 'The boss is not happy with you: no wage for these 10 seconds.' : 'You did nothing for 10 seconds: no wage.', 'lose');
-      sound.lose();
-    }
-    jbRender();
+    if (srvOn()) jbPaydaySrv();
   }
   function jbPromote(i) {
     const p = JB_POS[i];
@@ -15253,7 +14286,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       const total = Number(res?.total) || 0;
       serverCredits(res, side === 'buy' ? -total : total);
       state.st.trades = (state.st.trades || 0) + 1;
-      gainXp(3);
       lastSaved = '';
       persist(); render();
       sound.chip(); side === 'sell' ? audio.kaching() : audio.coins(3);
@@ -15382,16 +14414,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // A game's win multiplier: the admin's happy hour times the running events.
   function winMult(game) { return settings.winMultiplier * evMult(game); }
   function priceOf(g) { const d = evDiscount(); return d ? Math.max(1, Math.floor(g.price() * (1 - d))) : g.price(); }
-  // Horses, roulette and the rocket pay in the database; the event's share of a win comes on top here, like a goodie.
-  function eventBonus(profit, game) {
-    if (srvOn()) { srvLiveSoon(); return 0; }
-    const extra = Math.floor((profit || 0) * (evMult(game) - 1));
-    if (!(extra > 0)) return 0;
-    state.credits = Math.min(MAX, state.credits + extra);
-    evPop(extra);
-    persist();
-    return extra;
-  }
+  // Horses, roulette and the rocket pay in the database, the event's share of a win too; it shows up as a pop-up.
   function evPop(extra) {
     extra = Math.floor(extra);
     if (!(extra > 0)) return;
@@ -15502,14 +14525,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     // once per player: the gift, the start pop-up and, if wanted, the announcement pop-up
     for (const x of live) {
       const gift = Math.floor(evNum(x.fx?.gift || 0, 0, EV_GIFT_MAX));
-      if (srvOn()) { if (gift > 0 && !(state.evGifts || []).includes(String(x.id))) srvGifts(); continue; }
-      if (gift > 0 && !evSeen('g:' + x.id)) {
-        state.credits = Math.min(MAX, state.credits + gift);
-        evSeenSet('g:' + x.id);
-        toast(`${x.icon || '🎉'} ${x.title}`, `Event gift: +${fmt(gift)} credits!`);
-        audio.kaching();
-        render();
-      }
+      if (srvOn() && gift > 0 && !(state.evGifts || []).includes(String(x.id))) srvGifts();
     }
     if (!$('newsModal').hidden || !$('reloadModal').hidden || (typeof ltShow !== 'undefined' && ltShow.open)) return;
     const pop = live.find(x => x.popup !== false && !evSeen('s:' + x.id));
@@ -16167,7 +15183,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(); });
 
   buildReels();
-  fillMissions();
   renderPaytable();
   renderAch();
   render();

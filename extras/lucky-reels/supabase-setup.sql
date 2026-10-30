@@ -7109,3 +7109,40 @@ begin
   end loop;
 end;
 $$;
+
+
+-- ---------------------------------------------------------------------------
+-- Automatic prestige: run this part once (after "Games on the server"). Whoever reaches level 20 goes
+-- Prestige right away: one prestige more, back to level 1 (the level 20 prize is paid first).
+create or replace function public.lr_xp(g jsonb, c jsonb, n numeric)
+returns jsonb
+language plpgsql
+immutable
+as $$
+declare
+  lv integer := public.lr_n(g, 'level')::integer;
+  xp numeric := public.lr_n(g, 'xp');
+  f numeric;
+  cr numeric := public.lr_n(g, 'credits');
+  pr integer := public.lr_n(g, 'prestige')::integer;
+begin
+  f := least(5, public.lr_evf(c, 'xp'));
+  xp := xp + case when f > 1 then round(n * f) else n end;
+  while lv < 20 and xp >= public.lr_xp_need(lv) loop
+    xp := xp - public.lr_xp_need(lv);
+    lv := lv + 1;
+    cr := cr + 250 * lv;
+    g := public.lr_out(g, 'levels', to_jsonb(lv));
+  end loop;
+  if lv >= 20 and pr < 99 then
+    pr := pr + 1;
+    lv := 1;
+    xp := 0;
+    g := public.lr_out(g, 'prestige', to_jsonb(pr));
+    g := public.lr_ach(g || jsonb_build_object('credits', cr, 'prestige', pr, 'level', lv), jsonb_build_object('prestige', pr));
+    cr := public.lr_n(g, 'credits');
+  elsif lv >= 20 then xp := public.lr_xp_need(20);
+  end if;
+  return g || jsonb_build_object('xp', xp, 'level', lv, 'credits', cr, 'prestige', pr);
+end;
+$$;
