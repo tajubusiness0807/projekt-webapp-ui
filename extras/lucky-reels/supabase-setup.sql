@@ -4390,3 +4390,49 @@ end;
 $$;
 revoke execute on function public.admin_set_password(uuid, uuid, text) from public, anon;
 grant execute on function public.admin_set_password(uuid, uuid, text) to authenticated;
+
+
+-- ---------------------------------------------------------------------------
+-- Lucky Burger career is kept: run this part once (after "Economy rework"). A page that is behind (an
+-- old tab or another device) can no longer save a lower Lucky Burger career over a higher one; the
+-- database keeps the higher numbers and makes that page load them. "Start over" still resets it.
+create or replace function public.players_keep_job()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+declare
+  o jsonb;
+  n jsonb;
+  oj jsonb;
+  nj jsonb;
+  k text;
+  fixed boolean := false;
+begin
+  if current_user <> 'authenticated' or new.game is null or old.game is null then return new; end if;
+  begin
+    o := old.game::jsonb;
+    n := new.game::jsonb;
+    oj := o -> 'job';
+    if oj is null or jsonb_typeof(oj) <> 'object' then return new; end if;
+    -- "Start over" marks the save with a newer jobReset
+    if coalesce((n ->> 'jobReset')::numeric, 0) > coalesce((o ->> 'jobReset')::numeric, 0) then return new; end if;
+    nj := case when jsonb_typeof(n -> 'job') = 'object' then n -> 'job' else '{}'::jsonb end;
+    foreach k in array array['worked', 'earned', 'shifts', 'pos'] loop
+      if coalesce((oj ->> k)::numeric, 0) > coalesce((nj ->> k)::numeric, 0) then
+        nj := jsonb_set(nj, array[k], oj -> k);
+        fixed := true;
+      end if;
+    end loop;
+  exception when others then return new;
+  end;
+  if fixed then
+    new.game := jsonb_set(n, '{job}', nj)::text;
+    -- the page that sent the old numbers reloads from the database
+    new.admin_rev := greatest(new.admin_rev, old.admin_rev + 1);
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists players_keep_job on public.players;
+create trigger players_keep_job before update on public.players for each row execute function public.players_keep_job();

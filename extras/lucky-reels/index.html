@@ -10238,7 +10238,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   $('startOverYes').addEventListener('click', () => {
     closeStartOver();
     if (gameBusy()) return;
-    Object.assign(state, fresh(), { sound: state.sound, adminRev: state.adminRev, credits: settings.startCredits, mode: state.mode, avatar: state.avatar, giftSeen: state.giftSeen, newsSeen: state.newsSeen, evSeen: state.evSeen, prestige: state.prestige });
+    Object.assign(state, fresh(), { sound: state.sound, adminRev: state.adminRev, credits: settings.startCredits, mode: state.mode, avatar: state.avatar, giftSeen: state.giftSeen, newsSeen: state.newsSeen, evSeen: state.evSeen, prestige: state.prestige, jobReset: Date.now() });
     bjShown.clear();
     renderBJTable(false);
     pendingLevels.length = 0;
@@ -11941,6 +11941,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           savedCredits = Number(doc.credits) || 0;
           state.credits = Math.max(0, savedCredits + local);
           state.adminRev = rev;
+          let theirs = null;
+          try { theirs = typeof doc.game === 'string' ? JSON.parse(doc.game) : doc.game; } catch {}
+          if (theirs?.job && !((state.jobReset || 0) > (Number(theirs.jobReset) || 0))) {
+            const before = jbIdx();
+            for (const k of ['worked', 'earned', 'shifts', 'pos']) state.job[k] = Math.max(state.job[k] || 0, Math.floor(Number(theirs.job[k]) || 0));
+            if (jbIdx() > before) jbRender();
+          }
           // live-game winnings that came in: the games show them right away
           hrClaimSoon = rlClaimSoon = rkClaimSoon = ltClaimSoon = true;
           const lv = adminLevel(doc);
@@ -13375,6 +13382,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       checkAch({ jobPaid: true, jobPos: now });
       if (now > state.job.pos) { state.job.pos = now; jbPromote(now); }
       render();
+      persist();
     } else {
       jbSay(jb.done ? 'The boss is not happy with you: no wage for these 10 seconds.' : 'You did nothing for 10 seconds: no wage.', 'lose');
       sound.lose();
