@@ -3117,6 +3117,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       </div>
       <details class="bj-rules">
         <summary>Chicken rules</summary>
+        <p class="note">Events and the happy hour don't raise Chicken wins.</p>
         <p class="note">Put down a bet and send the chicken across ten lanes of traffic, one hop at a time. Every lane it survives raises the multiplier; cash out whenever you like, or risk the next hop. Get hit and the bet is gone. Easy: about 1 in 12 hops ends badly, Medium about 1 in 6, Hard about 1 in 4, and the payouts grow to match. Keys: Space hops, C cashes out.</p>
       </details>
     </section>
@@ -4230,6 +4231,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     "What's new": 'Was ist neu', 'You have the newest version. This changed:': 'Du hast die neueste Version. Das hat sich geändert:', 'Lucky Reels just got an update. Reload the page to get the newest version. This changed:': 'Lucky Reels hat gerade ein Update bekommen. Lade die Seite neu, um die neueste Version zu bekommen. Das hat sich geändert:', 'Patch notes (optional). One change per line; lines starting with - become a list.': 'Patch Notes (optional). Eine Änderung pro Zeile; Zeilen mit - am Anfang werden zur Liste.', 'Patch notes': 'Patch Notes', 'Everyone with the game open now sees “New update – please reload” with your patch notes.': 'Alle, die das Spiel offen haben, sehen jetzt „Neues Update – bitte neu laden“ mit deinen Patch Notes.', 'Got it': 'Verstanden',
     '🏁 Who got there first?': '🏁 Wer war zuerst da?', 'Mark': 'Marke', 'already above it when the list started': 'war schon drüber, als die Liste startete', 'This needs the “Milestones” part of supabase-setup.sql.': 'Dafür brauchst du den Teil „Milestones“ aus supabase-setup.sql.',
     'account since today': 'Konto seit heute', 'account since 1 day': 'Konto seit 1 Tag', 'Refund lotto tickets': 'Lotto-Lose erstatten', 'Refund': 'Erstatten', 'refunded': 'erstattet', 'Winner': 'Gewinner', 'not drawn yet: a refunded ticket leaves the drum': 'noch nicht gezogen: ein erstattetes Los kommt aus der Trommel', 'Give it back?': 'Zurückgeben?', 'The tickets are refunded.': 'Die Lose sind erstattet.', 'The ticket is refunded.': 'Das Los ist erstattet.', 'No lotto tickets in the last 14 days.': 'Keine Lotto-Lose in den letzten 14 Tagen.', 'This needs the “Account age and lotto refunds” part of supabase-setup.sql.': 'Dafür brauchst du den Teil „Account age and lotto refunds“ aus supabase-setup.sql.',
+    "Events and the happy hour don't raise Chicken wins.": 'Events und die Happy Hour erhöhen bei Chicken keine Gewinne.',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -7245,6 +7247,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const CK_SURVIVE = { easy: 0.92, medium: 0.84, hard: 0.75 };
   // Happy hour from the admin menu multiplies the winnings, never the stake that comes back (as in blackjack and roulette).
   const happyPay = (bet, m, game) => Math.min(MAX, Math.floor(m > 1 ? bet + bet * (m - 1) * winMult(game) : bet * m));
+  // Chicken lets you choose how far to go, so any boost on the far lanes would pay out more than goes in:
+  // events and the happy hour don't raise Chicken wins (a happy hour below 1 still counts).
+  const ckPay = (bet, m) => Math.min(MAX, Math.floor(m > 1 ? bet + bet * (m - 1) * Math.min(1, settings.winMultiplier) : bet * m));
   const ckMult = (k, diff = state.ck.diff) => k ? Math.floor((CK_EDGE / CK_SURVIVE[diff] ** k) * 100) / 100 : 1;
   const CK_CAR_COLORS = ['#e0414a', '#3d7bd9', '#f3c94b', '#7fd18b', '#a77bff', '#f6efe3', '#f08a3c'];
   const ckCarSvg = col => `<svg viewBox="0 0 42 70"><rect x="3" y="4" width="36" height="62" rx="10" fill="${col}" stroke="#0005" stroke-width="2"/><rect x="8" y="14" width="26" height="13" rx="4" fill="#bfe8ff"/><rect x="8" y="44" width="26" height="9" rx="3" fill="#9fcde8"/><rect x="6" y="60" width="8" height="4" rx="2" fill="#ffd35a"/><rect x="28" y="60" width="8" height="4" rx="2" fill="#ffd35a"/><rect x="1" y="16" width="3" height="10" rx="1.5" fill="#1d1714"/><rect x="38" y="16" width="3" height="10" rx="1.5" fill="#1d1714"/><rect x="1" y="46" width="3" height="10" rx="1.5" fill="#1d1714"/><rect x="38" y="46" width="3" height="10" rx="1.5" fill="#1d1714"/></svg>`;
@@ -7334,14 +7339,17 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const hit = randInt(10000) >= CK_SURVIVE[r.diff] * 10000;
     ckClearLane(next);
     r.lane = next;
+    // The outcome is saved before it is shown: reloading when the car comes must not bring the chicken back.
+    if (hit) { state.ck.round = null; state.ck.games++; state.lastWin = 0; }
+    const saved = flushNow();
     const ch = $('ckChicken');
     ch.classList.remove('hop'); void ch.offsetWidth; ch.classList.add('hop');
     sound.tone(520, 0, 0.06, 'square', 0.04); sound.tone(780, 0.08, 0.06, 'square', 0.04);
     if (hit) {
-      // Show the hop into the lane, then the car that ends it.
+      // Show the hop into the lane, then the car that ends it (once the loss is saved).
       const x = ckSideW() + (next - 0.5) * ckLaneW();
       ch.style.left = x + 'px';
-      await sleep(reduceMotion ? 0 : 380);
+      await Promise.all([sleep(reduceMotion ? 0 : 380), saved]);
       ckSpawn(next, 'killer');
       sound.tone(300, 0, 0.3, 'sawtooth', 0.04);
       await sleep(reduceMotion ? 0 : 340);
@@ -7352,9 +7360,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       const cr = ch.getBoundingClientRect();
       for (let k = 0; k < 26; k++) fxTop.confetti(['#ffffff', '#f6efe3', '#f3a73b']);
       fxTop.burst(cr.left + cr.width / 2, cr.top + cr.height / 2, 40, 30, 6, false);
-      state.ck.round = null;
-      state.ck.games++;
-      state.lastWin = 0;
       if (hasG('ckHelmet')) goodieBonus(r.bet * 0.02, 'ckHelmet');
       gainXp(3 + next);
       ckSay(next === 1 ? 'Splat! Hit in the very first lane.' : `Splat! Hit in lane ${next}. The ${fmt(r.bet)} is gone.`, 'lose');
@@ -7371,14 +7376,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (next >= CK_LANES) { ckCashOut(true); return; }
     sound.ping(next / CK_LANES);
     const m = ckMult(next, r.diff);
-    ckSay(`Lane ${next} made it! ×${m.toFixed(2)} · cash out ${fmt(happyPay(r.bet, m, 'ck'))} or keep going.`, 'win');
+    ckSay(`Lane ${next} made it! ×${m.toFixed(2)} · cash out ${fmt(ckPay(r.bet, m))} or keep going.`, 'win');
     render();
   }
   function ckCashOut(crossed = false) {
     const r = ckRound();
     if (!r || !r.lane || ckAnim) return;
     const m = ckMult(r.lane, r.diff);
-    const pay = happyPay(r.bet, m, 'ck');
+    const pay = ckPay(r.bet, m);
     state.credits = Math.min(MAX, state.credits + pay);
     if (hasG('ckFeather')) goodieBonus(pay * 0.02, 'ckFeather');
     state.lastWin = pay;
@@ -7413,7 +7418,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     cash.hidden = !r || !r.lane;
     if (r && r.lane) {
       const m = ckMult(r.lane, r.diff);
-      cash.innerHTML = `Cash out<small>${fmt(happyPay(r.bet, m, 'ck'))} · ×${m.toFixed(2)}</small>`;
+      cash.innerHTML = `Cash out<small>${fmt(ckPay(r.bet, m))} · ×${m.toFixed(2)}</small>`;
       cash.disabled = ckAnim;
     }
   }
@@ -11553,6 +11558,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     clearTimeout(saveTimer);
     saveTimer = setTimeout(flush, 900);
   }
+  // a save that really includes the current state (waits for one that is already on its way)
+  async function flushNow() {
+    for (let i = 0; i < 60 && saving; i++) await sleep(50);
+    await flush();
+  }
   async function flush() {
     clearTimeout(saveTimer);
     if (!account || !backend || account.deleted) return;
@@ -14570,7 +14580,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
   // ----- Events: an admin plans a time window and what it boosts. Every page reads it from the settings,
   // announces it ahead of time in the top bar and switches the boosts on and off by itself at the planned times. -----
-  const EV_GAMES = [['all', 'All games'], ['slots', 'Slots'], ['bj', 'Blackjack'], ['rl', 'Roulette'], ['pl', 'Plinko'], ['ck', 'Chicken'], ['hr', 'Horse Racing'], ['rk', 'Rocket'], ['cf', 'Coin Flip']];
+  const EV_GAMES = [['all', 'All games'], ['slots', 'Slots'], ['bj', 'Blackjack'], ['rl', 'Roulette'], ['pl', 'Plinko'], ['hr', 'Horse Racing'], ['rk', 'Rocket'], ['cf', 'Coin Flip']];
   const EV_ICONS = ['🎉', '🍀', '🔥', '⚡', '💎', '🚀', '🏆', '🎰', '🎃', '🎄', '🐰', '🌙', '☀️', '🎁'];
   const EV_GIFT_MAX = 1000000;
   function evClock() { try { return Date.now() + (hrOffsetSet ? hrOffset : 0); } catch { return Date.now(); } }
