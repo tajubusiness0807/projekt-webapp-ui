@@ -11479,7 +11479,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     } catch (e) {
       if (e?.code === 'admin_changed') { refreshOwn(); return; }
       // this page is behind: the game was saved from another device or tab in the meantime
-      if (e?.code === 'other_device') {
+      // (or the database refuses saves from pages that don't count their saves yet)
+      if (e?.code === 'other_device' || /reload the page to keep playing/.test(e?.message || '')) {
         if (!flush.reloading) { flush.reloading = true; toast('Played somewhere else', 'Your game was saved on another device or tab. This page loads the newest state now.'); setTimeout(() => location.reload(), 2500); }
         return;
       }

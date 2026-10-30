@@ -5079,3 +5079,24 @@ end;
 $$;
 drop trigger if exists players_guard on public.players;
 create trigger players_guard before update on public.players for each row execute function public.players_guard();
+
+
+-- ---------------------------------------------------------------------------
+-- Old pages may not save any more: run this part once (after "Jackpots are kept, saves in order"). A page
+-- that has not been reloaded since the save order came in doesn't count save_seq up and could still save an
+-- older game over a newer one (a phone with the game open in the background, for example). Such a save is
+-- now refused; the page has to be reloaded. Tip: the admin menu's "Ask everyone to reload" button.
+create or replace function public.players_seq()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+begin
+  if current_user = 'authenticated' and new.save_seq <= old.save_seq then
+    raise exception 'old page: reload the page to keep playing';
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists players_seq on public.players;
+create trigger players_seq before update on public.players for each row execute function public.players_seq();
