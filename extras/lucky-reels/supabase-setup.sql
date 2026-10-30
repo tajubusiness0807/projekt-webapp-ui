@@ -5158,3 +5158,71 @@ end;
 $$;
 revoke execute on function public.admin_milestones(uuid) from public, anon;
 grant execute on function public.admin_milestones(uuid) to authenticated;
+
+
+-- ---------------------------------------------------------------------------
+-- Account age and lotto refunds: run this part once (after "Lotto" and "Admin security").
+-- The admin menu shows how old each account is, and can give players back what a lotto ticket cost:
+-- a ticket for a draw that hasn't happened yet is taken out of the drum; after the draw the player just
+-- gets the price back (the winner keeps the pot). A ticket can be refunded only once.
+alter table public.lotto_tickets add column if not exists refunded boolean not null default false;
+
+create or replace function public.admin_player_ages(tok uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.admin_check(tok);
+  return coalesce((select jsonb_object_agg(p.id, floor(extract(epoch from u.created_at) * 1000))
+    from public.players p join auth.users u on u.id = p.id), '{}'::jsonb);
+end;
+$$;
+revoke execute on function public.admin_player_ages(uuid) from public, anon;
+grant execute on function public.admin_player_ages(uuid) to authenticated;
+
+create or replace function public.admin_lotto_tickets(tok uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.admin_check(tok);
+  return coalesce((select jsonb_agg(jsonb_build_object('id', t.id, 'draw', t.draw_id, 'kind', d.kind, 'draw_at', floor(extract(epoch from d.draw_at) * 1000),
+      'settled', d.settled, 'winner', d.winner_name, 'pot', d.pot, 'player', t.player, 'name', t.name, 'cost', t.cost, 'payout', t.payout,
+      'refunded', t.refunded, 'at', floor(extract(epoch from t.created_at) * 1000)) order by d.draw_at desc, t.cost desc)
+    from public.lotto_tickets t join public.lotto_draws d on d.id = t.draw_id
+    where d.draw_at > now() - interval '14 days'), '[]'::jsonb);
+end;
+$$;
+revoke execute on function public.admin_lotto_tickets(uuid) from public, anon;
+grant execute on function public.admin_lotto_tickets(uuid) to authenticated;
+
+-- one ticket (ticket) or every ticket of a draw (draw)
+create or replace function public.admin_lotto_refund(tok uuid, ticket bigint default null, draw text default null)
+returns integer
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  t record;
+  n integer := 0;
+begin
+  perform public.admin_check(tok);
+  if ticket is null and draw is null then raise exception 'nothing to refund'; end if;
+  for t in select x.*, d.settled from public.lotto_tickets x join public.lotto_draws d on d.id = x.draw_id
+      where not x.refunded and (x.id = ticket or x.draw_id = draw) for update of x loop
+    update public.players set credits = least(9007199254740991, credits + t.cost), admin_rev = admin_rev + 1, updated_at = now() where id = t.player;
+    if t.settled then update public.lotto_tickets set refunded = true where id = t.id;
+    else delete from public.lotto_tickets where id = t.id;
+    end if;
+    n := n + 1;
+  end loop;
+  return n;
+end;
+$$;
+revoke execute on function public.admin_lotto_refund(uuid, bigint, text) from public, anon;
+grant execute on function public.admin_lotto_refund(uuid, bigint, text) to authenticated;

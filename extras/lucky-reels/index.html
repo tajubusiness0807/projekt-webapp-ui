@@ -1967,6 +1967,13 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
 .lt-admin-draw ol { margin: 6px 0 0; padding-left: 20px; }
 .lt-admin-draw li { margin: 2px 0; }
 .lt-admin-draw .note { margin: 4px 0 0; color: var(--muted); }
+.lt-ref-head { margin-top: 16px; align-items: center; }
+.lt-ref-head b { margin-right: auto; }
+.lt-ref { margin: 6px 0 8px; padding: 0; list-style: none; display: grid; gap: 4px; }
+.lt-ref li { display: flex; align-items: center; gap: 8px; padding: 4px 8px; border-radius: 8px; background: #0004; }
+.lt-ref li .abtn, .lt-ref li small { margin-left: auto; }
+.lt-ref li.done { opacity: 0.55; }
+.p-age { color: var(--muted); }
 
 /* ----- Lucky Burger: the free job ----- */
 .gp-free { background: #ffc72c33; color: #ffc72c; }
@@ -3701,6 +3708,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           </div>
         </form>
         <div class="lt-admin-draws" id="lottoAdmin"></div>
+        <div class="admin-tools lt-ref-head"><b>Refund lotto tickets</b><button class="abtn" id="ltRefReload" type="button">Refresh</button></div>
+        <div class="lt-admin-draws" id="ltRefunds"></div>
         <p class="admin-note">Every player can buy one ticket per draw, for the set share of their credits at that moment. While tickets are on sale nobody can send credits. At draw time the database picks exactly one winner among the tickets, and everyone online watches the draw. The preview only plays the show for you.</p>
       </section>
 
@@ -4220,6 +4229,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Events and the happy hour count less in Plinko: they raise wins up to 5× by at most 15%.': 'Events und die Happy Hour zählen bei Plinko weniger: Sie erhöhen Gewinne bis 5× um höchstens 15 %.',
     "What's new": 'Was ist neu', 'You have the newest version. This changed:': 'Du hast die neueste Version. Das hat sich geändert:', 'Lucky Reels just got an update. Reload the page to get the newest version. This changed:': 'Lucky Reels hat gerade ein Update bekommen. Lade die Seite neu, um die neueste Version zu bekommen. Das hat sich geändert:', 'Patch notes (optional). One change per line; lines starting with - become a list.': 'Patch Notes (optional). Eine Änderung pro Zeile; Zeilen mit - am Anfang werden zur Liste.', 'Patch notes': 'Patch Notes', 'Everyone with the game open now sees “New update – please reload” with your patch notes.': 'Alle, die das Spiel offen haben, sehen jetzt „Neues Update – bitte neu laden“ mit deinen Patch Notes.', 'Got it': 'Verstanden',
     '🏁 Who got there first?': '🏁 Wer war zuerst da?', 'Mark': 'Marke', 'already above it when the list started': 'war schon drüber, als die Liste startete', 'This needs the “Milestones” part of supabase-setup.sql.': 'Dafür brauchst du den Teil „Milestones“ aus supabase-setup.sql.',
+    'account since today': 'Konto seit heute', 'account since 1 day': 'Konto seit 1 Tag', 'Refund lotto tickets': 'Lotto-Lose erstatten', 'Refund': 'Erstatten', 'refunded': 'erstattet', 'Winner': 'Gewinner', 'not drawn yet: a refunded ticket leaves the drum': 'noch nicht gezogen: ein erstattetes Los kommt aus der Trommel', 'Give it back?': 'Zurückgeben?', 'The tickets are refunded.': 'Die Lose sind erstattet.', 'The ticket is refunded.': 'Das Los ist erstattet.', 'No lotto tickets in the last 14 days.': 'Keine Lotto-Lose in den letzten 14 Tagen.', 'This needs the “Account age and lotto refunds” part of supabase-setup.sql.': 'Dafür brauchst du den Teil „Account age and lotto refunds“ aus supabase-setup.sql.',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -4418,7 +4428,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['Nobody has reached {a} credits yet.', 'Noch niemand hat {a} Credits erreicht.'], ['Waiting for {a} to answer… {b} s', 'Warte auf die Antwort von {a} … {b} s'], ['{a} challenges you! {b} s', '{a} fordert dich heraus! {b} s'], ['{a} challenges you to Russian roulette!', '{a} fordert dich zum Russisch Roulette heraus!'], ['{a} s to answer', 'Noch {a} s zum Antworten'], ['1 in {a}', '1 zu {a}'], ['{a} has to pull…', '{a} muss abdrücken …'], ['Your turn. {a} s left, or you lose.', 'Du bist dran. Noch {a} s, sonst verlierst du.'], ['{a} has the revolver. {b} s.', '{a} hat den Revolver. {b} s.'], ['{a} goes first.', '{a} fängt an.'], ['*click* … empty. You live. Now {a}.', '*klick* … leer. Du lebst. Jetzt {a}.'], ['*click* … empty. {a} lives. Your turn.', '*klick* … leer. {a} lebt. Du bist dran.'], ['You waited too long: that counts as lost. Everything goes to {a}.', 'Du hast zu lange gewartet: Das zählt als verloren. Alles geht an {a}.'], ['{a} waited too long and loses everything to you!', '{a} hat zu lange gewartet und verliert alles an dich!'], ['BANG. You lost everything to {a}. Your account starts over.', 'PENG. Du hast alles an {a} verloren. Dein Konto fängt von vorne an.'], ['{a} is out. You take everything: +{b}!', '{a} ist raus. Du bekommst alles: +{b}!'], ['Everything went to {a}.', 'Alles ging an {a}.'], ['+{a} from {b}.', '+{a} von {b}.'], ['{a} credits and {b} goodies', '{a} Credits und {b} Goodies'], ['{a} credits and {b} goodie', '{a} Credits und {b} Goodie'], ['{a} won Russian roulette against {b}.', '{a} hat beim Russisch Roulette gegen {b} gewonnen.'], ['{a} said no.', '{a} hat abgelehnt.'], ['Challenge sent. {a} has 2 minutes to answer.', 'Herausforderung geschickt. {a} hat 2 Minuten zum Antworten.'], ['{a} challenges you!', '{a} fordert dich heraus!'], ['📺 Ad {a} s', '📺 Werbung {a} s'], ['Seconds (normal: {a})', 'Sekunden (normal: {a})'], ['Ad wait for {a} in seconds', 'Werbe-Wartezeit für {a} in Sekunden'], ['{a} has the normal ad wait again ({b} s).', '{a} hat wieder die normale Werbe-Wartezeit ({b} s).'], ['{a} can close the ad only after {b} seconds.', '{a} kann die Werbung erst nach {b} Sekunden schließen.'], ['Message {a}…', 'Nachricht an {a}…'], ['Sorry for the downtime! As a thank-you for your patience, everyone gets {a} credits.', 'Sorry für die Ausfallzeit! Als Dankeschön für eure Geduld bekommt jeder {a} Credits.'], ['Give everyone {a}?', 'Allen {a} geben?'], ['Everyone got {a} credits and sees a pop-up about it.', 'Alle haben {a} Credits bekommen und sehen ein Pop-up dazu.'], ['{a} now works as {b} at Lucky Burger.', '{a} arbeitet jetzt als {b} bei Lucky Burger.'], ['An admin made you {a}.', 'Ein Admin hat dich zu {a} gemacht.'], ['Lucky Burger position for {a}', 'Lucky-Burger-Position für {a}'], ['New password for {a} (6+)', 'Neues Passwort für {a} (6+)'], ['{a} has a new password now. Tell it to them yourself.', '{a} hat jetzt ein neues Passwort. Sag es ihm selbst.'], ['{a} can get credits from level {b} on.', '{a} kann erst ab Level {b} Credits bekommen.'], ['Got a code from a friend? You start with {a} credits instead of {b} (first account on this device only).', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits (nur beim ersten Konto auf diesem Gerät).'], ['Got a code from a friend? You start with {a} credits instead of {b}.', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits.'], ['New players who use it start with {a} credits.', 'Neue Spieler, die ihn nutzen, starten mit {a} Credits.'], ['New players who sign up with your code start with {a} credits.', 'Neue Spieler, die sich mit deinem Code anmelden, starten mit {a} Credits.'], ['You get {a} on top.', 'Du bekommst {a} obendrauf.'], ['{a} extra credits', '{a} Extra-Credits'], ['{a}% of your credits (at most {b})', '{a} % deiner Credits (höchstens {b})'], ['{a}% of your credits', '{a} % deiner Credits'], ['Example: a new player starts with {a} credits. A code owner with 50,000 credits gets {b}, one with 500,000 gets {c}.', 'Beispiel: Ein neuer Spieler startet mit {a} Credits. Ein Code-Besitzer mit 50,000 Credits bekommt {b}, einer mit 500,000 bekommt {c}.'], ['ends in {a}', 'endet in {a}'], ['starts in {a}', 'beginnt in {a}'], ['Event gift: +{a} credits!', 'Event-Geschenk: +{a} Credits!'], ['event ×{a}', 'Event ×{a}'], ['1st place', '1. Platz'], ['2nd place', '2. Platz'], ['3rd place', '3. Platz'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['account since {a} days', 'Konto seit {a} Tagen'], ['Refund all {a} tickets', 'Alle {a} Lose erstatten'], ['Nobody has reached {a} credits yet.', 'Noch niemand hat {a} Credits erreicht.'], ['Waiting for {a} to answer… {b} s', 'Warte auf die Antwort von {a} … {b} s'], ['{a} challenges you! {b} s', '{a} fordert dich heraus! {b} s'], ['{a} challenges you to Russian roulette!', '{a} fordert dich zum Russisch Roulette heraus!'], ['{a} s to answer', 'Noch {a} s zum Antworten'], ['1 in {a}', '1 zu {a}'], ['{a} has to pull…', '{a} muss abdrücken …'], ['Your turn. {a} s left, or you lose.', 'Du bist dran. Noch {a} s, sonst verlierst du.'], ['{a} has the revolver. {b} s.', '{a} hat den Revolver. {b} s.'], ['{a} goes first.', '{a} fängt an.'], ['*click* … empty. You live. Now {a}.', '*klick* … leer. Du lebst. Jetzt {a}.'], ['*click* … empty. {a} lives. Your turn.', '*klick* … leer. {a} lebt. Du bist dran.'], ['You waited too long: that counts as lost. Everything goes to {a}.', 'Du hast zu lange gewartet: Das zählt als verloren. Alles geht an {a}.'], ['{a} waited too long and loses everything to you!', '{a} hat zu lange gewartet und verliert alles an dich!'], ['BANG. You lost everything to {a}. Your account starts over.', 'PENG. Du hast alles an {a} verloren. Dein Konto fängt von vorne an.'], ['{a} is out. You take everything: +{b}!', '{a} ist raus. Du bekommst alles: +{b}!'], ['Everything went to {a}.', 'Alles ging an {a}.'], ['+{a} from {b}.', '+{a} von {b}.'], ['{a} credits and {b} goodies', '{a} Credits und {b} Goodies'], ['{a} credits and {b} goodie', '{a} Credits und {b} Goodie'], ['{a} won Russian roulette against {b}.', '{a} hat beim Russisch Roulette gegen {b} gewonnen.'], ['{a} said no.', '{a} hat abgelehnt.'], ['Challenge sent. {a} has 2 minutes to answer.', 'Herausforderung geschickt. {a} hat 2 Minuten zum Antworten.'], ['{a} challenges you!', '{a} fordert dich heraus!'], ['📺 Ad {a} s', '📺 Werbung {a} s'], ['Seconds (normal: {a})', 'Sekunden (normal: {a})'], ['Ad wait for {a} in seconds', 'Werbe-Wartezeit für {a} in Sekunden'], ['{a} has the normal ad wait again ({b} s).', '{a} hat wieder die normale Werbe-Wartezeit ({b} s).'], ['{a} can close the ad only after {b} seconds.', '{a} kann die Werbung erst nach {b} Sekunden schließen.'], ['Message {a}…', 'Nachricht an {a}…'], ['Sorry for the downtime! As a thank-you for your patience, everyone gets {a} credits.', 'Sorry für die Ausfallzeit! Als Dankeschön für eure Geduld bekommt jeder {a} Credits.'], ['Give everyone {a}?', 'Allen {a} geben?'], ['Everyone got {a} credits and sees a pop-up about it.', 'Alle haben {a} Credits bekommen und sehen ein Pop-up dazu.'], ['{a} now works as {b} at Lucky Burger.', '{a} arbeitet jetzt als {b} bei Lucky Burger.'], ['An admin made you {a}.', 'Ein Admin hat dich zu {a} gemacht.'], ['Lucky Burger position for {a}', 'Lucky-Burger-Position für {a}'], ['New password for {a} (6+)', 'Neues Passwort für {a} (6+)'], ['{a} has a new password now. Tell it to them yourself.', '{a} hat jetzt ein neues Passwort. Sag es ihm selbst.'], ['{a} can get credits from level {b} on.', '{a} kann erst ab Level {b} Credits bekommen.'], ['Got a code from a friend? You start with {a} credits instead of {b} (first account on this device only).', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits (nur beim ersten Konto auf diesem Gerät).'], ['Got a code from a friend? You start with {a} credits instead of {b}.', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits.'], ['New players who use it start with {a} credits.', 'Neue Spieler, die ihn nutzen, starten mit {a} Credits.'], ['New players who sign up with your code start with {a} credits.', 'Neue Spieler, die sich mit deinem Code anmelden, starten mit {a} Credits.'], ['You get {a} on top.', 'Du bekommst {a} obendrauf.'], ['{a} extra credits', '{a} Extra-Credits'], ['{a}% of your credits (at most {b})', '{a} % deiner Credits (höchstens {b})'], ['{a}% of your credits', '{a} % deiner Credits'], ['Example: a new player starts with {a} credits. A code owner with 50,000 credits gets {b}, one with 500,000 gets {c}.', 'Beispiel: Ein neuer Spieler startet mit {a} Credits. Ein Code-Besitzer mit 50,000 Credits bekommt {b}, einer mit 500,000 bekommt {c}.'], ['ends in {a}', 'endet in {a}'], ['starts in {a}', 'beginnt in {a}'], ['Event gift: +{a} credits!', 'Event-Geschenk: +{a} Credits!'], ['event ×{a}', 'Event ×{a}'], ['1st place', '1. Platz'], ['2nd place', '2. Platz'], ['3rd place', '3. Platz'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
     ['Rises in {a} of steps', 'Steigt in {a} der Schritte'], ['Usually {a} or {b}', 'Meist {a} oder {b}'], ['Swings: {a}', 'Schwankung: {a}'],
     ['Start {a} · bankrupt below {b} · takeover at {c}', 'Start {a} · Pleite unter {b} · Übernahme ab {c}'],
     ['Buy {a} for {b} · sell {c} for {d} (1% fee each way)', 'Kauf {a} für {b} · Verkauf {c} für {d} (je 1 % Gebühr)'],
@@ -11202,6 +11212,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         affiliates: () => adminRpcData('admin_affiliates', {}),
         suspicious: () => adminRpcData('admin_suspicious', {}),
         milestones: () => adminRpcData('admin_milestones', {}),
+        playerAges: () => adminRpcData('admin_player_ages', {}),
+        lottoTickets: () => adminRpcData('admin_lotto_tickets', {}),
+        lottoRefund: (ticket, draw) => adminRpcData('admin_lotto_refund', { ticket: ticket ?? null, draw: draw ?? null }),
         suspiciousClear: id => adminRpc('admin_suspicious_clear', { entry: id ?? null }),
         tickets: () => adminRpcData('admin_tickets', {}),
         ticketUpdate: (id, status, reply) => adminRpc('admin_ticket_update', { ticket: id, new_status: status ?? null, new_reply: reply ?? null }),
@@ -12659,6 +12672,51 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       renderAffHint();
     });
   });
+  // ----- Admin: how old each account is -----
+  let playerAges = null, agesAt = 0;
+  function ageText(ms) {
+    const d = Math.floor((Date.now() - ms) / 86400000);
+    return d < 1 ? i18n('account since today') : d === 1 ? i18n('account since 1 day') : i18n(`account since ${d} days`);
+  }
+  async function loadAges() {
+    if (!backend?.admin?.playerAges || Date.now() - agesAt < 60000) return;
+    agesAt = Date.now();
+    try { playerAges = await backend.admin.playerAges() || {}; renderAdminPlayers(true); } catch {}
+  }
+
+  // ----- Admin: give players back what lotto tickets cost -----
+  let ltRefundRows = [];
+  async function loadLtRefunds() {
+    if (!backend?.admin?.lottoTickets) { $('ltRefunds').innerHTML = `<p class="note">${esc(i18n('This needs the online database.'))}</p>`; return; }
+    try { ltRefundRows = await backend.admin.lottoTickets() || []; renderLtRefunds(); }
+    catch (e) {
+      if (e?.code === 'admin_locked') return;
+      $('ltRefunds').innerHTML = `<p class="note">${esc(i18n(/could not find the function|PGRST202/i.test(e?.message || '') ? 'This needs the “Account age and lotto refunds” part of supabase-setup.sql.' : 'That did not work. Check the connection and try again.'))}</p>`;
+    }
+  }
+  function renderLtRefunds() {
+    const by = new Map();
+    for (const t of ltRefundRows) { if (!by.has(t.draw)) by.set(t.draw, []); by.get(t.draw).push(t); }
+    $('ltRefunds').innerHTML = by.size ? [...by.entries()].map(([id, list]) => {
+      const d = list[0], open = list.filter(t => !t.refunded);
+      return `<div class="lt-admin-draw"><h4>${esc(i18n(LT_TITLE[d.kind] || 'Lotto'))} · ${berlinDay(Number(d.draw_at))} ${ltClock(Number(d.draw_at))}</h4>
+        <div>${d.settled ? `${esc(i18n('Winner'))}: <b class="lt-name">${esc(d.winner || '?')}</b> (+${fmt(Number(d.pot) || 0)})` : esc(i18n('not drawn yet: a refunded ticket leaves the drum'))}</div>
+        <ul class="lt-ref">${list.map(t => `<li class="${t.refunded ? 'done' : ''}"><span class="lt-name">${esc(t.name)}</span> · ${fmt(Number(t.cost) || 0)}${Number(t.payout) > 0 ? ' · 🏆' : ''}
+          ${t.refunded ? `<small>${esc(i18n('refunded'))}</small>` : `<button type="button" class="abtn" data-ltref="${esc(t.id)}">Refund</button>`}</li>`).join('')}</ul>
+        ${open.length > 1 ? `<button type="button" class="abtn warn" data-ltref-draw="${esc(id)}">Refund all ${open.length} tickets</button>` : ''}</div>`;
+    }).join('') : `<p class="note">${esc(i18n('No lotto tickets in the last 14 days.'))}</p>`;
+  }
+  $('ltRefunds').addEventListener('click', e => {
+    const one = e.target.closest('[data-ltref]'), all = e.target.closest('[data-ltref-draw]'), b = one || all;
+    if (!b || !confirmed(b, 'Give it back?')) return;
+    adminDo(all ? 'The tickets are refunded.' : 'The ticket is refunded.', async () => {
+      await backend.admin.lottoRefund(one ? Number(one.dataset.ltref) : null, all ? all.dataset.ltrefDraw : null);
+      await loadLtRefunds();
+      ltFetchAt = 0; ltFetch();
+    });
+  });
+  $('ltRefReload').addEventListener('click', loadLtRefunds);
+
   // ----- Admin: who reached a mark (like 10 million credits) first; the database notes the moment -----
   let msRows = [];
   async function loadMilestones() {
@@ -12726,13 +12784,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.tab === name)));
     document.querySelectorAll('[data-pane]').forEach(p => { p.hidden = p.dataset.pane !== name; });
     adminSay('');
-    if (name === 'players') { renderAdminPlayers(true); loadMilestones(); }
+    if (name === 'players') { renderAdminPlayers(true); loadMilestones(); loadAges(); }
     if (name === 'game') { fillSettingsForm(); renderNewsAdmin(); renderResetAdmin(); }
     if (name === 'events') { if (!$('evForm').elements.title.value) evFill(null); renderAdminEvents(); }
     if (name === 'chat') renderAdminMsgs();
     if (name === 'aff') { fillAffForm(); loadAdminAffiliates(); }
     if (name === 'tickets') loadAdminTickets();
-    if (name === 'lotto') { fillLottoForm(); renderAdminLotto(); ltFetchAt = 0; ltFetch(); }
+    if (name === 'lotto') { fillLottoForm(); renderAdminLotto(); ltFetchAt = 0; ltFetch(); loadLtRefunds(); }
     if (name === 'security') $('adminSecNote').hidden = backend.kind !== 'supabase';
     if (name === 'watch') loadWatch();
   }
@@ -12770,7 +12828,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       <tr data-pid="${esc(p.id)}" data-name="${esc(p.name.toLowerCase())}" class="${p.admin ? 'is-admin' : ''}${p.banned ? ' is-banned' : ''}${me ? ' is-me' : ''}">
         <td class="pname"><div class="p-head">${avatarHtml(p.id, p.name, 'md')}<div class="p-id">
           <b>${nameHtml(p.id, p.name)}${p.admin ? '<span class="tag admin">admin</span>' : ''}${p.banned ? '<span class="tag banned">blocked</span>' : ''}${me ? '<span class="tag">you</span>' : ''}</b>
-          <span class="p-meta"><span>${on ? '<i class="dot"></i>Online' : '<i class="off"></i>Offline'}</span><span class="p-best">Best win ${fmt(p.best)}</span>${p.jackpots ? `<span>${p.jackpots} × jackpot</span>` : ''}${medalsHtml(p.id, 10)}</span>
+          <span class="p-meta"><span>${on ? '<i class="dot"></i>Online' : '<i class="off"></i>Offline'}</span><span class="p-best">Best win ${fmt(p.best)}</span>${playerAges?.[p.id] ? `<span class="p-age" title="${esc(new Date(playerAges[p.id]).toLocaleString(lang === 'de' ? 'de-DE' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }))}">${esc(ageText(playerAges[p.id]))}</span>` : ''}${p.jackpots ? `<span>${p.jackpots} × jackpot</span>` : ''}${medalsHtml(p.id, 10)}</span>
         </div></div></td>
         <td class="p-credits"><span class="p-field-label">Credits</span><div class="credit-edit"><input class="credit-in" type="number" inputmode="numeric" value="${p.credits}" aria-label="Credits for ${esc(p.name)}"><button class="abtn" data-act="credits">Set</button></div></td>
         <td class="lvl"><span class="p-field-label">Level</span><div class="credit-edit level-edit"><input class="level-in" type="number" inputmode="numeric" min="1" max="${MAX_LEVEL}" value="${p.level}" aria-label="Level for ${esc(p.name)}"><button class="abtn" data-act="level">Set</button></div></td>
