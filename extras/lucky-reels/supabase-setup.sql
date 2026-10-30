@@ -4319,3 +4319,50 @@ end;
 $$;
 revoke execute on function public.send_credits(uuid, bigint) from public, anon;
 grant execute on function public.send_credits(uuid, bigint) to authenticated;
+
+
+-- ---------------------------------------------------------------------------
+-- Lotto without cheats: run this part once (after "Admin cheats switch"). Nobody can pick the lotto winner,
+-- not even an admin: the cheat function goes, a winner picked before is forgotten, and the draw is always random.
+drop function if exists public.admin_rig_lotto(text);
+alter table public.lotto_draws drop column if exists forced;
+create or replace function public.lotto_settle(draw text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  dr public.lotto_draws;
+  cfg jsonb := public.lotto_cfg();
+  n integer;
+  tot numeric;
+  v_pot bigint;
+  pick public.lotto_tickets;
+  x numeric;
+begin
+  select * into dr from public.lotto_draws where id = draw for update;
+  if dr.id is null or dr.settled or now() < dr.draw_at then return; end if;
+  select count(*), coalesce(sum(cost), 0) into n, tot from public.lotto_tickets where draw_id = draw;
+  if n = 0 then
+    update public.lotto_draws set settled = true, pot = 0, tickets = 0 where id = draw;
+    return;
+  end if;
+  v_pot := floor(tot * (cfg ->> 'share')::numeric / 100)::bigint + (cfg ->> (dr.kind || 'Bonus'))::bigint;
+  if cfg ->> 'mode' = 'equal' then
+    select * into pick from public.lotto_tickets where draw_id = draw order by random() limit 1;
+  else
+    x := random() * tot;
+    select t.id, t.draw_id, t.player, t.name, t.cost, t.payout, t.claimed, t.created_at into pick
+      from (select *, sum(cost) over (order by id) as run from public.lotto_tickets where draw_id = draw) t
+      where t.run > x order by t.run limit 1;
+    if pick.id is null then select * into pick from public.lotto_tickets where draw_id = draw order by id desc limit 1; end if;
+  end if;
+  update public.lotto_tickets set payout = case when id = pick.id then v_pot else 0 end where draw_id = draw;
+  -- the winner gets the pot right away, online or not
+  update public.players set credits = least(9007199254740991, credits + v_pot), admin_rev = admin_rev + 1, updated_at = now() where id = pick.player;
+  update public.lotto_tickets set claimed = true where draw_id = draw;
+  update public.lotto_draws set settled = true, pot = v_pot, tickets = n, winner = pick.player, winner_name = pick.name, winner_cost = pick.cost
+    where id = draw;
+end;
+$$;

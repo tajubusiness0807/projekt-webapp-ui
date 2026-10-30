@@ -3473,7 +3473,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           <label class="setting wide"><span class="label">Announcement for everyone</span><input name="announcement" maxlength="200" placeholder="e.g. Happy hour tonight: all wins ×2!"><small>Shown at the top of the game and the sign-in screen. Leave empty to hide it.</small></label>
           <label class="setting check"><input type="checkbox" name="signupsOpen"><span>New accounts allowed</span><small>Shows "Create an account" on the sign-in screen.</small></label>
           <label class="setting check"><input type="checkbox" name="chatEnabled"><span>Chat on</span><small>When off, only admins can open the chat.</small></label>
-          <label class="setting check"><input type="checkbox" name="cheats"><span>Admin cheats on</span><small>The admin secret code works in every game except the stock market. Off: nobody can use it.</small></label>
+          <label class="setting check"><input type="checkbox" name="cheats"><span>Admin cheats on</span><small>The admin secret code works in every game except the lotto and the stock market. Off: nobody can use it.</small></label>
           <label class="setting check"><input type="checkbox" name="maintenance"><span>Pause the game</span><small>Nobody but admins can spin.</small></label>
           <label class="setting"><span class="label">Start credits for new accounts</span><input name="startCredits" type="number" min="0" step="1"></label>
           <label class="setting"><span class="label">Win multiplier (happy hour)</span>
@@ -3869,7 +3869,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Schedule hard reset': 'Hard Reset planen', 'Cancel the timer': 'Timer abbrechen', 'No hard reset is scheduled.': 'Kein Hard Reset geplant.', 'Pick a time at least a minute from now.': 'Wähl eine Zeit mindestens eine Minute in der Zukunft.',
     'Really schedule it?': 'Wirklich planen?', 'Cancel it?': 'Wirklich abbrechen?', 'The hard reset is scheduled. Everyone sees the countdown now.': 'Der Hard Reset ist geplant. Alle sehen jetzt den Countdown.',
     'The timed hard reset is cancelled.': 'Der geplante Hard Reset ist abgebrochen.', 'Hard reset now…': 'Hard Reset läuft…',
-    'Admin cheats on': 'Admin-Cheats an', 'The admin secret code works in every game except the stock market. Off: nobody can use it.': 'Der Admin-Geheimcode wirkt in allen Spielen außer der Börse. Aus: Niemand kann ihn benutzen.',
+    'Admin cheats on': 'Admin-Cheats an', 'The admin secret code works in every game except the lotto and the stock market. Off: nobody can use it.': 'Der Admin-Geheimcode wirkt in allen Spielen außer Lotto und Börse. Aus: Niemand kann ihn benutzen.',
     'My profile': 'Mein Profil', 'Your profile and settings': 'Dein Profil und deine Einstellungen', 'Night Mode': 'Nachtmodus', 'The whole casino in a darker night look. Switch it on and off here.': 'Das ganze Casino im dunkleren Nacht-Look. Hier an- und ausschalten.',
     'The fryer is overloaded!': 'Die Fritteuse ist überlastet!',
     'Send someone to the fryer': 'Jemanden an die Fritteuse schicken',
@@ -10968,7 +10968,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         async state() { const { data, error } = await sb.rpc('lotto_state'); if (error) throw error; return data; },
         async buy(id) { const { data, error } = await sb.rpc('lotto_buy', { draw: id }); if (error) throw error; return data; },
         async claim() { const { data, error } = await sb.rpc('lotto_claim'); if (error) throw error; return data; },
-        async rig(id) { const { error } = await sb.rpc('admin_rig_lotto', { draw: id }); if (error) throw error; },
       },
       // Global roulette: the database takes the chips, draws the number and pays out.
       roulette: {
@@ -12459,8 +12458,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       const tot = list.reduce((a, t) => a + t.cost, 0), rng = hrRng(ltHash(id), 4242);
       let win = list[Math.floor(rng() * list.length)];
       if (c.mode === 'weighted') { let x = rng() * tot; win = list.find(t => (x -= t.cost) < 0) || list[list.length - 1]; }
-      const forced = rawSettings.lottoRig?.[id] && list.find(t => t.player === rawSettings.lottoRig[id]);
-      if (forced) win = forced;
       return { tickets: list.length, pot: Math.floor(tot * c.share / 100) + c[slotOf(id).kind + 'Bonus'], winner: win.player, winner_name: win.name, winner_cost: win.cost };
     }
     return {
@@ -12504,7 +12501,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         try { localStorage.setItem(claimKey(), JSON.stringify([...done].slice(-40))); } catch {}
         return { tickets: out, credits: null, rev: null };
       },
-      async rig(id) { const r = { ...(rawSettings.lottoRig || {}), [id]: account.id }; rawSettings.lottoRig = r; await store.saveSettings({ lottoRig: r }); },
       selling() {
         const c = cfg(), now = Date.now(), today = berlinDay(now);
         if (!c.on) return null;
@@ -12638,7 +12634,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       const b = btn.getBoundingClientRect();
       fxTop.coinBurst(b.left + b.width / 2, b.top, 30, 9);
       toast(LT_TITLE[kind], `Your ticket for ${fmt(paid)} credits is in the drum. Draw at ${ltClock(s.drawAt)}!`);
-      if (account.isAdmin && takeRigged()) backend.lotto.rig?.(s.id)?.catch?.(() => {});
       while (pendingLevels.length) levelUp(pendingLevels.shift());
       ltFetch();
     } catch (e) {
