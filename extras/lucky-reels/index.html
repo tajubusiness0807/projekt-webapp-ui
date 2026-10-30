@@ -5419,6 +5419,25 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     pos[i] = to;
     sound.clunk();
 
+    // A star nudged onto the line counts like a landed one (also the second of two stars in a row).
+    let starBonus = false;
+    if (STRIP[to] === 'star') {
+      state.stars += 1;
+      state.starBank = (state.starBank || 0) + lastBet;
+      floatText('+1 ★', 'star');
+      mission('stars', 1);
+      if (state.stars >= STAR_GOAL) {
+        const avg = Math.max(1, Math.floor(state.starBank / state.stars));
+        state.stars -= STAR_GOAL;
+        state.starBank = avg * state.stars;
+        if (!state.freeSpins && !inBonus) state.freeBet = avg;
+        state.freeSpins += FREE_SPINS + (state.owned.starPlus ? 1 : 0);
+        starBonus = true;
+      }
+      render();
+      persist();
+    }
+
     const syms = pos.map(p => STRIP[p]);
     const line = lineSymbol(...syms);
     const base = payout(...syms);
@@ -5447,6 +5466,12 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     } else {
       nudgeOpen = state.nudges > 0;
       say(state.nudges ? `Still nothing. ${state.nudges} nudge${state.nudges > 1 ? 's' : ''} left.` : 'Out of nudges.', 'lose');
+    }
+    if (starBonus) {
+      sound.levelUp();
+      for (let k = 0; k < 40; k++) fxTop.confetti(BONUS_CONFETTI);
+      await banner('FREE SPINS', 'bonus', 2600, null, `${FREE_SPINS + (state.owned.starPlus ? 1 : 0)} spins · every win ×${FREE_MULT}`);
+      checkAch({ triggered: true });
     }
     busy = false;
     render();
