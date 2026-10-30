@@ -4748,3 +4748,232 @@ end;
 $$;
 revoke execute on function public.admin_suspicious_clear(uuid, bigint) from public, anon;
 grant execute on function public.admin_suspicious_clear(uuid, bigint) to authenticated;
+
+
+-- ---------------------------------------------------------------------------
+-- Russian roulette: run this part once (after "Stock market" and "Bet limits by level"). Two players, one
+-- revolver with six chambers and one live round. They take turns pulling the trigger; whoever gets the live
+-- round loses everything to the other: credits, goodies and shares, and starts again from the start (like an
+-- admin reset). Everything happens here in the database, the pages only show it. Each player can play once
+-- per day (German time), from level 3 (or Prestige). A turn left alone for 45 seconds counts as lost.
+create table if not exists public.rr_games (
+  id bigint generated always as identity primary key,
+  challenger uuid not null references public.players (id) on delete cascade,
+  opponent uuid not null references public.players (id) on delete cascade,
+  c_name text not null,
+  o_name text not null,
+  status text not null default 'pending' check (status in ('pending', 'active', 'done', 'declined', 'expired', 'cancelled')),
+  bullet smallint,
+  shot smallint not null default 0,
+  turn uuid,
+  turn_at timestamptz,
+  created_at timestamptz not null default now(),
+  started_at timestamptz,
+  ended_at timestamptz,
+  winner uuid,
+  loser uuid,
+  reason text,
+  pot_credits bigint,
+  pot_goodies integer
+);
+create index if not exists rr_games_open on public.rr_games (status) where status in ('pending', 'active');
+create index if not exists rr_games_players on public.rr_games (challenger, opponent, created_at desc);
+alter table public.rr_games enable row level security;
+revoke all on public.rr_games from anon, authenticated;
+
+create or replace function public.rr_day(t timestamptz) returns date language sql stable as $$ select (t at time zone 'Europe/Berlin')::date $$;
+
+-- played today = a game that started today (declined or expired challenges don't count)
+create or replace function public.rr_played_today(p uuid) returns boolean language sql stable security definer set search_path = public as $$
+  select exists (select 1 from public.rr_games where (challenger = p or opponent = p) and started_at is not null and public.rr_day(started_at) = public.rr_day(now()))
+$$;
+revoke execute on function public.rr_played_today(uuid) from public, anon, authenticated;
+
+-- the loser's credits, goodies and shares go to the winner, the loser starts over
+create or replace function public.rr_settle(g public.rr_games, lose uuid, why text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  win uuid := case when lose = g.challenger then g.opponent else g.challenger end;
+  w public.players;
+  l public.players;
+  wg jsonb;
+  wo jsonb;
+  lo jsonb;
+  k text;
+  v jsonb;
+  moved integer := 0;
+  start_credits bigint := coalesce((select (data ->> 'startCredits')::bigint from public.settings where id = 1), 500);
+begin
+  perform 1 from public.players where id in (win, lose) order by id for update;
+  select * into w from public.players where id = win;
+  select * into l from public.players where id = lose;
+  begin wg := coalesce(w.game::jsonb, '{}'::jsonb); exception when others then wg := '{}'::jsonb; end;
+  begin lo := coalesce(l.game::jsonb -> 'owned', '{}'::jsonb); exception when others then lo := '{}'::jsonb; end;
+  wo := case when jsonb_typeof(wg -> 'owned') = 'object' then wg -> 'owned' else '{}'::jsonb end;
+  if jsonb_typeof(lo) = 'object' then
+    for k, v in select * from jsonb_each(lo) loop
+      if jsonb_typeof(v) = 'number' and (v #>> '{}')::numeric > 0 then
+        if coalesce((wo ->> k)::numeric, 0) < (v #>> '{}')::numeric then wo := jsonb_set(wo, array[k], v); moved := moved + 1; end if;
+      elsif v = 'true'::jsonb then
+        if coalesce(wo -> k, 'false'::jsonb) <> 'true'::jsonb then wo := jsonb_set(wo, array[k], 'true'::jsonb); moved := moved + 1; end if;
+      end if;
+    end loop;
+  end if;
+  wg := jsonb_set(wg, '{owned}', wo);
+  -- the winner's page takes over the goodies when it sees this mark
+  wg := jsonb_set(wg, '{rrAt}', to_jsonb(floor(extract(epoch from clock_timestamp()) * 1000)::bigint));
+  update public.players set credits = least(9007199254740991, credits + greatest(l.credits, 0)), game = wg::text,
+    admin_rev = admin_rev + 1, updated_at = now() where id = win;
+  -- shares change hands too
+  if to_regclass('public.stock_holdings') is not null then
+    insert into public.stock_holdings (player, stock, name, shares, cost)
+      select win, stock, w.name, shares, cost from public.stock_holdings where player = lose
+      on conflict (player, stock) do update set shares = public.stock_holdings.shares + excluded.shares, cost = public.stock_holdings.cost + excluded.cost;
+    delete from public.stock_holdings where player = lose;
+  end if;
+  update public.players set credits = start_credits, best = 0, level = 1, spins = 0, jackpots = 0, game = null, flair = null, prestige = 0,
+    admin_rev = admin_rev + 1, updated_at = now() where id = lose;
+  update public.rr_games set status = 'done', ended_at = now(), winner = win, loser = lose, reason = why,
+    pot_credits = greatest(l.credits, 0), pot_goodies = moved where id = g.id;
+end;
+$$;
+revoke execute on function public.rr_settle(public.rr_games, uuid, text) from public, anon, authenticated;
+
+-- old challenges run out, a turn left alone too long is lost
+create or replace function public.rr_tidy(p uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  g public.rr_games;
+begin
+  update public.rr_games set status = 'expired', ended_at = now() where status = 'pending' and created_at < now() - interval '90 seconds';
+  for g in select * from public.rr_games where status = 'active' and (challenger = p or opponent = p) and turn_at < now() - interval '45 seconds' for update loop
+    perform public.rr_settle(g, g.turn, 'timeout');
+  end loop;
+end;
+$$;
+revoke execute on function public.rr_tidy(uuid) from public, anon, authenticated;
+
+create or replace function public.rr_view(g public.rr_games) returns jsonb language sql stable as $$
+  select case when g.id is null then null else jsonb_build_object('id', g.id, 'status', g.status, 'challenger', g.challenger, 'opponent', g.opponent,
+    'c_name', g.c_name, 'o_name', g.o_name, 'shot', g.shot, 'turn', g.turn, 'turn_at', floor(extract(epoch from g.turn_at) * 1000),
+    'created_at', floor(extract(epoch from g.created_at) * 1000), 'winner', g.winner, 'loser', g.loser, 'reason', g.reason,
+    'pot_credits', g.pot_credits, 'pot_goodies', g.pot_goodies, 'ended_at', floor(extract(epoch from g.ended_at) * 1000),
+    -- where the live round was: only once it's over
+    'bullet', case when g.status = 'done' then g.bullet end) end
+$$;
+
+create or replace function public.rr_state()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  me uuid := auth.uid();
+  g public.rr_games;
+  last public.rr_games;
+begin
+  if me is null then raise exception 'not allowed'; end if;
+  perform public.rr_tidy(me);
+  select * into g from public.rr_games where status in ('pending', 'active') and (challenger = me or opponent = me) order by id desc limit 1;
+  select * into last from public.rr_games where status in ('done', 'declined', 'expired', 'cancelled') and (challenger = me or opponent = me)
+    and coalesce(ended_at, created_at) > now() - interval '3 minutes' order by id desc limit 1;
+  return jsonb_build_object('now', floor(extract(epoch from clock_timestamp()) * 1000), 'played', public.rr_played_today(me),
+    'busy', coalesce((select jsonb_agg(x) from (select challenger as x from public.rr_games where status in ('pending', 'active') union select opponent from public.rr_games where status in ('pending', 'active')) s), '[]'::jsonb),
+    'today', coalesce((select jsonb_agg(x) from (select challenger as x from public.rr_games where started_at is not null and public.rr_day(started_at) = public.rr_day(now())
+      union select opponent from public.rr_games where started_at is not null and public.rr_day(started_at) = public.rr_day(now())) s), '[]'::jsonb),
+    'game', public.rr_view(g), 'last', public.rr_view(last));
+end;
+$$;
+
+create or replace function public.rr_challenge(target uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  me public.players;
+  them public.players;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  perform public.rr_tidy(auth.uid());
+  select * into me from public.players where id = auth.uid();
+  select * into them from public.players where id = target;
+  if me.id is null or me.is_banned then raise exception 'not allowed'; end if;
+  if them.id is null or them.is_banned or them.id = me.id then raise exception 'no such player'; end if;
+  if (me.level < 3 and me.prestige = 0) or (them.level < 3 and them.prestige = 0) then raise exception 'level 3 first'; end if;
+  if public.rr_played_today(me.id) or public.rr_played_today(them.id) then raise exception 'played today'; end if;
+  if exists (select 1 from public.rr_games where status in ('pending', 'active') and (challenger in (me.id, them.id) or opponent in (me.id, them.id))) then raise exception 'busy'; end if;
+  insert into public.rr_games (challenger, opponent, c_name, o_name) values (me.id, them.id, me.name, them.name);
+  return public.rr_state();
+end;
+$$;
+
+create or replace function public.rr_respond(game bigint, accept boolean)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  g public.rr_games;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  perform public.rr_tidy(auth.uid());
+  select * into g from public.rr_games where id = game for update;
+  if g.id is null or g.status <> 'pending' then raise exception 'gone'; end if;
+  if auth.uid() = g.challenger and not accept then
+    update public.rr_games set status = 'cancelled', ended_at = now() where id = g.id;
+  elsif auth.uid() <> g.opponent then raise exception 'not allowed';
+  elsif not accept then
+    update public.rr_games set status = 'declined', ended_at = now() where id = g.id;
+  else
+    if public.rr_played_today(g.challenger) or public.rr_played_today(g.opponent) then raise exception 'played today'; end if;
+    -- the cylinder is spun once: one live round in six chambers; who starts is a coin toss
+    update public.rr_games set status = 'active', started_at = now(), bullet = 1 + floor(random() * 6)::smallint, shot = 0,
+      turn = case when random() < 0.5 then g.challenger else g.opponent end, turn_at = now() where id = g.id;
+  end if;
+  return public.rr_state();
+end;
+$$;
+
+create or replace function public.rr_pull(game bigint)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  g public.rr_games;
+  bang boolean;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  perform public.rr_tidy(auth.uid());
+  select * into g from public.rr_games where id = game for update;
+  if g.id is null or g.status <> 'active' then raise exception 'gone'; end if;
+  if g.turn <> auth.uid() then raise exception 'not your turn'; end if;
+  bang := g.shot + 1 = g.bullet;
+  update public.rr_games set shot = shot + 1, turn = case when bang then turn when turn = challenger then opponent else challenger end, turn_at = now()
+    where id = g.id returning * into g;
+  if bang then perform public.rr_settle(g, auth.uid(), 'shot'); end if;
+  return public.rr_state();
+end;
+$$;
+
+revoke execute on function public.rr_state() from public, anon;
+revoke execute on function public.rr_challenge(uuid) from public, anon;
+revoke execute on function public.rr_respond(bigint, boolean) from public, anon;
+revoke execute on function public.rr_pull(bigint) from public, anon;
+grant execute on function public.rr_state() to authenticated;
+grant execute on function public.rr_challenge(uuid) to authenticated;
+grant execute on function public.rr_respond(bigint, boolean) to authenticated;
+grant execute on function public.rr_pull(bigint) to authenticated;
