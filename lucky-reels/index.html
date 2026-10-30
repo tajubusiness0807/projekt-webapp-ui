@@ -2264,6 +2264,9 @@ body.has-reset .profile-card { max-height: calc(100dvh - var(--tbb, 40px) - 42px
 @media (prefers-reduced-motion: reduce) { .event-bar.live { animation: none; } }
 .gp-ev { position: absolute; top: 10px; right: 12px; padding: 2px 8px; border-radius: 999px; background: linear-gradient(90deg, #e9a23b, #ffd36b); color: #1d1410; font: 700 11px var(--font-mono); box-shadow: 0 0 12px #e9a23b88; }
 .gp-ev[hidden] { display: none; }
+/* with players shown in the top right corner, the event tag moves below them */
+.game-pick:has(.gp-players) .gp-ev, .game-pick:has(.gp-last) .gp-ev, .game-pick:has(.gp-players) .gp-last { top: 38px; }
+.game-pick:has(.gp-players):has(.gp-last) .gp-ev { top: 64px; }
 .ware[data-sale]:not([data-sale=""])::after { content: attr(data-sale); position: absolute; top: 2px; right: 6px; z-index: 2; padding: 2px 7px; border-radius: 999px; background: var(--lose); color: #fff; font: 700 11px var(--font-mono); transform: rotate(6deg); box-shadow: 0 4px 10px #0008; }
 .ev-modal .news-card { border-color: #ffd36b; box-shadow: 0 0 0 4px #ffd36b33, 0 0 60px -10px #e9a23b, 0 30px 70px -20px #000; }
 .ev-pop { border-color: #ffd36b; box-shadow: 0 10px 30px #000a, 0 0 20px #ffd36b55; }
