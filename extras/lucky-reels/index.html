@@ -3774,6 +3774,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
             <span><b>New version online?</b> Ask everyone who has the game open to reload the page.</span>
             <textarea id="reloadNotesIn" maxlength="2000" rows="4" placeholder="Patch notes (optional). One change per line; lines starting with - become a list." aria-label="Patch notes"></textarea>
             <button class="abtn" type="button" id="askReload">Ask everyone to reload</button>
+            <button class="abtn warn" type="button" id="forceReload">Force reload now</button>
           </div>
           <div class="admin-row setting wide">
             <button class="abtn ok" type="submit">Save settings</button>
@@ -4232,6 +4233,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     '🏁 Who got there first?': '🏁 Wer war zuerst da?', 'Mark': 'Marke', 'already above it when the list started': 'war schon drüber, als die Liste startete', 'This needs the “Milestones” part of supabase-setup.sql.': 'Dafür brauchst du den Teil „Milestones“ aus supabase-setup.sql.',
     'account since today': 'Konto seit heute', 'account since 1 day': 'Konto seit 1 Tag', 'Refund lotto tickets': 'Lotto-Lose erstatten', 'Refund': 'Erstatten', 'refunded': 'erstattet', 'Winner': 'Gewinner', 'not drawn yet: a refunded ticket leaves the drum': 'noch nicht gezogen: ein erstattetes Los kommt aus der Trommel', 'Give it back?': 'Zurückgeben?', 'The tickets are refunded.': 'Die Lose sind erstattet.', 'The ticket is refunded.': 'Das Los ist erstattet.', 'No lotto tickets in the last 14 days.': 'Keine Lotto-Lose in den letzten 14 Tagen.', 'This needs the “Account age and lotto refunds” part of supabase-setup.sql.': 'Dafür brauchst du den Teil „Account age and lotto refunds“ aus supabase-setup.sql.',
     "Events and the happy hour don't raise Chicken wins.": 'Events und die Happy Hour erhöhen bei Chicken keine Gewinne.',
+    'Force reload now': 'Neuladen erzwingen', 'Reload everyone?': 'Alle neu laden?', 'The game reloads in 3 seconds.': 'Das Spiel lädt in 3 Sekunden neu.', 'Every open page saves and reloads in 3 seconds (yours stays).': 'Jede offene Seite speichert und lädt in 3 Sekunden neu (deine bleibt).',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -4768,13 +4770,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     adOn: true, adEvery: 5, adLock: 3,
     affOn: true, affOneDevice: true, affNew: 4500, affPct: 5, affMax: 10000, affFixed: 0,
     // Set by the admin's "ask everyone to reload" button; pages that see it go up show a reload prompt.
-    reloadAt: 0,
+    reloadAt: 0, forceReloadAt: 0,
   };
   // Payout settings saved before the economy rework (econ 2) fall back to the new defaults.
   const ECON_KEYS = ['jackpotPay', 'starGoal', 'freeSpins', 'freeMult', 'nudgeChance', 'holdChance'];
   const SETTING_LIMITS = {
     startCredits: [0, 1e12], winMultiplier: [0.1, 100], jackpotPay: [1, 100000], maxBet: [0, Number.MAX_SAFE_INTEGER],
-    starGoal: [3, 50], freeSpins: [1, 50], freeMult: [1, 20], nudgeChance: [0, 100], holdChance: [0, 100], econ: [0, 100], reloadAt: [0, Number.MAX_SAFE_INTEGER],
+    starGoal: [3, 50], freeSpins: [1, 50], freeMult: [1, 20], nudgeChance: [0, 100], holdChance: [0, 100], econ: [0, 100], reloadAt: [0, Number.MAX_SAFE_INTEGER], forceReloadAt: [0, Number.MAX_SAFE_INTEGER],
     adEvery: [1, 1440], adLock: [0, 30],
     affNew: [0, 1000000], affPct: [0, 100], affMax: [0, 1e9], affFixed: [0, 1000000],
   };
@@ -10538,6 +10540,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   });
   // Patch notes: shown with the update request, and once more after the reload as "what's new"
   const NOTES_LS = 'lucky-reels-notes-seen';
+  let forceSeen = null;
   let notesChecked = false;
   function renderNotes(text) {
     const box = $('reloadNotes');
@@ -12279,6 +12282,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (reloadSeen === null) reloadSeen = settings.reloadAt;
     else if (settings.reloadAt > reloadSeen) { reloadSeen = settings.reloadAt; showReload(false); }
     if (!notesChecked && settings.reloadAt) { notesChecked = true; setTimeout(showNotesOnce, 1500); }
+    // forced by an admin: save, then reload in 3 seconds (only a newer request than the one at page load)
+    if (forceSeen === null) forceSeen = settings.forceReloadAt;
+    else if (settings.forceReloadAt > forceSeen) {
+      forceSeen = settings.forceReloadAt;
+      toast('Update', 'The game reloads in 3 seconds.');
+      flush().finally(() => setTimeout(() => location.reload(), 3000));
+    }
     if (typeof renderAffHint === 'function') try { renderAffHint(); } catch {}
     STAR_GOAL = settings.starGoal;
     FREE_SPINS = settings.freeSpins;
@@ -13029,6 +13039,17 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       await backend.admin.saveSettings(patch);
       applySettings({ ...rawSettings, ...patch });
       fillSettingsForm();
+    });
+  });
+  $('forceReload').addEventListener('click', e => {
+    if (!confirmed(e.currentTarget, 'Reload everyone?')) return;
+    const at = Date.now(), notes = $('reloadNotesIn').value.replace(/\r/g, '').trim().slice(0, 2000);
+    adminDo('Every open page saves and reloads in 3 seconds (yours stays).', async () => {
+      forceSeen = at;
+      reloadSeen = at;
+      // with notes, everyone sees them after the reload as "what's new"
+      await backend.admin.saveSettings(notes ? { forceReloadAt: at, reloadAt: at, reloadNotes: notes } : { forceReloadAt: at });
+      if (notes) { rawSettings.reloadNotes = notes; try { localStorage.setItem(NOTES_LS, String(at)); } catch {} $('reloadNotesIn').value = ''; }
     });
   });
   $('askReload').addEventListener('click', e => {
