@@ -4436,3 +4436,81 @@ end;
 $$;
 drop trigger if exists players_keep_job on public.players;
 create trigger players_keep_job before update on public.players for each row execute function public.players_keep_job();
+
+
+-- ---------------------------------------------------------------------------
+-- Admin: Lucky Burger career: run this part once (after "Lucky Burger career is kept"). The admin menu
+-- can set a player's Lucky Burger position (up or down). The save gets a newer jobReset mark, so the
+-- player's page takes the new career, and a page that hasn't seen it yet can't save the old one back.
+create or replace function public.admin_set_job(tok uuid, target uuid, new_worked integer, new_pos integer)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  g jsonb;
+begin
+  perform public.admin_check(tok);
+  if new_worked is null or new_worked < 0 or new_worked > 10000000 or new_pos is null or new_pos < 0 or new_pos > 7 then raise exception 'bad career'; end if;
+  select game::jsonb into g from public.players where id = target for update;
+  if not found then raise exception 'no such player'; end if;
+  if g is null then raise exception 'no save yet'; end if;
+  g := jsonb_set(g, '{job}', coalesce(case when jsonb_typeof(g -> 'job') = 'object' then g -> 'job' end, '{}'::jsonb)
+    || jsonb_build_object('worked', new_worked, 'pos', new_pos));
+  g := jsonb_set(g, '{jobReset}', to_jsonb(floor(extract(epoch from clock_timestamp()) * 1000)::bigint));
+  update public.players set game = g::text, admin_rev = admin_rev + 1, updated_at = now() where id = target;
+end;
+$$;
+revoke execute on function public.admin_set_job(uuid, uuid, integer, integer) from public, anon;
+grant execute on function public.admin_set_job(uuid, uuid, integer, integer) to authenticated;
+
+create or replace function public.players_keep_job()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+declare
+  o jsonb;
+  n jsonb;
+  oj jsonb;
+  nj jsonb;
+  k text;
+  om numeric;
+  nm numeric;
+  fixed boolean := false;
+begin
+  if current_user <> 'authenticated' or new.game is null or old.game is null then return new; end if;
+  begin
+    o := old.game::jsonb;
+    n := new.game::jsonb;
+    oj := o -> 'job';
+    if oj is null or jsonb_typeof(oj) <> 'object' then return new; end if;
+    om := coalesce((o ->> 'jobReset')::numeric, 0);
+    nm := coalesce((n ->> 'jobReset')::numeric, 0);
+    -- "Start over" on the page: a newer mark, the lower career goes through
+    if nm > om then return new; end if;
+    if nm < om then
+      -- the page hasn't seen what an admin set yet: the admin's career stays
+      n := jsonb_set(jsonb_set(n, '{job}', oj), '{jobReset}', o -> 'jobReset');
+      fixed := true;
+    else
+      nj := case when jsonb_typeof(n -> 'job') = 'object' then n -> 'job' else '{}'::jsonb end;
+      foreach k in array array['worked', 'earned', 'shifts', 'pos'] loop
+        if coalesce((oj ->> k)::numeric, 0) > coalesce((nj ->> k)::numeric, 0) then
+          nj := jsonb_set(nj, array[k], oj -> k);
+          fixed := true;
+        end if;
+      end loop;
+      if fixed then n := jsonb_set(n, '{job}', nj); end if;
+    end if;
+  exception when others then return new;
+  end;
+  if fixed then
+    new.game := n::text;
+    -- the page that sent the old numbers reloads from the database
+    new.admin_rev := greatest(new.admin_rev, old.admin_rev + 1);
+  end if;
+  return new;
+end;
+$$;

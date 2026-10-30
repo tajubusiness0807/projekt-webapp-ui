@@ -3944,6 +3944,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Affiliate codes on': 'Affiliate-Codes an', 'Off: the code field is gone from the sign-up and nobody gets a bonus.': 'Aus: Das Code-Feld verschwindet bei der Anmeldung und niemand bekommt einen Bonus.', 'Only the first account on a device': 'Nur das erste Konto auf einem Gerät', 'Stops extra accounts on one phone just to collect the bonus.': 'Verhindert Zweitkonten auf einem Handy, nur um den Bonus abzugreifen.', 'Extra credits for the new player': 'Extra-Credits für den neuen Spieler', 'On top of the start credits.': 'Zusätzlich zu den Start-Credits.', 'Code owner: % of their credits': 'Code-Besitzer: % seiner Credits', 'Per new player, from what the owner has at that moment. 0 = none.': 'Pro neuem Spieler, von dem, was der Besitzer in dem Moment hat. 0 = nichts.', 'Code owner: at most (credits)': 'Code-Besitzer: höchstens (Credits)', 'Limit for the % part. 0 = no limit.': 'Obergrenze für den %-Teil. 0 = keine Grenze.', 'Code owner: fixed extra credits': 'Code-Besitzer: feste Extra-Credits', 'Always on top, also for owners with few credits.': 'Immer obendrauf, auch für Besitzer mit wenig Credits.', 'Save affiliate settings': 'Affiliate-Einstellungen speichern', 'Affiliate codes are off.': 'Affiliate-Codes sind aus.', 'Affiliate settings saved. They count for the next new player.': 'Affiliate-Einstellungen gespeichert. Sie gelten ab dem nächsten neuen Spieler.', 'Affiliate codes are switched off right now. Leave the field empty.': 'Affiliate-Codes sind gerade ausgeschaltet. Lass das Feld leer.',
     'Password': 'Passwort', 'Give this player a new password': 'Diesem Spieler ein neues Passwort geben', 'Change your own password in your profile': 'Dein eigenes Passwort änderst du in deinem Profil', 'Set password': 'Passwort setzen', 'This needs the “Admin: player passwords” part of supabase-setup.sql.': 'Dafür brauchst du den Teil „Admin: player passwords“ aus supabase-setup.sql.',
     'Advertisement': 'Werbung', 'Ad': 'Anzeige', 'Close the ad': 'Werbung schließen', 'Ad pop-up on': 'Werbe-Pop-up an', 'Every player sees the ad image again and again while they play.': 'Jeder Spieler sieht das Werbebild immer wieder, während er spielt.', 'Ad: every (minutes)': 'Werbung: alle (Minuten)', "Ad: can't be closed for (seconds)": 'Werbung: nicht wegklickbar für (Sekunden)',
+    'Set the Lucky Burger career': 'Lucky-Burger-Karriere einstellen', 'Set position': 'Position setzen', 'This needs the “Admin: Lucky Burger career” part of supabase-setup.sql.': 'Dafür brauchst du den Teil „Admin: Lucky Burger career“ aus supabase-setup.sql.', 'That player has not played yet, so there is no career to set.': 'Dieser Spieler hat noch nicht gespielt, es gibt noch keine Karriere zum Einstellen.',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -4142,7 +4143,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['New password for {a} (6+)', 'Neues Passwort für {a} (6+)'], ['{a} has a new password now. Tell it to them yourself.', '{a} hat jetzt ein neues Passwort. Sag es ihm selbst.'], ['{a} can get credits from level {b} on.', '{a} kann erst ab Level {b} Credits bekommen.'], ['Got a code from a friend? You start with {a} credits instead of {b} (first account on this device only).', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits (nur beim ersten Konto auf diesem Gerät).'], ['Got a code from a friend? You start with {a} credits instead of {b}.', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits.'], ['New players who use it start with {a} credits.', 'Neue Spieler, die ihn nutzen, starten mit {a} Credits.'], ['New players who sign up with your code start with {a} credits.', 'Neue Spieler, die sich mit deinem Code anmelden, starten mit {a} Credits.'], ['You get {a} on top.', 'Du bekommst {a} obendrauf.'], ['{a} extra credits', '{a} Extra-Credits'], ['{a}% of your credits (at most {b})', '{a} % deiner Credits (höchstens {b})'], ['{a}% of your credits', '{a} % deiner Credits'], ['Example: a new player starts with {a} credits. A code owner with 50,000 credits gets {b}, one with 500,000 gets {c}.', 'Beispiel: Ein neuer Spieler startet mit {a} Credits. Ein Code-Besitzer mit 50,000 Credits bekommt {b}, einer mit 500,000 bekommt {c}.'], ['ends in {a}', 'endet in {a}'], ['starts in {a}', 'beginnt in {a}'], ['Event gift: +{a} credits!', 'Event-Geschenk: +{a} Credits!'], ['event ×{a}', 'Event ×{a}'], ['1st place', '1. Platz'], ['2nd place', '2. Platz'], ['3rd place', '3. Platz'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['{a} now works as {b} at Lucky Burger.', '{a} arbeitet jetzt als {b} bei Lucky Burger.'], ['An admin made you {a}.', 'Ein Admin hat dich zu {a} gemacht.'], ['Lucky Burger position for {a}', 'Lucky-Burger-Position für {a}'], ['New password for {a} (6+)', 'Neues Passwort für {a} (6+)'], ['{a} has a new password now. Tell it to them yourself.', '{a} hat jetzt ein neues Passwort. Sag es ihm selbst.'], ['{a} can get credits from level {b} on.', '{a} kann erst ab Level {b} Credits bekommen.'], ['Got a code from a friend? You start with {a} credits instead of {b} (first account on this device only).', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits (nur beim ersten Konto auf diesem Gerät).'], ['Got a code from a friend? You start with {a} credits instead of {b}.', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits.'], ['New players who use it start with {a} credits.', 'Neue Spieler, die ihn nutzen, starten mit {a} Credits.'], ['New players who sign up with your code start with {a} credits.', 'Neue Spieler, die sich mit deinem Code anmelden, starten mit {a} Credits.'], ['You get {a} on top.', 'Du bekommst {a} obendrauf.'], ['{a} extra credits', '{a} Extra-Credits'], ['{a}% of your credits (at most {b})', '{a} % deiner Credits (höchstens {b})'], ['{a}% of your credits', '{a} % deiner Credits'], ['Example: a new player starts with {a} credits. A code owner with 50,000 credits gets {b}, one with 500,000 gets {c}.', 'Beispiel: Ein neuer Spieler startet mit {a} Credits. Ein Code-Besitzer mit 50,000 Credits bekommt {b}, einer mit 500,000 bekommt {c}.'], ['ends in {a}', 'endet in {a}'], ['starts in {a}', 'beginnt in {a}'], ['Event gift: +{a} credits!', 'Event-Geschenk: +{a} Credits!'], ['event ×{a}', 'Event ×{a}'], ['1st place', '1. Platz'], ['2nd place', '2. Platz'], ['3rd place', '3. Platz'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
     ['Rises in {a} of steps', 'Steigt in {a} der Schritte'], ['Usually {a} or {b}', 'Meist {a} oder {b}'], ['Swings: {a}', 'Schwankung: {a}'],
     ['Start {a} · bankrupt below {b} · takeover at {c}', 'Start {a} · Pleite unter {b} · Übernahme ab {c}'],
     ['Buy {a} for {b} · sell {c} for {d} (1% fee each way)', 'Kauf {a} für {b} · Verkauf {c} für {d} (je 1 % Gebühr)'],
@@ -10387,6 +10388,15 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           const doc = await store.load(id);
           await store.save(id, { level, adminRev: (Number(doc?.adminRev) || 0) + 1 });
         },
+        async setJob(id, worked, pos) {
+          const doc = await store.load(id);
+          let g = null;
+          try { g = doc?.game ? JSON.parse(doc.game) : null; } catch {}
+          if (!g) throw new Error('no save yet');
+          g.job = { ...(g.job || {}), worked, pos };
+          g.jobReset = Date.now();
+          await store.save(id, { game: JSON.stringify(g), adminRev: (Number(doc?.adminRev) || 0) + 1 });
+        },
         setAdmin: (id, make) => store.save(id, { admin: make }),
         async tickets() { return (Array.isArray(rawSettings.tickets) ? rawSettings.tickets : []).slice().reverse(); },
         async ticketUpdate(id, status, reply) {
@@ -10845,6 +10855,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         setMedals: (id, medals) => adminRpc('admin_set_medals', { target: id, new_medals: medals }),
         setTitle: (id, title) => adminRpc('admin_set_title', { target: id, new_title: title }),
         setLevel: (id, level) => adminRpc('admin_set_level', { target: id, new_level: level }),
+        setJob: (id, worked, pos) => adminRpc('admin_set_job', { target: id, new_worked: worked, new_pos: pos }),
         setAdmin: (id, make, pw) => adminRpc('admin_set_admin', { target: id, make, new_pw: pw ?? null }),
         deletePlayer: id => adminRpc('admin_delete_player', { target: id }),
         changePassword: pw => adminRpc('admin_change_password', { new_pw: pw }),
@@ -11943,7 +11954,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           state.adminRev = rev;
           let theirs = null;
           try { theirs = typeof doc.game === 'string' ? JSON.parse(doc.game) : doc.game; } catch {}
-          if (theirs?.job && !((state.jobReset || 0) > (Number(theirs.jobReset) || 0))) {
+          const theirMark = Number(theirs?.jobReset) || 0, myMark = state.jobReset || 0;
+          if (theirs?.job && theirMark > myMark) {
+            // an admin set the career
+            for (const k of ['worked', 'earned', 'shifts', 'pos']) state.job[k] = Math.max(0, Math.floor(Number(theirs.job[k]) || 0));
+            state.jobReset = theirMark;
+            jbRender();
+            toast('Lucky Burger', `An admin made you ${i18n(JB_POS[jbIdx()].name)}.`);
+          } else if (theirs?.job && theirMark === myMark) {
             const before = jbIdx();
             for (const k of ['worked', 'earned', 'shifts', 'pos']) state.job[k] = Math.max(state.job[k] || 0, Math.floor(Number(theirs.job[k]) || 0));
             if (jbIdx() > before) jbRender();
@@ -11996,6 +12014,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         : /remove yourself/i.test(e?.message || '') ? 'You cannot remove your own admin rights.'
         : /delete yourself/i.test(e?.message || '') ? 'You cannot delete your own account here.'
         : /admin rights first/i.test(e?.message || '') ? 'Remove their admin rights first, then delete the account.'
+        : /admin_set_job/i.test(e?.message || '') ? 'This needs the “Admin: Lucky Burger career” part of supabase-setup.sql.'
+        : /no save yet/i.test(e?.message || '') ? 'That player has not played yet, so there is no career to set.'
         : /admin_set_password|could not find the function/i.test(e?.message || '') ? 'This needs the “Admin: player passwords” part of supabase-setup.sql.'
         : /admin_hard_reset/.test(e?.message || '') ? 'The database does not have the hard reset yet: run the “Hard reset” part of supabase-setup.sql once.'
         : /admin_set_medals/.test(e?.message || '') ? 'The database does not have medals yet: run the “Profile pictures and medals” part of supabase-setup.sql once.'
@@ -12298,6 +12318,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           <button class="abtn" data-act="medals">Medals</button>
           <button class="abtn${p.title === 'bugabuser' ? ' warn' : ''}" data-act="title" title="${p.title === 'bugabuser' ? 'Take the title away again' : 'Give this player the title Bug Abuser'}">${p.title === 'bugabuser' ? 'Remove “Bug Abuser”' : '🐞 Bug Abuser'}</button>
           <button class="abtn" data-act="admin"${me ? ' disabled' : ''}>${p.admin ? 'Remove admin' : 'Make admin'}</button>
+          <button class="abtn" data-act="job" title="Set the Lucky Burger career">🍔 Burger</button>
           <button class="abtn" data-act="pw"${me ? ' disabled title="Change your own password in your profile"' : ' title="Give this player a new password"'}>Password</button>
           <span class="gap"></span>
           <button class="abtn warn" data-act="reset">Reset</button>
@@ -12372,6 +12393,18 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       const pw = tr.querySelector('.new-admin-pw').value;
       if (pw.length < 8) { adminSay('Admin passwords need at least 8 characters.', false); return; }
       adminDo(`${p.name} is now an admin. Tell them their admin password yourself.`, () => backend.admin.setAdmin(p.id, true, pw));
+    } else if (act === 'job') {
+      const acts = btn.closest('.acts');
+      acts.innerHTML = `<select class="new-job" aria-label="Lucky Burger position for ${esc(p.name)}">${JB_POS.map((x, i) => `<option value="${i}">${esc(i18n(x.name))} · ${x.wage} / 10 s</option>`).join('')}</select>` +
+        '<button class="abtn ok" data-act="job-ok">Set position</button><button class="abtn" data-act="admin-cancel">Cancel</button>';
+      acts.querySelector('select').focus();
+    } else if (act === 'job-ok') {
+      const i = Number(tr.querySelector('.new-job').value), pos = JB_POS[i];
+      if (!pos) return;
+      adminDo(`${p.name} now works as ${i18n(pos.name)} at Lucky Burger.`, async () => {
+        await backend.admin.setJob(p.id, pos.at, i);
+        renderAdminPlayers(true);
+      });
     } else if (act === 'pw') {
       // A player who forgot their password gets a new one; tell it to them yourself.
       const acts = btn.closest('.acts');
