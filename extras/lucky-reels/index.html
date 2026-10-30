@@ -4338,7 +4338,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const enText = new WeakMap(), deText = new WeakMap();
   const I18N_ATTRS = ['placeholder', 'title', 'aria-label'];
   // Never translate what players typed: chat messages and the like.
-  const I18N_SKIP = 'script, style, textarea, .lt-name, .st-nm, .news-title, .news-text, .msg .text, .chat-pop .text, .admin-msg span, .announce .ann-run, .pk-who b, .board .name, .neon-name, .hr-name, .hr-list .name, .ticket-subj, .ticket-body, .ticket-reply, .ticket-meta .name, .ev-t';
+  const I18N_SKIP = 'script, style, textarea, .lt-name, .st-nm, .news-title, .news-text, .msg .text, .chat-pop .text, .admin-msg span, .announce .ann-run, .pk-who b, .board .name, .neon-name, .hr-name, .hr-list .name, .ticket-subj, .ticket-body, .ticket-reply, .ticket-meta .name, .ev-t, .jp-amount';
   function trText(node) {
     const raw = node.data;
     if (deText.get(node) === raw || !/[A-Za-z]/.test(raw)) return;
@@ -4889,16 +4889,20 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const G = 0.35;
     const r = Math.random;
     let parts = [], emitters = [], running = false, W = innerWidth, H = innerHeight;
+    // how many particles at once: less on small screens, and less again while frames come too slowly
+    const capMax = () => (innerWidth < 700 ? 500 : 1000);
+    let cap = capMax(), lastFrame = 0;
     function start() {
       if (running) return;
       running = true;
-      const dpr = devicePixelRatio || 1;
+      // flying particles look the same at 1.5× and cost far less to draw than at a phone's 3×
+      const dpr = Math.min(1.5, devicePixelRatio || 1);
       W = innerWidth; H = innerHeight;
       cv.width = W * dpr; cv.height = H * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       requestAnimationFrame(tick);
     }
-    const add = p => { if (reduceMotion) return; if (parts.length < 1800) parts.push(p); start(); };
+    const add = p => { if (reduceMotion) return; if (parts.length < cap) parts.push(p); start(); };
     const api = {
       get W() { return W; }, get H() { return H; },
       coin(x, y, vx, vy) { add({ k: 'coin', x, y, vx, vy, r: 6 + r() * 8, s: r() * 6 }); },
@@ -4925,6 +4929,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       clear() { parts = []; emitters = []; ctx.clearRect(0, 0, W, H); },
     };
     function tick(now) {
+      const dt = lastFrame ? now - lastFrame : 16;
+      lastFrame = now;
+      if (dt > 24) cap = Math.max(200, Math.floor(cap * 0.85));
+      else if (dt < 18) cap = Math.min(capMax(), cap + 10);
+      if (parts.length > cap) parts.length = cap;
       emitters = emitters.filter(e => e.fn(now - e.t0) !== false);
       ctx.clearRect(0, 0, W, H);
       for (let i = parts.length - 1; i >= 0; i--) {
@@ -4934,7 +4943,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         else if (p.k === 'seven') { p.vy += 0.08; p.rot += p.vr; }
         else { p.rot += p.vr; p.vx += Math.sin(p.rot) * 0.05; }
         p.x += p.vx; p.y += p.vy;
-        if (p.y > H + 80 || (p.life !== undefined && p.life <= 0)) { parts.splice(i, 1); continue; }
+        if (p.y > H + 80 || (p.life !== undefined && p.life <= 0)) { parts[i] = parts[parts.length - 1]; parts.pop(); continue; }
 
         if (p.k === 'coin') {
           const w = Math.abs(Math.cos(p.s)) * p.r;
@@ -4965,7 +4974,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         }
       }
       if (parts.length || emitters.length) requestAnimationFrame(tick);
-      else { running = false; ctx.clearRect(0, 0, W, H); }
+      else { running = false; lastFrame = 0; ctx.clearRect(0, 0, W, H); }
     }
     return api;
   }
@@ -9810,6 +9819,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
       $('jpMult').textContent = `${mult}× your bet`;
       amount.textContent = '+0';
+      const creditsWord = i18n('credits');
       amount.classList.remove('pop');
       jp.classList.remove('out');
       jp.hidden = false;
@@ -9857,7 +9867,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         if (done) return;
         const t = Math.max(0, Math.min(1, (now - t0 - COUNT_START) / COUNT_LEN));
         const e = t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
-        amount.textContent = '+' + fmt(win * e) + ' credits';
+        // changes every frame: written in the page's language right here, so the translator doesn't have to look at it
+        amount.textContent = '+' + fmt(win * e) + ' ' + creditsWord;
         if (t > 0 && t < 1 && now - lastPing > 85) { sound.ping(e); lastPing = now; }
         if (t < 1) requestAnimationFrame(count);
         else { amount.classList.add('pop'); sound.finale(); }
@@ -11116,9 +11127,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   let seenTitle;
   function onPlayers(list) {
     for (const p of list) {
+      // Answers can arrive out of order, so an older list can briefly show a lower count; only a count above
+      // the highest one seen is a new jackpot (a reset to 0 starts the count again).
       const prev = seenJackpots.get(p.id);
-      if (boardPrimed && prev != null && p.jackpots > prev) jackpotOnBoard(p);
-      seenJackpots.set(p.id, p.jackpots);
+      if (boardPrimed && prev != null && p.jackpots > prev && !(performance.now() - (jackpotFlash.get(p.id) || -1e9) < 15000)) jackpotOnBoard(p);
+      seenJackpots.set(p.id, p.jackpots === 0 ? 0 : Math.max(prev ?? 0, p.jackpots));
     }
     boardPrimed = true;
     const meNow = account && list.find(p => p.id === account.id);
