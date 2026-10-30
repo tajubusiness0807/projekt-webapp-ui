@@ -8760,7 +8760,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const since = performance.now() - rkFetchAt;
     if (rkReady !== false || watching) {
       if (!rkCur || (rkCur.nextStart && now >= rkCur.nextStart)) { if (since > 1500) rkFetch(); }
-      else if (p.phase === 'fly' && (watching || (mine && mine.payout == null)) && since > (watching ? 250 : 1000)) rkFetch();
+      else if (p.phase === 'fly' && (watching || (mine && mine.payout == null)) && since > (watching ? 400 : 1000)) rkFetch();
       else if (p.phase === 'bet' && since > 15000) rkFetch();
     }
     // Auto cash-out as soon as the multiplier gets there (the database pays it anyway if this page is gone).
@@ -11073,8 +11073,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           if (data) cb(toPlayers(data));
         };
         pull();
-        sb.channel('players-board').on('postgres_changes', { event: '*', schema: 'public', table: 'players' }, pull).subscribe();
-        setInterval(pull, 30000);
+        // Polling instead of a live feed: with a feed, every save of every player made every page reload the
+        // whole list, so the load grew with the square of the players online until the database gave up.
+        let pulledAt = Date.now();
+        setInterval(() => { if (Date.now() - pulledAt >= (document.hidden ? 60000 : 5000)) { pulledAt = Date.now(); pull(); } }, 1000);
       },
     };
   }

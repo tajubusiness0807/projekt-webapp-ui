@@ -4608,3 +4608,16 @@ end;
 $$;
 drop trigger if exists players_keep_job on public.players;
 create trigger players_keep_job before update on public.players for each row execute function public.players_keep_job();
+
+
+-- ---------------------------------------------------------------------------
+-- Database load: run this part once. The pages no longer get a live feed of the players table (they ask
+-- every few seconds instead): with the feed, every save of every player was sent to every page, which then
+-- reloaded the whole player list, so the work grew with the square of the players online.
+do $$
+begin
+  if exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'players') then
+    alter publication supabase_realtime drop table public.players;
+  end if;
+end;
+$$;
