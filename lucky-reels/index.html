@@ -1527,8 +1527,14 @@ html[data-lang="de"] .reel.held::after { content: "GEHALTEN"; }
 @media (max-width: 600px) { .ad-close { top: -16px; right: -4px; } }
 @media (prefers-reduced-motion: reduce) { .ad-card { animation: none; } }
 .reload-info { font-weight: 400; color: var(--muted); line-height: 1.45; }
+.reload-notes { max-height: min(45vh, 360px); overflow: auto; margin: 0; padding: 12px 14px; border-radius: 12px; background: #0006; border: 1px solid #ffffff1a; text-align: left; font-size: 14px; line-height: 1.5; }
+.reload-notes ul { margin: 0; padding-left: 20px; }
+.reload-notes li { margin: 3px 0; }
+.reload-notes p { margin: 6px 0; }
+.reload-notes p:first-child { margin-top: 0; }
 .reload-row { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 10px; background: #e9a23b14; border: 1px dashed #e9a23b66; font-size: 13px; color: var(--muted); }
 .reload-row b { color: var(--fg); }
+.reload-row textarea { flex: 1 1 100%; width: 100%; resize: vertical; font: inherit; padding: 10px 12px; border-radius: 10px; border: 1px solid #ffffff22; background: #0006; color: var(--fg); }
 .pbadge { display: inline-block; width: 1.9em; height: 1.9em; margin-left: 3px; vertical-align: -0.55em; filter: drop-shadow(0 0 4px #ffd35588); animation: pGlow 2.4s ease-in-out infinite; }
 .pbadge svg { width: 100%; height: 100%; display: block; }
 .pbadge.rainbow { animation: pGlow 2.4s ease-in-out infinite, hue 3s linear infinite; }
@@ -3552,7 +3558,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   <div class="modal-card">
     <div class="eyebrow">Update</div>
     <h2 id="reloadTitle">New update!</h2>
-    <p class="wheel-result reload-info">Lucky Reels just got an update. Reload the page to get the newest version.</p>
+    <p class="wheel-result reload-info" id="reloadInfo">Lucky Reels just got an update. Reload the page to get the newest version.</p>
+    <div class="reload-notes news-text" id="reloadNotes" hidden></div>
     <div class="gamble-btns">
       <button type="button" class="chip-btn" id="reloadLater">Later</button>
       <button type="button" class="chip-btn reload-now" id="reloadNow">Reload now</button>
@@ -3752,6 +3759,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           </div>
           <div class="admin-row setting wide reload-row">
             <span><b>New version online?</b> Ask everyone who has the game open to reload the page.</span>
+            <textarea id="reloadNotesIn" maxlength="2000" rows="4" placeholder="Patch notes (optional). One change per line; lines starting with - become a list." aria-label="Patch notes"></textarea>
             <button class="abtn" type="button" id="askReload">Ask everyone to reload</button>
           </div>
           <div class="admin-row setting wide">
@@ -4207,6 +4215,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     '🔫 I challenge you to Russian roulette! Open the game (reload the page if nothing shows up): you have 2 minutes to accept.': '🔫 Ich fordere dich zum Russisch Roulette heraus! Öffne das Spiel (lade die Seite neu, falls nichts erscheint): Du hast 2 Minuten zum Annehmen.', 'Challenge!': 'Herausforderung!',
     'Played somewhere else': 'Woanders weitergespielt', 'Your game was saved on another device or tab. This page loads the newest state now.': 'Dein Spiel wurde auf einem anderen Gerät oder Tab gespeichert. Diese Seite lädt jetzt den neuesten Stand.',
     'Events and the happy hour count less in Plinko: they raise wins up to 5× by at most 15%.': 'Events und die Happy Hour zählen bei Plinko weniger: Sie erhöhen Gewinne bis 5× um höchstens 15 %.',
+    "What's new": 'Was ist neu', 'You have the newest version. This changed:': 'Du hast die neueste Version. Das hat sich geändert:', 'Lucky Reels just got an update. Reload the page to get the newest version. This changed:': 'Lucky Reels hat gerade ein Update bekommen. Lade die Seite neu, um die neueste Version zu bekommen. Das hat sich geändert:', 'Patch notes (optional). One change per line; lines starting with - become a list.': 'Patch Notes (optional). Eine Änderung pro Zeile; Zeilen mit - am Anfang werden zur Liste.', 'Patch notes': 'Patch Notes', 'Everyone with the game open now sees “New update – please reload” with your patch notes.': 'Alle, die das Spiel offen haben, sehen jetzt „Neues Update – bitte neu laden“ mit deinen Patch Notes.', 'Got it': 'Verstanden',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -10496,7 +10505,48 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (!$('profileModal').hidden) renderProfile();
   });
   $('reloadNow').addEventListener('click', async () => { try { await flush(); } catch {} location.reload(); });
-  $('reloadLater').addEventListener('click', () => { $('reloadModal').hidden = true; });
+  $('reloadLater').addEventListener('click', () => {
+    $('reloadModal').hidden = true;
+    if ($('reloadModal').dataset.notes) { try { localStorage.setItem(NOTES_LS, String(settings.reloadAt)); } catch {} }
+  });
+  // Patch notes: shown with the update request, and once more after the reload as "what's new"
+  const NOTES_LS = 'lucky-reels-notes-seen';
+  let notesChecked = false;
+  function renderNotes(text) {
+    const box = $('reloadNotes');
+    box.hidden = !text;
+    if (!text) { box.innerHTML = ''; return; }
+    const blocks = [];
+    for (const line of text.split('\n')) {
+      const t = line.trim();
+      if (!t) continue;
+      const item = /^[-•*]\s*/.test(t);
+      const html = esc(t.replace(/^[-•*]\s*/, ''));
+      if (item) { if (blocks.at(-1)?.list) blocks.at(-1).items.push(html); else blocks.push({ list: true, items: [html] }); }
+      else blocks.push({ list: false, html });
+    }
+    box.innerHTML = blocks.map(b => b.list ? `<ul>${b.items.map(i => `<li>${i}</li>`).join('')}</ul>` : `<p>${b.html}</p>`).join('');
+  }
+  function showReload(after) {
+    const notes = String(rawSettings?.reloadNotes || '');
+    renderNotes(notes);
+    ltSet($('reloadTitle'), 'textContent', after ? "What's new" : 'New update!');
+    ltSet($('reloadInfo'), 'textContent', after ? 'You have the newest version. This changed:' : notes ? 'Lucky Reels just got an update. Reload the page to get the newest version. This changed:' : 'Lucky Reels just got an update. Reload the page to get the newest version.');
+    $('reloadNow').hidden = after;
+    ltSet($('reloadLater'), 'textContent', after ? 'Got it' : 'Later');
+    $('reloadModal').dataset.notes = after ? '1' : '';
+    $('reloadModal').hidden = false;
+    (after ? $('reloadLater') : $('reloadNow')).focus();
+  }
+  // after a reload (within two days of the update): the notes once, if they weren't read yet
+  function showNotesOnce() {
+    const at = Number(settings.reloadAt) || 0, notes = String(rawSettings?.reloadNotes || '');
+    let seen = 0;
+    try { seen = Number(localStorage.getItem(NOTES_LS)) || 0; } catch {}
+    if (!notes || at <= seen || Date.now() - at > 2 * 86400000) return;
+    if (!account || !$('reloadModal').hidden || !$('newsModal').hidden) { setTimeout(showNotesOnce, 3000); return; }
+    showReload(true);
+  }
   // Starting over wipes the whole game, so it asks first.
   $('refill').addEventListener('click', () => {
     if (gameBusy()) return;
@@ -12178,7 +12228,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     rawSettings = raw || {};
     settings = cleanSettings(raw);
     if (reloadSeen === null) reloadSeen = settings.reloadAt;
-    else if (settings.reloadAt > reloadSeen) { reloadSeen = settings.reloadAt; $('reloadModal').hidden = false; $('reloadNow').focus(); }
+    else if (settings.reloadAt > reloadSeen) { reloadSeen = settings.reloadAt; showReload(false); }
+    if (!notesChecked && settings.reloadAt) { notesChecked = true; setTimeout(showNotesOnce, 1500); }
     if (typeof renderAffHint === 'function') try { renderAffHint(); } catch {}
     STAR_GOAL = settings.starGoal;
     FREE_SPINS = settings.freeSpins;
@@ -12868,10 +12919,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   });
   $('askReload').addEventListener('click', e => {
     if (!confirmed(e.currentTarget, 'Send to everyone?')) return;
-    const at = Date.now();
-    adminDo('Everyone with the game open now sees “New update – please reload”.', async () => {
+    const at = Date.now(), notes = $('reloadNotesIn').value.replace(/\r/g, '').trim().slice(0, 2000);
+    adminDo(notes ? 'Everyone with the game open now sees “New update – please reload” with your patch notes.' : 'Everyone with the game open now sees “New update – please reload”.', async () => {
       reloadSeen = at;
-      await backend.admin.saveSettings({ reloadAt: at });
+      await backend.admin.saveSettings({ reloadAt: at, reloadNotes: notes });
+      rawSettings.reloadNotes = notes;
+      // the sender has read them
+      try { localStorage.setItem(NOTES_LS, String(at)); } catch {}
+      $('reloadNotesIn').value = '';
     });
   });
   $('settingsDefaults').addEventListener('click', e => {
