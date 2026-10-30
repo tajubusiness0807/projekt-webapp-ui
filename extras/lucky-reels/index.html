@@ -4567,8 +4567,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const keys = [];
     const parts = en.split(/\{([a-j])\}/);
     const src = parts.map((part, i) => i % 2 ? (keys.push(part), '(.+?)') : part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('');
-    return [new RegExp('^' + src + '$', 's'), keys, de];
-  });
+    return [new RegExp('^' + src + '$', 's'), keys, de, parts.filter((_, i) => i % 2 === 0).join('').length];
+  // the most specific pattern first: a short one like "{a} wins {b}" must not catch a long rules text
+  }).sort((x, y) => y[3] - x[3]);
   const LANG_KEY = 'lucky-reels-lang';
   let lang = (() => { try { const v = localStorage.getItem(LANG_KEY); if (v === 'de' || v === 'en') return v; } catch {} return /^de\b/i.test(navigator.language || '') ? 'de' : 'en'; })();
   const deCache = new Map();
@@ -4732,7 +4733,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const LOOPS = 6;
   const MAX = Number.MAX_SAFE_INTEGER;
   let STAR_GOAL = 15;
-  let FREE_SPINS = 6;
+  let FREE_SPINS = 8;
   let FREE_MULT = 2;
   const STREAK_STEP = 0.1;
   const STREAK_MAX = 5;
@@ -4757,8 +4758,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const DEFAULT_SETTINGS = {
     announcement: '', signupsOpen: true, chatEnabled: true, maintenance: false,
     startCredits: 500, winMultiplier: 1, jackpotPay: 150, maxBet: 0,
-    starGoal: 15, freeSpins: 6, freeMult: 2, nudgeChance: 12, holdChance: 15,
-    econ: 2,
+    starGoal: 15, freeSpins: 8, freeMult: 2, nudgeChance: 12, holdChance: 15,
+    // econ 3: eight free spins instead of six; saved payout settings from before fall back to these defaults
+    econ: 3,
     // Affiliate codes: what a new player and the code owner get
     // The ad pop-up: how often (minutes) and how long it can't be closed (seconds)
     adOn: true, adEvery: 5, adLock: 3,
