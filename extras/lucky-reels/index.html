@@ -3250,6 +3250,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       </div>
       <details class="bj-rules">
         <summary>Coin flip rules</summary>
+        <p class="note">Events and the happy hour don't raise coin flip wins.</p>
         <p class="note">Pick heads (crown) or tails (star), set a bet and flip. If the coin shows your side the stake doubles, and you choose: cash out, or let it ride and flip again for ×4, ×8, ×16 and so on. One wrong side and everything on the coin is gone. You may switch sides between flips. Ten wins in a row (×1,024) is the most a coin can carry: then it pays out by itself. Once in 10,000 flips (0.01%) the coin lands on its edge: then the stake on the coin is multiplied by 10, whichever side you picked. Space flips the coin.</p>
       </details>
     </section>
@@ -4234,6 +4235,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'account since today': 'Konto seit heute', 'account since 1 day': 'Konto seit 1 Tag', 'Refund lotto tickets': 'Lotto-Lose erstatten', 'Refund': 'Erstatten', 'refunded': 'erstattet', 'Winner': 'Gewinner', 'not drawn yet: a refunded ticket leaves the drum': 'noch nicht gezogen: ein erstattetes Los kommt aus der Trommel', 'Give it back?': 'Zurückgeben?', 'The tickets are refunded.': 'Die Lose sind erstattet.', 'The ticket is refunded.': 'Das Los ist erstattet.', 'No lotto tickets in the last 14 days.': 'Keine Lotto-Lose in den letzten 14 Tagen.', 'This needs the “Account age and lotto refunds” part of supabase-setup.sql.': 'Dafür brauchst du den Teil „Account age and lotto refunds“ aus supabase-setup.sql.',
     "Events and the happy hour don't raise Chicken wins.": 'Events und die Happy Hour erhöhen bei Chicken keine Gewinne.',
     'Force reload now': 'Neuladen erzwingen', 'Reload everyone?': 'Alle neu laden?', 'The game reloads in 3 seconds.': 'Das Spiel lädt in 3 Sekunden neu.', 'Every open page saves and reloads in 3 seconds (yours stays).': 'Jede offene Seite speichert und lädt in 3 Sekunden neu (deine bleibt).',
+    "Events and the happy hour don't raise coin flip wins.": 'Events und die Happy Hour erhöhen beim Münzwurf keine Gewinne.',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
     'The horses are going to the post.': 'Die Pferde gehen an den Start.', 'They are in the gates.': 'Sie sind in den Boxen.',
@@ -5518,6 +5520,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     gambleOffer = 0;
     state.credits -= cost;
     state.spins++;
+    // saved now: reloading when the reels look bad must not bring the stake or the free spin back
+    flush();
     reels.forEach(r => r.classList.remove('win', 'star', 'wild'));
     cabinet.classList.add('spinning');
     say(free ? `Free spin ${freeDone} · wins ×${FREE_MULT}` : raised ? 'Bet raised, so the holds are off. Spinning…' : holds.some(Boolean) ? 'Spinning the reels you did not hold…' : 'Spinning…', free ? 'bonus' : '');
@@ -5750,6 +5754,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     gambleOffer = 0;
     state.credits -= stake;
     render();
+    flush();
     const modal = $('gambleModal'), hi = $('gHi'), lo = $('gLo'), collect = $('gCollect');
     const ladder = [...$('ladder').children];
     showCard($('cardNow'), card);
@@ -5848,6 +5853,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     return shoe;
   }
   const bjDraw = () => { if (!state.bj.shoe.length) state.bj.shoe = bjShuffle(); return state.bj.shoe.pop(); };
+  // A card is saved in its hand before it is turned over, so reloading can't undo a hit or peek at the shoe.
+  const bjCommit = () => flushNow();
   const bjRound = () => state.bj.round;
   const bjActive = () => !!bjRound() && bjRound().phase !== 'done';
   const bjHand = () => { const r = bjRound(); return r?.phase === 'player' ? r.hands[r.active] : null; };
@@ -6027,9 +6034,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     for (const to of ['p', 'd', 'p', 'd']) {
       const card = bjDraw();
       (to === 'p' ? r.hands[0].cards : r.dealer).push(card);
+      const pause = bjWait(340);
+      await bjCommit();
       sound.card();
       renderBJTable();
-      await bjWait(340);
+      await pause;
     }
     // The dealer checks for blackjack straight away; a player blackjack ends the hand too.
     if (bjNatural(r.hands[0]) || bjTotal(r.dealer).total === 21) await bjFinish();
@@ -6050,6 +6059,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (kind === 'hit' || kind === 'double') {
       if (kind === 'double') { state.credits -= h.bet; h.bet *= 2; sound.chip(); }
       h.cards.push(bjDraw());
+      await bjCommit();
       sound.card();
       renderBJTable();
       render();
@@ -6080,7 +6090,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       renderBJTable();
       render();
       await bjWait(300);
-      for (const hand of r.hands) { hand.cards.push(bjDraw()); sound.card(); renderBJTable(); await bjWait(340); }
+      for (const hand of r.hands) { hand.cards.push(bjDraw()); await bjCommit(); sound.card(); renderBJTable(); await bjWait(340); }
       if (bjRank(a) === 0) {
         // Split aces get one card each.
         r.hands.forEach(x => { x.done = true; });
@@ -6111,6 +6121,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const r = bjRound();
     r.phase = 'dealer';
     r.hole = false;
+    await bjCommit();
     renderBJTable();
     $('dealerHand').children[1]?.classList.add('flip');
     sound.card();
@@ -6121,6 +6132,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       while (bjTotal(r.dealer).total < 17) {
         bjSay(`Dealer has ${bjTotal(r.dealer).total} and draws…`);
         r.dealer.push(bjDraw());
+        await bjCommit();
         sound.card();
         renderBJTable();
         await bjWait(600);
@@ -7141,6 +7153,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     state.pl.bet = bet;
     state.credits -= bet;
     state.pl.pending.push({ id, pay });
+    if (Date.now() - (plDrop.savedAt || 0) > 1500) { plDrop.savedAt = Date.now(); flush(); }
     state.pl.drops++;
     const ball = { id, bet, pay, mult, slot, path, rights, gold, x: PL_W / 2 + (Math.random() - 0.5) * plBoard.g * 0.2, y: PL_TOP - plBoard.rowGap * 0.9, vx: (Math.random() - 0.5) * 30, vy: 0, row: -1 };
     if (reduceMotion) { plLand(ball); render(); return true; }
@@ -7469,7 +7482,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const cfSay = (text, kind = '') => showMessage($('cfMsg'), text, kind);
   // A won flip can ride: the stake stays on the coin and doubles with every win (×2, ×4, ×8, …) until you cash out or lose.
   const cfRound = () => state.cf.round;
-  const cfPayOf = r => happyPay(r.bet, r.mult, 'cf');
+  // You choose how often to double, so events and the happy hour don't raise coin flip wins (a happy hour below 1 still counts).
+  const cfPay = (bet, m) => Math.min(MAX, Math.floor(m > 1 ? bet + bet * (m - 1) * Math.min(1, settings.winMultiplier) : bet * m));
+  const cfPayOf = r => cfPay(r.bet, r.mult);
   function renderCFControls() {
     const r = cfRound();
     document.querySelectorAll('#cfPick [data-side]').forEach(b => { b.setAttribute('aria-pressed', String(b.dataset.side === state.cf.side)); b.disabled = cfBusy; });
@@ -7479,7 +7494,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const bet = Math.floor(Number($('cfBet').value));
     const f = $('cfFlip'), cash = $('cfCash'), ico = state.cf.side === 'heads' ? '👑' : '⭐';
     f.disabled = !account || cfBusy || (r && r.wins >= CF_MAX_WINS) || (!r && !(bet >= 1 && bet <= state.credits && bet <= betLimit()));
-    f.innerHTML = cfBusy ? 'Flipping…' : r ? `Flip again<small>${ico} ×${fmt(r.mult * 2)} · ${fmt(happyPay(r.bet, r.mult * 2, 'cf'))}</small>` : `Flip<small>${ico} wins ${fmt(happyPay(Math.max(1, bet || 1), 2, 'cf'))}</small>`;
+    f.innerHTML = cfBusy ? 'Flipping…' : r ? `Flip again<small>${ico} ×${fmt(r.mult * 2)} · ${fmt(cfPay(r.bet, r.mult * 2))}</small>` : `Flip<small>${ico} wins ${fmt(cfPay(Math.max(1, bet || 1), 2))}</small>`;
     cash.hidden = !r || cfBusy;
     if (r) cash.innerHTML = `Cash out<small>${fmt(cfPayOf(r))} · ×${fmt(r.mult)}</small>`;
     $('cfStreak').hidden = !r;
@@ -7525,6 +7540,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     state.cf.flips++;
     cfBusy = true;
     render();
+    flush();
     renderCFControls();
     $('cfBig').hidden = true;
     $('cfStage').classList.remove('idle', 'flash');
@@ -7564,7 +7580,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     state.cf.history = [{ r: res, w: won }, ...state.cf.history].slice(0, 14);
     gainXp(3);
     const box = $('cfStage').getBoundingClientRect(), cx = box.left + box.width / 2, cy = box.top + box.height * 0.55;
-    const now = won ? happyPay(r.bet, mult, 'cf') : 0;
+    const now = won ? cfPay(r.bet, mult) : 0;
     if (edge) {
       cfBigText(`ON THE EDGE! ×${CF_EDGE}`, 'edge');
       cfSay(`The coin landed on its edge! 1 in ${fmt(CF_EDGE_IN)}: ×${fmt(mult)} · ${fmt(now)} on the coin. Cash out or keep going!`, 'win');
@@ -9763,6 +9779,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         checkAch({ pokerWin: won, pokerSF: won && st.seats[me].hand_name && /straight flush|royal/i.test(st.seats[me].hand_name) });
       }
     }
+    flush();
     renderPK();
     render();
     pkSchedule();
@@ -10063,6 +10080,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   function levelUp(level) {
     const prize = LEVEL_REWARD * level;
     state.credits = Math.min(MAX, state.credits + prize);
+    flush();
     toast(`Level ${level}!`, `+${fmt(prize)} credits · bet limit now ${fmt(betLimit())}`);
     if (level >= MAX_LEVEL) setTimeout(() => toast('Max level!', 'You can go Prestige now: open your profile.'), 1200);
     floatText(`Level ${level} · +${fmt(prize)}`, 'star');
@@ -14601,7 +14619,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
   // ----- Events: an admin plans a time window and what it boosts. Every page reads it from the settings,
   // announces it ahead of time in the top bar and switches the boosts on and off by itself at the planned times. -----
-  const EV_GAMES = [['all', 'All games'], ['slots', 'Slots'], ['bj', 'Blackjack'], ['rl', 'Roulette'], ['pl', 'Plinko'], ['hr', 'Horse Racing'], ['rk', 'Rocket'], ['cf', 'Coin Flip']];
+  const EV_GAMES = [['all', 'All games'], ['slots', 'Slots'], ['bj', 'Blackjack'], ['rl', 'Roulette'], ['pl', 'Plinko'], ['hr', 'Horse Racing'], ['rk', 'Rocket']];
   const EV_ICONS = ['🎉', '🍀', '🔥', '⚡', '💎', '🚀', '🏆', '🎰', '🎃', '🎄', '🐰', '🌙', '☀️', '🎁'];
   const EV_GIFT_MAX = 1000000;
   function evClock() { try { return Date.now() + (hrOffsetSet ? hrOffset : 0); } catch { return Date.now(); } }
