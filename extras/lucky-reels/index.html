@@ -480,6 +480,13 @@ body.wide .account-bar { max-width: 980px; }
 .rr-today.off { background: #ffffff0a; border-color: #ffffff22; color: var(--muted); }
 .rr-warn { margin: 0; padding: 12px 14px; border-radius: 12px; background: #e0141f1a; border: 1px solid #e0141f66; color: #ffd0d3; font-size: 13px; line-height: 1.5; }
 .rr-warn b { color: #ff6b74; }
+.rr-stakes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 10px; margin-top: 10px; font-size: 13px; line-height: 1.45; text-align: left; }
+.rr-stakes > div { padding: 10px 12px; border-radius: 12px; min-width: 0; }
+.rr-stakes .rr-lose { background: #e0141f1a; border: 1px solid #e0141f66; color: #ffd0d3; }
+.rr-stakes .rr-win { background: #2f9e6a1f; border: 1px solid #2f9e6a66; color: #d2f5e2; }
+.rr-stakes b { display: block; margin-bottom: 4px; }
+.rr-stakes ul { margin: 0; padding-left: 18px; }
+.rr-stakes small { display: block; margin-top: 6px; opacity: .85; }
 .rr-foes { display: grid; gap: 6px; }
 .rr-foe { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; background: var(--panel); }
 .rr-foe.off { opacity: 0.55; }
@@ -3288,6 +3295,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       <button class="spin rr-pull" id="rrPull" type="button" hidden>Pull the trigger</button>
       <div class="rr-lobby" id="rrLobby">
         <p class="rr-warn"><b>Winner takes everything.</b> Two players take turns pulling the trigger of a revolver with six chambers and one live round. Whoever gets the live round loses <b>all credits, goodies and shares</b> to the other and starts over from the start, like a reset. Each player can play <b>once a day</b>, from level 3. Whoever doesn't pull within 45 seconds loses too.</p>
+        <div class="rr-stakes">
+          <div class="rr-lose"><b>Who loses loses for good</b><ul><li>all credits</li><li>all goodies, name styles and trophies</li><li>all shares</li><li>level, XP and every prestige</li><li>achievements, missions and the Lucky Burger career</li><li>open bets and lotto tickets</li><li>spins, jackpots and the biggest win</li></ul><small>The account starts over with the start credits.</small></div>
+          <div class="rr-win"><b>Who wins gets</b><ul><li>all of the loser's credits</li><li>the loser's goodies they don't have yet</li><li>all of the loser's shares</li></ul></div>
+        </div>
         <p class="rr-today" id="rrToday"></p>
         <div class="rr-foes" id="rrFoes"></div>
       </div>
@@ -3544,7 +3555,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         </svg>
     <div class="eyebrow">Russian roulette</div>
     <h2 id="rrInviteText"></h2>
-    <p class="rr-warn">The loser loses <b>everything</b>: credits, goodies and shares, and starts over. The winner takes it all. You can play once a day.</p>
+    <p class="rr-warn">The loser loses <b>everything</b> and starts over. The winner takes it all. You can play once a day.</p>
+    <div class="rr-stakes">
+      <div class="rr-lose"><b>Who loses loses for good</b><ul><li>all credits</li><li>all goodies, name styles and trophies</li><li>all shares</li><li>level, XP and every prestige</li><li>achievements, missions and the Lucky Burger career</li><li>open bets and lotto tickets</li><li>spins, jackpots and the biggest win</li></ul><small>The account starts over with the start credits.</small></div>
+      <div class="rr-win"><b>Who wins gets</b><ul><li>all of the loser's credits</li><li>the loser's goodies they don't have yet</li><li>all of the loser's shares</li></ul></div>
+    </div>
     <p class="news-meta" id="rrInviteLeft"></p>
     <div class="gamble-btns"><button type="button" class="chip-btn" id="rrDecline">No thanks</button><button type="button" class="chip-btn" id="rrAccept">Accept</button></div>
   </div>
@@ -3697,6 +3712,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           <label class="setting"><span class="label">Evening draw (hour, German time)</span><input name="lottoEveHour" type="number" min="0" max="23" step="1"></label>
           <label class="setting"><span class="label">Midday ticket (% of the credits)</span><input name="lottoNoonPct" type="number" min="1" max="100" step="1"></label>
           <label class="setting"><span class="label">Evening ticket (% of the credits)</span><input name="lottoEvePct" type="number" min="1" max="100" step="1"></label>
+          <label class="setting"><span class="label">Midday ticket: fixed price</span><input name="lottoNoonFixed" type="number" min="0" step="1"><small>0 = the share of the credits above counts. Otherwise every ticket costs exactly this.</small></label>
+          <label class="setting"><span class="label">Evening ticket: fixed price</span><input name="lottoEveFixed" type="number" min="0" step="1"><small>0 = the share of the credits above counts. Otherwise every ticket costs exactly this.</small></label>
+          <label class="setting check"><input type="checkbox" name="lottoGiftLock"><span>No sending credits while tickets are on sale</span><small>Off: players can send each other credits at any time.</small></label>
           <label class="setting"><span class="label">Sales open (hours before the draw)</span><input name="lottoOpenHours" type="number" min="0.25" max="24" step="0.25"></label>
           <label class="setting"><span class="label">Sales close (minutes before the draw)</span><input name="lottoCloseMin" type="number" min="0" max="120" step="1"></label>
           <label class="setting"><span class="label">Ticket money into the pot (%)</span><input name="lottoShare" type="number" min="0" max="500" step="1"><small>100 = the winner gets all the ticket money. More than 100 adds credits from the house.</small></label>
@@ -4236,7 +4254,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     "Events and the happy hour don't raise Chicken wins.": 'Events und die Happy Hour erhöhen bei Chicken keine Gewinne.',
     'Force reload now': 'Neuladen erzwingen', 'Reload everyone?': 'Alle neu laden?', 'The game reloads in 3 seconds.': 'Das Spiel lädt in 3 Sekunden neu.', 'Every open page saves and reloads in 3 seconds (yours stays).': 'Jede offene Seite speichert und lädt in 3 Sekunden neu (deine bleibt).',
     "Events and the happy hour don't raise coin flip wins.": 'Events und die Happy Hour erhöhen beim Münzwurf keine Gewinne.',
-    'Level 20 reached: back to level 1, with a new badge next to your name.': 'Level 20 erreicht: zurück auf Level 1, mit einem neuen Abzeichen neben deinem Namen.',
+    'Level 20 reached: back to level 1, with a new badge next to your name. Your bet limit stays.': 'Level 20 erreicht: zurück auf Level 1, mit einem neuen Abzeichen neben deinem Namen. Dein Einsatzlimit bleibt.',
+    'Who loses loses for good': 'Wer verliert, verliert endgültig', 'all credits': 'alle Credits', 'all goodies, name styles and trophies': 'alle Goodies, Namens-Stile und Pokale', 'all shares': 'alle Aktien',
+    'level, XP and every prestige': 'Level, XP und jedes Prestige', 'achievements, missions and the Lucky Burger career': 'Erfolge, Missionen und die Lucky-Burger-Karriere', 'open bets and lotto tickets': 'offene Wetten und Lotto-Lose',
+    'spins, jackpots and the biggest win': 'Spins, Jackpots und den größten Gewinn', 'The account starts over with the start credits.': 'Das Konto fängt mit den Start-Credits von vorne an.', 'Who wins gets': 'Wer gewinnt, bekommt',
+    "all of the loser's credits": 'alle Credits des Verlierers', "the loser's goodies they don't have yet": 'die Goodies des Verlierers, die man noch nicht hat', "all of the loser's shares": 'alle Aktien des Verlierers',
+    'and starts over. The winner takes it all. You can play once a day.': 'und fängt von vorne an. Der Gewinner bekommt alles. Du kannst einmal am Tag spielen.',
+    'Midday ticket: fixed price': 'Mittagslos: fester Preis', 'Evening ticket: fixed price': 'Abendlos: fester Preis', '0 = the share of the credits above counts. Otherwise every ticket costs exactly this.': '0 = der Anteil der Credits oben gilt. Sonst kostet jedes Los genau so viel.',
+    'No sending credits while tickets are on sale': 'Kein Credits-Senden während des Losverkaufs', 'Off: players can send each other credits at any time.': 'Aus: Spieler können sich jederzeit Credits schicken.',
     'Loading the game…': 'Spiel wird geladen…', 'The games need the online database. Check the connection and reload the page.': 'Die Spiele brauchen die Online-Datenbank. Prüf die Verbindung und lade die Seite neu.',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
@@ -4449,7 +4474,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     ['{a} was taken over: your {b} shares paid {c} credits.', '{a} wurde übernommen: Deine {b} Aktien brachten {c} Credits.'], ['{a} went bankrupt: your {b} shares are gone.', '{a} ist pleite: Deine {b} Aktien sind weg.'],
     ['Not enough credits: {a} {b} cost {c}.', 'Nicht genug Credits: {a} {b} kosten {c}.'], ['{a} One order may cost at most that much.', '{a} So viel darf ein Kauf höchstens kosten.'],
     ['You can hold at most {a} credits (what you paid) in one share.', 'In einer Aktie kannst du höchstens {a} Credits (Kaufpreis) halten.'],
-    ['Bought {a} {b} at {c} for {d} credits.', '{a} {b} zu {c} für {d} Credits gekauft.'], ['Sold {a} {b} at {c} for {d} credits.', '{a} {b} zu {c} für {d} Credits verkauft.'], ['Your bet limit is {a} (level {b}). Every level raises it.', 'Dein Einsatzlimit ist {a} (Level {b}). Jedes Level erhöht es.'],
+    ['Bought {a} {b} at {c} for {d} credits.', '{a} {b} zu {c} für {d} Credits gekauft.'], ['Sold {a} {b} at {c} for {d} credits.', '{a} {b} zu {c} für {d} Credits verkauft.'], ['Your bet limit is {a} (level {b}). Every level raises it.', 'Dein Einsatzlimit ist {a} (Level {b}). Jedes Level erhöht es.'], ['Your bet limit is {a}: with Prestige you keep the limit of level 20.', 'Dein Einsatzlimit ist {a}: Mit Prestige behältst du das Limit von Level 20.'],
     ['Bet per spin · limit {a}', 'Einsatz pro Dreh · Limit {a}'], ['Bet limit {a}', 'Einsatzlimit {a}'], ['+{a} credits · bet limit now {b}', '+{a} Credits · Einsatzlimit jetzt {b}'],
     ['Tip: {a}', 'Tipp: {a}'], ['Coach: hand {a} · you need {b} to call · calling pays', 'Coach: Hand {a} · zum Mitgehen brauchst du {b} · Mitgehen lohnt sich'],
     ['Coach: hand {a} · you need {b} to call · close call', 'Coach: Hand {a} · zum Mitgehen brauchst du {b} · knappe Sache'], ['Coach: hand {a} · you need {b} to call · folding is safer', 'Coach: Hand {a} · zum Mitgehen brauchst du {b} · Aussteigen ist sicherer'],
@@ -4751,12 +4776,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // it keeps balances from snowballing in a day and makes levelling up worth something.
   // An admin's "highest bet" setting can lower it further.
   const BET_LIMITS = [500, 750, 1000, 1500, 2000, 3000, 4000, 5000, 6500, 8000, 10000, 12500, 15000, 20000, 25000, 32500, 40000, 55000, 75000, 100000];
-  function levelLimit(level = state.level) {
-    return BET_LIMITS[Math.min(MAX_LEVEL, Math.max(1, level || 1)) - 1];
+  // after a prestige the limit of level 20 stays
+  function levelLimit(level = state.level, prestige = state.prestige) {
+    return BET_LIMITS[(prestige > 0 ? MAX_LEVEL : Math.min(MAX_LEVEL, Math.max(1, level || 1))) - 1];
   }
   function betLimit() { return Math.min(levelLimit(), settings.maxBet || MAX); }
   function limitMsg() {
-    return settings.maxBet && settings.maxBet < levelLimit() ? `The highest bet is ${fmt(betLimit())}.` : `Your bet limit is ${fmt(betLimit())} (level ${state.level}). Every level raises it.`;
+    if (settings.maxBet && settings.maxBet < levelLimit()) return `The highest bet is ${fmt(betLimit())}.`;
+    return state.prestige > 0 ? `Your bet limit is ${fmt(betLimit())}: with Prestige you keep the limit of level 20.` : `Your bet limit is ${fmt(betLimit())} (level ${state.level}). Every level raises it.`;
   }
   const GAMBLE_MAX = 5;
   const GAMBLE_EDGE = 0.95;
@@ -6293,7 +6320,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     for (const n of out.prestige || []) {
       pendingLevels.length = 0;
       setTimeout(() => {
-        toast(`Prestige ${roman(n)}!`, 'Level 20 reached: back to level 1, with a new badge next to your name.');
+        toast(`Prestige ${roman(n)}!`, 'Level 20 reached: back to level 1, with a new badge next to your name. Your bet limit stays.');
         sound.levelUp();
         for (let k = 0; k < 120; k++) fxTop.confetti(['#fff2c4', '#e9a23b', '#ff8fb8', '#4fe3ff', '#a77bff']);
         fireworks(8);
@@ -10404,7 +10431,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (gameBusy() || !srvOn()) return;
     let res;
     try { res = await srvCall('game_restart'); } catch (e) { toast('Start over', srvErr(e)); return; }
-    Object.assign(state, fresh(), { sound: state.sound, adminRev: state.adminRev, credits: settings.startCredits, mode: state.mode, avatar: state.avatar, giftSeen: state.giftSeen, newsSeen: state.newsSeen, evSeen: state.evSeen, prestige: state.prestige, jobReset: Date.now() });
+    Object.assign(state, fresh(), { sound: state.sound, adminRev: state.adminRev, credits: settings.startCredits, mode: state.mode, avatar: state.avatar, giftSeen: state.giftSeen, newsSeen: state.newsSeen, newsSeenIds: state.newsSeenIds, evSeen: state.evSeen, prestige: state.prestige, jobReset: Date.now() });
     bjShown.clear();
     renderBJTable(false);
     pendingLevels.length = 0;
@@ -10612,7 +10639,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       dmSend: (to, text) => store.dmSend(to, text),
       // Gifts: both accounts change and get a new admin revision, so open pages pick up the new balance.
       async sendCredits(to, amount) {
-        if (ltSelling()) throw Object.assign(new Error('lotto sales running'), { code: 'gift_lotto' });
+        if (ltGiftLocked()) throw Object.assign(new Error('lotto sales running'), { code: 'gift_lotto' });
         const me = await store.load(account.id), them = await store.load(to);
         if (!them) throw Object.assign(new Error('no such player'), { code: 'gift_player' });
         if ((Number(them.level) || 1) < GIFT_LEVEL && !(Number(them.prestige) > 0)) throw Object.assign(new Error('recipient below level 3'), { code: 'gift_target' });
@@ -11709,7 +11736,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (!(amount >= 1)) { msg('Enter how many credits to send.'); return; }
     if (amount > state.credits) { msg(`You only have ${fmt(state.credits)} credits.`); return; }
     // While lotto tickets are on sale the price depends on everyone's balance, so credits stay where they are.
-    const sale = ltSelling();
+    const sale = ltGiftLocked();
     if (sale) { msg(`No sending while lotto tickets are on sale (until ${ltClock(sale.closeAt)}).`); return; }
     if (state.level < GIFT_LEVEL && !state.prestige) { msg(`Reach level ${GIFT_LEVEL} to send credits.`); return; }
     if ((p.level || 1) < GIFT_LEVEL && !p.prestige) { msg(`${p.name} can get credits from level ${GIFT_LEVEL} on.`); return; }
@@ -12884,6 +12911,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       on: raw?.lottoOn == null ? true : raw.lottoOn === true || raw.lottoOn === 'true',
       noonHour: Math.floor(num('lottoNoonHour', 12, 0, 23)), eveHour: Math.floor(num('lottoEveHour', 18, 0, 23)),
       noonPct: num('lottoNoonPct', 20, 1, 100), evePct: num('lottoEvePct', 50, 1, 100),
+      noonFixed: Math.floor(num('lottoNoonFixed', 0, 0, Number.MAX_SAFE_INTEGER)), eveFixed: Math.floor(num('lottoEveFixed', 0, 0, Number.MAX_SAFE_INTEGER)),
+      giftLock: raw?.lottoGiftLock == null ? true : raw.lottoGiftLock === true || raw.lottoGiftLock === 'true',
       openHours: num('lottoOpenHours', 5, 0.25, 24), closeMin: num('lottoCloseMin', 5, 0, 120),
       share: num('lottoShare', 100, 0, 500),
       noonBonus: Math.floor(num('lottoNoonBonus', 0, 0, Number.MAX_SAFE_INTEGER)), eveBonus: Math.floor(num('lottoEveBonus', 0, 0, Number.MAX_SAFE_INTEGER)),
@@ -12942,8 +12971,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         if (!c.on) throw new Error('lotto is off');
         if (now < s.openAt || now >= s.closeAt) throw new Error('sales closed');
         if (all().some(t => t.draw_id === id && t.player === account.id)) throw new Error('already have a ticket');
-        const cost = Math.floor(credits * c[s.kind + 'Pct'] / 100);
-        if (cost < 1) throw new Error('not enough credits');
+        const cost = c[s.kind + 'Fixed'] || Math.floor(credits * c[s.kind + 'Pct'] / 100);
+        if (cost < 1 || cost > credits) throw new Error('not enough credits');
         // tickets of draws older than three days are dropped so the settings stay small
         const keep = all().filter(t => now - slotOf(t.draw_id).drawAt < 3 * 86400000);
         const t = { draw_id: id, player: account.id, name: account.name, cost };
@@ -12980,7 +13009,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const n = v => v == null ? null : Number(v);
     const ms = v => typeof v === 'number' ? v : Date.parse(v);
     return {
-      cfg: lottoCfg({ lottoOn: r.cfg?.on, lottoNoonHour: r.cfg?.noonHour, lottoEveHour: r.cfg?.eveHour, lottoNoonPct: r.cfg?.noonPct, lottoEvePct: r.cfg?.evePct, lottoOpenHours: r.cfg?.openHours,
+      cfg: lottoCfg({ lottoOn: r.cfg?.on, lottoNoonHour: r.cfg?.noonHour, lottoEveHour: r.cfg?.eveHour, lottoNoonPct: r.cfg?.noonPct, lottoEvePct: r.cfg?.evePct, lottoNoonFixed: r.cfg?.noonFixed, lottoEveFixed: r.cfg?.eveFixed, lottoGiftLock: r.cfg?.giftLock, lottoOpenHours: r.cfg?.openHours,
         lottoCloseMin: r.cfg?.closeMin, lottoShare: r.cfg?.share, lottoNoonBonus: r.cfg?.noonBonus, lottoEveBonus: r.cfg?.eveBonus, lottoMode: r.cfg?.mode }),
       slots: (r.slots || []).map(s => ({ id: s.id, kind: s.kind, drawAt: ms(s.draw_at), openAt: ms(s.open_at), closeAt: ms(s.close_at), pct: Number(s.pct), bonus: Number(s.bonus) || 0, share: Number(s.share),
         settled: !!s.settled, pot: n(s.pot), winner: s.winner || null, winnerName: s.winner_name || null, winnerCost: n(s.winner_cost),
@@ -13021,6 +13050,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     return 'done';
   }
   // Is a ticket sale running right now? Then nobody can send credits.
+  // a ticket's price: fixed, or a share of the credits
+  const ltFixed = s => Number(lt?.cfg?.[s.kind + 'Fixed']) || 0;
+  const ltCost = s => ltFixed(s) || Math.floor(state.credits * s.pct / 100);
+  // sending credits is locked while tickets are on sale (unless the admin switched that off)
+  const ltGiftLocked = () => (lt ? lt.cfg.giftLock !== false : true) ? ltSelling() : null;
   function ltSelling() {
     const now = hrNow();
     if (lt) return lt.cfg.on ? lt.slots.find(s => now >= s.openAt && now < s.closeAt) || null : null;
@@ -13044,7 +13078,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       const card = hero.querySelector(`[data-lt="${s.kind}"]`);
       if (!card) continue;
       const f = k => card.querySelector(`[data-f="${k}"]`);
-      const ph = ltPhase(s, now), mine = ltMineOf(s), cost = Math.floor(state.credits * s.pct / 100);
+      const ph = ltPhase(s, now), mine = ltMineOf(s), cost = ltCost(s);
       const day = berlinDay(s.drawAt);
       ltSet(f('when'), 'innerHTML', `<b>${ltClock(s.drawAt)}</b> ${day === today ? 'today' : day === ltAddDay(today, 1) ? 'tomorrow' : day} · German time`);
       ltSet(f('pot'), 'textContent', fmt(ltPot(s)));
@@ -13055,12 +13089,12 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       const n = s.people.length;
       const ppl = s.people.slice(0, 5).map(p => avatarHtml(p.player, p.name)).join('') + `<span>${n === 1 ? '1 ticket' : `${fmt(n)} tickets`}</span>`;
       if (f('people').dataset.html !== ppl) { f('people').dataset.html = ppl; f('people').innerHTML = ppl; }
-      ltSet(f('price'), 'innerHTML', mine ? `Your chance: <b>${ltPct(ltChance(s, mine))}</b>` : `Ticket: <b>${s.pct}%</b> of your credits${ph === 'sale' || ph === 'soon' ? ` · now <b>${fmt(cost)}</b>` : ''}`);
+      ltSet(f('price'), 'innerHTML', mine ? `Your chance: <b>${ltPct(ltChance(s, mine))}</b>` : ltFixed(s) ? `Ticket: <b>${fmt(cost)}</b> credits` : `Ticket: <b>${s.pct}%</b> of your credits${ph === 'sale' || ph === 'soon' ? ` · now <b>${fmt(cost)}</b>` : ''}`);
       const buy = f('buy');
       buy.hidden = !!mine && ph !== 'live';
       if (!buy.dataset.armed) {
         ltSet(buy, 'textContent', ph === 'live' ? 'Watch the draw' : ph === 'sale' ? `Buy ticket · ${fmt(cost)}` : ph === 'soon' ? 'Not on sale yet' : ph === 'closed' ? 'Sales closed' : ph === 'done' ? 'Next draw soon' : 'Paused');
-        buy.disabled = ph === 'live' ? false : ph !== 'sale' || ltBusy || cost < 1;
+        buy.disabled = ph === 'live' ? false : ph !== 'sale' || ltBusy || cost < 1 || cost > state.credits;
       }
       f('mine').hidden = !mine;
       if (mine) ltSet(f('mine'), 'textContent', `🎟 Your ticket · ${fmt(mine.cost)} credits`);
@@ -13075,8 +13109,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const ph = ltPhase(s);
     if (ph === 'live') { ltShowOpen(s); return; }
     if (ph !== 'sale' || ltMineOf(s)) return;
-    const cost = Math.floor(state.credits * s.pct / 100);
-    if (cost < 1) { toast('Lotto', 'You need some credits for a ticket.'); return; }
+    const cost = ltCost(s);
+    if (cost < 1 || cost > state.credits) { toast('Lotto', 'You need some credits for a ticket.'); return; }
     if (gameBusy()) { toast('One moment', 'Let the current round finish first.'); return; }
     if (!confirmed(btn, `Pay ${fmt(cost)}?`)) return;
     ltBusy = true; renderLotto();
@@ -13434,7 +13468,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // ----- Admin: the lotto tab -----
   function fillLottoForm() {
     const form = $('lottoForm'), c = lottoCfg(rawSettings);
-    const map = { lottoOn: c.on, lottoMode: c.mode, lottoNoonHour: c.noonHour, lottoEveHour: c.eveHour, lottoNoonPct: c.noonPct, lottoEvePct: c.evePct, lottoOpenHours: c.openHours, lottoCloseMin: c.closeMin, lottoShare: c.share, lottoNoonBonus: c.noonBonus, lottoEveBonus: c.eveBonus };
+    const map = { lottoOn: c.on, lottoMode: c.mode, lottoNoonHour: c.noonHour, lottoEveHour: c.eveHour, lottoNoonPct: c.noonPct, lottoEvePct: c.evePct, lottoNoonFixed: c.noonFixed, lottoEveFixed: c.eveFixed, lottoGiftLock: c.giftLock, lottoOpenHours: c.openHours, lottoCloseMin: c.closeMin, lottoShare: c.share, lottoNoonBonus: c.noonBonus, lottoEveBonus: c.eveBonus };
     for (const [k, v] of Object.entries(map)) { const el = form.elements[k]; if (!el) continue; if (el.type === 'checkbox') el.checked = v; else el.value = v; }
   }
   function renderAdminLotto() {
@@ -13455,10 +13489,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   $('lottoForm').addEventListener('submit', e => {
     e.preventDefault();
     const f = $('lottoForm').elements, v = k => f[k].value;
-    const c = lottoCfg({ lottoOn: f.lottoOn.checked, lottoMode: v('lottoMode'), lottoNoonHour: v('lottoNoonHour'), lottoEveHour: v('lottoEveHour'), lottoNoonPct: v('lottoNoonPct'), lottoEvePct: v('lottoEvePct'),
+    const c = lottoCfg({ lottoOn: f.lottoOn.checked, lottoMode: v('lottoMode'), lottoNoonHour: v('lottoNoonHour'), lottoEveHour: v('lottoEveHour'), lottoNoonPct: v('lottoNoonPct'), lottoEvePct: v('lottoEvePct'), lottoNoonFixed: v('lottoNoonFixed'), lottoEveFixed: v('lottoEveFixed'), lottoGiftLock: f.lottoGiftLock.checked,
       lottoOpenHours: v('lottoOpenHours'), lottoCloseMin: v('lottoCloseMin'), lottoShare: v('lottoShare'), lottoNoonBonus: v('lottoNoonBonus'), lottoEveBonus: v('lottoEveBonus') });
     if (c.noonHour === c.eveHour) { adminSay('The midday and evening draws need different hours.', false); return; }
-    const patch = { lottoOn: c.on, lottoMode: c.mode, lottoNoonHour: c.noonHour, lottoEveHour: c.eveHour, lottoNoonPct: c.noonPct, lottoEvePct: c.evePct, lottoOpenHours: c.openHours, lottoCloseMin: c.closeMin, lottoShare: c.share, lottoNoonBonus: c.noonBonus, lottoEveBonus: c.eveBonus };
+    const patch = { lottoOn: c.on, lottoMode: c.mode, lottoNoonHour: c.noonHour, lottoEveHour: c.eveHour, lottoNoonPct: c.noonPct, lottoEvePct: c.evePct, lottoNoonFixed: c.noonFixed, lottoEveFixed: c.eveFixed, lottoGiftLock: c.giftLock, lottoOpenHours: c.openHours, lottoCloseMin: c.closeMin, lottoShare: c.share, lottoNoonBonus: c.noonBonus, lottoEveBonus: c.eveBonus };
     adminDo('Lotto settings saved. Everyone sees them within seconds.', async () => {
       await backend.admin.saveSettings(patch);
       Object.assign(rawSettings, patch);
@@ -13803,21 +13837,34 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
   // ----- News pop-up: an admin sends it, every player sees it once (now if online, otherwise at the next sign-in) -----
   const NEWS_LS = () => 'lucky-reels-news-' + (account?.id || '');
-  // The pop-up that is live: the one sent now or a planned one whose time has come, the newest of them.
+  // The pop-ups that are live: the one sent now and planned ones whose time has come, oldest first.
   const newsOk = n => n && typeof n === 'object' && n.id && (n.title || n.text);
   const newsPlan = () => (Array.isArray(rawSettings?.popupPlan) ? rawSettings.popupPlan : []).filter(newsOk);
-  function newsNow() {
+  function newsLive() {
     const now = evClock();
-    const list = [rawSettings?.popup, ...newsPlan()].filter(n => newsOk(n) && (Number(n.at) || 0) <= now);
-    return list.sort((a, b) => (Number(b.at) || 0) - (Number(a.at) || 0))[0] || null;
+    return [rawSettings?.popup, ...newsPlan()].filter(n => newsOk(n) && (Number(n.at) || 0) <= now).sort((a, b) => (Number(a.at) || 0) - (Number(b.at) || 0));
   }
-  function newsSeen(id) {
-    if (state.newsSeen === id) return true;
-    try { return localStorage.getItem(NEWS_LS()) === id; } catch { return false; }
+  const newsNow = () => newsLive().slice(-1)[0] || null;
+  // the pop-ups this player already closed (older pages kept only the last one)
+  function newsSeenIds() {
+    const out = new Set(Array.isArray(state.newsSeenIds) ? state.newsSeenIds.map(String) : []);
+    if (state.newsSeen) out.add(String(state.newsSeen));
+    try {
+      const v = localStorage.getItem(NEWS_LS());
+      if (v) { let a; try { a = JSON.parse(v); } catch { a = v; } (Array.isArray(a) ? a : [v]).forEach(x => out.add(String(x))); }
+    } catch {}
+    return out;
+  }
+  // Several live at once show one after the other. Only those not older than the last one closed:
+  // pop-ups from before stay closed.
+  function newsNext() {
+    const seen = newsSeenIds(), live = newsLive();
+    const after = Math.max(0, ...live.filter(n => seen.has(String(n.id))).map(n => Number(n.at) || 0));
+    return live.find(n => !seen.has(String(n.id)) && (Number(n.at) || 0) >= after) || null;
   }
   function checkNews() {
-    const n = newsNow();
-    if (!account || !n || newsSeen(n.id) || !$('newsModal').hidden || !$('reloadModal').hidden || (typeof ltShow !== 'undefined' && ltShow.open)) return;
+    const n = newsNext();
+    if (!account || !n || !$('newsModal').hidden || !$('reloadModal').hidden || (typeof ltShow !== 'undefined' && ltShow.open)) return;
     $('newsTitle').textContent = n.title || 'News';
     $('newsText').textContent = n.text || '';
     $('newsText').hidden = !n.text;
@@ -13833,15 +13880,17 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const id = $('newsModal').dataset.id;
     $('newsModal').hidden = true;
     if (!id) return;
+    const ids = [...newsSeenIds(), id].slice(-50);
     state.newsSeen = id;
-    try { localStorage.setItem(NEWS_LS(), id); } catch {}
+    state.newsSeenIds = ids;
+    try { localStorage.setItem(NEWS_LS(), JSON.stringify(ids)); } catch {}
     sound.chip();
     lastSaved = '';
     persist();
   });
   // a pop-up that was removed while it was open goes away
   setInterval(() => {
-    if (!$('newsModal').hidden && !$('newsModal').dataset.ev && newsNow()?.id !== $('newsModal').dataset.id) $('newsModal').hidden = true;
+    if (!$('newsModal').hidden && !$('newsModal').dataset.ev && !newsLive().some(n => n.id === $('newsModal').dataset.id)) $('newsModal').hidden = true;
     checkNews();
   }, 1500);
   function renderNewsAdmin() {

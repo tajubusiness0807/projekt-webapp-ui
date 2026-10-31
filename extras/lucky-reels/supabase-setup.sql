@@ -7146,3 +7146,121 @@ begin
   return g || jsonb_build_object('xp', xp, 'level', lv, 'credits', cr, 'prestige', pr);
 end;
 $$;
+
+
+-- ---------------------------------------------------------------------------
+-- Lotto price, gifts during sales, prestige bet limit: run this part once (after "Automatic prestige").
+-- A lotto ticket can cost a fixed number of credits instead of a share of the balance (0 = the share counts).
+-- The admin decides whether credits can be sent while tickets are on sale. Prestige keeps the full bet limit
+-- of level 20.
+create or replace function public.lotto_cfg()
+returns jsonb
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select jsonb_build_object(
+    'on', coalesce((data ->> 'lottoOn')::boolean, true),
+    'noonHour', least(23, greatest(0, coalesce((data ->> 'lottoNoonHour')::numeric, 12)))::integer,
+    'eveHour', least(23, greatest(0, coalesce((data ->> 'lottoEveHour')::numeric, 18)))::integer,
+    'noonPct', least(100, greatest(1, coalesce((data ->> 'lottoNoonPct')::numeric, 20))),
+    'evePct', least(100, greatest(1, coalesce((data ->> 'lottoEvePct')::numeric, 50))),
+    'noonFixed', greatest(0, coalesce((data ->> 'lottoNoonFixed')::numeric, 0))::bigint,
+    'eveFixed', greatest(0, coalesce((data ->> 'lottoEveFixed')::numeric, 0))::bigint,
+    'giftLock', coalesce((data ->> 'lottoGiftLock')::boolean, true),
+    'openHours', least(24, greatest(0.25, coalesce((data ->> 'lottoOpenHours')::numeric, 5))),
+    'closeMin', least(120, greatest(0, coalesce((data ->> 'lottoCloseMin')::numeric, 5))),
+    'share', least(500, greatest(0, coalesce((data ->> 'lottoShare')::numeric, 100))),
+    'noonBonus', greatest(0, coalesce((data ->> 'lottoNoonBonus')::numeric, 0))::bigint,
+    'eveBonus', greatest(0, coalesce((data ->> 'lottoEveBonus')::numeric, 0))::bigint,
+    'mode', case when data ->> 'lottoMode' = 'equal' then 'equal' else 'weighted' end)
+  from public.settings where id = 1
+$$;
+
+create or replace function public.lotto_buy(draw text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  cfg jsonb := public.lotto_cfg();
+  k text := split_part(draw, '-', 4);
+  s jsonb;
+  me public.players;
+  c bigint;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  if not (cfg ->> 'on')::boolean then raise exception 'lotto is off'; end if;
+  if k not in ('noon', 'eve') then raise exception 'no such draw'; end if;
+  s := public.lotto_slot(left(draw, 10)::date, k, cfg);
+  if s ->> 'id' <> draw then raise exception 'no such draw'; end if;
+  if now() < (s ->> 'open_at')::timestamptz or now() >= (s ->> 'close_at')::timestamptz then raise exception 'sales closed'; end if;
+  select * into me from public.players where id = auth.uid() for update;
+  if me.id is null or me.is_banned then raise exception 'not allowed'; end if;
+  if exists (select 1 from public.lotto_tickets where draw_id = draw and player = me.id) then raise exception 'already have a ticket'; end if;
+  -- a fixed price, or a share of the balance
+  c := case when (cfg ->> (k || 'Fixed'))::bigint > 0 then (cfg ->> (k || 'Fixed'))::bigint
+    else floor(me.credits * (cfg ->> (k || 'Pct'))::numeric / 100)::bigint end;
+  if c < 1 or me.credits < c then raise exception 'not enough credits'; end if;
+  insert into public.lotto_draws (id, kind, draw_at) values (draw, k, (s ->> 'draw_at')::timestamptz) on conflict (id) do nothing;
+  update public.players set credits = credits - c, admin_rev = admin_rev + 1, updated_at = now() where id = me.id;
+  insert into public.lotto_tickets (draw_id, player, name, cost) values (draw, me.id, me.name, c);
+  return jsonb_build_object('cost', c, 'credits', me.credits - c, 'rev', me.admin_rev + 1);
+end;
+$$;
+
+create or replace function public.send_credits(target uuid, amount bigint)
+returns bigint
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  me public.players;
+  them public.players;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  -- while lotto tickets are on sale, credits stay where they are (if the admin wants it so)
+  if (public.lotto_cfg() ->> 'giftLock')::boolean and public.lotto_selling() then raise exception 'lotto sales running'; end if;
+  if target = auth.uid() then raise exception 'cannot send to yourself'; end if;
+  if amount is null or amount < 1 then raise exception 'send at least 1'; end if;
+  -- Lock both rows in a fixed order so two gifts at once can't deadlock.
+  perform 1 from public.players where id in (auth.uid(), target) order by id for update;
+  select * into me from public.players where id = auth.uid();
+  select * into them from public.players where id = target;
+  if me is null or me.is_banned then raise exception 'not allowed'; end if;
+  if them is null or them.is_banned then raise exception 'no such player'; end if;
+  if me.level < 3 and me.prestige = 0 then raise exception 'reach level 3 first'; end if;
+  if them.level < 3 and them.prestige = 0 then raise exception 'recipient below level 3'; end if;
+  if me.credits < amount then raise exception 'not enough credits'; end if;
+  update public.players set credits = credits - amount, admin_rev = admin_rev + 1, updated_at = now() where id = me.id;
+  update public.players set credits = credits + amount, admin_rev = admin_rev + 1, updated_at = now() where id = them.id;
+  insert into public.transfers (sender, recipient, sender_name, amount) values (me.id, them.id, me.name, amount);
+  return me.credits - amount;
+end;
+$$;
+revoke execute on function public.send_credits(uuid, bigint) from public, anon;
+grant execute on function public.send_credits(uuid, bigint) to authenticated;
+
+-- after a prestige the bet limit stays at the level 20 limit
+create or replace function public.lr_bet_limit(lv integer, pr integer)
+returns bigint
+language sql
+immutable
+as $$
+  select case when coalesce(pr, 0) > 0 then 100000::bigint
+    else (array[500, 750, 1000, 1500, 2000, 3000, 4000, 5000, 6500, 8000, 10000, 12500, 15000, 20000, 25000, 32500, 40000, 55000, 75000, 100000]::bigint[])[least(20, greatest(1, coalesce(lv, 1)))] end
+$$;
+-- the games on the server: the limit of whoever plays (with their prestige)
+create or replace function public.lr_lim(c jsonb, lv integer)
+returns numeric
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select least(public.lr_bet_limit(lv, coalesce((select prestige from public.players where id = auth.uid()), 0)),
+    case when (c ->> 'maxBet')::numeric > 0 then (c ->> 'maxBet')::numeric else 9007199254740991 end)
+$$;
