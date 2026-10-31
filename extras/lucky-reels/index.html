@@ -550,6 +550,16 @@ body.wide .account-bar { max-width: 980px; }
 .rr-invite-card svg { width: 140px; height: auto; margin: 0 auto; display: block; filter: drop-shadow(0 8px 12px #000c); }
 .rr-invite-card h2 { margin: 0; color: #ff4b55; }
 .rr-invite-card .gamble-btns { justify-content: center; }
+.rr-more { margin-top: 8px; font-size: 13px; }
+.rr-more summary { cursor: pointer; color: #ff8a92; font-weight: 700; }
+.rr-more .rr-stakes { margin-top: 8px; }
+/* on a phone the invitation stays short: smaller revolver, tighter text, the full list folded away */
+@media (max-width: 520px) {
+  #rrInvite .rr-invite-card { padding: 16px 14px; max-height: calc(100dvh - 32px); overflow-y: auto; }
+  .rr-invite-card svg { width: 96px; }
+  #rrInvite .rr-invite-card h2 { font-size: 19px; line-height: 1.2; }
+  .rr-invite-card .rr-warn { padding: 8px 10px; font-size: 12px; }
+}
 #rrAccept { background: linear-gradient(#ff4b55, #a8141c); color: #fff; }
 @media (max-width: 600px) {
   .rr-stage { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
@@ -3558,10 +3568,12 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     <div class="eyebrow">Russian roulette</div>
     <h2 id="rrInviteText"></h2>
     <p class="rr-warn">The loser loses <b>everything</b> and starts over. The winner takes it all. You can play once a day.</p>
-    <div class="rr-stakes">
+    <details class="rr-more"><summary>What exactly is at stake?</summary>
+      <div class="rr-stakes">
       <div class="rr-lose"><b>Who loses loses for good</b><ul><li>all credits</li><li>all goodies, name styles and trophies</li><li>all shares</li><li>level, XP and every prestige</li><li>achievements, missions and the Lucky Burger career</li><li>open bets and lotto tickets</li><li>spins, jackpots and the biggest win</li></ul><small>The account starts over with the start credits.</small></div>
       <div class="rr-win"><b>Who wins gets</b><ul><li>all of the loser's credits</li><li>the loser's goodies they don't have yet</li><li>all of the loser's shares</li><li>half of the loser's XP</li></ul></div>
     </div>
+        </details>
     <p class="news-meta" id="rrInviteLeft"></p>
     <div class="gamble-btns"><button type="button" class="chip-btn" id="rrDecline">No thanks</button><button type="button" class="chip-btn" id="rrAccept">Accept</button></div>
   </div>
@@ -4257,7 +4269,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Force reload now': 'Neuladen erzwingen', 'Reload everyone?': 'Alle neu laden?', 'The game reloads in 3 seconds.': 'Das Spiel lädt in 3 Sekunden neu.', 'Every open page saves and reloads in 3 seconds (yours stays).': 'Jede offene Seite speichert und lädt in 3 Sekunden neu (deine bleibt).',
     "Events and the happy hour don't raise coin flip wins.": 'Events und die Happy Hour erhöhen beim Münzwurf keine Gewinne.',
     'Level 20 reached: back to level 1, with a new badge next to your name. Your bet limit stays.': 'Level 20 erreicht: zurück auf Level 1, mit einem neuen Abzeichen neben deinem Namen. Dein Einsatzlimit bleibt.',
-    'Who loses loses for good': 'Wer verliert, verliert endgültig', 'all credits': 'alle Credits', 'all goodies, name styles and trophies': 'alle Goodies, Namens-Stile und Pokale', 'all shares': 'alle Aktien',
+    'What exactly is at stake?': 'Was steht genau auf dem Spiel?', 'Who loses loses for good': 'Wer verliert, verliert endgültig', 'all credits': 'alle Credits', 'all goodies, name styles and trophies': 'alle Goodies, Namens-Stile und Pokale', 'all shares': 'alle Aktien',
     'level, XP and every prestige': 'Level, XP und jedes Prestige', 'achievements, missions and the Lucky Burger career': 'Erfolge, Missionen und die Lucky-Burger-Karriere', 'open bets and lotto tickets': 'offene Wetten und Lotto-Lose',
     'spins, jackpots and the biggest win': 'Spins, Jackpots und den größten Gewinn', 'The account starts over with the start credits.': 'Das Konto fängt mit den Start-Credits von vorne an.', 'Who wins gets': 'Wer gewinnt, bekommt',
     "all of the loser's credits": 'alle Credits des Verlierers', "the loser's goodies they don't have yet": 'die Goodies des Verlierers, die man noch nicht hat', "all of the loser's shares": 'alle Aktien des Verlierers', "half of the loser's XP": 'die Hälfte der XP des Verlierers',
