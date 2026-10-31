@@ -472,7 +472,7 @@ details.paytable, details.bj-rules { background: var(--panel); border-radius: 10
 .gm { padding: 6px 16px; border-radius: 999px; background: var(--panel); color: var(--muted); font-weight: 600; font-size: 13px; }
 .gm[aria-selected="true"] { background: var(--accent); color: var(--ink); }
 .cabinet:not([data-mode="bj"]) .bj, .cabinet:not([data-mode="rl"]) .rl, .cabinet:not([data-mode="pk"]) .pk, .cabinet:not([data-mode="pl"]) .pl, .cabinet:not([data-mode="ck"]) .ck, .cabinet:not([data-mode="hr"]) .hr, .cabinet:not([data-mode="rk"]) .rk, .cabinet:not([data-mode="jb"]) .jb, .cabinet:not([data-mode="cf"]) .cf, .cabinet:not([data-mode="st"]) .st, .cabinet:not([data-mode="rr"]) .rr { display: none; }
-.cabinet:not([data-mode="slots"]) :is(#window, #reelCtl, #tier, #message, .meters, .bet, .spin-row, #boosts, details.paytable) { display: none !important; }
+.cabinet:not([data-mode="slots"]) :is(#window, #reelCtl, #tier, #message, .meters, .bet, .spin-row, #boosts, details.paytable, .missions) { display: none !important; }
 body.wide .layout { max-width: 980px; grid-template-columns: minmax(0, 1fr); }
 body.wide .account-bar { max-width: 980px; }
 
@@ -1037,7 +1037,7 @@ details summary { cursor: pointer; font-size: 11px; letter-spacing: 0.16em; text
 .goodie p { margin: 2px 0 0; font-size: 13px; color: var(--muted); line-height: 1.4; }
 .goodie .status { display: block; margin-top: 4px; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
 .buy { padding: 8px 12px; background: var(--chrome); font-family: var(--font-mono); font-size: 13px; font-weight: 600; white-space: nowrap; }
-.missions { display: grid; gap: 8px; margin-top: 10px; padding-top: 12px; border-top: 1px solid #ffffff12; }
+.missions { display: grid; gap: 8px; background: var(--panel); border-radius: 10px; padding: 10px 14px; }
 .missions h3 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 16px; color: var(--accent); }
 .mission { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; background: var(--panel); border-radius: 10px; padding: 10px 12px; }
 .mission .m-text { font-weight: 600; font-size: 14px; }
@@ -3475,15 +3475,15 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       <table id="payRows"></table>
       <p class="note" id="rtp"></p>
     </details>
+    <section class="missions" aria-labelledby="missionsTitle">
+      <h3 id="missionsTitle">Missions</h3>
+      <div id="missionList"></div>
+    </section>
   </main>
 
   <aside class="shop" aria-labelledby="shopTitle">
     <section class="board-wrap" aria-labelledby="boardTitle"><h2 class="board-title" id="boardTitle">Highscores</h2><table class="board" id="boardGame"></table></section>
     <button type="button" class="shop-teaser" data-shop><span class="shop-title" id="shopTitle">Goodie Shop</span><span class="shop-owned" id="shopOwned"></span><span class="shop-owned ach-teaser" id="achTeaser" title="Achievements"></span><span class="shop-open">Open ›</span></button>
-    <section class="missions" aria-labelledby="missionsTitle">
-      <h3 id="missionsTitle">Missions</h3>
-      <div id="missionList"></div>
-    </section>
   </aside>
 </div>
 
