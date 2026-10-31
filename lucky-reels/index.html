@@ -4276,6 +4276,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'and starts over. The winner takes it all. You can play once a day.': 'und fängt von vorne an. Der Gewinner bekommt alles. Du kannst einmal am Tag spielen.',
     'Midday ticket: fixed price': 'Mittagslos: fester Preis', 'Evening ticket: fixed price': 'Abendlos: fester Preis', '0 = the share of the credits above counts. Otherwise every ticket costs exactly this.': '0 = der Anteil der Credits oben gilt. Sonst kostet jedes Los genau so viel.',
     'No sending credits while tickets are on sale': 'Kein Credits-Senden während des Losverkaufs', 'Off: players can send each other credits at any time.': 'Aus: Spieler können sich jederzeit Credits schicken.',
+    'A mission pays at most 2% of what you bet on spins since it started.': 'Eine Mission zahlt höchstens 2 % von dem, was du seit ihrem Start bei Spins gesetzt hast.',
     'Loading the game…': 'Spiel wird geladen…', 'The games need the online database. Check the connection and reload the page.': 'Die Spiele brauchen die Online-Datenbank. Prüf die Verbindung und lade die Seite neu.',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
@@ -9837,20 +9838,22 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   addEventListener('resize', () => { if (state.mode === 'pk') renderPK(false); });
 
   // ---------- Missions ----------
-  const swapCost = () => 25 * state.level;
+  const swapCost = () => 150 * state.level;
+  // a mission pays at most 2% of what was bet on slot spins since it started
+  const missionPay = m => Math.min(m.reward, Math.floor((Number(m.staked) || 0) * 0.02));
   function renderMissions() {
     $('missionList').innerHTML = state.missions.map((m, i) => `
       <div class="mission">
         <span class="m-text">${MISSIONS[m.t].text(m.goal)}</span>
-        <span class="m-reward">+${fmt(m.reward)}</span>
+        <span class="m-reward" title="${esc(i18n('A mission pays at most 2% of what you bet on spins since it started.'))}">+${fmt(missionPay(m))}<small> / ${fmt(m.reward)}</small></span>
         <div class="bar"><i style="width:${Math.min(100, (m.prog / m.goal) * 100)}%"></i></div>
         <span class="m-prog">${fmt(Math.min(m.prog, m.goal))} / ${fmt(m.goal)}</span>
-        <button class="m-swap" data-swap="${i}"${busy || state.credits < swapCost() ? ' disabled' : ''}>Swap · ${fmt(swapCost())}</button>
+        <button class="m-swap" data-swap="${i}"${busy || autoLeft || state.credits < swapCost() ? ' disabled' : ''}>Swap · ${fmt(swapCost())}</button>
       </div>`).join('');
   }
   $('missionList').addEventListener('click', e => {
     const btn = e.target.closest('[data-swap]');
-    if (!btn || busy || state.credits < swapCost()) return;
+    if (!btn || busy || autoLeft || state.credits < swapCost()) return;
     const i = Number(btn.dataset.swap);
     if (!srvOn()) return;
     srvCall('game_swap', { p_i: i }).then(res => { srvApply(res); sound.tick(); renderMissions(); render(); }).catch(e => toast('Missions', srvErr(e)));
