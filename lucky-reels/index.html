@@ -6133,6 +6133,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   }
   let rlLastPhase = '', rlLastTick = -1, rlIdleOn = false;
   function rlEnter() {
+    // a round that started while the table was out of sight: clear the last result off the table
+    { const { id, phase } = rlPhaseOf(hrNow());
+      if (rlOpen(phase) && rlAnimFor !== id && !rlBusy) {
+        $('rlResult').hidden = true;
+        document.querySelectorAll('.rl-cell.hit, .rl-cell.won').forEach(x => x.classList.remove('hit', 'won'));
+        document.querySelectorAll('.rl-chip').forEach(x => x.classList.remove('paid', 'lost'));
+        document.querySelectorAll('.rl-dolly, .rl-others').forEach(x => x.remove());
+      } }
     renderRLBets();
     renderRLControls();
     renderRLClock(hrNow());
@@ -9376,6 +9384,12 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   });
   addEventListener('resize', () => { if (state.mode === 'rk') rkResize(); });
   document.addEventListener('visibilitychange', () => { if (!document.hidden && state.mode === 'rk' && account && !rkFrameOn) { rkFrameOn = true; requestAnimationFrame(rkFrame); } });
+  // roulette and the horses also start drawing again when the page comes back into view
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden || !account || !$('lobby').hidden || !$('shopPage').hidden) return;
+    if (state.mode === 'rl' && !rlIdleOn) { rlIdleOn = true; requestAnimationFrame(rlIdle); }
+    if (state.mode === 'hr') hrStartFrames();
+  });
   setInterval(rkTick, 200);
 
   // ---------- Atmosphere ----------
@@ -10274,7 +10288,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   }
   function closeShop() {
     $('shopPage').hidden = true;
-    if (shopFromLobby) showLobby();
+    // back into a game: the live games stopped drawing while the shop was open, so they start again here
+    if (shopFromLobby) showLobby(); else applyGameMode();
     render();
   }
   document.addEventListener('click', e => { const t = e.target.closest('[data-shop]'); if (t) openShop(t.dataset.shop || undefined); });
