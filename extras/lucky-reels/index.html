@@ -11499,7 +11499,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           let { data, error } = await sb.from('players').select(`id,name,credits,best,level${hasJackpots ? ',jackpots' : ''}${hasFlair ? ',flair' : ''}${hasProfile ? ',avatar,medals' : ''}${hasPrestige ? ',prestige' : ''}${hasTrophies ? ',trophies' : ''}${hasAffiliate ? ',affiliate_code' : ''}${hasTitle ? ',title' : ''}${hasArchived ? ',archived' : ''}${hasBot ? ',is_bot' : ''}${adminCols}`);
           if (error && hasJackpots) {
             hasJackpots = false;
-            ({ data } = await sb.from('players').select(`id,name,credits,best,level${adminCols}`));
+            ({ data } = await sb.from('players').select(`id,name,credits,best,level${hasArchived ? ',archived' : ''}${adminCols}`));
           }
           if (data) cb(toPlayers(data));
         };

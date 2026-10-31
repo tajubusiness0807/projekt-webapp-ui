@@ -9629,3 +9629,11 @@ begin
   return g;
 end;
 $$;
+
+-- ---------------------------------------------------------------------------
+-- Archived players stay out of the highscores: run this part once (after "Luck per player"). Until now only the page
+-- left them out, and a page that could not check the column on loading (e.g. while the database was busy) listed
+-- them. Now the database hands an archived row only to its own player and to admins.
+drop policy if exists "Highscores are public" on public.players;
+create policy "Highscores are public" on public.players
+  for select using (not archived or id = auth.uid() or public.is_admin());
