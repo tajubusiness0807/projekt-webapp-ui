@@ -11259,9 +11259,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       },
       loadOwn: async key => (await row(key))?.doc,
       async watchSettings(cb) {
+        // a failed read keeps the settings the page has; only the very first one falls back to the defaults
+        let loaded = false;
         const pull = async () => {
           const { data, error } = await sb.from('settings').select('data').eq('id', 1).maybeSingle();
-          cb(error ? {} : data?.data || {});
+          if (error) { if (!loaded) cb({ _failed: true }); return; }
+          loaded = true;
+          cb(data?.data || {});
         };
         await pull();
         sb.channel('settings').on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, pull).subscribe();
@@ -12440,15 +12444,18 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   function applySettings(raw) {
     rawSettings = raw || {};
     settings = cleanSettings(raw);
-    if (reloadSeen === null) reloadSeen = settings.reloadAt;
-    else if (settings.reloadAt > reloadSeen) { reloadSeen = settings.reloadAt; showReload(false); }
-    if (!notesChecked && settings.reloadAt) { notesChecked = true; setTimeout(showNotesOnce, 1500); }
-    // forced by an admin: save, then reload in 3 seconds (only a newer request than the one at page load)
-    if (forceSeen === null) forceSeen = settings.forceReloadAt;
-    else if (settings.forceReloadAt > forceSeen) {
-      forceSeen = settings.forceReloadAt;
-      toast('Update', 'The game reloads in 3 seconds.');
-      flush().finally(() => setTimeout(() => location.reload(), 3000));
+    // defaults after a failed first read set no baseline: the real values would look like a new request
+    if (!raw?._failed) {
+      if (reloadSeen === null) reloadSeen = settings.reloadAt;
+      else if (settings.reloadAt > reloadSeen) { reloadSeen = settings.reloadAt; showReload(false); }
+      if (!notesChecked && settings.reloadAt) { notesChecked = true; setTimeout(showNotesOnce, 1500); }
+      // forced by an admin: save, then reload in 3 seconds (only a newer request than the one at page load)
+      if (forceSeen === null) forceSeen = settings.forceReloadAt;
+      else if (settings.forceReloadAt > forceSeen) {
+        forceSeen = settings.forceReloadAt;
+        toast('Update', 'The game reloads in 3 seconds.');
+        flush().catch(() => {}).finally(() => setTimeout(() => location.reload(), 3000));
+      }
     }
     if (typeof renderAffHint === 'function') try { renderAffHint(); } catch {}
     STAR_GOAL = settings.starGoal;
