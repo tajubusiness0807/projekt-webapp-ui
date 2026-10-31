@@ -7553,3 +7553,24 @@ grant execute on function public.admin_rename(uuid, uuid, text) to authenticated
 -- 2% to 10% a day, 6% on average (288 steps of 5 minutes a day). Like the others it is taken over at 10x its
 -- starting price: holders are paid out and it starts again at 100.
 update public.stocks set p_up = 0.65, up = 1.001067, down = (1.000202 - 0.65 * 1.001067) / 0.35, news = 0, news_size = 0 where id = 'LBK';
+
+
+-- ---------------------------------------------------------------------------
+-- Bot tag: run this part once. An admin can mark accounts as bots (test accounts); everyone sees a BOT tag
+-- next to their name. Players can't set it themselves.
+alter table public.players add column if not exists is_bot boolean not null default false;
+
+create or replace function public.admin_set_bot(tok uuid, target uuid, on_ boolean)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.admin_check(tok);
+  update public.players set is_bot = coalesce(on_, false) where id = target;
+  if not found then raise exception 'no such player'; end if;
+end;
+$$;
+revoke execute on function public.admin_set_bot(uuid, uuid, boolean) from public, anon;
+grant execute on function public.admin_set_bot(uuid, uuid, boolean) to authenticated;
