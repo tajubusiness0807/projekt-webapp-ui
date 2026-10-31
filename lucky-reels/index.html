@@ -1497,14 +1497,28 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
 .admin-table .credit-edit input { flex: 1; min-width: 0; width: auto; padding: 7px 8px; font-size: 13px; }
 .admin-table .acts { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
 .admin-table .acts .abtn { padding: 6px 10px; font-size: 12px; }
-.wl-box { flex: 1 1 100%; display: grid; gap: 8px; min-width: 0; }
-.wl-box svg { width: 100%; height: 90px; background: #0003; border-radius: 8px; }
-.wl-box .wl-scroll { max-height: 260px; overflow: auto; border-radius: 8px; }
-.wl-box table { width: 100%; border-collapse: collapse; font: 12px var(--font-mono); font-variant-numeric: tabular-nums; }
-.wl-box th, .wl-box td { padding: 3px 6px; text-align: right; border-bottom: 1px solid #ffffff10; white-space: nowrap; }
-.wl-box th:first-child, .wl-box td:first-child { text-align: left; }
-.wl-box tr.wl-jump td { color: #ff8a8f; font-weight: 700; }
-.wl-box .wl-up { color: var(--win); } .wl-box .wl-down { color: var(--lose); }
+#watchModal { z-index: 40; }
+.modal-card.wl-card { max-width: 960px; width: 100%; max-height: calc(100dvh - 32px); justify-items: stretch; text-align: left; gap: 14px; padding: 20px; overflow: hidden; grid-template-rows: auto auto minmax(0, 1fr); }
+.wl-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.wl-head h2 { font-size: 30px; overflow-wrap: anywhere; }
+.wl-head > div { min-width: 0; }
+.wl-head .chip-btn { flex: none; width: auto; min-width: 0; padding: 8px 14px; font-size: 14px; }
+.wl-bar { display: flex; gap: 8px; flex-wrap: wrap; }
+.wl-bar .abtn { padding: 7px 12px; font-size: 13px; }
+.wl-body { display: grid; gap: 12px; min-height: 0; overflow: auto; align-content: start; }
+.wl-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+.wl-stats div { background: #0003; border-radius: 10px; padding: 8px 10px; display: grid; gap: 2px; }
+.wl-stats small { color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
+.wl-stats b { font: 700 16px var(--font-mono); font-variant-numeric: tabular-nums; }
+.wl-chart { width: 100%; height: 140px; display: block; background: #0003; border-radius: 10px; }
+.wl-scroll { overflow-x: auto; border-radius: 10px; background: #0002; }
+.wl-body table { width: 100%; min-width: 560px; border-collapse: collapse; font: 13px var(--font-mono); font-variant-numeric: tabular-nums; }
+.wl-body th { position: sticky; top: 0; background: var(--cabinet); color: var(--muted); font: 600 11px var(--font-body, inherit); letter-spacing: 0.08em; text-transform: uppercase; }
+.wl-body th, .wl-body td { padding: 6px 10px; text-align: right; border-bottom: 1px solid #ffffff10; white-space: nowrap; }
+.wl-body th:first-child, .wl-body td:first-child { text-align: left; }
+.wl-body tr.wl-jump td { color: #ff8a8f; font-weight: 700; background: #e0141f14; }
+.wl-body .wl-up { color: var(--win); } .wl-body .wl-down { color: var(--lose); }
+@media (max-width: 560px) { .modal-card.wl-card { padding: 14px 12px; } .wl-head h2 { font-size: 24px; } .wl-chart { height: 100px; } }
 .admin-table .p-more summary { cursor: pointer; width: fit-content; padding: 5px 12px; border-radius: 999px; background: #ffffff10; font-size: 12px; font-weight: 600; list-style: none; }
 .admin-table .p-more summary::-webkit-details-marker { display: none; }
 .admin-table .p-more summary::after { content: " ▾"; opacity: .7; }
@@ -3726,6 +3740,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   <p class="lt-show-msg" id="ltShowMsg" aria-live="polite"></p>
   <button class="chat-close lt-show-close" id="ltShowClose" type="button" aria-label="Close the draw">×</button>
 </div>
+<div class="modal" id="watchModal" role="dialog" aria-modal="true" aria-labelledby="wlTitle" hidden>
+  <div class="modal-card wl-card">
+    <div class="wl-head"><div><div class="eyebrow">Watch list</div><h2 id="wlTitle"></h2></div><button type="button" class="chip-btn" id="wlClose">Close</button></div>
+    <div class="wl-bar"><button type="button" class="abtn" data-wl-h="24">24 h</button><button type="button" class="abtn" data-wl-h="168">7 d</button><button type="button" class="abtn" data-wl-h="720">30 d</button><button type="button" class="abtn warn" id="wlOff">Stop watching</button></div>
+    <div id="wlBody" class="wl-body"></div>
+  </div>
+</div>
 <div class="modal" id="adminModal" role="dialog" aria-modal="true" aria-labelledby="adminTitle" hidden>
   <div class="admin-card">
     <div class="admin-head"><h2 id="adminTitle">Admin</h2><button class="chat-close" id="adminClose" type="button" aria-label="Close admin menu">×</button></div>
@@ -4378,7 +4399,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Midday ticket: fixed price': 'Mittagslos: fester Preis', 'Evening ticket: fixed price': 'Abendlos: fester Preis', '0 = the share of the credits above counts. Otherwise every ticket costs exactly this.': '0 = der Anteil der Credits oben gilt. Sonst kostet jedes Los genau so viel.',
     'No sending credits while tickets are on sale': 'Kein Credits-Senden während des Losverkaufs', 'Off: players can send each other credits at any time.': 'Aus: Spieler können sich jederzeit Credits schicken.',
     'A mission pays at most 2% of what you bet on spins since it started.': 'Eine Mission zahlt höchstens 2 % von dem, was du seit ihrem Start bei Spins gesetzt hast.',
-    'Give this player a goodie from the shop, or take one away': 'Diesem Spieler ein Goodie aus dem Shop geben oder wegnehmen', 'Secret chance to win in the games (100% = normal). The player does not see it.': 'Geheime Gewinnchance in den Spielen (100 % = normal). Der Spieler sieht davon nichts.', '100% (normal)': '100 % (normal)', '0 to 300%. At 50% the player wins about half as often, at 200% about twice as often (slots, gamble, Plinko, Chicken, coin flip, blackjack dealer). The player does not see it.': '0 bis 300 %. Bei 50 % gewinnt der Spieler etwa halb so oft, bei 200 % etwa doppelt so oft (Slots, Risiko, Plinko, Chicken, Münzwurf, Blackjack-Dealer). Der Spieler sieht davon nichts.', 'Pick a value from 0 to 300%.': 'Wähle einen Wert von 0 bis 300 %.', 'On the watch list: show how credits and XP went': 'Auf der Beobachtungsliste: Verlauf von Credits und XP zeigen', 'Put on the watch list: credits and XP are noted once a minute. The player does not see it.': 'Auf die Beobachtungsliste setzen: Credits und XP werden jede Minute festgehalten. Der Spieler merkt nichts davon.', 'Watched': 'Beobachtet', 'Watch': 'Beobachten', 'Stop watching': 'Nicht mehr beobachten', 'Time': 'Zeit', 'Change': 'Änderung', 'XP +': 'XP +', 'Credits over time': 'Credits im Verlauf', 'No notes yet: they come as soon as the player plays.': 'Noch keine Einträge: Sie kommen, sobald der Spieler spielt.', 'Loading…': 'Lädt …', 'Give': 'Geben', 'Take away': 'Wegnehmen', 'one level': 'eine Stufe',
+    'Give this player a goodie from the shop, or take one away': 'Diesem Spieler ein Goodie aus dem Shop geben oder wegnehmen', 'Secret chance to win in the games (100% = normal). The player does not see it.': 'Geheime Gewinnchance in den Spielen (100 % = normal). Der Spieler sieht davon nichts.', '100% (normal)': '100 % (normal)', '0 to 300%. At 50% the player wins about half as often, at 200% about twice as often (slots, gamble, Plinko, Chicken, coin flip, blackjack dealer). The player does not see it.': '0 bis 300 %. Bei 50 % gewinnt der Spieler etwa halb so oft, bei 200 % etwa doppelt so oft (Slots, Risiko, Plinko, Chicken, Münzwurf, Blackjack-Dealer). Der Spieler sieht davon nichts.', 'Pick a value from 0 to 300%.': 'Wähle einen Wert von 0 bis 300 %.', 'On the watch list: show how credits and XP went': 'Auf der Beobachtungsliste: Verlauf von Credits und XP zeigen', 'Put on the watch list: credits and XP are noted once a minute. The player does not see it.': 'Auf die Beobachtungsliste setzen: Credits und XP werden jede Minute festgehalten. Der Spieler merkt nichts davon.', 'Watched': 'Beobachtet', 'Watch': 'Beobachten', 'Stop watching': 'Nicht mehr beobachten', 'Time': 'Zeit', 'Change': 'Änderung', 'XP +': 'XP +', 'Credits over time': 'Credits im Verlauf', 'Watch list': 'Beobachtungsliste', 'Now': 'Jetzt', 'Lowest / highest': 'Tiefst- / Höchststand', 'XP gained': 'XP dazu', 'Notes': 'Einträge', 'Jumps': 'Sprünge', 'Spins': 'Spins', 'Stop watching?': 'Nicht mehr beobachten?', 'No notes yet: they come as soon as the player plays.': 'Noch keine Einträge: Sie kommen, sobald der Spieler spielt.', 'Loading…': 'Lädt …', 'Give': 'Geben', 'Take away': 'Wegnehmen', 'one level': 'eine Stufe',
     'Actions': 'Aktionen', 'Account': 'Konto', 'Game': 'Spiel', 'Look': 'Aussehen', 'archived': 'archiviert',
     'Change your name': 'Namen ändern', 'Change your name · free': 'Namen ändern · kostenlos', 'New name': 'Neuer Name', 'Ask': 'Beantragen', 'Take it back': 'Zurückziehen', 'Take it back?': 'Zurückziehen?',
     'An admin checks the name first. Letters, digits, _ and -.': 'Ein Admin prüft den Namen zuerst. Buchstaben, Ziffern, _ und -.', 'That is your name already.': 'So heißt du schon.',
@@ -13090,35 +13111,58 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     try { watchMap = (await backend.admin.watchlist()) || {}; renderAdminPlayers(true); } catch { watchMap = watchMap || {}; }
     watchLoading = false;
   }
-  // one player's notes: a credits curve, then the notes newest first; big jumps are marked
-  function watchHtml(p, rows, hours) {
+  // one player's notes in their own panel: totals, a credits curve, then the notes newest first; big jumps are marked
+  let wlPlayer = null, wlHours = 24;
+  function watchHtml(rows) {
     const t = x => new Date(x).toLocaleString(lang === 'de' ? 'de-DE' : 'en-GB', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-    let svg = '';
-    if (rows.length > 1) {
-      const t0 = rows[0].at, t1 = rows[rows.length - 1].at || t0 + 1, cs = rows.map(x => Number(x.c));
-      const lo = Math.min(...cs), hi = Math.max(...cs) || 1;
-      const pts = rows.map(x => `${((x.at - t0) / Math.max(1, t1 - t0) * 600).toFixed(1)},${(85 - (Number(x.c) - lo) / Math.max(1, hi - lo) * 80).toFixed(1)}`).join(' ');
-      svg = `<svg viewBox="0 0 600 90" preserveAspectRatio="none" aria-label="${esc(i18n('Credits over time'))}"><polyline points="${pts}" fill="none" stroke="#e9a23b" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>` +
-        `<small class="note">${esc(i18n(`Credits ${fmt(lo)} to ${fmt(hi)} · ${rows.length} notes`))}</small>`;
-    }
+    if (!rows.length) return `<p class="note">${esc(i18n('No notes yet: they come as soon as the player plays.'))}</p>`;
+    const cs = rows.map(x => Number(x.c)), lo = Math.min(...cs), hi = Math.max(...cs);
+    const first = rows[0], last = rows[rows.length - 1], net = Number(last.c) - Number(first.c);
+    const xp = last.x != null && first.x != null ? Number(last.x) - Number(first.x) : null;
+    let jumps = 0;
     const body = rows.map((x, i) => {
       const prev = rows[i - 1], d = prev ? Number(x.c) - Number(prev.c) : 0, dx = prev && x.x != null && prev.x != null ? Number(x.x) - Number(prev.x) : null;
       const mins = prev ? Math.max(1, (x.at - prev.at) / 60000) : 1;
       // a jump: more than half of the credits before, or more than 20 times the bet limit, within a few minutes
       const jump = prev && d > 0 && mins <= 5 && (d > Math.max(1000, Number(prev.c) * 0.5) || d > levelLimit(x.l, x.p) * 20);
-      return `<tr${jump ? ' class="wl-jump"' : ''}><td>${esc(t(x.at))}</td><td>${fmt(Number(x.c))}</td><td class="${d > 0 ? 'wl-up' : d < 0 ? 'wl-down' : ''}">${prev ? (d > 0 ? '+' : '') + fmt(d) : ''}</td><td>${x.p ? `P${x.p} · ` : ''}${x.l ?? ''}</td><td>${x.x != null ? fmt(Number(x.x)) : ''}</td><td>${dx != null && dx !== 0 ? (dx > 0 ? '+' : '') + fmt(dx) : ''}</td></tr>`;
+      if (jump) jumps++;
+      return `<tr${jump ? ' class="wl-jump"' : ''}><td>${esc(t(x.at))}</td><td>${fmt(Number(x.c))}</td><td class="${d > 0 ? 'wl-up' : d < 0 ? 'wl-down' : ''}">${prev ? (d > 0 ? '+' : '') + fmt(d) : '–'}</td><td>${x.p ? `P${x.p} · ` : ''}${x.l ?? ''}</td><td>${x.x != null ? fmt(Number(x.x)) : ''}</td><td>${dx ? (dx > 0 ? '+' : '') + fmt(dx) : ''}</td><td>${x.s != null ? fmt(Number(x.s)) : ''}</td></tr>`;
     }).reverse().join('');
-    return `<div class="wl-box"><b>${esc(i18n(`Watch list: ${p.name}`))}</b>` +
-      `<div class="acts"><button class="abtn${hours === 24 ? ' ok' : ''}" data-act="watch-h" data-h="24">24 h</button><button class="abtn${hours === 168 ? ' ok' : ''}" data-act="watch-h" data-h="168">7 d</button><button class="abtn${hours === 720 ? ' ok' : ''}" data-act="watch-h" data-h="720">30 d</button>` +
-      `<button class="abtn warn" data-act="watch-off">Stop watching</button><button class="abtn" data-act="admin-cancel">Close</button></div>` +
-      (rows.length ? svg + `<div class="wl-scroll"><table><thead><tr><th>Time</th><th>Credits</th><th>Change</th><th>Level</th><th>XP</th><th>XP +</th></tr></thead><tbody>${body}</tbody></table></div>`
-        : `<p class="note">${esc(i18n('No notes yet: they come as soon as the player plays.'))}</p>`) + '</div>';
+    let svg = '';
+    if (rows.length > 1) {
+      const t0 = first.at, span = Math.max(1, last.at - t0);
+      const pts = rows.map(x => `${((x.at - t0) / span * 1000).toFixed(1)},${(132 - (Number(x.c) - lo) / Math.max(1, hi - lo) * 124).toFixed(1)}`).join(' ');
+      svg = `<svg class="wl-chart" viewBox="0 0 1000 140" preserveAspectRatio="none" aria-label="${esc(i18n('Credits over time'))}"><polyline points="${pts}" fill="none" stroke="#e9a23b" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>`;
+    }
+    const stat = (label, v, cls = '') => `<div><small>${esc(i18n(label))}</small><b class="${cls}">${v}</b></div>`;
+    return `<div class="wl-stats">${stat('Now', fmt(Number(last.c)))}${stat('Change', (net > 0 ? '+' : '') + fmt(net), net > 0 ? 'wl-up' : net < 0 ? 'wl-down' : '')}` +
+      `${stat('Lowest / highest', `${fmt(lo)} / ${fmt(hi)}`)}${stat('XP gained', xp != null ? (xp > 0 ? '+' : '') + fmt(xp) : '–')}${stat('Notes', fmt(rows.length))}${stat('Jumps', fmt(jumps), jumps ? 'wl-down' : '')}</div>` +
+      svg + `<div class="wl-scroll"><table><thead><tr><th>Time</th><th>Credits</th><th>Change</th><th>Level</th><th>XP</th><th>XP +</th><th>Spins</th></tr></thead><tbody>${body}</tbody></table></div>`;
   }
-  async function showWatch(p, acts, hours = 24) {
-    acts.innerHTML = `<p class="note">${esc(i18n('Loading…'))}</p>`;
-    try { acts.innerHTML = watchHtml(p, (await backend.admin.watchLog(p.id, hours)) || [], hours); }
-    catch { acts.innerHTML = `<p class="note">${esc(i18n('That did not work. Check the connection and try again.'))}</p><button class="abtn" data-act="admin-cancel">Close</button>`; }
+  async function openWatch(p, hours = wlHours) {
+    wlPlayer = p; wlHours = hours;
+    $('wlTitle').textContent = p.name;
+    document.querySelectorAll('[data-wl-h]').forEach(b => b.classList.toggle('ok', Number(b.dataset.wlH) === hours));
+    $('watchModal').hidden = false;
+    $('wlBody').innerHTML = `<p class="note">${esc(i18n('Loading…'))}</p>`;
+    try { const rows = (await backend.admin.watchLog(p.id, hours)) || []; if (wlPlayer === p && wlHours === hours) $('wlBody').innerHTML = watchHtml(rows); }
+    catch { $('wlBody').innerHTML = `<p class="note">${esc(i18n('That did not work. Check the connection and try again.'))}</p>`; }
   }
+  const closeWatch = () => { $('watchModal').hidden = true; wlPlayer = null; };
+  $('wlClose').addEventListener('click', closeWatch);
+  $('watchModal').addEventListener('click', e => { if (e.target === $('watchModal')) closeWatch(); });
+  $('watchModal').addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); closeWatch(); } });
+  document.querySelectorAll('[data-wl-h]').forEach(b => b.addEventListener('click', () => { if (wlPlayer) openWatch(wlPlayer, Number(b.dataset.wlH)); }));
+  $('wlOff').addEventListener('click', e => {
+    const p = wlPlayer;
+    if (!p || !confirmed(e.currentTarget, 'Stop watching?')) return;
+    adminDo(`${p.name} is off the watch list; the notes so far stay for 30 days.`, async () => {
+      await backend.admin.watch(p.id, false);
+      if (watchMap) delete watchMap[p.id];
+      closeWatch();
+      renderAdminPlayers(true);
+    });
+  });
   function renderAdminPlayers(force = false) {
     if (!adminUnlocked || $('adminModal').hidden) return;
     if (!luckMap) loadLuck();
@@ -13295,20 +13339,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         renderAdminPlayers(true);
       });
     } else if (act === 'watch') {
-      const acts = btn.closest('.acts');
-      if (watchMap?.[p.id]) { showWatch(p, acts); return; }
+      if (watchMap?.[p.id]) { openWatch(p, 24); return; }
       adminDo(`${p.name} is on the watch list now: credits and XP are noted once a minute.`, async () => {
         await backend.admin.watch(p.id, true);
         watchMap = watchMap || {};
         watchMap[p.id] = Date.now();
-        renderAdminPlayers(true);
-      });
-    } else if (act === 'watch-h') {
-      showWatch(p, btn.closest('.acts'), Number(btn.dataset.h) || 24);
-    } else if (act === 'watch-off') {
-      adminDo(`${p.name} is off the watch list; the notes so far stay for 30 days.`, async () => {
-        await backend.admin.watch(p.id, false);
-        if (watchMap) delete watchMap[p.id];
         renderAdminPlayers(true);
       });
     } else if (act === 'luck') {
