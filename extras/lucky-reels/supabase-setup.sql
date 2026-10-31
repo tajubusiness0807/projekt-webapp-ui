@@ -8877,3 +8877,73 @@ begin
     'triggered', trig, 'nudgesAdded', nadd, 'jackpot', coalesce(line = 'seven', false), 'bonusOver', over, 'held', to_jsonb(holds), 'wild', wild, 'wildTrig', wtrig, 'wildOver', wover, 'wildTotal', public.lr_n(g, 'wildTotal'), 'sticky', to_jsonb(sticky)));
 end;
 $$;
+
+
+-- ---------------------------------------------------------------------------
+-- Golden rocket button: run this part once (after "Rocket"). An admin can make a rocket golden (it surely flies past
+-- 30x, for everyone on board): the one that is boarding right now, or else the next one. Nobody but the admin
+-- functions can see that one is coming.
+create table if not exists public.lr_flags (
+  k text primary key,
+  created_at timestamptz not null default now()
+);
+alter table public.lr_flags enable row level security;
+revoke all on public.lr_flags from anon, authenticated;
+
+create or replace function public.rocket_current()
+returns public.rocket_rounds
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+  r public.rocket_rounds;
+  bs bigint;
+  c numeric;
+  ca bigint;
+  gold boolean := random() < 1.0 / 300;
+begin
+  select * into r from public.rocket_rounds order by id desc limit 1;
+  if r.id is not null and now_ms < r.next_start then return r; end if;
+  -- an admin asked for a golden rocket: this one
+  if exists (select 1 from public.lr_flags where k = 'rocketGold') then gold := true; delete from public.lr_flags where k = 'rocketGold'; end if;
+  bs := case when r.id is null or now_ms - r.next_start > 10000 then now_ms else r.next_start end;
+  -- Golden: P(reaching m) = 30 / m from 30× up. Ordinary: P(reaching m) = 0.85 / m (15% blow up on the pad). Moon at 200.
+  c := case when gold then least(200, floor(30 / (1 - random()) * 100) / 100)
+       else least(200, greatest(1, floor(0.85 / (1 - random()) * 100) / 100)) end;
+  ca := bs + 25000 + round(40000 * ln(c) / ln(200));
+  insert into public.rocket_rounds (id, bet_start, launch, crash, crash_at, next_start, golden)
+    values (coalesce(r.id, 0) + 1, bs, bs + 25000, c, ca, ca + case when c >= 200 then 9000 else 5000 end, gold)
+    on conflict (id) do nothing;
+  delete from public.rocket_bets where round_id < coalesce(r.id, 0) - 5000 and claimed;
+  delete from public.rocket_rounds where id < coalesce(r.id, 0) - 5000;
+  select * into r from public.rocket_rounds order by id desc limit 1;
+  return r;
+end;
+$$;
+
+create or replace function public.admin_rocket_golden(tok uuid)
+returns text
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  r public.rocket_rounds := public.rocket_current();
+  c numeric := least(200, floor(30 / (1 - random()) * 100) / 100);
+begin
+  perform public.admin_check(tok);
+  -- still boarding: this rocket turns golden
+  if r.id is not null and public.horse_now_ms() < r.launch and not r.golden then
+    update public.rocket_rounds set golden = true, crash = c, crash_at = launch + round(40000 * ln(c) / ln(200)),
+        next_start = launch + round(40000 * ln(c) / ln(200)) + case when c >= 200 then 9000 else 5000 end
+      where id = r.id;
+    return 'now';
+  end if;
+  insert into public.lr_flags (k) values ('rocketGold') on conflict do nothing;
+  return 'next';
+end;
+$$;
+revoke execute on function public.admin_rocket_golden(uuid) from public, anon;
+grant execute on function public.admin_rocket_golden(uuid) to authenticated;

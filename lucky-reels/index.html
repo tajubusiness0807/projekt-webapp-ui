@@ -3880,6 +3880,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
             <button class="abtn" type="button" id="forceWild">My next spin: wild spins</button>
           </div>
           <div class="admin-row setting wide">
+            <span><b>Golden rocket</b> The rocket that is boarding right now turns golden (it flies past 30× for sure, for everyone on board); if it is already flying, the next one does. Players see it only at liftoff.</span>
+            <button class="abtn" type="button" id="rocketGold">🚀 Golden rocket</button>
+          </div>
+          <div class="admin-row setting wide">
             <button class="abtn ok" type="submit">Save settings</button>
             <button class="abtn" type="button" id="settingsDefaults">Back to defaults</button>
           </div>
@@ -4370,6 +4374,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Bring the account back into the game, as it was': 'Das Konto wieder ins Spiel holen, so wie es war', 'Take the account out of the game; nothing is deleted': 'Das Konto aus dem Spiel nehmen; nichts wird gelöscht',
     'Names may only have letters, digits, _ and -, up to 40.': 'Namen dürfen nur Buchstaben, Ziffern, _ und - haben, höchstens 40.', 'This account is archived. Ask an admin.': 'Dieses Konto ist archiviert. Frag einen Admin.',
     '10 wild spins': '10 Wild-Spins', 'Three wilds again! +10 wild spins.': 'Wieder drei Wilds! +10 Wild-Spins.', 'THREE WILDS! Wild spins are coming…': 'DREI WILDS! Die Wild-Spins kommen…', '+10 wild spins': '+10 Wild-Spins', 'WILD SPINS': 'WILD-SPINS', 'WILD BONUS': 'WILD-BONUS',
+    'Golden rocket': 'Goldene Rakete', '🚀 Golden rocket': '🚀 Goldene Rakete', 'Make it golden?': 'Golden machen?', 'The rocket is golden.': 'Die Rakete ist golden.', 'The rocket boarding now is golden.': 'Die Rakete, in die gerade eingestiegen wird, ist golden.', 'The next rocket is golden.': 'Die nächste Rakete ist golden.',
+    'The rocket that is boarding right now turns golden (it flies past 30× for sure, for everyone on board); if it is already flying, the next one does. Players see it only at liftoff.': 'Die Rakete, in die gerade eingestiegen wird, wird golden (sie fliegt garantiert über 30×, für alle an Bord); fliegt sie schon, wird es die nächste. Spieler sehen es erst beim Abheben.',
     'Test the wild spins': 'Wild-Spins testen', 'Your own next paid slot spin lands three wilds and starts the wild spins. Only for your account.': 'Deine eigene nächste bezahlte Slot-Drehung landet drei Wilds und startet die Wild-Spins. Nur für dein Konto.',
     'My next spin: wild spins': 'Mein nächster Spin: Wild-Spins', 'Your next paid slot spin lands three wilds.': 'Deine nächste bezahlte Slot-Drehung landet drei Wilds.',
     'Loading the game…': 'Spiel wird geladen…', 'The games need the online database. Check the connection and reload the page.': 'Die Spiele brauchen die Online-Datenbank. Prüf die Verbindung und lade die Seite neu.',
@@ -11281,6 +11287,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         setBot: (id, on) => adminRpc('admin_set_bot', { target: id, on_: on }),
         setGoodie: (id, goodie, give) => adminRpc('admin_set_goodie', { target: id, goodie, give }),
         forceWild: () => adminRpc('admin_force_wild', {}),
+        rocketGold: () => adminRpcData('admin_rocket_golden', {}),
         nameRequests: () => adminRpcData('admin_name_requests', {}),
         nameDecide: (id, approve) => adminRpc('admin_name_decide', { req: id, approve }),
         rename: (id, name) => adminRpc('admin_rename', { target: id, new_name: name }),
@@ -13246,6 +13253,12 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   });
   $('forceWild').addEventListener('click', () => {
     adminDo('Your next paid slot spin lands three wilds.', async () => { await backend.admin.forceWild(); await srvSync(); });
+  });
+  $('rocketGold').addEventListener('click', e => {
+    if (!confirmed(e.currentTarget, 'Make it golden?')) return;
+    let when = null;
+    adminDo('The rocket is golden.', async () => { when = await backend.admin.rocketGold(); })
+      .then(() => { if (when) adminSay(when === 'now' ? 'The rocket boarding now is golden.' : 'The next rocket is golden.'); });
   });
   $('forceReload').addEventListener('click', e => {
     if (!confirmed(e.currentTarget, 'Reload everyone?')) return;
