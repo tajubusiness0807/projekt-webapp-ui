@@ -10729,3 +10729,104 @@ begin
   return g;
 end;
 $$;
+
+
+-- ---------------------------------------------------------------------------
+-- Watch list: run this part once (after "Luck, stronger"). An admin can put a player on the watch list; from then on
+-- the database notes their credits, XP, level and prestige at most once a minute whenever their row changes (every
+-- game, bet, gift and admin change goes through it). Only admins can see the list and the notes; entries older
+-- than 30 days go.
+create table if not exists public.lr_watchlist (
+  player uuid primary key references public.players (id) on delete cascade,
+  since timestamptz not null default now()
+);
+create table if not exists public.lr_watch_log (
+  id bigint generated always as identity primary key,
+  player uuid not null references public.players (id) on delete cascade,
+  at timestamptz not null default now(),
+  credits bigint not null,
+  xp numeric,
+  level integer,
+  prestige integer,
+  spins integer
+);
+create index if not exists lr_watch_log_player on public.lr_watch_log (player, at desc);
+alter table public.lr_watchlist enable row level security;
+alter table public.lr_watch_log enable row level security;
+revoke all on public.lr_watchlist from anon, authenticated;
+revoke all on public.lr_watch_log from anon, authenticated;
+
+create or replace function public.lr_watch_note() returns trigger language plpgsql security definer set search_path = public as $$
+declare
+  x numeric;
+begin
+  if not exists (select 1 from public.lr_watchlist where player = new.id) then return null; end if;
+  if new.credits = old.credits and new.level = old.level and new.prestige = old.prestige and new.game is not distinct from old.game then return null; end if;
+  if exists (select 1 from public.lr_watch_log where player = new.id and at > now() - interval '1 minute') then return null; end if;
+  begin x := (new.game::jsonb ->> 'xp')::numeric; exception when others then x := null; end;
+  insert into public.lr_watch_log (player, credits, xp, level, prestige, spins) values (new.id, new.credits, x, new.level, new.prestige, new.spins);
+  if random() < 0.01 then delete from public.lr_watch_log where at < now() - interval '30 days'; end if;
+  return null;
+exception when others then return null;
+end;
+$$;
+revoke execute on function public.lr_watch_note() from public, anon, authenticated;
+drop trigger if exists players_watch_note on public.players;
+create trigger players_watch_note after update on public.players for each row execute function public.lr_watch_note();
+
+create or replace function public.admin_watchlist(tok uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.admin_check(tok);
+  return coalesce((select jsonb_object_agg(player, floor(extract(epoch from since) * 1000)) from public.lr_watchlist), '{}'::jsonb);
+end;
+$$;
+revoke execute on function public.admin_watchlist(uuid) from public, anon;
+grant execute on function public.admin_watchlist(uuid) to authenticated;
+
+create or replace function public.admin_watch(tok uuid, target uuid, on_ boolean)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  p public.players;
+  x numeric;
+begin
+  perform public.admin_check(tok);
+  if on_ then
+    insert into public.lr_watchlist (player) values (target) on conflict do nothing;
+    -- the starting point
+    select * into p from public.players where id = target;
+    if p.id is not null then
+      begin x := (p.game::jsonb ->> 'xp')::numeric; exception when others then x := null; end;
+      insert into public.lr_watch_log (player, credits, xp, level, prestige, spins) values (p.id, p.credits, x, p.level, p.prestige, p.spins);
+    end if;
+  else
+    delete from public.lr_watchlist where player = target;
+  end if;
+end;
+$$;
+revoke execute on function public.admin_watch(uuid, uuid, boolean) from public, anon;
+grant execute on function public.admin_watch(uuid, uuid, boolean) to authenticated;
+
+-- the last 24 hours (or more) of one player's notes, oldest first
+create or replace function public.admin_watch_log(tok uuid, target uuid, hours integer default 24)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.admin_check(tok);
+  return coalesce((select jsonb_agg(jsonb_build_object('at', floor(extract(epoch from at) * 1000), 'c', credits, 'x', xp, 'l', level, 'p', prestige, 's', spins) order by at)
+    from public.lr_watch_log where player = target and at > now() - make_interval(hours => least(720, greatest(1, coalesce(hours, 24))))), '[]'::jsonb);
+end;
+$$;
+revoke execute on function public.admin_watch_log(uuid, uuid, integer) from public, anon;
+grant execute on function public.admin_watch_log(uuid, uuid, integer) to authenticated;
