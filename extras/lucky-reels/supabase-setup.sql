@@ -7574,3 +7574,72 @@ end;
 $$;
 revoke execute on function public.admin_set_bot(uuid, uuid, boolean) from public, anon;
 grant execute on function public.admin_set_bot(uuid, uuid, boolean) to authenticated;
+
+
+-- ---------------------------------------------------------------------------
+-- Russian roulette XP: run this part once (after "Russian roulette" and "Games on the server"). The winner
+-- also gets half of the loser's XP (all the levels and prestiges they climbed); new levels pay their prize
+-- as usual, and level 20 goes Prestige.
+create or replace function public.rr_settle(g public.rr_games, lose uuid, why text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  win uuid := case when lose = g.challenger then g.opponent else g.challenger end;
+  w public.players;
+  l public.players;
+  wg jsonb;
+  wo jsonb;
+  lo jsonb;
+  k text;
+  v jsonb;
+  moved integer := 0;
+  lxp numeric := 0;
+  wx jsonb;
+  start_credits bigint := coalesce((select (data ->> 'startCredits')::bigint from public.settings where id = 1), 500);
+begin
+  perform 1 from public.players where id in (win, lose) order by id for update;
+  select * into w from public.players where id = win;
+  select * into l from public.players where id = lose;
+  begin wg := coalesce(w.game::jsonb, '{}'::jsonb); exception when others then wg := '{}'::jsonb; end;
+  begin lo := coalesce(l.game::jsonb -> 'owned', '{}'::jsonb); exception when others then lo := '{}'::jsonb; end;
+  wo := case when jsonb_typeof(wg -> 'owned') = 'object' then wg -> 'owned' else '{}'::jsonb end;
+  if jsonb_typeof(lo) = 'object' then
+    for k, v in select * from jsonb_each(lo) loop
+      if jsonb_typeof(v) = 'number' and (v #>> '{}')::numeric > 0 then
+        if coalesce((wo ->> k)::numeric, 0) < (v #>> '{}')::numeric then wo := jsonb_set(wo, array[k], v); moved := moved + 1; end if;
+      elsif v = 'true'::jsonb then
+        if coalesce(wo -> k, 'false'::jsonb) <> 'true'::jsonb then wo := jsonb_set(wo, array[k], 'true'::jsonb); moved := moved + 1; end if;
+      end if;
+    end loop;
+  end if;
+  wg := jsonb_set(wg, '{owned}', wo);
+  -- the winner's page takes over the goodies when it sees this mark
+  wg := jsonb_set(wg, '{rrAt}', to_jsonb(floor(extract(epoch from clock_timestamp()) * 1000)::bigint));
+  update public.players set credits = least(9007199254740991, credits + greatest(l.credits, 0)), game = wg::text,
+    admin_rev = admin_rev + 1, updated_at = now() where id = win;
+  -- shares change hands too
+  if to_regclass('public.stock_holdings') is not null then
+    insert into public.stock_holdings (player, stock, name, shares, cost)
+      select win, stock, w.name, shares, cost from public.stock_holdings where player = lose
+      on conflict (player, stock) do update set shares = public.stock_holdings.shares + excluded.shares, cost = public.stock_holdings.cost + excluded.cost;
+    delete from public.stock_holdings where player = lose;
+  end if;
+  update public.players set credits = start_credits, best = 0, level = 1, spins = 0, jackpots = 0, game = null, flair = null, prestige = 0,
+    admin_rev = admin_rev + 1, updated_at = now() where id = lose;
+  -- the winner gets half of the loser's XP: all levels and prestiges they climbed, and what they had on top
+  begin lxp := coalesce((l.game::jsonb ->> 'xp')::numeric, 0); exception when others then lxp := 0; end;
+  lxp := coalesce(l.prestige, 0) * (select sum(public.lr_xp_need(x)) from generate_series(1, 19) x)
+    + coalesce((select sum(public.lr_xp_need(x)) from generate_series(1, least(19, l.level - 1)) x), 0) + least(lxp, public.lr_xp_need(20));
+  if lxp >= 2 then
+    select * into w from public.players where id = win;
+    wx := public.lr_ach(public.lr_xp(public.lr_g(w), public.lr_cfg(), floor(lxp / 2)));
+    perform public.lr_put(win, wx);
+  end if;
+  update public.rr_games set status = 'done', ended_at = now(), winner = win, loser = lose, reason = why,
+    pot_credits = greatest(l.credits, 0), pot_goodies = moved where id = g.id;
+end;
+$$;
+revoke execute on function public.rr_settle(public.rr_games, uuid, text) from public, anon, authenticated;
