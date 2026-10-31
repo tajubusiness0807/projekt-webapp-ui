@@ -8687,3 +8687,193 @@ begin
     'triggered', trig, 'nudgesAdded', nadd, 'jackpot', coalesce(line = 'seven', false), 'bonusOver', over, 'held', to_jsonb(holds), 'wild', wild, 'wildTrig', wtrig, 'wildOver', wover, 'wildTotal', public.lr_n(g, 'wildTotal'), 'sticky', to_jsonb(sticky)));
 end;
 $$;
+
+
+-- ---------------------------------------------------------------------------
+-- Wilds replace every symbol: run this part once (after "More sticky wilds"). A wild now also stands in for stars
+-- and counts as a cherry for the small cherry wins. So that the slots don't pay more than before, two cherries pay
+-- 1x instead of 1.5x and a cherry on reel one 0.45x instead of 0.5x (the payout rate stays as it was), and wins in
+-- wild spins count x8.1 instead of x8.7 (still about 80x the bet per bonus).
+create or replace function public.lr_line(a text, b text, c text) returns text language sql immutable as $$
+  select case
+    when n = 0 then 'wild'
+    when cnt = 1 then s
+  end
+  from (select count(*) filter (where x <> 'wild') n, count(distinct x) filter (where x <> 'wild') cnt, max(x) filter (where x <> 'wild') s
+    from unnest(array[a, b, c]) x) q
+$$;
+
+create or replace function public.lr_payout(g jsonb, c jsonb, a text, b text, cc text) returns numeric language plpgsql immutable as $$
+declare
+  line text := public.lr_line(a, b, cc);
+  cherries integer := (a in ('cherry', 'wild'))::integer + (b in ('cherry', 'wild'))::integer + (cc in ('cherry', 'wild'))::integer;
+begin
+  if line = 'seven' then return (c ->> 'jackpotPay')::numeric + 8 * public.lr_n(g -> 'owned', 'horseshoe'); end if;
+  if line = 'cherry' and public.lr_has(g, 'goldCherry') then return 3.5; end if;
+  if line is not null then return case line when 'wild' then 80 when 'star' then 40 when 'bar' then 20 when 'bell' then 10 when 'plum' then 6 when 'lemon' then 4 else 3 end; end if;
+  if cherries >= 2 then return 1; end if;
+  if a in ('cherry', 'wild') then return 0.45; end if;
+  return 0;
+end;
+$$;
+
+create or replace function public.game_spin(p_bet numeric, p_holds boolean[] default null, p_auto boolean default false)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  p public.players := public.lr_me();
+  c jsonb := public.lr_cfg();
+  g jsonb := public.lr_g(p);
+  sl jsonb;
+  strip text[] := public.lr_strip();
+  pos integer[];
+  tg integer[];
+  holds boolean[] := array[false, false, false];
+  free boolean;
+  bet numeric;
+  raised boolean;
+  syms text[];
+  line text;
+  base numeric;
+  smult numeric;
+  mult numeric;
+  bolt integer := 0;
+  roll integer;
+  win numeric;
+  refund numeric := 0;
+  sc integer := 0;
+  wc integer := 0;
+  trig boolean := false;
+  nadd integer := 0;
+  free7 integer;
+  lim numeric := public.lr_lim(c, p.level);
+  over boolean := false;
+  wild boolean := false;
+  wtrig boolean := false;
+  wover boolean := false;
+  sticky boolean[] := array[false, false, false];
+  nst integer;
+  forced boolean := false;
+begin
+  if (c ->> 'maintenance')::boolean and not p.is_admin then raise exception 'paused'; end if;
+  sl := coalesce(g -> 'sl', '{}'::jsonb);
+  if sl ? 'gm' then raise exception 'gamble open'; end if;
+  pos := coalesce(array(select (x #>> '{}')::integer from jsonb_array_elements(sl -> 'pos') x), '{}');
+  if coalesce(array_length(pos, 1), 0) <> 3 then pos := array[public.lr_rand(27), public.lr_rand(27), public.lr_rand(27)]; end if;
+  -- wild spins (from three wilds) come first, then free spins
+  wild := public.lr_n(g, 'wildSpins') > 0;
+  free := wild or public.lr_n(g, 'freeSpins') > 0;
+  if wild then
+    bet := greatest(1, public.lr_n(g, 'wildBet'));
+    g := public.lr_add(g, 'wildSpins', -1);
+    if not coalesce((sl ->> 'inWild')::boolean, false) then g := g || jsonb_build_object('wildTotal', 0); sl := sl || '{"inWild": true, "sticky": [false, false, false]}'; end if;
+    -- wilds rolled during wild spins stick: their reels stay as they are
+    sticky := coalesce(array(select (x #>> '{}')::boolean from jsonb_array_elements(sl -> 'sticky') x), array[false, false, false]);
+    if coalesce(array_length(sticky, 1), 0) <> 3 then sticky := array[false, false, false]; end if;
+    holds := sticky;
+  elsif free then
+    bet := greatest(1, public.lr_n(g, 'freeBet'));
+    g := public.lr_add(g, 'freeSpins', -1);
+    if not coalesce((sl ->> 'inBonus')::boolean, false) then g := g || jsonb_build_object('freeTotal', 0); sl := sl || '{"inBonus": true}'; end if;
+  else
+    bet := least(floor(coalesce(p_bet, 0)), lim);
+    if bet < 1 then raise exception 'bet'; end if;
+    if public.lr_n(g, 'credits') < bet then raise exception 'credits'; end if;
+    raised := coalesce(true = any(p_holds), false) and bet > public.lr_n(sl, 'lastBet');
+    if coalesce((sl ->> 'holdOffer')::boolean, false) and not raised and coalesce(array_length(p_holds, 1), 0) = 3
+       and (p_holds[1]::integer + p_holds[2]::integer + p_holds[3]::integer) <= 2 then holds := p_holds; end if;
+    g := public.lr_add(g, 'credits', -bet);
+  end if;
+  g := public.lr_add(g, 'spins', 1) || jsonb_build_object('nudges', 0);
+  -- what was bet counts towards the missions' pay
+  if not free then g := public.lr_stake(g, bet); end if;
+  sl := sl || jsonb_build_object('holdOffer', false, 'nudgeOpen', false, 'gamble', 0);
+  tg := array(select case when holds[i] then pos[i] else public.lr_rand(27) end from generate_series(1, 3) i);
+  -- three sevens are a bit rarer than the reels alone make them: a quarter of them get the last free reel drawn again
+  if wild then
+    -- in wild spins the reels carry no sevens, stars or bars, and a wild rarely sticks:
+    -- 60% for the first, 0.2% for the second, 0.05% for the third (the others are drawn again)
+    nst := (select count(*) from unnest(sticky) x where x);
+    for k in 1 .. 3 loop
+      if holds[k] then continue; end if;
+      loop
+        tg[k] := public.lr_rand(27);
+        exit when strip[tg[k] + 1] not in ('seven', 'star', 'bar', 'wild')
+          or (strip[tg[k] + 1] = 'wild' and random() < (array[0.6, 0.002, 0.0005])[least(nst, 2) + 1]);
+      end loop;
+      if strip[tg[k] + 1] = 'wild' then nst := nst + 1; end if;
+    end loop;
+  elsif not free and coalesce((sl ->> 'forceWild')::boolean, false) and p.is_admin then
+    -- the admin's own test: this spin lands three wilds
+    tg := array[2, 2, 2];
+    forced := true;
+    sl := sl - 'forceWild';
+  end if;
+  free7 := case when wild or forced then null else (select i from unnest(array[3, 2, 1]) i where not holds[i] limit 1) end;
+  if free7 is not null and public.lr_line(strip[tg[1] + 1], strip[tg[2] + 1], strip[tg[3] + 1]) = 'seven' and public.lr_rand(100) < 25 then
+    tg[free7] := public.lr_rand(27);
+  end if;
+  syms := array[strip[tg[1] + 1], strip[tg[2] + 1], strip[tg[3] + 1]];
+  line := public.lr_line(syms[1], syms[2], syms[3]);
+  base := public.lr_payout(g, c, syms[1], syms[2], syms[3]);
+  -- three wilds pay nothing straight away: they start 10 wild spins where every win counts x13 (on average about 80x the bet)
+  if line = 'wild' and not wild then base := 0; wtrig := true; end if;
+  smult := case when base > 0 and not wild then 1 + 0.1 * least(public.lr_n(g, 'streak'), 5) else 1 end;
+  mult := base * (case when wild then 8.1 when free then (c ->> 'freeMult')::numeric else 1 end) * smult * public.lr_wm(c, 'slots');
+  if public.lr_has(g, 'lightning') and base > 0 and public.lr_rand(1000) < 10 then
+    roll := public.lr_rand(100);
+    bolt := case when roll < 70 then 2 when roll < 90 then 3 when roll < 98 then 5 else 10 end;
+  end if;
+  win := floor(mult * bet * greatest(bolt, 1));
+  if base = 0 and public.lr_has(g, 'piggy') then refund := floor(bet * 0.02); end if;
+  g := public.lr_add(g, 'credits', win + refund) || jsonb_build_object('lastWin', win, 'best', greatest(public.lr_n(g, 'best'), win),
+    'streak', case when base > 0 then public.lr_n(g, 'streak') + 1 else 0 end);
+  if wild then g := public.lr_add(g, 'wildTotal', win); elsif free then g := public.lr_add(g, 'freeTotal', win); end if;
+  -- held reels don't count their star or wild again
+  sc := (select count(*) from generate_series(1, 3) i where not holds[i] and syms[i] = 'star');
+  wc := (select count(*) from generate_series(1, 3) i where not holds[i] and syms[i] = 'wild');
+  g := public.lr_stars(g || jsonb_build_object('sl', sl), c, sc, bet);
+  trig := coalesce((g ->> '_trig')::boolean, false);
+  g := g - '_trig';
+  sl := g -> 'sl';
+  g := public.lr_xp(g, c, 10 + floor(log(bet) * 8) + case when base > 0 then 8 else 0 end + case when line is not null then 30 else 0 end);
+  g := public.lr_mission(g, 'spins');
+  if win > 0 then g := public.lr_mission(public.lr_mission(g, 'wins'), 'earn', win / bet); end if;
+  if line is not null then g := public.lr_mission(g, 'three'); end if;
+  if sc > 0 then g := public.lr_mission(g, 'stars', sc); end if;
+  if wc > 0 then g := public.lr_mission(g, 'wilds', wc); end if;
+  g := public.lr_mission(g, 'streak', public.lr_n(g, 'streak'));
+  if win > 0 and true = any(holds) then g := public.lr_mission(g, 'hold'); end if;
+  -- after a paid spin: gamble a win, or nudges and holds after a loss
+  if not free and not coalesce(p_auto, false) then
+    if win > 0 then sl := sl || jsonb_build_object('gamble', win);
+    else
+      if public.lr_rand(100) < (c ->> 'nudgeChance')::numeric then
+        nadd := case when public.lr_rand(5) = 0 then 2 else 1 end;
+        g := public.lr_add(g, 'nudges', nadd);
+      end if;
+      sl := sl || jsonb_build_object('nudgeOpen', public.lr_n(g, 'nudges') > 0, 'holdOffer', public.lr_rand(100) < (c ->> 'holdChance')::numeric);
+    end if;
+  end if;
+  if line = 'seven' then g := public.lr_add(g, 'jackpots', 1); end if;
+  if wtrig then
+    if not wild then g := g || jsonb_build_object('wildBet', bet, 'wildTotal', 0); end if;
+    g := public.lr_add(g, 'wildSpins', 10);
+  end if;
+  if wild then
+    sticky := array(select sticky[k] or syms[k] = 'wild' from generate_series(1, 3) k);
+    sl := sl || jsonb_build_object('sticky', to_jsonb(sticky));
+  end if;
+  if wild and public.lr_n(g, 'wildSpins') = 0 then sl := sl || '{"inWild": false, "sticky": [false, false, false]}'; wover := true; end if;
+  if free and not wild and public.lr_n(g, 'freeSpins') = 0 then sl := sl || '{"inBonus": false}'; over := true; end if;
+  sl := sl || jsonb_build_object('pos', to_jsonb(tg), 'lastBet', bet);
+  g := public.lr_ach(g || jsonb_build_object('sl', sl), jsonb_build_object('win', win, 'three', line is not null, 'ratio', win / bet, 'jackpot', coalesce(line = 'seven', false),
+    'triggered', trig, 'bet', bet, 'wildLine', line is not null and 'wild' = any(syms)));
+  return public.lr_put(p.id, g, jsonb_build_object('targets', to_jsonb(tg), 'syms', to_jsonb(syms), 'line', line, 'base', base, 'smult', smult,
+    'mult', round(mult * greatest(bolt, 1), 2), 'bolt', bolt, 'win', win, 'refund', refund, 'bet', bet, 'free', free, 'stars', sc, 'wilds', wc,
+    'triggered', trig, 'nudgesAdded', nadd, 'jackpot', coalesce(line = 'seven', false), 'bonusOver', over, 'held', to_jsonb(holds), 'wild', wild, 'wildTrig', wtrig, 'wildOver', wover, 'wildTotal', public.lr_n(g, 'wildTotal'), 'sticky', to_jsonb(sticky)));
+end;
+$$;

@@ -4666,8 +4666,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Land {a} wilds', 'Lande {a} Wilds'], ['Win with a nudge {a} times', 'Gewinne {a}-mal mit einem Stupser'],
     ['Win {a} gamble rounds', 'Gewinne {a} Riskier-Runden'], ['Win {a} spins after holding reels', 'Gewinne {a} Spins nach dem Halten'],
 ['Win all {a} gamble rounds.', 'Gewinne alle {a} Riskier-Runden.'],
-    ['Wins are multiples of your bet. Wilds stand in for any symbol except stars. Three wilds start 10 wild spins at the same bet: every wild rolled in them sticks, and every win counts ×{a}, about {b}× on average. After a losing spin you may get nudges (move one reel down a stop) or the chance to hold up to two reels for the next spin. After a win you can gamble it on higher or lower, up to {c} rounds; a correct guess pays by its odds. Every star on the payline fills the bonus meter; {d} stars start {e} free spins where every win pays ×{f}. Each win in a row adds ×{g} to the next win, up to ×{h}; a losing spin resets it. Levels come from XP and each one spins the prize wheel. Each reel has {i} stops. Losing streaks happen: the house wins in the long run.',
-      'Gewinne sind Vielfache deines Einsatzes. Wilds ersetzen jedes Symbol außer Sternen. Drei Wilds starten 10 Wild-Spins mit demselben Einsatz: Jedes Wild darin bleibt kleben, und jeder Gewinn zählt ×{a}, im Schnitt etwa {b}×. Nach einem verlorenen Spin bekommst du manchmal Stupser (eine Walze eine Position runter) oder darfst bis zu zwei Walzen für den nächsten Spin halten. Nach einem Gewinn kannst du ihn bei Höher/Tiefer riskieren, bis zu {c} Runden; ein richtiger Tipp zahlt nach seiner Wahrscheinlichkeit. Jeder Stern auf der Linie füllt die Bonusanzeige; {d} Sterne starten {e} Freispiele, in denen jeder Gewinn ×{f} zahlt. Jeder Gewinn in Folge legt ×{g} auf den nächsten Gewinn drauf, bis ×{h}; ein verlorener Spin setzt das zurück. Level kommen aus XP und jedes dreht das Glücksrad. Jede Walze hat {i} Positionen. Verlustserien kommen vor: Auf Dauer gewinnt das Haus.'],
+    ['Wins are multiples of your bet. Wilds stand in for every symbol, stars and cherries too. Three wilds start 10 wild spins at the same bet: every wild rolled in them sticks, and every win counts ×{a}, about {b}× on average. After a losing spin you may get nudges (move one reel down a stop) or the chance to hold up to two reels for the next spin. After a win you can gamble it on higher or lower, up to {c} rounds; a correct guess pays by its odds. Every star on the payline fills the bonus meter; {d} stars start {e} free spins where every win pays ×{f}. Each win in a row adds ×{g} to the next win, up to ×{h}; a losing spin resets it. Levels come from XP and each one spins the prize wheel. Each reel has {i} stops. Losing streaks happen: the house wins in the long run.',
+      'Gewinne sind Vielfache deines Einsatzes. Wilds ersetzen jedes Symbol, auch Sterne und Kirschen. Drei Wilds starten 10 Wild-Spins mit demselben Einsatz: Jedes Wild darin bleibt kleben, und jeder Gewinn zählt ×{a}, im Schnitt etwa {b}×. Nach einem verlorenen Spin bekommst du manchmal Stupser (eine Walze eine Position runter) oder darfst bis zu zwei Walzen für den nächsten Spin halten. Nach einem Gewinn kannst du ihn bei Höher/Tiefer riskieren, bis zu {c} Runden; ein richtiger Tipp zahlt nach seiner Wahrscheinlichkeit. Jeder Stern auf der Linie füllt die Bonusanzeige; {d} Sterne starten {e} Freispiele, in denen jeder Gewinn ×{f} zahlt. Jeder Gewinn in Folge legt ×{g} auf den nächsten Gewinn drauf, bis ×{h}; ein verlorener Spin setzt das zurück. Level kommen aus XP und jedes dreht das Glücksrad. Jede Walze hat {i} Positionen. Verlustserien kommen vor: Auf Dauer gewinnt das Haus.'],
     // Blackjack
     ['Deal{a}', 'Austeilen{a}'], ['bet {a}', 'Einsatz {a}'], ['Not enough credits for a {a} bet.', 'Nicht genug Credits für einen Einsatz von {a}.'],
     ['You have {a}. Hit or stand?', 'Du hast {a}. Karte oder halten?'], ['Hand {a}: {b}. Hit or stand?', 'Hand {a}: {b}. Karte oder halten?'],
@@ -4870,7 +4870,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const BASE_WEIGHTS = { cherry: 7, lemon: 6, plum: 5, bell: 3, bar: 2, seven: 1, star: 2, wild: 1 };
   const SYMS = Object.keys(BASE_WEIGHTS);
   const PAY3 = { seven: 150, wild: 80, star: 40, bar: 20, bell: 10, plum: 6, lemon: 4, cherry: 3 };
-  const PAY_TWO_CHERRIES = 1.5, PAY_ONE_CHERRY = 0.5;
+  // wilds count as cherries too (since then two cherries pay 1x instead of 1.5x and one 0.45x instead of 0.5x)
+  const PAY_TWO_CHERRIES = 1, PAY_ONE_CHERRY = 0.45;
   const NAMES = { seven: 'Sevens', wild: 'Wilds', bar: 'Bars', star: 'Stars', bell: 'Bells', plum: 'Plums', lemon: 'Lemons', cherry: 'Cherries' };
   const START = 500;
   const CELL = 66;
@@ -5177,23 +5178,24 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     strips[i].style.transform = `translateY(${-((loop * STRIP.length + index) * CELL - CELL / 2)}px)`;
   }
 
-  // The symbol a line counts as. Wilds stand in for anything except stars, which need three of their own.
+  // The symbol a line counts as. Wilds stand in for every symbol.
   function lineSymbol(a, b, c) {
     const real = [a, b, c].filter(s => s !== 'wild');
     if (!real.length) return 'wild';
-    if (real.every(s => s === real[0]) && (real[0] !== 'star' || real.length === 3)) return real[0];
+    if (real.every(s => s === real[0])) return real[0];
     return null;
   }
 
   function payout(a, b, c) {
     let m = 0;
-    const cherries = [a, b, c].filter(s => s === 'cherry').length;
+    // wilds count as cherries for the small cherry wins
+    const cherries = [a, b, c].filter(s => s === 'cherry' || s === 'wild').length;
     const line = lineSymbol(a, b, c);
     if (line === 'seven') m = PAY3.seven + HORSESHOE_JACKPOT * state.owned.horseshoe;
     else if (line === 'cherry' && state.owned.goldCherry) m = GOLD_CHERRY_TRIPLE;
     else if (line) m = PAY3[line];
-    else if (cherries === 2) m = PAY_TWO_CHERRIES;
-    else if (a === 'cherry') m = PAY_ONE_CHERRY;
+    else if (cherries >= 2) m = PAY_TWO_CHERRIES;
+    else if (a === 'cherry' || a === 'wild') m = PAY_ONE_CHERRY;
     return m;
   }
 
@@ -5630,7 +5632,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
   function markWin(syms, line) {
     if (line) reels.forEach(r => r.classList.add('win'));
-    else syms.forEach((s, i) => s === 'cherry' && reels[i].classList.add('win'));
+    else syms.forEach((s, i) => (s === 'cherry' || s === 'wild') && reels[i].classList.add('win'));
   }
 
   // Fade a message in only when its text changes; repeated calls with the same text stay still.
@@ -9995,7 +9997,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   }
 
   // Three wilds: 10 wild spins at the same bet, every win x13, in their own look
-  const WILD_MULT = 8.7;
+  const WILD_MULT = 8.1;
   // the colours of the wild symbol
   const WILD_COLORS = ['#c8323a', '#e9a23b', '#7fd18b', '#a77bff'];
   let inWild = false, wildDone = 0;
@@ -10334,7 +10336,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     // Streaks, free spins, holds and nudges add about 44% on top of the line wins (simulated with best play).
     const total = Math.min(99, rtp * FEATURE_BOOST);
     $('rtp').textContent =
-      `Wins are multiples of your bet. Wilds stand in for any symbol except stars. Three wilds start 10 wild spins at the same bet: every wild rolled in them sticks, and every win counts ×${WILD_MULT}, about ${PAY3.wild}× on average. ` +
+      `Wins are multiples of your bet. Wilds stand in for every symbol, stars and cherries too. Three wilds start 10 wild spins at the same bet: every wild rolled in them sticks, and every win counts ×${WILD_MULT}, about ${PAY3.wild}× on average. ` +
       `After a losing spin you may get nudges (move one reel down a stop) or the chance to hold up to two reels for the next spin. After a win you can gamble it on higher or lower, up to ${GAMBLE_MAX} rounds; a correct guess pays by its odds. ` +
       `Every star on the payline fills the bonus meter; ${STAR_GOAL} stars start ${FREE_SPINS} free spins where every win pays ×${FREE_MULT}. ` +
       `Each win in a row adds ×${STREAK_STEP} to the next win, up to ×${1 + STREAK_STEP * STREAK_MAX}; a losing spin resets it. Levels come from XP and each one spins the prize wheel. ` +
