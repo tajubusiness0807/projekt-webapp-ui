@@ -7832,3 +7832,36 @@ begin
   return public.lr_put(p.id, g, jsonb_build_object('id', p_id, 'price', price));
 end;
 $$;
+
+
+-- ---------------------------------------------------------------------------
+-- Admin: give goodies: run this part once (after "Games on the server"). An admin can give a player a goodie
+-- from the shop (or take one away), for example as a refund. The Lucky Horseshoe goes up or down one level.
+create or replace function public.admin_set_goodie(tok uuid, target uuid, goodie text, give boolean)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  p public.players;
+  g jsonb;
+  lv numeric;
+begin
+  perform public.admin_check(tok);
+  if public.lr_price(goodie, '{}'::jsonb) is null or goodie = 'adminName' then raise exception 'unknown goodie'; end if;
+  select * into p from public.players where id = target for update;
+  if p.id is null then raise exception 'no such player'; end if;
+  begin g := coalesce(p.game::jsonb, '{}'::jsonb); exception when others then g := '{}'::jsonb; end;
+  if jsonb_typeof(g -> 'owned') is distinct from 'object' then g := jsonb_set(g, '{owned}', '{}'::jsonb); end if;
+  if goodie = 'horseshoe' then
+    lv := least(3, greatest(0, public.lr_n(g -> 'owned', 'horseshoe') + case when give then 1 else -1 end));
+    g := jsonb_set(g, '{owned,horseshoe}', to_jsonb(lv));
+  else
+    g := jsonb_set(g, array['owned', goodie], to_jsonb(coalesce(give, false)));
+  end if;
+  update public.players set game = g::text, admin_rev = admin_rev + 1, updated_at = now() where id = target;
+end;
+$$;
+revoke execute on function public.admin_set_goodie(uuid, uuid, text, boolean) from public, anon;
+grant execute on function public.admin_set_goodie(uuid, uuid, text, boolean) to authenticated;
