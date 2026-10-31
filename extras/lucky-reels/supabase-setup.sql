@@ -7487,3 +7487,62 @@ begin
     'triggered', trig, 'nudgesAdded', nadd, 'jackpot', coalesce(line = 'seven', false), 'bonusOver', over, 'held', to_jsonb(holds)));
 end;
 $$;
+
+
+-- ---------------------------------------------------------------------------
+-- Archive and rename accounts: run this part once. An archived account is out of the live game (no sign-in,
+-- not on the lists) but nothing of it is deleted: an admin can bring it back as it was. A renamed player
+-- signs in with the new name from then on (the password stays).
+alter table public.players add column if not exists archived boolean not null default false;
+alter table public.players add column if not exists archived_ban boolean not null default false;
+
+create or replace function public.admin_archive(tok uuid, target uuid, on_ boolean)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.admin_check(tok);
+  if target = auth.uid() then raise exception 'not yourself'; end if;
+  if on_ then
+    -- blocked while archived; whether it was blocked before comes back with it
+    update public.players set archived_ban = case when archived then archived_ban else is_banned end, archived = true, is_banned = true,
+      admin_rev = admin_rev + 1, updated_at = now() where id = target and not is_admin;
+    if not found then raise exception 'no such player or an admin'; end if;
+  else
+    update public.players set archived = false, is_banned = archived_ban, archived_ban = false, admin_rev = admin_rev + 1, updated_at = now()
+      where id = target and archived;
+  end if;
+  if to_regclass('auth.sessions') is not null then execute 'delete from auth.sessions where user_id = $1' using target; end if;
+  if to_regclass('auth.refresh_tokens') is not null then execute 'delete from auth.refresh_tokens where user_id = $1::text' using target; end if;
+end;
+$$;
+revoke execute on function public.admin_archive(uuid, uuid, boolean) from public, anon;
+grant execute on function public.admin_archive(uuid, uuid, boolean) to authenticated;
+
+create or replace function public.admin_rename(tok uuid, target uuid, new_name text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  n text := trim(coalesce(new_name, ''));
+  mail text := lower(trim(coalesce(new_name, ''))) || '@lucky-reels.app';
+begin
+  perform public.admin_check(tok);
+  -- the same rule as for signing up: letters, digits, _ and -, at most 40
+  if n !~ '^[A-Za-z0-9_-]{1,40}$' then raise exception 'invalid name'; end if;
+  if not exists (select 1 from public.players where id = target) then raise exception 'no such player'; end if;
+  if exists (select 1 from public.players where lower(name) = lower(n) and id <> target)
+     or exists (select 1 from auth.users where lower(email) = mail and id <> target) then raise exception 'name taken'; end if;
+  update public.players set name = n, admin_rev = admin_rev + 1, updated_at = now() where id = target;
+  update auth.users set email = mail, raw_user_meta_data = coalesce(raw_user_meta_data, '{}'::jsonb) || jsonb_build_object('name', n) where id = target;
+  if to_regclass('auth.identities') is not null then
+    execute $q$update auth.identities set identity_data = coalesce(identity_data, '{}'::jsonb) || jsonb_build_object('email', $2) where user_id = $1 and provider = 'email'$q$ using target, mail;
+  end if;
+end;
+$$;
+revoke execute on function public.admin_rename(uuid, uuid, text) from public, anon;
+grant execute on function public.admin_rename(uuid, uuid, text) to authenticated;

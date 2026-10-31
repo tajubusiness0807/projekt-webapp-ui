@@ -1413,6 +1413,7 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
 }
 .admin-table tr.is-admin { border-left-color: var(--accent); }
 .admin-table tr.is-banned { border-left-color: var(--lose); opacity: 0.8; }
+.admin-table tr.is-archived { border-left-color: var(--muted); opacity: 0.55; }
 .admin-table tr.is-me { box-shadow: inset 0 0 0 1px #e9a23b44; }
 .admin-table td { display: block; padding: 0; border: 0; min-width: 0; }
 .admin-table .pname { grid-area: head; }
@@ -3689,7 +3690,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
             <button class="abtn warn hard-reset" id="hardReset" type="button">HARD RESET</button>
           </div>
         </div>
-        <p class="admin-note">Set credits replaces the balance. Reset puts the player back to the start: credits, level, goodies and achievements. Blocked players can't sign in, save or chat. Delete removes the account for good, with its game, chat and private messages; admins have to lose their admin rights first. Dangerous buttons ask once more before they act.</p>
+        <p class="admin-note">Set credits replaces the balance. Reset puts the player back to the start: credits, level, goodies and achievements. Blocked players can't sign in, save or chat. Archive takes an account out of the game (no sign-in, not on any list) without deleting anything; Bring back restores it as it was. Rename changes the name the player signs in with; the password stays. Delete removes the account for good, with its game, chat and private messages; admins have to lose their admin rights first. Dangerous buttons ask once more before they act.</p>
       </section>
 
       <section class="admin-section" data-pane="tickets" hidden>
@@ -4263,6 +4264,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Midday ticket: fixed price': 'Mittagslos: fester Preis', 'Evening ticket: fixed price': 'Abendlos: fester Preis', '0 = the share of the credits above counts. Otherwise every ticket costs exactly this.': '0 = der Anteil der Credits oben gilt. Sonst kostet jedes Los genau so viel.',
     'No sending credits while tickets are on sale': 'Kein Credits-Senden während des Losverkaufs', 'Off: players can send each other credits at any time.': 'Aus: Spieler können sich jederzeit Credits schicken.',
     'A mission pays at most 2% of what you bet on spins since it started.': 'Eine Mission zahlt höchstens 2 % von dem, was du seit ihrem Start bei Spins gesetzt hast.',
+    'Rename': 'Umbenennen', 'Archive': 'Archivieren', 'Bring back': 'Zurückholen', 'Archive?': 'Archivieren?',
+    'Give this player a new name; they sign in with it from then on': 'Diesem Spieler einen neuen Namen geben; damit meldet er sich ab dann an',
+    'Bring the account back into the game, as it was': 'Das Konto wieder ins Spiel holen, so wie es war', 'Take the account out of the game; nothing is deleted': 'Das Konto aus dem Spiel nehmen; nichts wird gelöscht',
+    'Names may only have letters, digits, _ and -, up to 40.': 'Namen dürfen nur Buchstaben, Ziffern, _ und - haben, höchstens 40.', 'This account is archived. Ask an admin.': 'Dieses Konto ist archiviert. Frag einen Admin.',
     'Loading the game…': 'Spiel wird geladen…', 'The games need the online database. Check the connection and reload the page.': 'Die Spiele brauchen die Online-Datenbank. Prüf die Verbindung und lade die Seite neu.',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
@@ -4428,8 +4433,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Set': 'Setzen', 'Medals': 'Medaillen', 'Reset': 'Zurücksetzen', 'Block': 'Sperren', 'Unblock': 'Entsperren', 'Make admin': 'Zum Admin machen', 'Remove admin': 'Admin entfernen',
     'Delete': 'Löschen', 'Delete for good': 'Endgültig löschen', 'Cancel': 'Abbrechen', 'Save medals': 'Medaillen speichern', 'admin': 'Admin', 'blocked': 'gesperrt',
     'Remove admin rights first': 'Erst die Admin-Rechte entfernen', 'Delete this account for good': 'Dieses Konto endgültig löschen',
-    'Set credits replaces the balance. Reset puts the player back to the start: credits, level, goodies and achievements. Blocked players can\'t sign in, save or chat. Delete removes the account for good, with its game, chat and private messages; admins have to lose their admin rights first. Dangerous buttons ask once more before they act.':
-      '„Setzen“ ersetzt den Kontostand. „Zurücksetzen“ bringt den Spieler an den Start: Credits, Level, Goodies und Erfolge. Gesperrte Spieler können sich nicht anmelden, speichern oder chatten. „Löschen“ entfernt das Konto endgültig, mit Spielstand, Chat und privaten Nachrichten; Admins müssen vorher ihre Admin-Rechte verlieren. Gefährliche Knöpfe fragen einmal nach.',
+    'Set credits replaces the balance. Reset puts the player back to the start: credits, level, goodies and achievements. Blocked players can\'t sign in, save or chat. Archive takes an account out of the game (no sign-in, not on any list) without deleting anything; Bring back restores it as it was. Rename changes the name the player signs in with; the password stays. Delete removes the account for good, with its game, chat and private messages; admins have to lose their admin rights first. Dangerous buttons ask once more before they act.':
+      '„Setzen“ ersetzt den Kontostand. „Zurücksetzen“ bringt den Spieler an den Start: Credits, Level, Goodies und Erfolge. Gesperrte Spieler können sich nicht anmelden, speichern oder chatten. „Archivieren“ nimmt ein Konto aus dem Spiel (keine Anmeldung, auf keiner Liste), ohne etwas zu löschen; „Zurückholen“ stellt es wieder her wie vorher. „Umbenennen“ ändert den Namen, mit dem sich der Spieler anmeldet; das Passwort bleibt. „Löschen“ entfernt das Konto endgültig, mit Spielstand, Chat und privaten Nachrichten; Admins müssen vorher ihre Admin-Rechte verlieren. Gefährliche Knöpfe fragen einmal nach.',
     'Hard reset': 'Hard Reset', 'HARD RESET': 'HARD RESET', 'Type RESET to confirm': 'Zum Bestätigen RESET eintippen', 'Type RESET to confirm the hard reset': 'Zum Bestätigen des Hard Resets RESET eintippen',
     'Every account, admins included, goes back to the start credits and level 1: prestige, goodies, cosmetics, name styles, trophies, achievements, missions, best wins, the Lucky Burger career, open bets and lotto tickets are wiped, and the online poker table is cleared. Profile pictures, medals, titles and affiliate codes stay. This can\'t be undone.':
       'Jedes Konto, auch Admins, geht zurück auf die Startcredits und Level 1: Prestige, Goodies, Kosmetik, Namensstile, Trophäen, Erfolge, Missionen, Bestgewinne, die Lucky-Burger-Karriere, offene Wetten und Lotto-Lose werden gelöscht, und der Online-Pokertisch wird geleert. Profilbilder, Medaillen, Titel und Affiliate-Codes bleiben. Das lässt sich nicht rückgängig machen.',
@@ -4462,7 +4467,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['account since {a} days', 'Konto seit {a} Tagen'], ['Refund all {a} tickets', 'Alle {a} Lose erstatten'], ['Nobody has reached {a} credits yet.', 'Noch niemand hat {a} Credits erreicht.'], ['Waiting for {a} to answer… {b} s', 'Warte auf die Antwort von {a} … {b} s'], ['{a} challenges you! {b} s', '{a} fordert dich heraus! {b} s'], ['{a} challenges you to Russian roulette!', '{a} fordert dich zum Russisch Roulette heraus!'], ['{a} s to answer', 'Noch {a} s zum Antworten'], ['1 in {a}', '1 zu {a}'], ['{a} has to pull…', '{a} muss abdrücken …'], ['Your turn. {a} s left, or you lose.', 'Du bist dran. Noch {a} s, sonst verlierst du.'], ['{a} has the revolver. {b} s.', '{a} hat den Revolver. {b} s.'], ['{a} goes first.', '{a} fängt an.'], ['*click* … empty. You live. Now {a}.', '*klick* … leer. Du lebst. Jetzt {a}.'], ['*click* … empty. {a} lives. Your turn.', '*klick* … leer. {a} lebt. Du bist dran.'], ['You waited too long: that counts as lost. Everything goes to {a}.', 'Du hast zu lange gewartet: Das zählt als verloren. Alles geht an {a}.'], ['{a} waited too long and loses everything to you!', '{a} hat zu lange gewartet und verliert alles an dich!'], ['BANG. You lost everything to {a}. Your account starts over.', 'PENG. Du hast alles an {a} verloren. Dein Konto fängt von vorne an.'], ['{a} is out. You take everything: +{b}!', '{a} ist raus. Du bekommst alles: +{b}!'], ['Everything went to {a}.', 'Alles ging an {a}.'], ['+{a} from {b}.', '+{a} von {b}.'], ['{a} credits and {b} goodies', '{a} Credits und {b} Goodies'], ['{a} credits and {b} goodie', '{a} Credits und {b} Goodie'], ['{a} won Russian roulette against {b}.', '{a} hat beim Russisch Roulette gegen {b} gewonnen.'], ['{a} said no.', '{a} hat abgelehnt.'], ['Challenge sent. {a} has 2 minutes to answer.', 'Herausforderung geschickt. {a} hat 2 Minuten zum Antworten.'], ['{a} challenges you!', '{a} fordert dich heraus!'], ['📺 Ad {a} s', '📺 Werbung {a} s'], ['Seconds (normal: {a})', 'Sekunden (normal: {a})'], ['Ad wait for {a} in seconds', 'Werbe-Wartezeit für {a} in Sekunden'], ['{a} has the normal ad wait again ({b} s).', '{a} hat wieder die normale Werbe-Wartezeit ({b} s).'], ['{a} can close the ad only after {b} seconds.', '{a} kann die Werbung erst nach {b} Sekunden schließen.'], ['Message {a}…', 'Nachricht an {a}…'], ['Sorry for the downtime! As a thank-you for your patience, everyone gets {a} credits.', 'Sorry für die Ausfallzeit! Als Dankeschön für eure Geduld bekommt jeder {a} Credits.'], ['Give everyone {a}?', 'Allen {a} geben?'], ['Everyone got {a} credits and sees a pop-up about it.', 'Alle haben {a} Credits bekommen und sehen ein Pop-up dazu.'], ['{a} now works as {b} at Lucky Burger.', '{a} arbeitet jetzt als {b} bei Lucky Burger.'], ['An admin made you {a}.', 'Ein Admin hat dich zu {a} gemacht.'], ['Lucky Burger position for {a}', 'Lucky-Burger-Position für {a}'], ['New password for {a} (6+)', 'Neues Passwort für {a} (6+)'], ['{a} has a new password now. Tell it to them yourself.', '{a} hat jetzt ein neues Passwort. Sag es ihm selbst.'], ['{a} can get credits from level {b} on.', '{a} kann erst ab Level {b} Credits bekommen.'], ['Got a code from a friend? You start with {a} credits instead of {b} (first account on this device only).', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits (nur beim ersten Konto auf diesem Gerät).'], ['Got a code from a friend? You start with {a} credits instead of {b}.', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits.'], ['New players who use it start with {a} credits.', 'Neue Spieler, die ihn nutzen, starten mit {a} Credits.'], ['New players who sign up with your code start with {a} credits.', 'Neue Spieler, die sich mit deinem Code anmelden, starten mit {a} Credits.'], ['You get {a} on top.', 'Du bekommst {a} obendrauf.'], ['{a} extra credits', '{a} Extra-Credits'], ['{a}% of your credits (at most {b})', '{a} % deiner Credits (höchstens {b})'], ['{a}% of your credits', '{a} % deiner Credits'], ['Example: a new player starts with {a} credits. A code owner with 50,000 credits gets {b}, one with 500,000 gets {c}.', 'Beispiel: Ein neuer Spieler startet mit {a} Credits. Ein Code-Besitzer mit 50,000 Credits bekommt {b}, einer mit 500,000 bekommt {c}.'], ['ends in {a}', 'endet in {a}'], ['starts in {a}', 'beginnt in {a}'], ['Event gift: +{a} credits!', 'Event-Geschenk: +{a} Credits!'], ['event ×{a}', 'Event ×{a}'], ['1st place', '1. Platz'], ['2nd place', '2. Platz'], ['3rd place', '3. Platz'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['{a} is now called {b} and signs in with that name.', '{a} heißt jetzt {b} und meldet sich mit diesem Namen an.'], ['{a} is back in the game, as before.', '{a} ist wieder im Spiel, wie vorher.'], ['{a} is archived: out of the game, nothing deleted.', '{a} ist archiviert: aus dem Spiel genommen, nichts gelöscht.'], ['{a} is taken already.', '{a} ist schon vergeben.'], ['New name for {a}', 'Neuer Name für {a}'], ['account since {a} days', 'Konto seit {a} Tagen'], ['Refund all {a} tickets', 'Alle {a} Lose erstatten'], ['Nobody has reached {a} credits yet.', 'Noch niemand hat {a} Credits erreicht.'], ['Waiting for {a} to answer… {b} s', 'Warte auf die Antwort von {a} … {b} s'], ['{a} challenges you! {b} s', '{a} fordert dich heraus! {b} s'], ['{a} challenges you to Russian roulette!', '{a} fordert dich zum Russisch Roulette heraus!'], ['{a} s to answer', 'Noch {a} s zum Antworten'], ['1 in {a}', '1 zu {a}'], ['{a} has to pull…', '{a} muss abdrücken …'], ['Your turn. {a} s left, or you lose.', 'Du bist dran. Noch {a} s, sonst verlierst du.'], ['{a} has the revolver. {b} s.', '{a} hat den Revolver. {b} s.'], ['{a} goes first.', '{a} fängt an.'], ['*click* … empty. You live. Now {a}.', '*klick* … leer. Du lebst. Jetzt {a}.'], ['*click* … empty. {a} lives. Your turn.', '*klick* … leer. {a} lebt. Du bist dran.'], ['You waited too long: that counts as lost. Everything goes to {a}.', 'Du hast zu lange gewartet: Das zählt als verloren. Alles geht an {a}.'], ['{a} waited too long and loses everything to you!', '{a} hat zu lange gewartet und verliert alles an dich!'], ['BANG. You lost everything to {a}. Your account starts over.', 'PENG. Du hast alles an {a} verloren. Dein Konto fängt von vorne an.'], ['{a} is out. You take everything: +{b}!', '{a} ist raus. Du bekommst alles: +{b}!'], ['Everything went to {a}.', 'Alles ging an {a}.'], ['+{a} from {b}.', '+{a} von {b}.'], ['{a} credits and {b} goodies', '{a} Credits und {b} Goodies'], ['{a} credits and {b} goodie', '{a} Credits und {b} Goodie'], ['{a} won Russian roulette against {b}.', '{a} hat beim Russisch Roulette gegen {b} gewonnen.'], ['{a} said no.', '{a} hat abgelehnt.'], ['Challenge sent. {a} has 2 minutes to answer.', 'Herausforderung geschickt. {a} hat 2 Minuten zum Antworten.'], ['{a} challenges you!', '{a} fordert dich heraus!'], ['📺 Ad {a} s', '📺 Werbung {a} s'], ['Seconds (normal: {a})', 'Sekunden (normal: {a})'], ['Ad wait for {a} in seconds', 'Werbe-Wartezeit für {a} in Sekunden'], ['{a} has the normal ad wait again ({b} s).', '{a} hat wieder die normale Werbe-Wartezeit ({b} s).'], ['{a} can close the ad only after {b} seconds.', '{a} kann die Werbung erst nach {b} Sekunden schließen.'], ['Message {a}…', 'Nachricht an {a}…'], ['Sorry for the downtime! As a thank-you for your patience, everyone gets {a} credits.', 'Sorry für die Ausfallzeit! Als Dankeschön für eure Geduld bekommt jeder {a} Credits.'], ['Give everyone {a}?', 'Allen {a} geben?'], ['Everyone got {a} credits and sees a pop-up about it.', 'Alle haben {a} Credits bekommen und sehen ein Pop-up dazu.'], ['{a} now works as {b} at Lucky Burger.', '{a} arbeitet jetzt als {b} bei Lucky Burger.'], ['An admin made you {a}.', 'Ein Admin hat dich zu {a} gemacht.'], ['Lucky Burger position for {a}', 'Lucky-Burger-Position für {a}'], ['New password for {a} (6+)', 'Neues Passwort für {a} (6+)'], ['{a} has a new password now. Tell it to them yourself.', '{a} hat jetzt ein neues Passwort. Sag es ihm selbst.'], ['{a} can get credits from level {b} on.', '{a} kann erst ab Level {b} Credits bekommen.'], ['Got a code from a friend? You start with {a} credits instead of {b} (first account on this device only).', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits (nur beim ersten Konto auf diesem Gerät).'], ['Got a code from a friend? You start with {a} credits instead of {b}.', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits.'], ['New players who use it start with {a} credits.', 'Neue Spieler, die ihn nutzen, starten mit {a} Credits.'], ['New players who sign up with your code start with {a} credits.', 'Neue Spieler, die sich mit deinem Code anmelden, starten mit {a} Credits.'], ['You get {a} on top.', 'Du bekommst {a} obendrauf.'], ['{a} extra credits', '{a} Extra-Credits'], ['{a}% of your credits (at most {b})', '{a} % deiner Credits (höchstens {b})'], ['{a}% of your credits', '{a} % deiner Credits'], ['Example: a new player starts with {a} credits. A code owner with 50,000 credits gets {b}, one with 500,000 gets {c}.', 'Beispiel: Ein neuer Spieler startet mit {a} Credits. Ein Code-Besitzer mit 50,000 Credits bekommt {b}, einer mit 500,000 bekommt {c}.'], ['ends in {a}', 'endet in {a}'], ['starts in {a}', 'beginnt in {a}'], ['Event gift: +{a} credits!', 'Event-Geschenk: +{a} Credits!'], ['event ×{a}', 'Event ×{a}'], ['1st place', '1. Platz'], ['2nd place', '2. Platz'], ['3rd place', '3. Platz'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
     ['Rises in {a} of steps', 'Steigt in {a} der Schritte'], ['Usually {a} or {b}', 'Meist {a} oder {b}'], ['Swings: {a}', 'Schwankung: {a}'],
     ['Start {a} · bankrupt below {b} · takeover at {c}', 'Start {a} · Pleite unter {b} · Übernahme ab {c}'],
     ['Buy {a} for {b} · sell {c} for {d} (1% fee each way)', 'Kauf {a} für {b} · Verkauf {c} für {d} (je 1 % Gebühr)'],
@@ -10487,7 +10492,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     prestige: Math.max(0, Math.min(99, Number(p.prestige) || 0)),
     trophies: Array.isArray(p.trophies) ? p.trophies.filter(t => t === '' || TROPHY_IDS.includes(t)) : [],
     title: TITLE_IDS.includes(p.title) ? p.title : null,
-    affCode: typeof (p.affCode ?? p.affiliate_code) === 'string' ? (p.affCode ?? p.affiliate_code) : null, admin: !!(p.admin ?? p.is_admin), banned: !!(p.banned ?? p.is_banned), adminRev: Number(p.adminRev ?? p.admin_rev) || 0,
+    affCode: typeof (p.affCode ?? p.affiliate_code) === 'string' ? (p.affCode ?? p.affiliate_code) : null, admin: !!(p.admin ?? p.is_admin), banned: !!(p.banned ?? p.is_banned), archived: !!p.archived, adminRev: Number(p.adminRev ?? p.admin_rev) || 0,
   }));
   const adminChanged = () => Object.assign(new Error('changed by an admin'), { code: 'admin_changed' });
   const SESSION_KEY = 'lucky-reels-session';
@@ -10896,6 +10901,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     let hasTrophies = !(await sb.from('players').select('trophies').limit(1)).error;
     const hasAffiliate = !(await sb.from('players').select('affiliate_code').limit(1)).error;
     const hasTitle = !(await sb.from('players').select('title').limit(1)).error;
+    const hasArchived = !(await sb.from('players').select('archived').limit(1)).error;
     const adminCols = adminSchema ? ',is_admin,is_banned,admin_rev' : '';
     // New accounts are only offered when Supabase confirms them on the spot: the made-up addresses can't receive mail.
     let canSignUp = false;
@@ -10925,7 +10931,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     let hasSaveSeq = true, saveSeq = null, lastTry = null;
     const otherDevice = () => Object.assign(new Error('saved on another device'), { code: 'other_device' });
     async function row(uid) {
-      let { data, error } = await sb.from('players').select(`id,name,credits,level,game${hasProfile ? ',avatar' : ''}${adminCols}${hasSaveSeq ? ',save_seq' : ''}`).eq('id', uid).maybeSingle();
+      let { data, error } = await sb.from('players').select(`id,name,credits,level,game${hasProfile ? ',avatar' : ''}${adminCols}${hasArchived ? ',archived' : ''}${hasSaveSeq ? ',save_seq' : ''}`).eq('id', uid).maybeSingle();
       if (error && hasSaveSeq && /save_seq/.test(error.message || '')) {
         hasSaveSeq = false;
         ({ data, error } = await sb.from('players').select(`id,name,credits,level,game${hasProfile ? ',avatar' : ''}${adminCols}`).eq('id', uid).maybeSingle());
@@ -10933,7 +10939,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       if (error) throw error;
       // the count is taken once, when the game is loaded; later reloads of the balance don't move it
       if (data && hasSaveSeq && saveSeq === null) saveSeq = Number(data.save_seq) || 0;
-      return data ? { key: uid, doc: { ...data, admin: !!data.is_admin, banned: !!data.is_banned, adminRev: Number(data.admin_rev) || 0 } } : null;
+      return data ? { key: uid, doc: { ...data, admin: !!data.is_admin, banned: !!data.is_banned, archived: !!data.archived, adminRev: Number(data.admin_rev) || 0 } } : null;
     }
     return {
       kind: 'supabase',
@@ -11093,6 +11099,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         reset: id => adminRpc('admin_update_player', { target: id, new_credits: null, reset: true, set_banned: null }),
         setBanned: (id, value) => adminRpc('admin_update_player', { target: id, new_credits: null, reset: false, set_banned: value }),
         setPassword: (id, pw) => adminRpc('admin_set_password', { target: id, new_pw: pw }),
+        archive: (id, on) => adminRpc('admin_archive', { target: id, on_: on }),
+        rename: (id, name) => adminRpc('admin_rename', { target: id, new_name: name }),
         setMedals: (id, medals) => adminRpc('admin_set_medals', { target: id, new_medals: medals }),
         setTitle: (id, title) => adminRpc('admin_set_title', { target: id, new_title: title }),
         setLevel: (id, level) => adminRpc('admin_set_level', { target: id, new_level: level }),
@@ -11296,7 +11304,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       },
       watch(cb) {
         const pull = async () => {
-          let { data, error } = await sb.from('players').select(`id,name,credits,best,level${hasJackpots ? ',jackpots' : ''}${hasFlair ? ',flair' : ''}${hasProfile ? ',avatar,medals' : ''}${hasPrestige ? ',prestige' : ''}${hasTrophies ? ',trophies' : ''}${hasAffiliate ? ',affiliate_code' : ''}${hasTitle ? ',title' : ''}${adminCols}`);
+          let { data, error } = await sb.from('players').select(`id,name,credits,best,level${hasJackpots ? ',jackpots' : ''}${hasFlair ? ',flair' : ''}${hasProfile ? ',avatar,medals' : ''}${hasPrestige ? ',prestige' : ''}${hasTrophies ? ',trophies' : ''}${hasAffiliate ? ',affiliate_code' : ''}${hasTitle ? ',title' : ''}${hasArchived ? ',archived' : ''}${adminCols}`);
           if (error && hasJackpots) {
             hasJackpots = false;
             ({ data } = await sb.from('players').select(`id,name,credits,best,level${adminCols}`));
@@ -11332,6 +11340,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const seenJackpots = new Map();
   let boardPrimed = false;
   let seenTitle;
+  let archivedPlayers = [];
   function onPlayers(list) {
     for (const p of list) {
       // Answers can arrive out of order, so an older list can briefly show a lower count; only a count above
@@ -11344,7 +11353,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const meNow = account && list.find(p => p.id === account.id);
     if (meNow && seenTitle !== undefined && meNow.title !== seenTitle && meNow.title) { const t = TITLES.find(x => x.id === meNow.title); toast('New title', `An admin gave you the title “${t?.name || meNow.title}”.`); }
     if (meNow) seenTitle = meNow.title;
-    players = list;
+    // archived accounts are out of the live game; only the admin menu lists them
+    players = list.filter(p => !p.archived);
+    archivedPlayers = list.filter(p => p.archived);
     if (account) checkNewMedals();
     const mine = account && list.find(p => p.id === account.id);
     if (mine) {
@@ -12654,14 +12665,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (!adminUnlocked || $('adminModal').hidden) return;
     const table = $('adminPlayers');
     const sortBy = $('adminSort').value;
-    const rows = [...players].sort((a, b) =>
+    const rows = [...players, ...archivedPlayers].sort((a, b) => a.archived - b.archived ||
       sortBy === 'credits' ? b.credits - a.credits || a.name.localeCompare(b.name)
       : sortBy === 'level' ? (b.prestige || 0) - (a.prestige || 0) || b.level - a.level || a.name.localeCompare(b.name)
       : sortBy === 'online' ? online.has(b.id) - online.has(a.id) || a.name.localeCompare(b.name)
       : a.name.localeCompare(b.name));
     // Rebuilding swaps out the buttons and inputs, which would swallow a click or a half-typed amount,
     // so only rebuild when players or their flags change and otherwise refresh the numbers in place.
-    const sig = rows.map(p => `${p.id}:${p.name}:${p.admin}:${p.banned}:${p.medals.join(',')}:${p.prestige}:${p.avatar}:${p.title}:${online.has(p.id)}`).join('|') + '|' + account?.id + '|' + sortBy;
+    const sig = rows.map(p => `${p.id}:${p.name}:${p.admin}:${p.banned}:${p.medals.join(',')}:${p.prestige}:${p.avatar}:${p.title}:${p.archived}:${online.has(p.id)}`).join('|') + '|' + account?.id + '|' + sortBy;
     if (!force && table.dataset.sig === sig) {
       for (const p of rows) {
         const tr = table.querySelector(`tr[data-pid="${CSS.escape(p.id)}"]`);
@@ -12680,7 +12691,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     table.innerHTML = '<tbody>' + rows.map(p => {
       const me = p.id === account?.id, on = online.has(p.id);
       return `
-      <tr data-pid="${esc(p.id)}" data-name="${esc(p.name.toLowerCase())}" class="${p.admin ? 'is-admin' : ''}${p.banned ? ' is-banned' : ''}${me ? ' is-me' : ''}">
+      <tr data-pid="${esc(p.id)}" data-name="${esc(p.name.toLowerCase())}" class="${p.admin ? 'is-admin' : ''}${p.banned ? ' is-banned' : ''}${p.archived ? ' is-archived' : ''}${me ? ' is-me' : ''}">
         <td class="pname"><div class="p-head">${avatarHtml(p.id, p.name, 'md')}<div class="p-id">
           <b>${nameHtml(p.id, p.name)}${p.admin ? '<span class="tag admin">admin</span>' : ''}${p.banned ? '<span class="tag banned">blocked</span>' : ''}${me ? '<span class="tag">you</span>' : ''}</b>
           <span class="p-meta"><span>${on ? '<i class="dot"></i>Online' : '<i class="off"></i>Offline'}</span><span class="p-best">Best win ${fmt(p.best)}</span>${playerAges?.[p.id] ? `<span class="p-age">${esc(ageText(playerAges[p.id]))} · ${esc(new Date(playerAges[p.id]).toLocaleString(lang === 'de' ? 'de-DE' : 'en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }))}${lang === 'de' ? ' Uhr' : ''}</span>` : ''}${p.jackpots ? `<span>${p.jackpots} × jackpot</span>` : ''}${medalsHtml(p.id, 10)}</span>
@@ -12694,6 +12705,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           <button class="abtn" data-act="job" title="Set the Lucky Burger career">🍔 Burger</button>
           <button class="abtn${rawSettings?.adLockFor?.[p.id] != null ? ' warn' : ''}" data-act="adlock" title="How long this player has to wait before closing the ad">📺 ${rawSettings?.adLockFor?.[p.id] != null ? `Ad ${adLockOf(p.id)} s` : 'Ad'}</button>
           <button class="abtn" data-act="pw"${me ? ' disabled title="Change your own password in your profile"' : ' title="Give this player a new password"'}>Password</button>
+          <button class="abtn" data-act="rename" title="Give this player a new name; they sign in with it from then on">Rename</button>
+          <button class="abtn${p.archived ? ' ok' : ''}" data-act="archive"${me || p.admin ? ' disabled' : ''} title="${p.archived ? 'Bring the account back into the game, as it was' : 'Take the account out of the game; nothing is deleted'}">${p.archived ? 'Bring back' : 'Archive'}</button>
           <span class="gap"></span>
           <button class="abtn warn" data-act="reset">Reset</button>
           <button class="abtn${p.banned ? ' ok' : ' warn'}" data-act="ban"${me ? ' disabled' : ''}>${p.banned ? 'Unblock' : 'Block'}</button>
@@ -12807,6 +12820,31 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       adminDo(`${p.name} has a new password now. Tell it to them yourself.`, async () => {
         await backend.admin.setPassword(p.id, pw);
         renderAdminPlayers(true);
+      });
+    } else if (act === 'rename') {
+      const acts = btn.closest('.acts');
+      acts.innerHTML = `<input type="text" autocomplete="off" spellcheck="false" maxlength="40" value="${esc(p.name)}" aria-label="New name for ${esc(p.name)}" class="new-player-name">` +
+        '<button class="abtn ok" data-act="rename-ok">Rename</button><button class="abtn" data-act="admin-cancel">Cancel</button>';
+      acts.querySelector('input').select();
+    } else if (act === 'rename-ok') {
+      const name = tr.querySelector('.new-player-name').value.trim();
+      if (!validId(idFor(name))) { adminSay('Names may only have letters, digits, _ and -, up to 40.', false); return; }
+      if (name === p.name) { renderAdminPlayers(true); return; }
+      if ([...players, ...archivedPlayers].some(x => x.id !== p.id && idFor(x.name) === idFor(name))) { adminSay(`${name} is taken already.`, false); return; }
+      adminDo(`${p.name} is now called ${name} and signs in with that name.`, async () => {
+        await backend.admin.rename(p.id, name);
+        p.name = name;
+        renderAdminPlayers(true);
+      });
+    } else if (act === 'archive') {
+      if (!p.archived && !confirmed(btn, 'Archive?')) return;
+      adminDo(p.archived ? `${p.name} is back in the game, as before.` : `${p.name} is archived: out of the game, nothing deleted.`, async () => {
+        await backend.admin.archive(p.id, !p.archived);
+        p.archived = !p.archived;
+        if (p.archived) { players = players.filter(x => x.id !== p.id); archivedPlayers.push(p); }
+        else { archivedPlayers = archivedPlayers.filter(x => x.id !== p.id); players.push(p); }
+        renderAdminPlayers(true);
+        renderBoards();
       });
     } else if (act === 'admin-cancel' || act === 'delete-cancel') {
       renderAdminPlayers(true);
@@ -15182,7 +15220,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       if (signUpMode) await createAccount(name, pw);
       else {
         const found = await backend.signIn(name, pw);
-        if (found?.doc?.banned) { await backend.signOut(); err.textContent = 'This account is blocked. Ask an admin.'; }
+        if (found?.doc?.banned) { await backend.signOut(); err.textContent = found.doc.archived ? 'This account is archived. Ask an admin.' : 'This account is blocked. Ask an admin.'; }
         else if (found) enterGame(found);
         else err.textContent = 'Wrong username or password.';
       }
