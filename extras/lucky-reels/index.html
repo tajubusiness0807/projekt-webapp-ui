@@ -3850,6 +3850,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
             <button class="abtn warn" type="button" id="forceReload">Force reload now</button>
           </div>
           <div class="admin-row setting wide">
+            <span><b>Test the wild spins</b> Your own next paid slot spin lands three wilds and starts the wild spins. Only for your account.</span>
+            <button class="abtn" type="button" id="forceWild">My next spin: wild spins</button>
+          </div>
+          <div class="admin-row setting wide">
             <button class="abtn ok" type="submit">Save settings</button>
             <button class="abtn" type="button" id="settingsDefaults">Back to defaults</button>
           </div>
@@ -4340,6 +4344,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Bring the account back into the game, as it was': 'Das Konto wieder ins Spiel holen, so wie es war', 'Take the account out of the game; nothing is deleted': 'Das Konto aus dem Spiel nehmen; nichts wird gelöscht',
     'Names may only have letters, digits, _ and -, up to 40.': 'Namen dürfen nur Buchstaben, Ziffern, _ und - haben, höchstens 40.', 'This account is archived. Ask an admin.': 'Dieses Konto ist archiviert. Frag einen Admin.',
     '10 wild spins': '10 Wild-Spins', 'Three wilds again! +10 wild spins.': 'Wieder drei Wilds! +10 Wild-Spins.', 'THREE WILDS! Wild spins are coming…': 'DREI WILDS! Die Wild-Spins kommen…', '+10 wild spins': '+10 Wild-Spins', 'WILD SPINS': 'WILD-SPINS', 'WILD BONUS': 'WILD-BONUS',
+    'Test the wild spins': 'Wild-Spins testen', 'Your own next paid slot spin lands three wilds and starts the wild spins. Only for your account.': 'Deine eigene nächste bezahlte Slot-Drehung landet drei Wilds und startet die Wild-Spins. Nur für dein Konto.',
+    'My next spin: wild spins': 'Mein nächster Spin: Wild-Spins', 'Your next paid slot spin lands three wilds.': 'Deine nächste bezahlte Slot-Drehung landet drei Wilds.',
     'Loading the game…': 'Spiel wird geladen…', 'The games need the online database. Check the connection and reload the page.': 'Die Spiele brauchen die Online-Datenbank. Prüf die Verbindung und lade die Seite neu.',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
@@ -9961,7 +9967,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   }
 
   // Three wilds: 10 wild spins at the same bet, every win x13, in their own look
-  const WILD_MULT = 3.3;
+  const WILD_MULT = 10.8;
   let inWild = false, wildDone = 0;
   async function runWild() {
     inWild = true;
@@ -11240,6 +11246,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         archive: (id, on) => adminRpc('admin_archive', { target: id, on_: on }),
         setBot: (id, on) => adminRpc('admin_set_bot', { target: id, on_: on }),
         setGoodie: (id, goodie, give) => adminRpc('admin_set_goodie', { target: id, goodie, give }),
+        forceWild: () => adminRpc('admin_force_wild', {}),
         nameRequests: () => adminRpcData('admin_name_requests', {}),
         nameDecide: (id, approve) => adminRpc('admin_name_decide', { req: id, approve }),
         rename: (id, name) => adminRpc('admin_rename', { target: id, new_name: name }),
@@ -13202,6 +13209,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       applySettings({ ...rawSettings, ...patch });
       fillSettingsForm();
     });
+  });
+  $('forceWild').addEventListener('click', () => {
+    adminDo('Your next paid slot spin lands three wilds.', async () => { await backend.admin.forceWild(); await srvSync(); });
   });
   $('forceReload').addEventListener('click', e => {
     if (!confirmed(e.currentTarget, 'Reload everyone?')) return;
