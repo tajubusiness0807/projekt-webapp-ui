@@ -8947,3 +8947,57 @@ end;
 $$;
 revoke execute on function public.admin_rocket_golden(uuid) from public, anon;
 grant execute on function public.admin_rocket_golden(uuid) to authenticated;
+
+
+-- ---------------------------------------------------------------------------
+-- Online log: run this part once. Every open page says "still here" once a minute; the database turns that into
+-- sessions (from, to) per player, and the admin menu lists the last 7 days. A gap of more than 3 minutes starts a
+-- new session. Sessions older than 30 days are deleted.
+create table if not exists public.lr_sessions (
+  id bigint generated always as identity primary key,
+  player uuid not null references public.players (id) on delete cascade,
+  started_at timestamptz not null default now(),
+  last_seen timestamptz not null default now()
+);
+create index if not exists lr_sessions_player on public.lr_sessions (player, last_seen desc);
+create index if not exists lr_sessions_seen on public.lr_sessions (last_seen desc);
+alter table public.lr_sessions enable row level security;
+revoke all on public.lr_sessions from anon, authenticated;
+
+create or replace function public.note_online()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  s bigint;
+begin
+  if auth.uid() is null then return; end if;
+  select id into s from public.lr_sessions where player = auth.uid() and last_seen > now() - interval '3 minutes' order by last_seen desc limit 1;
+  if s is not null then update public.lr_sessions set last_seen = now() where id = s;
+  else
+    insert into public.lr_sessions (player) select id from public.players where id = auth.uid();
+    delete from public.lr_sessions where last_seen < now() - interval '30 days';
+  end if;
+end;
+$$;
+revoke execute on function public.note_online() from public, anon;
+grant execute on function public.note_online() to authenticated;
+
+create or replace function public.admin_sessions(tok uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.admin_check(tok);
+  return coalesce((select jsonb_agg(jsonb_build_object('player', s.player, 'name', p.name, 'from', floor(extract(epoch from s.started_at) * 1000),
+    'to', floor(extract(epoch from s.last_seen) * 1000)) order by s.last_seen desc)
+    from (select * from public.lr_sessions where last_seen > now() - interval '7 days' order by last_seen desc limit 600) s
+    join public.players p on p.id = s.player), '[]'::jsonb);
+end;
+$$;
+revoke execute on function public.admin_sessions(uuid) from public, anon;
+grant execute on function public.admin_sessions(uuid) to authenticated;

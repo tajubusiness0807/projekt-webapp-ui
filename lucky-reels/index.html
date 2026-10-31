@@ -590,6 +590,12 @@ body.wide .account-bar { max-width: 980px; }
 .rr-invite-card svg { width: 140px; height: auto; margin: 0 auto; display: block; filter: drop-shadow(0 8px 12px #000c); }
 .rr-invite-card h2 { margin: 0; color: #ff4b55; }
 .rr-invite-card .gamble-btns { justify-content: center; }
+.online-log { margin-bottom: 12px; padding: 8px 12px; border-radius: 12px; background: #ffffff08; }
+.online-log summary { cursor: pointer; font-weight: 700; font-size: 13px; }
+.online-log .admin-tools { margin: 8px 0; }
+.online-day { margin: 10px 0 4px; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.online-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 10px; align-items: center; padding: 4px 0; font-size: 13px; border-bottom: 1px solid #ffffff0d; font-variant-numeric: tabular-nums; }
+.online-row .online-dur { color: var(--muted); }
 .name-reqs { display: grid; gap: 8px; margin-bottom: 12px; padding: 10px 12px; border-radius: 12px; background: #e9a23b14; border: 1px solid #e9a23b55; }
 .name-reqs-t { font-size: 13px; }
 .name-req { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; justify-content: space-between; font-size: 13px; }
@@ -3737,6 +3743,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
       <section class="admin-section" data-pane="players">
         <div class="name-reqs" id="nameReqs" hidden></div>
+        <details class="online-log" id="onlineLog"><summary>Online log (last 7 days)</summary>
+          <div class="admin-tools"><input id="onlineFilter" type="search" placeholder="Filter by name" aria-label="Filter the online log by name"><button class="abtn" type="button" id="onlineReload">Refresh</button></div>
+          <div id="onlineList"></div>
+        </details>
         <div class="admin-row">
           <input id="giveAllAmount" type="number" inputmode="numeric" placeholder="Credits for everyone, e.g. 1000 or -500" aria-label="Credits for everyone">
           <button class="abtn ok" id="giveAll" type="button">Give to everyone</button>
@@ -4376,6 +4386,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     '10 wild spins': '10 Wild-Spins', 'Three wilds again! +10 wild spins.': 'Wieder drei Wilds! +10 Wild-Spins.', 'THREE WILDS! Wild spins are coming…': 'DREI WILDS! Die Wild-Spins kommen…', '+10 wild spins': '+10 Wild-Spins', 'WILD SPINS': 'WILD-SPINS', 'WILD BONUS': 'WILD-BONUS',
     'Golden rocket': 'Goldene Rakete', '🚀 Golden rocket': '🚀 Goldene Rakete', 'Make it golden?': 'Golden machen?', 'The rocket is golden.': 'Die Rakete ist golden.', 'The rocket boarding now is golden.': 'Die Rakete, in die gerade eingestiegen wird, ist golden.', 'The next rocket is golden.': 'Die nächste Rakete ist golden.',
     'The rocket that is boarding right now turns golden (it flies past 30× for sure, for everyone on board); if it is already flying, the next one does. Players see it only at liftoff.': 'Die Rakete, in die gerade eingestiegen wird, wird golden (sie fliegt garantiert über 30×, für alle an Bord); fliegt sie schon, wird es die nächste. Spieler sehen es erst beim Abheben.',
+    'Online log (last 7 days)': 'Online-Protokoll (letzte 7 Tage)', 'Filter by name': 'Nach Name filtern', 'now': 'jetzt', 'Nobody was online in the last 7 days.': 'In den letzten 7 Tagen war niemand online.',
+    'This needs the “Online log” part of supabase-setup.sql.': 'Dafür brauchst du den Teil „Online log“ aus supabase-setup.sql.',
     'Test the wild spins': 'Wild-Spins testen', 'Your own next paid slot spin lands three wilds and starts the wild spins. Only for your account.': 'Deine eigene nächste bezahlte Slot-Drehung landet drei Wilds und startet die Wild-Spins. Nur für dein Konto.',
     'My next spin: wild spins': 'Mein nächster Spin: Wild-Spins', 'Your next paid slot spin lands three wilds.': 'Deine nächste bezahlte Slot-Drehung landet drei Wilds.',
     'Loading the game…': 'Spiel wird geladen…', 'The games need the online database. Check the connection and reload the page.': 'Die Spiele brauchen die Online-Datenbank. Prüf die Verbindung und lade die Seite neu.',
@@ -11120,6 +11132,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     }
     return {
       kind: 'supabase',
+      noteOnline: async () => { await sb.rpc('note_online'); },
       names: {
         ask: async name => { const { data, error } = await sb.rpc('request_name_change', { new_name: name }); if (error) throw error; return data; },
         mine: async () => { const { data, error } = await sb.rpc('my_name_request'); if (error) throw error; return data; },
@@ -11287,6 +11300,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         setBot: (id, on) => adminRpc('admin_set_bot', { target: id, on_: on }),
         setGoodie: (id, goodie, give) => adminRpc('admin_set_goodie', { target: id, goodie, give }),
         forceWild: () => adminRpc('admin_force_wild', {}),
+        sessions: () => adminRpcData('admin_sessions', {}),
         rocketGold: () => adminRpcData('admin_rocket_golden', {}),
         nameRequests: () => adminRpcData('admin_name_requests', {}),
         nameDecide: (id, approve) => adminRpc('admin_name_decide', { req: id, approve }),
@@ -11749,6 +11763,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     loadState(saved);
     savedCredits = state.credits;
     srvInit();
+    backend?.noteOnline?.().catch(() => {});
     $('whoami').textContent = account.name;
     renderMyAvatar();
     seenMedals = null;
@@ -12949,6 +12964,35 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (name === 'watch') loadWatch();
   }
 
+  // Online log: when who was online, from the pages' "still here" once a minute
+  setInterval(() => { if (account && backend?.noteOnline && document.visibilityState === 'visible') backend.noteOnline().catch(() => {}); }, 60000);
+  let onlineRows = [];
+  async function loadOnline() {
+    if (!backend?.admin?.sessions) { $('onlineList').innerHTML = `<p class="note">${esc(i18n('This needs the online database.'))}</p>`; return; }
+    try { onlineRows = await backend.admin.sessions() || []; }
+    catch (e) {
+      $('onlineList').innerHTML = `<p class="note">${esc(i18n(/could not find the function|PGRST202/i.test(e?.message || '') ? 'This needs the “Online log” part of supabase-setup.sql.' : 'That did not work. Check the connection and try again.'))}</p>`;
+      return;
+    }
+    renderOnline();
+  }
+  function renderOnline() {
+    const q = $('onlineFilter').value.trim().toLowerCase(), loc = lang === 'de' ? 'de-DE' : 'en-GB';
+    const rows = onlineRows.filter(r => !q || String(r.name).toLowerCase().includes(q));
+    const day = ms => new Date(ms).toLocaleDateString(loc, { weekday: 'short', day: '2-digit', month: '2-digit' });
+    const time = ms => new Date(ms).toLocaleTimeString(loc, { hour: '2-digit', minute: '2-digit' });
+    const dur = ms => { const m = Math.max(1, Math.round(ms / 60000)); return m >= 60 ? `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')} min` : `${m} min`; };
+    let last = '', html = '';
+    for (const r of rows) {
+      const d = day(r.from), now = Date.now() - r.to < 150000;
+      if (d !== last) { html += `<h4 class="online-day">${esc(d)}</h4>`; last = d; }
+      html += `<div class="online-row"><b class="lt-name">${esc(r.name)}</b><span>${time(r.from)}–${now ? esc(i18n('now')) : time(r.to)}</span><span class="online-dur">${dur(r.to - r.from)}</span>${now ? '<i class="dot"></i>' : ''}</div>`;
+    }
+    $('onlineList').innerHTML = html || `<p class="note">${esc(i18n('Nobody was online in the last 7 days.'))}</p>`;
+  }
+  $('onlineLog').addEventListener('toggle', () => { if ($('onlineLog').open) loadOnline(); });
+  $('onlineReload').addEventListener('click', loadOnline);
+  $('onlineFilter').addEventListener('input', renderOnline);
   // Name change requests: pending ones on top of the player list, with approve and decline
   let nameReqRows = [];
   async function loadNameReqs() {
