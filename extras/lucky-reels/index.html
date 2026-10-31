@@ -9933,7 +9933,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     }
     if (!pkOnline.watching) { pkOnline.watching = true; backend.poker.watch(() => pkOnlineRefresh()); }
     clearInterval(pkOnline.poll);
-    pkOnline.poll = setInterval(pkOnlineRefresh, 4000);
+    pkOnline.poll = setInterval(pkOnlineRefresh, 5000);
     clearInterval(pkOnline.ticker);
     // Anyone at the page nudges the dealer when a deadline passes (a timed-out move, the next hand).
     pkOnline.ticker = setInterval(async () => {
@@ -11343,7 +11343,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           list = [...list, map(m)].slice(-400);
           cb(list);
         }).subscribe();
-        const timer = setInterval(pull, 20000);
+        const timer = setInterval(pull, 60000);
         return () => { sb.removeChannel(ch); clearInterval(timer); dmPull = null; };
       },
       async dmSend(to, text) {
@@ -11486,7 +11486,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           list = [...list, { id: m.id, uid: m.user_id, name: m.name, body: m.body, at: Date.parse(m.created_at) }].slice(-100);
           cb(list);
         }).subscribe();
-        setInterval(pull, 20000);
+        setInterval(pull, 60000);
       },
       async chatSend(text) {
         const { error } = await sb.from('messages').insert({ body: text });
@@ -11505,7 +11505,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         // Polling instead of a live feed: with a feed, every save of every player made every page reload the
         // whole list, so the load grew with the square of the players online until the database gave up.
         let pulledAt = Date.now();
-        setInterval(() => { if (Date.now() - pulledAt >= (document.hidden ? 60000 : 5000)) { pulledAt = Date.now(); pull(); } }, 1000);
+        setInterval(() => { if (Date.now() - pulledAt >= (document.hidden ? 120000 : 12000)) { pulledAt = Date.now(); pull(); } }, 1000);
       },
     };
   }
@@ -11622,7 +11622,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   function persist() {
     if (!account) return;
     clearTimeout(saveTimer);
-    saveTimer = setTimeout(flush, 900);
+    // with the games on the server a save holds only page settings (bets, sound, the open game): rarely is enough
+    saveTimer = setTimeout(flush, srvOn() ? 8000 : 900);
   }
   // a save that really includes the current state (waits for one that is already on its way)
   async function flushNow() {
@@ -12951,7 +12952,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   }
 
   // Online log: when who was online, from the pages' "still here" once a minute
-  setInterval(() => { if (account && backend?.noteOnline && document.visibilityState === 'visible') backend.noteOnline().catch(() => {}); }, 60000);
+  setInterval(() => { if (account && backend?.noteOnline && document.visibilityState === 'visible') backend.noteOnline().catch(() => {}); }, 90000);
   let onlineRows = [];
   async function loadOnline() {
     if (!backend?.admin?.sessions) { $('onlineList').innerHTML = `<p class="note">${esc(i18n('This needs the online database.'))}</p>`; return; }
@@ -13597,7 +13598,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const now = hrNow();
     const near = lt?.slots.some(s => now > s.drawAt - 120000 && now < s.drawAt + LT_SHOW + 8000);
     const waiting = ltShow.open && !ltShow.preview && !ltShowSlot()?.winnerName;
-    if (Date.now() - ltFetchAt > (waiting ? 1500 : near ? 6000 : 25000)) ltFetch();
+    if (Date.now() - ltFetchAt > (waiting ? 1500 : near ? 6000 : 60000)) ltFetch();
     for (const s of lt?.slots || []) {
       const ph = ltPhase(s, now), mine = ltMineOf(s);
       // the show starts by itself at draw time, for everyone who is online
@@ -14786,7 +14787,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (!account || !backend?.stocks) return;
     const inGame = state.mode === 'st' && $('lobby').hidden;
     const due = stS && hrNow() >= stS.nextAt + 1500;
-    if (due || Date.now() - stFetchAt > (inGame ? 15000 : 60000)) stFetch();
+    if (due || Date.now() - stFetchAt > (inGame ? 15000 : 180000)) stFetch();
     if (inGame || !$('lobby').hidden) stClock();
   }, 1000);
 
@@ -15375,7 +15376,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   setInterval(() => {
     if (!account || !backend?.rr) return;
     const g = rrGame(), hot = g?.status === 'active' || g?.status === 'pending' || (state.mode === 'rr' && $('lobby').hidden);
-    if (Date.now() - rrFetchAt > (hot ? 1000 : document.hidden ? 15000 : 3000)) rrFetch();
+    if (Date.now() - rrFetchAt > (hot ? 1000 : document.hidden ? 30000 : 10000)) rrFetch();
     if (g?.status === 'active') {
       renderRR();
       // a heartbeat while it's your turn
