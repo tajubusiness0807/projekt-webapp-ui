@@ -7546,3 +7546,10 @@ end;
 $$;
 revoke execute on function public.admin_rename(uuid, uuid, text) from public, anon;
 grant execute on function public.admin_rename(uuid, uuid, text) to authenticated;
+
+
+-- ---------------------------------------------------------------------------
+-- Lucky Bank rises: run this part once. The calmest share takes smaller steps that go up over time: about
+-- 2% to 10% a day, 6% on average (288 steps of 5 minutes a day). Like the others it is taken over at 10x its
+-- starting price: holders are paid out and it starts again at 100.
+update public.stocks set p_up = 0.65, up = 1.001067, down = (1.000202 - 0.65 * 1.001067) / 0.35, news = 0, news_size = 0 where id = 'LBK';

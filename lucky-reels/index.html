@@ -14038,7 +14038,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const ST_TICK = 300000, ST_FEE = 0.01, ST_POS_LIMITS = 25;
   const ST_LIST = [
     // id, name, colour, chance up, up factor, news chance, news size, start price, mean of a step
-    ['LBK', 'Lucky Bank', '#4fa8e0', 0.65, 1.005, 0, 0, 100, 1.0000231],
+    // Lucky Bank, the calmest: small steps that rise over time, about 2% to 10% a day (6% on average)
+    ['LBK', 'Lucky Bank', '#4fa8e0', 0.65, 1.001067, 0, 0, 100, 1.000202],
     ['BRG', 'Burger Corp', '#d62828', 0.60, 1.0065, 0, 0, 60, 1.000032],
     ['GLD', 'Golden Mines', '#e9a23b', 0.55, 1.011, 0.003, 0.15, 150, 1],
     ['NEO', 'Neon Games', '#a77bff', 0.50, 1.015, 0.004, 0.15, 80, 1],
