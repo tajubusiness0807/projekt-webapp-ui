@@ -10627,7 +10627,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (gameBusy() || !srvOn()) return;
     let res;
     try { res = await srvCall('game_restart'); } catch (e) { toast('Start over', srvErr(e)); return; }
-    Object.assign(state, fresh(), { sound: state.sound, adminRev: state.adminRev, credits: settings.startCredits, mode: state.mode, avatar: state.avatar, giftSeen: state.giftSeen, newsSeen: state.newsSeen, newsSeenIds: state.newsSeenIds, evSeen: state.evSeen, prestige: state.prestige, jobReset: Date.now() });
+    Object.assign(state, fresh(), { sound: state.sound, adminRev: state.adminRev, credits: settings.startCredits, mode: state.mode, avatar: state.avatar, giftSeen: state.giftSeen, newsSeen: state.newsSeen, newsSeenIds: state.newsSeenIds, chatRead: state.chatRead, evSeen: state.evSeen, prestige: state.prestige, jobReset: Date.now() });
     bjShown.clear();
     renderBJTable(false);
     pendingLevels.length = 0;
@@ -12125,18 +12125,34 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   }
 
   const readKey = () => `lucky-reels-read-${account?.id}`;
+  // What was read is kept with the game (state.chatRead), so it counts on every device and after signing in again;
+  // this browser's own note is merged in. The first time, everything older counts as read.
   function loadRead() {
-    try { lastRead = JSON.parse(localStorage.getItem(readKey()) || '{}'); } catch { lastRead = {}; }
-    // On a first visit, older public messages don't count as unread.
-    if (!lastRead.all) markRead('all');
+    let local = {};
+    try { local = JSON.parse(localStorage.getItem(readKey()) || '{}') || {}; } catch { local = {}; }
+    const first = !state.chatRead || typeof state.chatRead !== 'object';
+    lastRead = first ? { base: Date.now() } : { ...state.chatRead };
+    for (const [k, v] of Object.entries(local)) if (Number(v) > (lastRead[k] || 0)) lastRead[k] = Number(v);
+    saveRead(first);
   }
-  function markRead(conv) {
-    lastRead[conv] = Date.now();
+  function saveRead(changed) {
     try { localStorage.setItem(readKey(), JSON.stringify(lastRead)); } catch {}
+    if (!changed) return;
+    // only the 60 most recent chats are kept
+    state.chatRead = Object.fromEntries(Object.entries(lastRead).sort((a, b) => b[1] - a[1]).slice(0, 60));
+    persist();
+  }
+  // marks a chat read up to its newest message (message times come from the database)
+  function markRead(conv) {
+    const list = conv === 'all' ? (chatMessages || []) : (dms || []).filter(m => partnerOf(m) === conv);
+    const newest = list.reduce((t, m) => Math.max(t, m.at || 0), 0);
+    if (newest <= (lastRead[conv] || 0)) return;
+    lastRead[conv] = newest;
+    saveRead(true);
   }
   function unreadIn(conv) {
     if (!account) return 0;
-    const since = lastRead[conv] || 0;
+    const since = Math.max(lastRead[conv] || 0, lastRead.base || 0);
     if (conv === 'all') return (chatMessages || []).filter(m => m.uid !== account.id && m.at > since).length;
     return (dms || []).filter(m => m.from === conv && m.to === account.id && m.at > since).length;
   }
