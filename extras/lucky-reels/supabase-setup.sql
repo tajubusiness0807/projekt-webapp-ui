@@ -9001,3 +9001,9 @@ end;
 $$;
 revoke execute on function public.admin_sessions(uuid) from public, anon;
 grant execute on function public.admin_sessions(uuid) to authenticated;
+
+
+-- ---------------------------------------------------------------------------
+-- Lucky Bank 3% a day: run this part once (after "Lucky Bank rises"). The calmest share now rises about 3% a day
+-- on average instead of 6% (most days between 1.3% and 4.8%), in smaller steps.
+update public.stocks set p_up = 0.65, up = 1.0005366, down = (1.0001026 - 0.65 * 1.0005366) / 0.35, news = 0, news_size = 0 where id = 'LBK';
