@@ -212,6 +212,11 @@ body.cos-goldBacks .card.back { background: repeating-linear-gradient(45deg, #e9
 .cabinet.bubblegum .marquee h1 { color: #ffe0ef; text-shadow: 0 0 18px #ff8fb8aa, 0 3px 0 #8a2c4f; }
 .cabinet.carbon { background: repeating-linear-gradient(45deg, #17181b 0 5px, #202226 5px 10px); border-color: #9aa3b5; box-shadow: 0 30px 60px -20px #000, 0 0 30px -10px #d6dae466, inset 0 2px 0 #ffffff22; }
 .cabinet.carbon .marquee h1 { color: #e4e7ee; text-shadow: 0 0 12px #ffffff44, 0 3px 0 #3a3f4a; }
+.cabinet.wild-mode { box-shadow: 0 0 0 3px #a77bff, 0 0 40px 6px #ff4fd8aa, 0 0 90px 10px #4fe3ff55; animation: wildAura 1.6s ease-in-out infinite; }
+.cabinet.wild-mode .window { background: linear-gradient(135deg, #2a0f4d, #5b1f8a 45%, #0f3b5c); }
+.cabinet.wild-mode .bulbs span { animation-duration: 0.35s; }
+@keyframes wildAura { 50% { box-shadow: 0 0 0 3px #ff4fd8, 0 0 60px 12px #a77bffcc, 0 0 120px 16px #4fe3ff77; } }
+@media (prefers-reduced-motion: reduce) { .cabinet.wild-mode { animation: none; } }
 .cabinet.bonus {
   border-color: var(--bonus);
   box-shadow: 0 30px 60px -20px #000, 0 0 50px -6px #a77bffaa, inset 0 0 30px #a77bff33;
@@ -4332,6 +4337,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Give this player a new name; they sign in with it from then on': 'Diesem Spieler einen neuen Namen geben; damit meldet er sich ab dann an',
     'Bring the account back into the game, as it was': 'Das Konto wieder ins Spiel holen, so wie es war', 'Take the account out of the game; nothing is deleted': 'Das Konto aus dem Spiel nehmen; nichts wird gelöscht',
     'Names may only have letters, digits, _ and -, up to 40.': 'Namen dürfen nur Buchstaben, Ziffern, _ und - haben, höchstens 40.', 'This account is archived. Ask an admin.': 'Dieses Konto ist archiviert. Frag einen Admin.',
+    '10 wild spins': '10 Wild-Spins', 'Three wilds again! +10 wild spins.': 'Wieder drei Wilds! +10 Wild-Spins.', 'THREE WILDS! Wild spins are coming…': 'DREI WILDS! Die Wild-Spins kommen…', '+10 wild spins': '+10 Wild-Spins', 'WILD SPINS': 'WILD-SPINS', 'WILD BONUS': 'WILD-BONUS',
     'Loading the game…': 'Spiel wird geladen…', 'The games need the online database. Check the connection and reload the page.': 'Die Spiele brauchen die Online-Datenbank. Prüf die Verbindung und lade die Seite neu.',
     'Voice: on': 'Sprecher: an', 'Voice: off': 'Sprecher: aus', 'Mega win!': 'Mega-Gewinn!', 'Big win!': 'Großer Gewinn!',
     'zero': 'Null', 'red': 'Rot', 'black': 'Schwarz', 'Place your bets, please.': 'Machen Sie Ihr Spiel.', 'Last bets!': 'Letzte Einsätze!',
@@ -4531,7 +4537,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['{a} is now called {b} and signs in with that name.', '{a} heißt jetzt {b} und meldet sich mit diesem Namen an.'], ["With the loser's XP you are level {a} now.", 'Mit den XP des Verlierers bist du jetzt Level {a}.'], ["{a} can't win the lotto now.", '{a} kann jetzt nicht mehr im Lotto gewinnen.'], ['{a} can win the lotto again.', '{a} kann wieder im Lotto gewinnen.'], ['Unlocks at Mega-Prestige {a} (prestige {b}).', 'Wird ab Mega-Prestige {a} freigeschaltet (Prestige {b}).'], ['🔒 Mega {a}', '🔒 Mega {a}'], ['From prestige {a}', 'Ab Prestige {a}'], ['Mega-Prestige {a} · Prestige {b}', 'Mega-Prestige {a} · Prestige {b}'], ['Prestige {a}: a crowned Mega badge next to your name and a new name style in the shop.', 'Prestige {a}: ein gekröntes Mega-Abzeichen neben deinem Namen und ein neuer Namens-Stil im Shop.'], ['Mega-Prestige {a}!', 'Mega-Prestige {a}!'], ['{a} got the goodie “{b}”.', '{a} hat das Goodie „{b}“ bekommen.'], ['{a} no longer has the goodie “{b}”.', '{a} hat das Goodie „{b}“ nicht mehr.'], ['Goodie for {a}', 'Goodie für {a}'], ['Change your name · {a} credits', 'Namen ändern · {a} Credits'], ['Waiting for an admin: “{a}” ({b} credits paid).', 'Wartet auf einen Admin: „{a}“ ({b} Credits bezahlt).'], ['An admin declined “{a}”; the credits came back.', 'Ein Admin hat „{a}“ abgelehnt; die Credits sind zurück.'], ['Approved: you are “{a}” now and sign in with that name.', 'Genehmigt: Du heißt jetzt „{a}“ und meldest dich mit diesem Namen an.'], ['A name change costs {a} credits.', 'Eine Namensänderung kostet {a} Credits.'], ['You are {a} now. Sign in with this name from now on.', 'Du heißt jetzt {a}. Melde dich ab jetzt mit diesem Namen an.'], ['Name change requests ({a})', 'Anträge auf Namensänderung ({a})'], ['{a} is now called {b}.', '{a} heißt jetzt {b}.'], ['Declined; {a} got the credits back.', 'Abgelehnt; {a} hat die Credits zurück.'], ['{a} is no longer marked as a bot.', '{a} ist nicht mehr als Bot markiert.'], ['{a} is marked as a bot now.', '{a} ist jetzt als Bot markiert.'], ['{a} is back in the game, as before.', '{a} ist wieder im Spiel, wie vorher.'], ['{a} is archived: out of the game, nothing deleted.', '{a} ist archiviert: aus dem Spiel genommen, nichts gelöscht.'], ['{a} is taken already.', '{a} ist schon vergeben.'], ['New name for {a}', 'Neuer Name für {a}'], ['account since {a} days', 'Konto seit {a} Tagen'], ['Refund all {a} tickets', 'Alle {a} Lose erstatten'], ['Nobody has reached {a} credits yet.', 'Noch niemand hat {a} Credits erreicht.'], ['Waiting for {a} to answer… {b} s', 'Warte auf die Antwort von {a} … {b} s'], ['{a} challenges you! {b} s', '{a} fordert dich heraus! {b} s'], ['{a} challenges you to Russian roulette!', '{a} fordert dich zum Russisch Roulette heraus!'], ['{a} s to answer', 'Noch {a} s zum Antworten'], ['1 in {a}', '1 zu {a}'], ['{a} has to pull…', '{a} muss abdrücken …'], ['Your turn. {a} s left, or you lose.', 'Du bist dran. Noch {a} s, sonst verlierst du.'], ['{a} has the revolver. {b} s.', '{a} hat den Revolver. {b} s.'], ['{a} goes first.', '{a} fängt an.'], ['*click* … empty. You live. Now {a}.', '*klick* … leer. Du lebst. Jetzt {a}.'], ['*click* … empty. {a} lives. Your turn.', '*klick* … leer. {a} lebt. Du bist dran.'], ['You waited too long: that counts as lost. Everything goes to {a}.', 'Du hast zu lange gewartet: Das zählt als verloren. Alles geht an {a}.'], ['{a} waited too long and loses everything to you!', '{a} hat zu lange gewartet und verliert alles an dich!'], ['BANG. You lost everything to {a}. Your account starts over.', 'PENG. Du hast alles an {a} verloren. Dein Konto fängt von vorne an.'], ['{a} is out. You take everything: +{b}!', '{a} ist raus. Du bekommst alles: +{b}!'], ['Everything went to {a}.', 'Alles ging an {a}.'], ['+{a} from {b}.', '+{a} von {b}.'], ['{a} credits and {b} goodies', '{a} Credits und {b} Goodies'], ['{a} credits and {b} goodie', '{a} Credits und {b} Goodie'], ['{a} won Russian roulette against {b}.', '{a} hat beim Russisch Roulette gegen {b} gewonnen.'], ['{a} said no.', '{a} hat abgelehnt.'], ['Challenge sent. {a} has 2 minutes to answer.', 'Herausforderung geschickt. {a} hat 2 Minuten zum Antworten.'], ['{a} challenges you!', '{a} fordert dich heraus!'], ['📺 Ad {a} s', '📺 Werbung {a} s'], ['Seconds (normal: {a})', 'Sekunden (normal: {a})'], ['Ad wait for {a} in seconds', 'Werbe-Wartezeit für {a} in Sekunden'], ['{a} has the normal ad wait again ({b} s).', '{a} hat wieder die normale Werbe-Wartezeit ({b} s).'], ['{a} can close the ad only after {b} seconds.', '{a} kann die Werbung erst nach {b} Sekunden schließen.'], ['Message {a}…', 'Nachricht an {a}…'], ['Sorry for the downtime! As a thank-you for your patience, everyone gets {a} credits.', 'Sorry für die Ausfallzeit! Als Dankeschön für eure Geduld bekommt jeder {a} Credits.'], ['Give everyone {a}?', 'Allen {a} geben?'], ['Everyone got {a} credits and sees a pop-up about it.', 'Alle haben {a} Credits bekommen und sehen ein Pop-up dazu.'], ['{a} now works as {b} at Lucky Burger.', '{a} arbeitet jetzt als {b} bei Lucky Burger.'], ['An admin made you {a}.', 'Ein Admin hat dich zu {a} gemacht.'], ['Lucky Burger position for {a}', 'Lucky-Burger-Position für {a}'], ['New password for {a} (6+)', 'Neues Passwort für {a} (6+)'], ['{a} has a new password now. Tell it to them yourself.', '{a} hat jetzt ein neues Passwort. Sag es ihm selbst.'], ['{a} can get credits from level {b} on.', '{a} kann erst ab Level {b} Credits bekommen.'], ['Got a code from a friend? You start with {a} credits instead of {b} (first account on this device only).', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits (nur beim ersten Konto auf diesem Gerät).'], ['Got a code from a friend? You start with {a} credits instead of {b}.', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits.'], ['New players who use it start with {a} credits.', 'Neue Spieler, die ihn nutzen, starten mit {a} Credits.'], ['New players who sign up with your code start with {a} credits.', 'Neue Spieler, die sich mit deinem Code anmelden, starten mit {a} Credits.'], ['You get {a} on top.', 'Du bekommst {a} obendrauf.'], ['{a} extra credits', '{a} Extra-Credits'], ['{a}% of your credits (at most {b})', '{a} % deiner Credits (höchstens {b})'], ['{a}% of your credits', '{a} % deiner Credits'], ['Example: a new player starts with {a} credits. A code owner with 50,000 credits gets {b}, one with 500,000 gets {c}.', 'Beispiel: Ein neuer Spieler startet mit {a} Credits. Ein Code-Besitzer mit 50,000 Credits bekommt {b}, einer mit 500,000 bekommt {c}.'], ['ends in {a}', 'endet in {a}'], ['starts in {a}', 'beginnt in {a}'], ['Event gift: +{a} credits!', 'Event-Geschenk: +{a} Credits!'], ['event ×{a}', 'Event ×{a}'], ['1st place', '1. Platz'], ['2nd place', '2. Platz'], ['3rd place', '3. Platz'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['{a} is now called {b} and signs in with that name.', '{a} heißt jetzt {b} und meldet sich mit diesem Namen an.'], ["With the loser's XP you are level {a} now.", 'Mit den XP des Verlierers bist du jetzt Level {a}.'], ["{a} can't win the lotto now.", '{a} kann jetzt nicht mehr im Lotto gewinnen.'], ['{a} can win the lotto again.', '{a} kann wieder im Lotto gewinnen.'], ['Unlocks at Mega-Prestige {a} (prestige {b}).', 'Wird ab Mega-Prestige {a} freigeschaltet (Prestige {b}).'], ['🔒 Mega {a}', '🔒 Mega {a}'], ['From prestige {a}', 'Ab Prestige {a}'], ['Mega-Prestige {a} · Prestige {b}', 'Mega-Prestige {a} · Prestige {b}'], ['Prestige {a}: a crowned Mega badge next to your name and a new name style in the shop.', 'Prestige {a}: ein gekröntes Mega-Abzeichen neben deinem Namen und ein neuer Namens-Stil im Shop.'], ['Mega-Prestige {a}!', 'Mega-Prestige {a}!'], ['{a} got the goodie “{b}”.', '{a} hat das Goodie „{b}“ bekommen.'], ['{a} no longer has the goodie “{b}”.', '{a} hat das Goodie „{b}“ nicht mehr.'], ['Goodie for {a}', 'Goodie für {a}'], ['Change your name · {a} credits', 'Namen ändern · {a} Credits'], ['Waiting for an admin: “{a}” ({b} credits paid).', 'Wartet auf einen Admin: „{a}“ ({b} Credits bezahlt).'], ['An admin declined “{a}”; the credits came back.', 'Ein Admin hat „{a}“ abgelehnt; die Credits sind zurück.'], ['Approved: you are “{a}” now and sign in with that name.', 'Genehmigt: Du heißt jetzt „{a}“ und meldest dich mit diesem Namen an.'], ['A name change costs {a} credits.', 'Eine Namensänderung kostet {a} Credits.'], ['You are {a} now. Sign in with this name from now on.', 'Du heißt jetzt {a}. Melde dich ab jetzt mit diesem Namen an.'], ['Name change requests ({a})', 'Anträge auf Namensänderung ({a})'], ['{a} is now called {b}.', '{a} heißt jetzt {b}.'], ['Declined; {a} got the credits back.', 'Abgelehnt; {a} hat die Credits zurück.'], ['Wild spin {a} · wins ×{b}', 'Wild-Spin {a} · Gewinne ×{b}'], ['{a} spins · every win ×{b}', '{a} Spins · jeder Gewinn ×{b}'], ['Wild spins paid {a} in total.', 'Die Wild-Spins haben insgesamt {a} gezahlt.'], ['Wild spins', 'Wild-Spins'], ['{a} left', 'noch {a}'], ['{a} waiting', '{a} warten'], ['{a} is no longer marked as a bot.', '{a} ist nicht mehr als Bot markiert.'], ['{a} is marked as a bot now.', '{a} ist jetzt als Bot markiert.'], ['{a} is back in the game, as before.', '{a} ist wieder im Spiel, wie vorher.'], ['{a} is archived: out of the game, nothing deleted.', '{a} ist archiviert: aus dem Spiel genommen, nichts gelöscht.'], ['{a} is taken already.', '{a} ist schon vergeben.'], ['New name for {a}', 'Neuer Name für {a}'], ['account since {a} days', 'Konto seit {a} Tagen'], ['Refund all {a} tickets', 'Alle {a} Lose erstatten'], ['Nobody has reached {a} credits yet.', 'Noch niemand hat {a} Credits erreicht.'], ['Waiting for {a} to answer… {b} s', 'Warte auf die Antwort von {a} … {b} s'], ['{a} challenges you! {b} s', '{a} fordert dich heraus! {b} s'], ['{a} challenges you to Russian roulette!', '{a} fordert dich zum Russisch Roulette heraus!'], ['{a} s to answer', 'Noch {a} s zum Antworten'], ['1 in {a}', '1 zu {a}'], ['{a} has to pull…', '{a} muss abdrücken …'], ['Your turn. {a} s left, or you lose.', 'Du bist dran. Noch {a} s, sonst verlierst du.'], ['{a} has the revolver. {b} s.', '{a} hat den Revolver. {b} s.'], ['{a} goes first.', '{a} fängt an.'], ['*click* … empty. You live. Now {a}.', '*klick* … leer. Du lebst. Jetzt {a}.'], ['*click* … empty. {a} lives. Your turn.', '*klick* … leer. {a} lebt. Du bist dran.'], ['You waited too long: that counts as lost. Everything goes to {a}.', 'Du hast zu lange gewartet: Das zählt als verloren. Alles geht an {a}.'], ['{a} waited too long and loses everything to you!', '{a} hat zu lange gewartet und verliert alles an dich!'], ['BANG. You lost everything to {a}. Your account starts over.', 'PENG. Du hast alles an {a} verloren. Dein Konto fängt von vorne an.'], ['{a} is out. You take everything: +{b}!', '{a} ist raus. Du bekommst alles: +{b}!'], ['Everything went to {a}.', 'Alles ging an {a}.'], ['+{a} from {b}.', '+{a} von {b}.'], ['{a} credits and {b} goodies', '{a} Credits und {b} Goodies'], ['{a} credits and {b} goodie', '{a} Credits und {b} Goodie'], ['{a} won Russian roulette against {b}.', '{a} hat beim Russisch Roulette gegen {b} gewonnen.'], ['{a} said no.', '{a} hat abgelehnt.'], ['Challenge sent. {a} has 2 minutes to answer.', 'Herausforderung geschickt. {a} hat 2 Minuten zum Antworten.'], ['{a} challenges you!', '{a} fordert dich heraus!'], ['📺 Ad {a} s', '📺 Werbung {a} s'], ['Seconds (normal: {a})', 'Sekunden (normal: {a})'], ['Ad wait for {a} in seconds', 'Werbe-Wartezeit für {a} in Sekunden'], ['{a} has the normal ad wait again ({b} s).', '{a} hat wieder die normale Werbe-Wartezeit ({b} s).'], ['{a} can close the ad only after {b} seconds.', '{a} kann die Werbung erst nach {b} Sekunden schließen.'], ['Message {a}…', 'Nachricht an {a}…'], ['Sorry for the downtime! As a thank-you for your patience, everyone gets {a} credits.', 'Sorry für die Ausfallzeit! Als Dankeschön für eure Geduld bekommt jeder {a} Credits.'], ['Give everyone {a}?', 'Allen {a} geben?'], ['Everyone got {a} credits and sees a pop-up about it.', 'Alle haben {a} Credits bekommen und sehen ein Pop-up dazu.'], ['{a} now works as {b} at Lucky Burger.', '{a} arbeitet jetzt als {b} bei Lucky Burger.'], ['An admin made you {a}.', 'Ein Admin hat dich zu {a} gemacht.'], ['Lucky Burger position for {a}', 'Lucky-Burger-Position für {a}'], ['New password for {a} (6+)', 'Neues Passwort für {a} (6+)'], ['{a} has a new password now. Tell it to them yourself.', '{a} hat jetzt ein neues Passwort. Sag es ihm selbst.'], ['{a} can get credits from level {b} on.', '{a} kann erst ab Level {b} Credits bekommen.'], ['Got a code from a friend? You start with {a} credits instead of {b} (first account on this device only).', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits (nur beim ersten Konto auf diesem Gerät).'], ['Got a code from a friend? You start with {a} credits instead of {b}.', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits.'], ['New players who use it start with {a} credits.', 'Neue Spieler, die ihn nutzen, starten mit {a} Credits.'], ['New players who sign up with your code start with {a} credits.', 'Neue Spieler, die sich mit deinem Code anmelden, starten mit {a} Credits.'], ['You get {a} on top.', 'Du bekommst {a} obendrauf.'], ['{a} extra credits', '{a} Extra-Credits'], ['{a}% of your credits (at most {b})', '{a} % deiner Credits (höchstens {b})'], ['{a}% of your credits', '{a} % deiner Credits'], ['Example: a new player starts with {a} credits. A code owner with 50,000 credits gets {b}, one with 500,000 gets {c}.', 'Beispiel: Ein neuer Spieler startet mit {a} Credits. Ein Code-Besitzer mit 50,000 Credits bekommt {b}, einer mit 500,000 bekommt {c}.'], ['ends in {a}', 'endet in {a}'], ['starts in {a}', 'beginnt in {a}'], ['Event gift: +{a} credits!', 'Event-Geschenk: +{a} Credits!'], ['event ×{a}', 'Event ×{a}'], ['1st place', '1. Platz'], ['2nd place', '2. Platz'], ['3rd place', '3. Platz'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
     ['Rises in {a} of steps', 'Steigt in {a} der Schritte'], ['Usually {a} or {b}', 'Meist {a} oder {b}'], ['Swings: {a}', 'Schwankung: {a}'],
     ['Start {a} · bankrupt below {b} · takeover at {c}', 'Start {a} · Pleite unter {b} · Übernahme ab {c}'],
     ['Buy {a} for {b} · sell {c} for {d} (1% fee each way)', 'Kauf {a} für {b} · Verkauf {c} für {d} (je 1 % Gebühr)'],
@@ -4626,8 +4632,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Land {a} wilds', 'Lande {a} Wilds'], ['Win with a nudge {a} times', 'Gewinne {a}-mal mit einem Stupser'],
     ['Win {a} gamble rounds', 'Gewinne {a} Riskier-Runden'], ['Win {a} spins after holding reels', 'Gewinne {a} Spins nach dem Halten'],
 ['Win all {a} gamble rounds.', 'Gewinne alle {a} Riskier-Runden.'],
-    ['Wins are multiples of your bet. Wilds stand in for any symbol except stars, and three wilds pay {a}×. After a losing spin you may get nudges (move one reel down a stop) or the chance to hold up to two reels for the next spin. After a win you can gamble it on higher or lower, up to {b} rounds; a correct guess pays by its odds. Every star on the payline fills the bonus meter; {c} stars start {d} free spins where every win pays ×{e}. Each win in a row adds ×{f} to the next win, up to ×{g}; a losing spin resets it. Levels come from XP and each one spins the prize wheel. Each reel has {h} stops. Losing streaks happen: the house wins in the long run.',
-      'Gewinne sind Vielfache deines Einsatzes. Wilds ersetzen jedes Symbol außer Sternen, drei Wilds zahlen {a}×. Nach einem verlorenen Spin bekommst du manchmal Stupser (eine Walze eine Position runter) oder darfst bis zu zwei Walzen für den nächsten Spin halten. Nach einem Gewinn kannst du ihn bei Höher/Tiefer riskieren, bis zu {b} Runden; ein richtiger Tipp zahlt nach seiner Wahrscheinlichkeit. Jeder Stern auf der Linie füllt die Bonusanzeige; {c} Sterne starten {d} Freispiele, in denen jeder Gewinn ×{e} zahlt. Jeder Gewinn in Folge legt ×{f} auf den nächsten Gewinn drauf, bis ×{g}; ein verlorener Spin setzt das zurück. Level kommen aus XP und jedes dreht das Glücksrad. Jede Walze hat {h} Positionen. Verlustserien kommen vor: Auf Dauer gewinnt das Haus.'],
+    ['Wins are multiples of your bet. Wilds stand in for any symbol except stars. Three wilds start 10 wild spins at the same bet where every win counts ×{a}, about {b}× on average. After a losing spin you may get nudges (move one reel down a stop) or the chance to hold up to two reels for the next spin. After a win you can gamble it on higher or lower, up to {c} rounds; a correct guess pays by its odds. Every star on the payline fills the bonus meter; {d} stars start {e} free spins where every win pays ×{f}. Each win in a row adds ×{g} to the next win, up to ×{h}; a losing spin resets it. Levels come from XP and each one spins the prize wheel. Each reel has {i} stops. Losing streaks happen: the house wins in the long run.',
+      'Gewinne sind Vielfache deines Einsatzes. Wilds ersetzen jedes Symbol außer Sternen. Drei Wilds starten 10 Wild-Spins mit demselben Einsatz, bei denen jeder Gewinn ×{a} zählt, im Schnitt etwa {b}×. Nach einem verlorenen Spin bekommst du manchmal Stupser (eine Walze eine Position runter) oder darfst bis zu zwei Walzen für den nächsten Spin halten. Nach einem Gewinn kannst du ihn bei Höher/Tiefer riskieren, bis zu {c} Runden; ein richtiger Tipp zahlt nach seiner Wahrscheinlichkeit. Jeder Stern auf der Linie füllt die Bonusanzeige; {d} Sterne starten {e} Freispiele, in denen jeder Gewinn ×{f} zahlt. Jeder Gewinn in Folge legt ×{g} auf den nächsten Gewinn drauf, bis ×{h}; ein verlorener Spin setzt das zurück. Level kommen aus XP und jedes dreht das Glücksrad. Jede Walze hat {i} Positionen. Verlustserien kommen vor: Auf Dauer gewinnt das Haus.'],
     // Blackjack
     ['Deal{a}', 'Austeilen{a}'], ['bet {a}', 'Einsatz {a}'], ['Not enough credits for a {a} bet.', 'Nicht genug Credits für einen Einsatz von {a}.'],
     ['You have {a}. Hit or stand?', 'Du hast {a}. Karte oder halten?'], ['Hand {a}: {b}. Hit or stand?', 'Hand {a}: {b}. Karte oder halten?'],
@@ -5060,7 +5066,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       midnight: false, disco: false, royalFelt: false, goldBacks: false, fireworks: false },
     // Cosmetics the player owns but switched off.
     cosOff: {},
-    streak: 0, stars: 0, starBank: 0, avatar: null, prestige: 0, freeSpins: 0, freeBet: 0, freeTotal: 0, jackpots: 0,
+    streak: 0, stars: 0, starBank: 0, avatar: null, prestige: 0, freeSpins: 0, freeBet: 0, freeTotal: 0, wildSpins: 0, wildBet: 0, wildTotal: 0, jackpots: 0,
     xp: 0, level: 1, ach: {}, adminRev: 0,
     nudges: 0, missions: [], missionsDone: 0,
     mode: 'slots', bj: { shoe: [], round: null, bet: 0, lastBet: 0, hands: 0 },
@@ -6356,7 +6362,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const srvCall = (fn, args = {}) => backend.games.call(fn, args);
   function srvState(g) {
     if (!g || typeof g !== 'object') return;
-    for (const k of ['level', 'prestige', 'spins', 'jackpots', 'best', 'lastWin', 'xp', 'streak', 'stars', 'starBank', 'freeSpins', 'freeBet', 'freeTotal', 'nudges', 'missionsDone', 'jobReset', 'rrAt'])
+    for (const k of ['level', 'prestige', 'spins', 'jackpots', 'best', 'lastWin', 'xp', 'streak', 'stars', 'starBank', 'freeSpins', 'freeBet', 'freeTotal', 'nudges', 'missionsDone', 'jobReset', 'rrAt', 'wildSpins', 'wildBet', 'wildTotal'])
       if (typeof g[k] === 'number') state[k] = g[k];
     state.owned = Object.assign(fresh().owned, g.owned || {});
     state.ach = Object.assign({}, g.ach);
@@ -6499,14 +6505,15 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const holds = r.held || [false, false, false], bet = r.bet, targets = r.targets;
     reels.forEach(x => x.classList.remove('win', 'star', 'wild'));
     cabinet.classList.add('spinning');
-    say(free ? `Free spin ${freeDone} · wins ×${FREE_MULT}` : raised ? 'Bet raised, so the holds are off. Spinning…' : holds.some(Boolean) ? 'Spinning the reels you did not hold…' : 'Spinning…', free ? 'bonus' : '');
+    say(r.wild ? `Wild spin ${wildDone} · wins ×${WILD_MULT}` : free ? `Free spin ${freeDone} · wins ×${FREE_MULT}` : raised ? 'Bet raised, so the holds are off. Spinning…' : holds.some(Boolean) ? 'Spinning the reels you did not hold…' : 'Spinning…', free ? 'bonus' : '');
     render();
     holds.forEach((h, i) => reels[i].classList.toggle('held', h));
     try {
       const sevenish = s => s === 'seven' || s === 'wild';
       const [s0, s1] = [STRIP[targets[0]], STRIP[targets[1]]];
       const tease = sevenish(s0) && sevenish(s1) && (s0 === 'seven' || s1 === 'seven');
-      const durations = free ? [700, 1000, tease ? 3200 : 1300] : [1100, 1550, tease ? 4200 : 2000];
+      // wild spins take their time: the reels stop one after another, slower
+      const durations = r.wild ? [1500, 2300, tease ? 4200 : 3100] : free ? [700, 1000, tease ? 3200 : 1300] : [1100, 1550, tease ? 4200 : 2000];
       const stops = targets.map((t, i) => holds[i] ? Promise.resolve() : animateReel(i, t, reduceMotion ? 0 : durations[i]));
       stops.forEach((p, i) => p.then(() => {
         if (holds[i]) return;
@@ -6532,7 +6539,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const extras = [];
     if (line && syms.includes('wild')) extras.push('wild');
     if (base && sMult > 1) extras.push(`streak ×${sMult.toFixed(2)}`);
-    if (free && base) extras.push(`bonus ×${FREE_MULT}`);
+    if (r.wild && base) extras.push(`wild ×${WILD_MULT}`);
+    else if (free && base) extras.push(`bonus ×${FREE_MULT}`);
     if (base && settings.winMultiplier !== 1) extras.push(`happy hour ×${settings.winMultiplier}`);
     if (base && evMult('slots') > 1) extras.push(`event ${evX(evMult('slots'))}`);
     if (bolt) extras.push(`lightning ×${bolt}`);
@@ -6540,7 +6548,12 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const jackpot = !!r.jackpot;
     let result = win ? 'win' : 'lose';
     if (base) markWin(syms, line);
-    if (line) say(`Three ${NAMES[line]}! +${fmt(win)}${tail}`, 'win');
+    if (r.wildTrig) {
+      reels.forEach(x => x.classList.add('win', 'wild'));
+      say(r.wild ? 'Three wilds again! +10 wild spins.' : 'THREE WILDS! Wild spins are coming…', 'bonus');
+      floatText('+10 wild spins', 'star');
+      sound.zap();
+    } else if (line) say(`Three ${NAMES[line]}! +${fmt(win)}${tail}`, 'win');
     else if (win) say(`Cherries pay ${fmt(win)}${tail}`, 'win');
     else if (state.credits < 1 && !state.freeSpins) say('Out of credits. Earn some at Lucky Burger!', 'lose');
     else if (starCount) say(`No win, but +${starCount} bonus star${starCount > 1 ? 's' : ''}.`, 'bonus');
@@ -9943,6 +9956,34 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     render();
   }
 
+  // Three wilds: 10 wild spins at the same bet, every win x13, in their own look
+  const WILD_MULT = 13;
+  let inWild = false, wildDone = 0;
+  async function runWild() {
+    inWild = true;
+    wildDone = 0;
+    cabinet.classList.add('wild-mode');
+    render();
+    sound.fanfare();
+    for (let k = 0; k < 60; k++) fxTop.confetti(['#a77bff', '#ff4fd8', '#4fe3ff', '#fff2c4']);
+    fireworks(8);
+    await banner('WILD SPINS', 'bonus', 3400, null, `${state.wildSpins} spins · every win ×${WILD_MULT}`);
+    while (state.wildSpins > 0) {
+      wildDone++;
+      const r = await spin(true);
+      if (r === null) break;
+      while (pendingLevels.length) levelUp(pendingLevels.shift());
+      await sleep(reduceMotion ? 100 : 650);
+    }
+    sound.bigWin();
+    fireworks(10);
+    await banner('WILD BONUS', 'bonus', 3600, state.wildTotal);
+    inWild = false;
+    cabinet.classList.remove('wild-mode');
+    say(`Wild spins paid ${fmt(state.wildTotal)} in total.`, 'bonus');
+    render();
+  }
+
   async function play() {
     if (busy || !account) return null;
     if (srvWait(say)) return null;
@@ -9951,13 +9992,15 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     busy = true;
     render();
     let result;
-    if (state.freeSpins > 0) {
-      await runBonus();
+    if (state.wildSpins > 0 || state.freeSpins > 0) {
+      if (state.wildSpins > 0) await runWild();
+      if (state.freeSpins > 0) await runBonus();
       result = 'bonus';
     } else {
       result = await spin(false);
       if (result) {
         while (pendingLevels.length) levelUp(pendingLevels.shift());
+        if (state.wildSpins > 0) await runWild();
         if (state.freeSpins > 0) await runBonus();
       }
     }
@@ -9971,7 +10014,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     // Spins on and on until it is stopped, the credits run out or the player leaves the slots.
     autoLeft = Infinity;
     render();
-    while (autoLeft > 0 && account && state.mode === 'slots' && $('lobby').hidden && $('shopPage').hidden && (state.freeSpins > 0 || state.credits >= spinCost())) {
+    while (autoLeft > 0 && account && state.mode === 'slots' && $('lobby').hidden && $('shopPage').hidden && (state.freeSpins > 0 || state.wildSpins > 0 || state.credits >= spinCost())) {
       const r = await play();
       if (r === null) break;
       await sleep(300);
@@ -10238,7 +10281,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
   function renderPaytable() {
     const row = (icons, note, m) => `<tr><td><span class="combo">${icons}${note ? `<span class="any">${note}</span>` : ''}</span></td><td>${m}×</td></tr>`;
-    const rows = Object.keys(PAY3).map(s => row(ICONS[s].repeat(3), '', payout(s, s, s)));
+    const rows = Object.keys(PAY3).map(s => s === 'wild'
+      ? `<tr><td><span class="combo">${ICONS.wild.repeat(3)}</span></td><td>${esc(i18n('10 wild spins'))}</td></tr>`
+      : row(ICONS[s].repeat(3), '', payout(s, s, s)));
     rows.push(row(ICONS.cherry.repeat(2), 'any two', payout('cherry', 'cherry', 'lemon')));
     rows.push(row(ICONS.cherry, 'on reel one', payout('cherry', 'lemon', 'lemon')));
     $('payRows').innerHTML = rows.join('');
@@ -10246,7 +10291,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     // Streaks, free spins, holds and nudges add about 44% on top of the line wins (simulated with best play).
     const total = Math.min(99, rtp * FEATURE_BOOST);
     $('rtp').textContent =
-      `Wins are multiples of your bet. Wilds stand in for any symbol except stars, and three wilds pay ${PAY3.wild}×. ` +
+      `Wins are multiples of your bet. Wilds stand in for any symbol except stars. Three wilds start 10 wild spins at the same bet where every win counts ×${WILD_MULT}, about ${PAY3.wild}× on average. ` +
       `After a losing spin you may get nudges (move one reel down a stop) or the chance to hold up to two reels for the next spin. After a win you can gamble it on higher or lower, up to ${GAMBLE_MAX} rounds; a correct guess pays by its odds. ` +
       `Every star on the payline fills the bonus meter; ${STAR_GOAL} stars start ${FREE_SPINS} free spins where every win pays ×${FREE_MULT}. ` +
       `Each win in a row adds ×${STREAK_STEP} to the next win, up to ×${1 + STREAK_STEP * STREAK_MAX}; a losing spin resets it. Levels come from XP and each one spins the prize wheel. ` +
@@ -10307,7 +10352,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   function render() {
     renderGameGoodies();
     const cost = spinCost();
-    const free = state.freeSpins > 0;
+    const free = state.freeSpins > 0 || state.wildSpins > 0;
     tweenCredits();
     $('lastWin').textContent = fmt(state.lastWin);
     $('stats').textContent = `Spins: ${state.spins.toLocaleString('en')} · Biggest win: ${fmt(state.best)}`;
@@ -10318,7 +10363,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const paused = settings.maintenance && !account?.isAdmin;
     spinBtn.disabled = busy || paused || (!free && state.credits < cost);
     spinBtn.classList.toggle('free', free || inBonus);
-    spinBtn.innerHTML = free && !inBonus ? `Free spins<small>${state.freeSpins} waiting</small>`
+    spinBtn.innerHTML = inWild ? `Wild spins<small>${state.wildSpins} left</small>`
+      : state.wildSpins > 0 ? `Wild spins<small>${state.wildSpins} waiting</small>`
+      : free && !inBonus ? `Free spins<small>${state.freeSpins} waiting</small>`
       : inBonus ? `Bonus<small>${state.freeSpins} left</small>`
       : cost !== state.bet ? `Spin<small>costs ${fmt(cost)}</small>` : 'Spin';
     if (paused) spinBtn.innerHTML = 'Paused<small>an admin paused the game</small>';
