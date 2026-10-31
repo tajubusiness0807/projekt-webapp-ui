@@ -7865,3 +7865,128 @@ end;
 $$;
 revoke execute on function public.admin_set_goodie(uuid, uuid, text, boolean) from public, anon;
 grant execute on function public.admin_set_goodie(uuid, uuid, text, boolean) to authenticated;
+
+
+-- ---------------------------------------------------------------------------
+-- Name change requests: run this part once (after "Archive and rename accounts"). A player can ask for a new
+-- name for the price an admin sets (nameChangePrice, default 50,000). The credits are paid with the request; an
+-- admin approves it (the player signs in with the new name from then on) or declines it (the credits come back).
+-- The player can also take the request back before an admin decides.
+create table if not exists public.lr_name_requests (
+  id bigint generated always as identity primary key,
+  player uuid not null references public.players (id) on delete cascade,
+  old_name text not null,
+  new_name text not null,
+  cost bigint not null default 0,
+  status text not null default 'pending' check (status in ('pending', 'approved', 'declined', 'cancelled')),
+  created_at timestamptz not null default now(),
+  decided_at timestamptz
+);
+create index if not exists lr_name_requests_pending on public.lr_name_requests (player) where status = 'pending';
+alter table public.lr_name_requests enable row level security;
+revoke all on public.lr_name_requests from anon, authenticated;
+
+create or replace function public.request_name_change(new_name text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  me public.players;
+  n text := trim(coalesce(new_name, ''));
+  price bigint := greatest(0, coalesce((select (data ->> 'nameChangePrice')::numeric from public.settings where id = 1), 50000))::bigint;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  select * into me from public.players where id = auth.uid() for update;
+  if me.id is null or me.is_banned then raise exception 'not allowed'; end if;
+  if n !~ '^[A-Za-z0-9_-]{1,40}$' then raise exception 'invalid name'; end if;
+  if lower(n) = lower(me.name) then raise exception 'same name'; end if;
+  if exists (select 1 from public.players where lower(name) = lower(n) and id <> me.id)
+     or exists (select 1 from auth.users where lower(email) = lower(n) || '@lucky-reels.app' and id <> me.id)
+     or exists (select 1 from public.lr_name_requests q where q.status = 'pending' and lower(q.new_name) = lower(n) and q.player <> me.id) then raise exception 'name taken'; end if;
+  if exists (select 1 from public.lr_name_requests where player = me.id and status = 'pending') then raise exception 'already asked'; end if;
+  if me.credits < price then raise exception 'not enough credits'; end if;
+  update public.players set credits = credits - price, admin_rev = admin_rev + 1, updated_at = now() where id = me.id;
+  insert into public.lr_name_requests (player, old_name, new_name, cost) values (me.id, me.name, n, price);
+  return jsonb_build_object('cost', price, 'credits', me.credits - price, 'rev', me.admin_rev + 1);
+end;
+$$;
+revoke execute on function public.request_name_change(text) from public, anon;
+grant execute on function public.request_name_change(text) to authenticated;
+
+-- the player's latest request (to show its state)
+create or replace function public.my_name_request()
+returns jsonb
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select coalesce((select jsonb_build_object('id', id, 'new_name', new_name, 'cost', cost, 'status', status, 'decided_at', floor(extract(epoch from decided_at) * 1000))
+    from public.lr_name_requests where player = auth.uid() order by id desc limit 1), '{}'::jsonb)
+$$;
+revoke execute on function public.my_name_request() from public, anon;
+grant execute on function public.my_name_request() to authenticated;
+
+create or replace function public.cancel_name_request()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  r public.lr_name_requests;
+  me public.players;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  select * into r from public.lr_name_requests where player = auth.uid() and status = 'pending' order by id desc limit 1 for update;
+  if r.id is null then raise exception 'no request'; end if;
+  update public.lr_name_requests set status = 'cancelled', decided_at = now() where id = r.id;
+  update public.players set credits = least(9007199254740991, credits + r.cost), admin_rev = admin_rev + 1, updated_at = now() where id = r.player returning * into me;
+  return jsonb_build_object('credits', me.credits, 'rev', me.admin_rev);
+end;
+$$;
+revoke execute on function public.cancel_name_request() from public, anon;
+grant execute on function public.cancel_name_request() to authenticated;
+
+create or replace function public.admin_name_requests(tok uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.admin_check(tok);
+  return coalesce((select jsonb_agg(jsonb_build_object('id', r.id, 'player', r.player, 'old_name', r.old_name, 'name', p.name, 'new_name', r.new_name, 'cost', r.cost,
+    'status', r.status, 'at', floor(extract(epoch from r.created_at) * 1000)) order by r.id desc)
+    from public.lr_name_requests r join public.players p on p.id = r.player
+    where r.status = 'pending' or r.decided_at > now() - interval '7 days'), '[]'::jsonb);
+end;
+$$;
+revoke execute on function public.admin_name_requests(uuid) from public, anon;
+grant execute on function public.admin_name_requests(uuid) to authenticated;
+
+create or replace function public.admin_name_decide(tok uuid, req bigint, approve boolean)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  r public.lr_name_requests;
+begin
+  perform public.admin_check(tok);
+  select * into r from public.lr_name_requests where id = req and status = 'pending' for update;
+  if r.id is null then raise exception 'no request'; end if;
+  if approve then
+    perform public.admin_rename(tok, r.player, r.new_name);
+    update public.lr_name_requests set status = 'approved', decided_at = now() where id = r.id;
+  else
+    update public.lr_name_requests set status = 'declined', decided_at = now() where id = r.id;
+    update public.players set credits = least(9007199254740991, credits + r.cost), admin_rev = admin_rev + 1, updated_at = now() where id = r.player;
+  end if;
+end;
+$$;
+revoke execute on function public.admin_name_decide(uuid, bigint, boolean) from public, anon;
+grant execute on function public.admin_name_decide(uuid, bigint, boolean) to authenticated;

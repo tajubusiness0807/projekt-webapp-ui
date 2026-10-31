@@ -557,6 +557,9 @@ body.wide .account-bar { max-width: 980px; }
 .rr-invite-card svg { width: 140px; height: auto; margin: 0 auto; display: block; filter: drop-shadow(0 8px 12px #000c); }
 .rr-invite-card h2 { margin: 0; color: #ff4b55; }
 .rr-invite-card .gamble-btns { justify-content: center; }
+.name-reqs { display: grid; gap: 8px; margin-bottom: 12px; padding: 10px 12px; border-radius: 12px; background: #e9a23b14; border: 1px solid #e9a23b55; }
+.name-reqs-t { font-size: 13px; }
+.name-req { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; justify-content: space-between; font-size: 13px; }
 .lt-block { display: flex; flex-wrap: wrap; gap: 6px 14px; }
 .lt-block-row { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
 .rr-more { margin-top: 8px; font-size: 13px; }
@@ -3534,6 +3537,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         <button type="submit" class="chip-btn">Save</button>
         <p class="pw-msg" id="pwMsg" role="status"></p>
       </form>
+      <span class="profile-label" id="nameLabel">Change your name</span>
+      <form class="pw-form" id="nameForm">
+        <input id="nameNew" type="text" autocomplete="off" spellcheck="false" maxlength="40" placeholder="New name" aria-label="New name">
+        <button type="submit" class="chip-btn" id="nameBtn">Ask</button>
+        <button type="button" class="chip-btn" id="nameCancel" hidden>Take it back</button>
+        <p class="pw-msg" id="nameMsg" role="status"></p>
+      </form>
     </section>
   </div>
 </div>
@@ -3693,6 +3703,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       <p class="admin-status" id="adminStatus" role="status"></p>
 
       <section class="admin-section" data-pane="players">
+        <div class="name-reqs" id="nameReqs" hidden></div>
         <div class="admin-row">
           <input id="giveAllAmount" type="number" inputmode="numeric" placeholder="Credits for everyone, e.g. 1000 or -500" aria-label="Credits for everyone">
           <button class="abtn ok" id="giveAll" type="button">Give to everyone</button>
@@ -3795,6 +3806,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           <label class="setting check"><input type="checkbox" name="chatEnabled"><span>Chat on</span><small>When off, only admins can open the chat.</small></label>
           <label class="setting check"><input type="checkbox" name="maintenance"><span>Pause the game</span><small>Nobody but admins can spin.</small></label>
           <label class="setting"><span class="label">Start credits for new accounts</span><input name="startCredits" type="number" min="0" step="1"></label>
+          <label class="setting"><span class="label">Price of a name change</span><input name="nameChangePrice" type="number" min="0" step="1"><small>Players pay it when they ask for a new name; it comes back if you decline.</small></label>
           <label class="setting"><span class="label">Win multiplier (happy hour)</span>
             <select name="winMultiplier"><option value="0.5">×0.5</option><option value="1">×1 (normal)</option><option value="1.5">×1.5</option><option value="2">×2</option><option value="3">×3</option><option value="5">×5</option><option value="10">×10</option></select></label>
           <label class="setting"><span class="label">Three sevens pay (× bet)</span><input name="jackpotPay" type="number" min="1" step="1"></label>
@@ -4309,6 +4321,12 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'A mission pays at most 2% of what you bet on spins since it started.': 'Eine Mission zahlt höchstens 2 % von dem, was du seit ihrem Start bei Spins gesetzt hast.',
     'Give this player a goodie from the shop, or take one away': 'Diesem Spieler ein Goodie aus dem Shop geben oder wegnehmen', 'Give': 'Geben', 'Take away': 'Wegnehmen', 'one level': 'eine Stufe',
     'Actions': 'Aktionen', 'Account': 'Konto', 'Game': 'Spiel', 'Look': 'Aussehen', 'archived': 'archiviert',
+    'Change your name': 'Namen ändern', 'Change your name · free': 'Namen ändern · kostenlos', 'New name': 'Neuer Name', 'Ask': 'Beantragen', 'Take it back': 'Zurückziehen', 'Take it back?': 'Zurückziehen?',
+    'An admin checks the name first. Letters, digits, _ and -.': 'Ein Admin prüft den Namen zuerst. Buchstaben, Ziffern, _ und -.', 'That is your name already.': 'So heißt du schon.',
+    'You already asked for a new name.': 'Du hast schon einen neuen Namen beantragt.', 'Name change': 'Namensänderung', 'Asked. An admin checks it soon.': 'Beantragt. Ein Admin prüft es bald.',
+    'Taken back; your credits came back.': 'Zurückgezogen; deine Credits sind zurück.', 'New name': 'Neuer Name', 'Approve': 'Genehmigen', 'Decline': 'Ablehnen', 'Decline?': 'Ablehnen?',
+    'Price of a name change': 'Preis einer Namensänderung', 'Players pay it when they ask for a new name; it comes back if you decline.': 'Spieler zahlen ihn beim Antrag; lehnst du ab, bekommen sie ihn zurück.',
+    'This needs the “Name change requests” part of supabase-setup.sql.': 'Dafür brauchst du den Teil „Name change requests“ aus supabase-setup.sql.',
     'No bot': 'Kein Bot', 'Test account': 'Testkonto', 'Take the BOT tag away': 'Das BOT-Kennzeichen entfernen', 'Mark this account as a bot (test account): a BOT tag next to the name': 'Dieses Konto als Bot markieren (Testkonto): ein BOT-Kennzeichen neben dem Namen',
     'Rename': 'Umbenennen', 'Archive': 'Archivieren', 'Bring back': 'Zurückholen', 'Archive?': 'Archivieren?',
     'Give this player a new name; they sign in with it from then on': 'Diesem Spieler einen neuen Namen geben; damit meldet er sich ab dann an',
@@ -4513,7 +4531,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['{a} is now called {b} and signs in with that name.', '{a} heißt jetzt {b} und meldet sich mit diesem Namen an.'], ["With the loser's XP you are level {a} now.", 'Mit den XP des Verlierers bist du jetzt Level {a}.'], ["{a} can't win the lotto now.", '{a} kann jetzt nicht mehr im Lotto gewinnen.'], ['{a} can win the lotto again.', '{a} kann wieder im Lotto gewinnen.'], ['Unlocks at Mega-Prestige {a} (prestige {b}).', 'Wird ab Mega-Prestige {a} freigeschaltet (Prestige {b}).'], ['🔒 Mega {a}', '🔒 Mega {a}'], ['From prestige {a}', 'Ab Prestige {a}'], ['Mega-Prestige {a} · Prestige {b}', 'Mega-Prestige {a} · Prestige {b}'], ['Prestige {a}: a crowned Mega badge next to your name and a new name style in the shop.', 'Prestige {a}: ein gekröntes Mega-Abzeichen neben deinem Namen und ein neuer Namens-Stil im Shop.'], ['Mega-Prestige {a}!', 'Mega-Prestige {a}!'], ['{a} got the goodie “{b}”.', '{a} hat das Goodie „{b}“ bekommen.'], ['{a} no longer has the goodie “{b}”.', '{a} hat das Goodie „{b}“ nicht mehr.'], ['Goodie for {a}', 'Goodie für {a}'], ['{a} is no longer marked as a bot.', '{a} ist nicht mehr als Bot markiert.'], ['{a} is marked as a bot now.', '{a} ist jetzt als Bot markiert.'], ['{a} is back in the game, as before.', '{a} ist wieder im Spiel, wie vorher.'], ['{a} is archived: out of the game, nothing deleted.', '{a} ist archiviert: aus dem Spiel genommen, nichts gelöscht.'], ['{a} is taken already.', '{a} ist schon vergeben.'], ['New name for {a}', 'Neuer Name für {a}'], ['account since {a} days', 'Konto seit {a} Tagen'], ['Refund all {a} tickets', 'Alle {a} Lose erstatten'], ['Nobody has reached {a} credits yet.', 'Noch niemand hat {a} Credits erreicht.'], ['Waiting for {a} to answer… {b} s', 'Warte auf die Antwort von {a} … {b} s'], ['{a} challenges you! {b} s', '{a} fordert dich heraus! {b} s'], ['{a} challenges you to Russian roulette!', '{a} fordert dich zum Russisch Roulette heraus!'], ['{a} s to answer', 'Noch {a} s zum Antworten'], ['1 in {a}', '1 zu {a}'], ['{a} has to pull…', '{a} muss abdrücken …'], ['Your turn. {a} s left, or you lose.', 'Du bist dran. Noch {a} s, sonst verlierst du.'], ['{a} has the revolver. {b} s.', '{a} hat den Revolver. {b} s.'], ['{a} goes first.', '{a} fängt an.'], ['*click* … empty. You live. Now {a}.', '*klick* … leer. Du lebst. Jetzt {a}.'], ['*click* … empty. {a} lives. Your turn.', '*klick* … leer. {a} lebt. Du bist dran.'], ['You waited too long: that counts as lost. Everything goes to {a}.', 'Du hast zu lange gewartet: Das zählt als verloren. Alles geht an {a}.'], ['{a} waited too long and loses everything to you!', '{a} hat zu lange gewartet und verliert alles an dich!'], ['BANG. You lost everything to {a}. Your account starts over.', 'PENG. Du hast alles an {a} verloren. Dein Konto fängt von vorne an.'], ['{a} is out. You take everything: +{b}!', '{a} ist raus. Du bekommst alles: +{b}!'], ['Everything went to {a}.', 'Alles ging an {a}.'], ['+{a} from {b}.', '+{a} von {b}.'], ['{a} credits and {b} goodies', '{a} Credits und {b} Goodies'], ['{a} credits and {b} goodie', '{a} Credits und {b} Goodie'], ['{a} won Russian roulette against {b}.', '{a} hat beim Russisch Roulette gegen {b} gewonnen.'], ['{a} said no.', '{a} hat abgelehnt.'], ['Challenge sent. {a} has 2 minutes to answer.', 'Herausforderung geschickt. {a} hat 2 Minuten zum Antworten.'], ['{a} challenges you!', '{a} fordert dich heraus!'], ['📺 Ad {a} s', '📺 Werbung {a} s'], ['Seconds (normal: {a})', 'Sekunden (normal: {a})'], ['Ad wait for {a} in seconds', 'Werbe-Wartezeit für {a} in Sekunden'], ['{a} has the normal ad wait again ({b} s).', '{a} hat wieder die normale Werbe-Wartezeit ({b} s).'], ['{a} can close the ad only after {b} seconds.', '{a} kann die Werbung erst nach {b} Sekunden schließen.'], ['Message {a}…', 'Nachricht an {a}…'], ['Sorry for the downtime! As a thank-you for your patience, everyone gets {a} credits.', 'Sorry für die Ausfallzeit! Als Dankeschön für eure Geduld bekommt jeder {a} Credits.'], ['Give everyone {a}?', 'Allen {a} geben?'], ['Everyone got {a} credits and sees a pop-up about it.', 'Alle haben {a} Credits bekommen und sehen ein Pop-up dazu.'], ['{a} now works as {b} at Lucky Burger.', '{a} arbeitet jetzt als {b} bei Lucky Burger.'], ['An admin made you {a}.', 'Ein Admin hat dich zu {a} gemacht.'], ['Lucky Burger position for {a}', 'Lucky-Burger-Position für {a}'], ['New password for {a} (6+)', 'Neues Passwort für {a} (6+)'], ['{a} has a new password now. Tell it to them yourself.', '{a} hat jetzt ein neues Passwort. Sag es ihm selbst.'], ['{a} can get credits from level {b} on.', '{a} kann erst ab Level {b} Credits bekommen.'], ['Got a code from a friend? You start with {a} credits instead of {b} (first account on this device only).', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits (nur beim ersten Konto auf diesem Gerät).'], ['Got a code from a friend? You start with {a} credits instead of {b}.', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits.'], ['New players who use it start with {a} credits.', 'Neue Spieler, die ihn nutzen, starten mit {a} Credits.'], ['New players who sign up with your code start with {a} credits.', 'Neue Spieler, die sich mit deinem Code anmelden, starten mit {a} Credits.'], ['You get {a} on top.', 'Du bekommst {a} obendrauf.'], ['{a} extra credits', '{a} Extra-Credits'], ['{a}% of your credits (at most {b})', '{a} % deiner Credits (höchstens {b})'], ['{a}% of your credits', '{a} % deiner Credits'], ['Example: a new player starts with {a} credits. A code owner with 50,000 credits gets {b}, one with 500,000 gets {c}.', 'Beispiel: Ein neuer Spieler startet mit {a} Credits. Ein Code-Besitzer mit 50,000 Credits bekommt {b}, einer mit 500,000 bekommt {c}.'], ['ends in {a}', 'endet in {a}'], ['starts in {a}', 'beginnt in {a}'], ['Event gift: +{a} credits!', 'Event-Geschenk: +{a} Credits!'], ['event ×{a}', 'Event ×{a}'], ['1st place', '1. Platz'], ['2nd place', '2. Platz'], ['3rd place', '3. Platz'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['{a} is now called {b} and signs in with that name.', '{a} heißt jetzt {b} und meldet sich mit diesem Namen an.'], ["With the loser's XP you are level {a} now.", 'Mit den XP des Verlierers bist du jetzt Level {a}.'], ["{a} can't win the lotto now.", '{a} kann jetzt nicht mehr im Lotto gewinnen.'], ['{a} can win the lotto again.', '{a} kann wieder im Lotto gewinnen.'], ['Unlocks at Mega-Prestige {a} (prestige {b}).', 'Wird ab Mega-Prestige {a} freigeschaltet (Prestige {b}).'], ['🔒 Mega {a}', '🔒 Mega {a}'], ['From prestige {a}', 'Ab Prestige {a}'], ['Mega-Prestige {a} · Prestige {b}', 'Mega-Prestige {a} · Prestige {b}'], ['Prestige {a}: a crowned Mega badge next to your name and a new name style in the shop.', 'Prestige {a}: ein gekröntes Mega-Abzeichen neben deinem Namen und ein neuer Namens-Stil im Shop.'], ['Mega-Prestige {a}!', 'Mega-Prestige {a}!'], ['{a} got the goodie “{b}”.', '{a} hat das Goodie „{b}“ bekommen.'], ['{a} no longer has the goodie “{b}”.', '{a} hat das Goodie „{b}“ nicht mehr.'], ['Goodie for {a}', 'Goodie für {a}'], ['Change your name · {a} credits', 'Namen ändern · {a} Credits'], ['Waiting for an admin: “{a}” ({b} credits paid).', 'Wartet auf einen Admin: „{a}“ ({b} Credits bezahlt).'], ['An admin declined “{a}”; the credits came back.', 'Ein Admin hat „{a}“ abgelehnt; die Credits sind zurück.'], ['Approved: you are “{a}” now and sign in with that name.', 'Genehmigt: Du heißt jetzt „{a}“ und meldest dich mit diesem Namen an.'], ['A name change costs {a} credits.', 'Eine Namensänderung kostet {a} Credits.'], ['You are {a} now. Sign in with this name from now on.', 'Du heißt jetzt {a}. Melde dich ab jetzt mit diesem Namen an.'], ['Name change requests ({a})', 'Anträge auf Namensänderung ({a})'], ['{a} is now called {b}.', '{a} heißt jetzt {b}.'], ['Declined; {a} got the credits back.', 'Abgelehnt; {a} hat die Credits zurück.'], ['{a} is no longer marked as a bot.', '{a} ist nicht mehr als Bot markiert.'], ['{a} is marked as a bot now.', '{a} ist jetzt als Bot markiert.'], ['{a} is back in the game, as before.', '{a} ist wieder im Spiel, wie vorher.'], ['{a} is archived: out of the game, nothing deleted.', '{a} ist archiviert: aus dem Spiel genommen, nichts gelöscht.'], ['{a} is taken already.', '{a} ist schon vergeben.'], ['New name for {a}', 'Neuer Name für {a}'], ['account since {a} days', 'Konto seit {a} Tagen'], ['Refund all {a} tickets', 'Alle {a} Lose erstatten'], ['Nobody has reached {a} credits yet.', 'Noch niemand hat {a} Credits erreicht.'], ['Waiting for {a} to answer… {b} s', 'Warte auf die Antwort von {a} … {b} s'], ['{a} challenges you! {b} s', '{a} fordert dich heraus! {b} s'], ['{a} challenges you to Russian roulette!', '{a} fordert dich zum Russisch Roulette heraus!'], ['{a} s to answer', 'Noch {a} s zum Antworten'], ['1 in {a}', '1 zu {a}'], ['{a} has to pull…', '{a} muss abdrücken …'], ['Your turn. {a} s left, or you lose.', 'Du bist dran. Noch {a} s, sonst verlierst du.'], ['{a} has the revolver. {b} s.', '{a} hat den Revolver. {b} s.'], ['{a} goes first.', '{a} fängt an.'], ['*click* … empty. You live. Now {a}.', '*klick* … leer. Du lebst. Jetzt {a}.'], ['*click* … empty. {a} lives. Your turn.', '*klick* … leer. {a} lebt. Du bist dran.'], ['You waited too long: that counts as lost. Everything goes to {a}.', 'Du hast zu lange gewartet: Das zählt als verloren. Alles geht an {a}.'], ['{a} waited too long and loses everything to you!', '{a} hat zu lange gewartet und verliert alles an dich!'], ['BANG. You lost everything to {a}. Your account starts over.', 'PENG. Du hast alles an {a} verloren. Dein Konto fängt von vorne an.'], ['{a} is out. You take everything: +{b}!', '{a} ist raus. Du bekommst alles: +{b}!'], ['Everything went to {a}.', 'Alles ging an {a}.'], ['+{a} from {b}.', '+{a} von {b}.'], ['{a} credits and {b} goodies', '{a} Credits und {b} Goodies'], ['{a} credits and {b} goodie', '{a} Credits und {b} Goodie'], ['{a} won Russian roulette against {b}.', '{a} hat beim Russisch Roulette gegen {b} gewonnen.'], ['{a} said no.', '{a} hat abgelehnt.'], ['Challenge sent. {a} has 2 minutes to answer.', 'Herausforderung geschickt. {a} hat 2 Minuten zum Antworten.'], ['{a} challenges you!', '{a} fordert dich heraus!'], ['📺 Ad {a} s', '📺 Werbung {a} s'], ['Seconds (normal: {a})', 'Sekunden (normal: {a})'], ['Ad wait for {a} in seconds', 'Werbe-Wartezeit für {a} in Sekunden'], ['{a} has the normal ad wait again ({b} s).', '{a} hat wieder die normale Werbe-Wartezeit ({b} s).'], ['{a} can close the ad only after {b} seconds.', '{a} kann die Werbung erst nach {b} Sekunden schließen.'], ['Message {a}…', 'Nachricht an {a}…'], ['Sorry for the downtime! As a thank-you for your patience, everyone gets {a} credits.', 'Sorry für die Ausfallzeit! Als Dankeschön für eure Geduld bekommt jeder {a} Credits.'], ['Give everyone {a}?', 'Allen {a} geben?'], ['Everyone got {a} credits and sees a pop-up about it.', 'Alle haben {a} Credits bekommen und sehen ein Pop-up dazu.'], ['{a} now works as {b} at Lucky Burger.', '{a} arbeitet jetzt als {b} bei Lucky Burger.'], ['An admin made you {a}.', 'Ein Admin hat dich zu {a} gemacht.'], ['Lucky Burger position for {a}', 'Lucky-Burger-Position für {a}'], ['New password for {a} (6+)', 'Neues Passwort für {a} (6+)'], ['{a} has a new password now. Tell it to them yourself.', '{a} hat jetzt ein neues Passwort. Sag es ihm selbst.'], ['{a} can get credits from level {b} on.', '{a} kann erst ab Level {b} Credits bekommen.'], ['Got a code from a friend? You start with {a} credits instead of {b} (first account on this device only).', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits (nur beim ersten Konto auf diesem Gerät).'], ['Got a code from a friend? You start with {a} credits instead of {b}.', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits.'], ['New players who use it start with {a} credits.', 'Neue Spieler, die ihn nutzen, starten mit {a} Credits.'], ['New players who sign up with your code start with {a} credits.', 'Neue Spieler, die sich mit deinem Code anmelden, starten mit {a} Credits.'], ['You get {a} on top.', 'Du bekommst {a} obendrauf.'], ['{a} extra credits', '{a} Extra-Credits'], ['{a}% of your credits (at most {b})', '{a} % deiner Credits (höchstens {b})'], ['{a}% of your credits', '{a} % deiner Credits'], ['Example: a new player starts with {a} credits. A code owner with 50,000 credits gets {b}, one with 500,000 gets {c}.', 'Beispiel: Ein neuer Spieler startet mit {a} Credits. Ein Code-Besitzer mit 50,000 Credits bekommt {b}, einer mit 500,000 bekommt {c}.'], ['ends in {a}', 'endet in {a}'], ['starts in {a}', 'beginnt in {a}'], ['Event gift: +{a} credits!', 'Event-Geschenk: +{a} Credits!'], ['event ×{a}', 'Event ×{a}'], ['1st place', '1. Platz'], ['2nd place', '2. Platz'], ['3rd place', '3. Platz'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
     ['Rises in {a} of steps', 'Steigt in {a} der Schritte'], ['Usually {a} or {b}', 'Meist {a} oder {b}'], ['Swings: {a}', 'Schwankung: {a}'],
     ['Start {a} · bankrupt below {b} · takeover at {c}', 'Start {a} · Pleite unter {b} · Übernahme ab {c}'],
     ['Buy {a} for {b} · sell {c} for {d} (1% fee each way)', 'Kauf {a} für {b} · Verkauf {c} für {d} (je 1 % Gebühr)'],
@@ -4845,7 +4863,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Game-wide settings an admin can change; every client applies them live.
   const DEFAULT_SETTINGS = {
     announcement: '', signupsOpen: true, chatEnabled: true, maintenance: false,
-    startCredits: 500, winMultiplier: 1, jackpotPay: 150, maxBet: 0,
+    startCredits: 500, nameChangePrice: 50000, winMultiplier: 1, jackpotPay: 150, maxBet: 0,
     starGoal: 15, freeSpins: 8, freeMult: 2, nudgeChance: 12, holdChance: 15,
     // econ 3: eight free spins instead of six; saved payout settings from before fall back to these defaults
     econ: 3,
@@ -4859,7 +4877,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Payout settings saved before the economy rework (econ 2) fall back to the new defaults.
   const ECON_KEYS = ['jackpotPay', 'starGoal', 'freeSpins', 'freeMult', 'nudgeChance', 'holdChance'];
   const SETTING_LIMITS = {
-    startCredits: [0, 1e12], winMultiplier: [0.1, 100], jackpotPay: [1, 100000], maxBet: [0, Number.MAX_SAFE_INTEGER],
+    startCredits: [0, 1e12], nameChangePrice: [0, 1e12], winMultiplier: [0.1, 100], jackpotPay: [1, 100000], maxBet: [0, Number.MAX_SAFE_INTEGER],
     starGoal: [3, 50], freeSpins: [1, 50], freeMult: [1, 20], nudgeChance: [0, 100], holdChance: [0, 100], econ: [0, 100], reloadAt: [0, Number.MAX_SAFE_INTEGER], forceReloadAt: [0, Number.MAX_SAFE_INTEGER],
     adEvery: [1, 1440], adLock: [0, 30],
     affNew: [0, 1000000], affPct: [0, 100], affMax: [0, 1e9], affFixed: [0, 1000000],
@@ -11003,6 +11021,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     }
     return {
       kind: 'supabase',
+      names: {
+        ask: async name => { const { data, error } = await sb.rpc('request_name_change', { new_name: name }); if (error) throw error; return data; },
+        mine: async () => { const { data, error } = await sb.rpc('my_name_request'); if (error) throw error; return data; },
+        cancel: async () => { const { data, error } = await sb.rpc('cancel_name_request'); if (error) throw error; return data; },
+      },
       games: {
         async call(fn, args) {
           const { data, error } = await sb.rpc(fn, args);
@@ -11164,6 +11187,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         archive: (id, on) => adminRpc('admin_archive', { target: id, on_: on }),
         setBot: (id, on) => adminRpc('admin_set_bot', { target: id, on_: on }),
         setGoodie: (id, goodie, give) => adminRpc('admin_set_goodie', { target: id, goodie, give }),
+        nameRequests: () => adminRpcData('admin_name_requests', {}),
+        nameDecide: (id, approve) => adminRpc('admin_name_decide', { req: id, approve }),
         rename: (id, name) => adminRpc('admin_rename', { target: id, new_name: name }),
         setMedals: (id, medals) => adminRpc('admin_set_medals', { target: id, new_medals: medals }),
         setTitle: (id, title) => adminRpc('admin_set_title', { target: id, new_title: title }),
@@ -11417,6 +11442,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const meNow = account && list.find(p => p.id === account.id);
     if (meNow && seenTitle !== undefined && meNow.title !== seenTitle && meNow.title) { const t = TITLES.find(x => x.id === meNow.title); toast('New title', `An admin gave you the title “${t?.name || meNow.title}”.`); }
     if (meNow) seenTitle = meNow.title;
+    if (meNow && account && meNow.name !== account.name) {
+      account.name = meNow.name;
+      $('whoami').textContent = account.name;
+      toast('New name', `You are ${account.name} now. Sign in with this name from now on.`);
+    }
     // archived accounts are out of the live game; only the admin menu lists them
     players = list.filter(p => !p.archived);
     archivedPlayers = list.filter(p => p.archived);
@@ -11745,8 +11775,54 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
   // ---------- Profiles ----------
   let profileFor = null, seenMedals = null;
+  // A new name for credits: the player asks, an admin approves or declines (the credits come back then).
+  let nameReq = null;
+  function renderNameBox() {
+    const r = nameReq, pending = r?.status === 'pending', price = settings.nameChangePrice;
+    $('nameLabel').textContent = price ? `Change your name · ${fmt(price)} credits` : 'Change your name · free';
+    $('nameNew').disabled = $('nameBtn').disabled = pending || !backend?.names;
+    $('nameCancel').hidden = !pending;
+    const m = $('nameMsg');
+    if (!backend?.names) m.textContent = 'This needs the online database.';
+    else if (pending) m.textContent = `Waiting for an admin: “${r.new_name}” (${fmt(r.cost)} credits paid).`;
+    else if (r?.status === 'declined') m.textContent = `An admin declined “${r.new_name}”; the credits came back.`;
+    else if (r?.status === 'approved') m.textContent = `Approved: you are “${r.new_name}” now and sign in with that name.`;
+    else m.textContent = 'An admin checks the name first. Letters, digits, _ and -.';
+  }
+  async function loadNameReq() {
+    if (!backend?.names) { renderNameBox(); return; }
+    try { const r = await backend.names.mine(); nameReq = r && r.id ? r : null; } catch { nameReq = null; }
+    renderNameBox();
+  }
+  $('nameForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const name = $('nameNew').value.trim(), m = $('nameMsg');
+    if (!validId(idFor(name))) { m.textContent = 'Names may only have letters, digits, _ and -, up to 40.'; return; }
+    if (idFor(name) === idFor(account?.name || '')) { m.textContent = 'That is your name already.'; return; }
+    if ([...players, ...archivedPlayers].some(p => p.id !== account?.id && idFor(p.name) === idFor(name))) { m.textContent = `${name} is taken already.`; return; }
+    if (state.credits < settings.nameChangePrice) { m.textContent = `A name change costs ${fmt(settings.nameChangePrice)} credits.`; return; }
+    if (!confirmed($('nameBtn'), `Pay ${fmt(settings.nameChangePrice)}?`)) return;
+    try {
+      const res = await backend.names.ask(name);
+      serverCredits(res, -(Number(res?.cost) || 0));
+      $('nameNew').value = '';
+      toast('Name change', 'Asked. An admin checks it soon.');
+      render();
+    } catch (err) {
+      const t = err?.message || '';
+      m.textContent = /taken/.test(t) ? `${name} is taken already.` : /credits/.test(t) ? `A name change costs ${fmt(settings.nameChangePrice)} credits.` : /already/.test(t) ? 'You already asked for a new name.' : /invalid/.test(t) ? 'Names may only have letters, digits, _ and -, up to 40.' : /request_name_change|could not find/i.test(t) ? 'This needs the “Name change requests” part of supabase-setup.sql.' : 'That did not work. Check the connection and try again.';
+      return;
+    }
+    loadNameReq();
+  });
+  $('nameCancel').addEventListener('click', async () => {
+    if (!confirmed($('nameCancel'), 'Take it back?')) return;
+    try { const res = await backend.names.cancel(); serverCredits(res, 0); toast('Name change', 'Taken back; your credits came back.'); render(); } catch {}
+    loadNameReq();
+  });
   function openProfile(id) {
     profileFor = id;
+    if (id === account?.id) loadNameReq();
     $('profileBody').__html = '';
     $('profileBody').__fresh = true;
     renderProfile();
@@ -12761,7 +12837,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.tab === name)));
     document.querySelectorAll('[data-pane]').forEach(p => { p.hidden = p.dataset.pane !== name; });
     adminSay('');
-    if (name === 'players') { renderAdminPlayers(true); loadMilestones(); loadAges(); }
+    if (name === 'players') { renderAdminPlayers(true); loadMilestones(); loadAges(); loadNameReqs(); }
     if (name === 'game') { fillSettingsForm(); renderNewsAdmin(); renderResetAdmin(); }
     if (name === 'events') { if (!$('evForm').elements.title.value) evFill(null); renderAdminEvents(); }
     if (name === 'chat') renderAdminMsgs();
@@ -12772,6 +12848,28 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (name === 'watch') loadWatch();
   }
 
+  // Name change requests: pending ones on top of the player list, with approve and decline
+  let nameReqRows = [];
+  async function loadNameReqs() {
+    if (!backend?.admin?.nameRequests) return;
+    try { nameReqRows = await backend.admin.nameRequests() || []; } catch { nameReqRows = []; }
+    const pend = nameReqRows.filter(r => r.status === 'pending'), box = $('nameReqs');
+    box.hidden = !pend.length;
+    box.innerHTML = pend.length ? `<b class="name-reqs-t">Name change requests (${pend.length})</b>` + pend.map(r => `<div class="name-req"><span><span class="lt-name">${esc(r.name)}</span> → <b class="lt-name">${esc(r.new_name)}</b> · ${fmt(Number(r.cost) || 0)} credits</span>
+      <span class="acts"><button type="button" class="abtn ok" data-namereq="${esc(r.id)}" data-ok="1">Approve</button><button type="button" class="abtn warn" data-namereq="${esc(r.id)}">Decline</button></span></div>`).join('') : '';
+  }
+  $('nameReqs').addEventListener('click', e => {
+    const b = e.target.closest('[data-namereq]');
+    if (!b) return;
+    const r = nameReqRows.find(x => String(x.id) === b.dataset.namereq), ok = !!b.dataset.ok;
+    if (!r || (!ok && !confirmed(b, 'Decline?'))) return;
+    adminDo(ok ? `${r.name} is now called ${r.new_name}.` : `Declined; ${r.name} got the credits back.`, async () => {
+      await backend.admin.nameDecide(Number(r.id), ok);
+      await loadNameReqs();
+    });
+  });
+  // new requests show while the admin menu is open
+  setInterval(() => { if (adminUnlocked && !$('adminModal').hidden && backend?.admin?.nameRequests) loadNameReqs(); }, 30000);
   // which players' action panels are open (they stay open when the list is drawn again)
   const adminOpen = new Set();
   function renderAdminPlayers(force = false) {
