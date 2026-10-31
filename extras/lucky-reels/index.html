@@ -1455,7 +1455,13 @@ body.has-announce .toasts { top: calc(58px + env(safe-area-inset-top, 0px)); }
 .admin-table .credit-edit input { flex: 1; min-width: 0; width: auto; padding: 7px 8px; font-size: 13px; }
 .admin-table .acts { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
 .admin-table .acts .abtn { padding: 6px 10px; font-size: 12px; }
-.admin-table .acts .gap { flex: 1; }
+.admin-table .p-more summary { cursor: pointer; width: fit-content; padding: 5px 12px; border-radius: 999px; background: #ffffff10; font-size: 12px; font-weight: 600; list-style: none; }
+.admin-table .p-more summary::-webkit-details-marker { display: none; }
+.admin-table .p-more summary::after { content: " ▾"; opacity: .7; }
+.admin-table .p-more[open] summary::after { content: " ▴"; }
+.admin-table .p-grps { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); gap: 10px; margin-top: 10px; }
+.admin-table .p-grp { display: grid; gap: 6px; align-content: start; min-width: 0; padding: 8px 10px; border-radius: 10px; background: #ffffff08; }
+.admin-table .p-grp-t { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
 .admin-table tr[hidden] { display: none; }
 .admin-table .tag { display: inline-block; margin-left: 4px; padding: 1px 6px; border-radius: 999px; font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
 .tag.admin { background: #e9a23b33; color: var(--accent); }
@@ -4302,6 +4308,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'No sending credits while tickets are on sale': 'Kein Credits-Senden während des Losverkaufs', 'Off: players can send each other credits at any time.': 'Aus: Spieler können sich jederzeit Credits schicken.',
     'A mission pays at most 2% of what you bet on spins since it started.': 'Eine Mission zahlt höchstens 2 % von dem, was du seit ihrem Start bei Spins gesetzt hast.',
     'Give this player a goodie from the shop, or take one away': 'Diesem Spieler ein Goodie aus dem Shop geben oder wegnehmen', 'Give': 'Geben', 'Take away': 'Wegnehmen', 'one level': 'eine Stufe',
+    'Actions': 'Aktionen', 'Account': 'Konto', 'Game': 'Spiel', 'Look': 'Aussehen', 'archived': 'archiviert',
     'No bot': 'Kein Bot', 'Test account': 'Testkonto', 'Take the BOT tag away': 'Das BOT-Kennzeichen entfernen', 'Mark this account as a bot (test account): a BOT tag next to the name': 'Dieses Konto als Bot markieren (Testkonto): ein BOT-Kennzeichen neben dem Namen',
     'Rename': 'Umbenennen', 'Archive': 'Archivieren', 'Bring back': 'Zurückholen', 'Archive?': 'Archivieren?',
     'Give this player a new name; they sign in with it from then on': 'Diesem Spieler einen neuen Namen geben; damit meldet er sich ab dann an',
@@ -12765,6 +12772,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (name === 'watch') loadWatch();
   }
 
+  // which players' action panels are open (they stay open when the list is drawn again)
+  const adminOpen = new Set();
   function renderAdminPlayers(force = false) {
     if (!adminUnlocked || $('adminModal').hidden) return;
     const table = $('adminPlayers');
@@ -12797,27 +12806,32 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       return `
       <tr data-pid="${esc(p.id)}" data-name="${esc(p.name.toLowerCase())}" class="${p.admin ? 'is-admin' : ''}${p.banned ? ' is-banned' : ''}${p.archived ? ' is-archived' : ''}${me ? ' is-me' : ''}">
         <td class="pname"><div class="p-head">${avatarHtml(p.id, p.name, 'md')}<div class="p-id">
-          <b>${nameHtml(p.id, p.name)}${p.admin ? '<span class="tag admin">admin</span>' : ''}${p.banned ? '<span class="tag banned">blocked</span>' : ''}${me ? '<span class="tag">you</span>' : ''}</b>
+          <b>${nameHtml(p.id, p.name)}${p.admin ? '<span class="tag admin">admin</span>' : ''}${p.banned && !p.archived ? '<span class="tag banned">blocked</span>' : ''}${p.archived ? '<span class="tag">archived</span>' : ''}${me ? '<span class="tag">you</span>' : ''}</b>
           <span class="p-meta"><span>${on ? '<i class="dot"></i>Online' : '<i class="off"></i>Offline'}</span><span class="p-best">Best win ${fmt(p.best)}</span>${playerAges?.[p.id] ? `<span class="p-age">${esc(ageText(playerAges[p.id]))} · ${esc(new Date(playerAges[p.id]).toLocaleString(lang === 'de' ? 'de-DE' : 'en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }))}${lang === 'de' ? ' Uhr' : ''}</span>` : ''}${p.jackpots ? `<span>${p.jackpots} × jackpot</span>` : ''}${medalsHtml(p.id, 10)}</span>
         </div></div></td>
         <td class="p-credits"><span class="p-field-label">Credits</span><div class="credit-edit"><input class="credit-in" type="number" inputmode="numeric" value="${p.credits}" aria-label="Credits for ${esc(p.name)}"><button class="abtn" data-act="credits">Set</button></div></td>
         <td class="lvl"><span class="p-field-label">Level</span><div class="credit-edit level-edit"><input class="level-in" type="number" inputmode="numeric" min="1" max="${MAX_LEVEL}" value="${p.level}" aria-label="Level for ${esc(p.name)}"><button class="abtn" data-act="level">Set</button></div></td>
-        <td class="p-acts"><div class="acts">
-          <button class="abtn" data-act="medals">Medals</button>
-          <button class="abtn${p.title === 'bugabuser' ? ' warn' : ''}" data-act="title" title="${p.title === 'bugabuser' ? 'Take the title away again' : 'Give this player the title Bug Abuser'}">${p.title === 'bugabuser' ? 'Remove “Bug Abuser”' : '🐞 Bug Abuser'}</button>
-          <button class="abtn" data-act="admin"${me ? ' disabled' : ''}>${p.admin ? 'Remove admin' : 'Make admin'}</button>
-          <button class="abtn" data-act="job" title="Set the Lucky Burger career">🍔 Burger</button>
-          <button class="abtn${rawSettings?.adLockFor?.[p.id] != null ? ' warn' : ''}" data-act="adlock" title="How long this player has to wait before closing the ad">📺 ${rawSettings?.adLockFor?.[p.id] != null ? `Ad ${adLockOf(p.id)} s` : 'Ad'}</button>
-          <button class="abtn" data-act="pw"${me ? ' disabled title="Change your own password in your profile"' : ' title="Give this player a new password"'}>Password</button>
-          <button class="abtn${p.bot ? ' warn' : ''}" data-act="bot" title="${p.bot ? 'Take the BOT tag away' : 'Mark this account as a bot (test account): a BOT tag next to the name'}">🤖 ${p.bot ? 'No bot' : 'Bot'}</button>
-          <button class="abtn" data-act="goodie" title="Give this player a goodie from the shop, or take one away">🎁 Goodie</button>
-          <button class="abtn" data-act="rename" title="Give this player a new name; they sign in with it from then on">Rename</button>
-          <button class="abtn${p.archived ? ' ok' : ''}" data-act="archive"${me || p.admin ? ' disabled' : ''} title="${p.archived ? 'Bring the account back into the game, as it was' : 'Take the account out of the game; nothing is deleted'}">${p.archived ? 'Bring back' : 'Archive'}</button>
-          <span class="gap"></span>
-          <button class="abtn warn" data-act="reset">Reset</button>
-          <button class="abtn${p.banned ? ' ok' : ' warn'}" data-act="ban"${me ? ' disabled' : ''}>${p.banned ? 'Unblock' : 'Block'}</button>
-          <button class="abtn warn" data-act="delete"${me || p.admin ? ' disabled' : ''} title="${p.admin ? 'Remove admin rights first' : 'Delete this account for good'}">Delete</button>
-        </div></td>
+        <td class="p-acts"><details class="p-more"${adminOpen.has(p.id) ? ' open' : ''}><summary>Actions</summary><div class="p-grps">
+          <div class="p-grp"><span class="p-grp-t">Account</span><div class="acts">
+            <button class="abtn" data-act="pw"${me ? ' disabled title="Change your own password in your profile"' : ' title="Give this player a new password"'}>Password</button>
+            <button class="abtn" data-act="rename" title="Give this player a new name; they sign in with it from then on">Rename</button>
+            <button class="abtn" data-act="admin"${me ? ' disabled' : ''}>${p.admin ? 'Remove admin' : 'Make admin'}</button>
+            <button class="abtn${p.bot ? ' warn' : ''}" data-act="bot" title="${p.bot ? 'Take the BOT tag away' : 'Mark this account as a bot (test account): a BOT tag next to the name'}">🤖 ${p.bot ? 'No bot' : 'Bot'}</button>
+            <button class="abtn${p.archived ? ' ok' : ''}" data-act="archive"${me || p.admin ? ' disabled' : ''} title="${p.archived ? 'Bring the account back into the game, as it was' : 'Take the account out of the game; nothing is deleted'}">${p.archived ? 'Bring back' : 'Archive'}</button>
+            <button class="abtn${p.banned ? ' ok' : ' warn'}" data-act="ban"${me ? ' disabled' : ''}>${p.banned ? 'Unblock' : 'Block'}</button>
+            <button class="abtn warn" data-act="delete"${me || p.admin ? ' disabled' : ''} title="${p.admin ? 'Remove admin rights first' : 'Delete this account for good'}">Delete</button>
+          </div></div>
+          <div class="p-grp"><span class="p-grp-t">Game</span><div class="acts">
+            <button class="abtn" data-act="goodie" title="Give this player a goodie from the shop, or take one away">🎁 Goodie</button>
+            <button class="abtn" data-act="job" title="Set the Lucky Burger career">🍔 Burger</button>
+            <button class="abtn warn" data-act="reset">Reset</button>
+          </div></div>
+          <div class="p-grp"><span class="p-grp-t">Look</span><div class="acts">
+            <button class="abtn" data-act="medals">Medals</button>
+            <button class="abtn${p.title === 'bugabuser' ? ' warn' : ''}" data-act="title" title="${p.title === 'bugabuser' ? 'Take the title away again' : 'Give this player the title Bug Abuser'}">${p.title === 'bugabuser' ? 'Remove “Bug Abuser”' : '🐞 Bug Abuser'}</button>
+            <button class="abtn${rawSettings?.adLockFor?.[p.id] != null ? ' warn' : ''}" data-act="adlock" title="How long this player has to wait before closing the ad">📺 ${rawSettings?.adLockFor?.[p.id] != null ? `Ad ${adLockOf(p.id)} s` : 'Ad'}</button>
+          </div></div>
+        </div></details></td>
       </tr>`;
     }).join('') + '</tbody>';
     adminFilter();
@@ -12830,6 +12844,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     $('adminCount').textContent = q ? `${shown} / ${players.length}` : `${players.length} players`;
   }
   $('adminSearch').addEventListener('input', adminFilter);
+  $('adminPlayers').addEventListener('toggle', e => {
+    const d = e.target.closest?.('details.p-more'), pid = d?.closest('tr')?.dataset.pid;
+    if (pid) d.open ? adminOpen.add(pid) : adminOpen.delete(pid);
+  }, true);
   $('adminSort').addEventListener('change', () => renderAdminPlayers(true));
   $('adminPlayers').addEventListener('click', e => {
     const medal = e.target.closest('[data-medal]');
