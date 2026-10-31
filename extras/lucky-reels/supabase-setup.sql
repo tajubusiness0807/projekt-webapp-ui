@@ -7643,3 +7643,102 @@ begin
 end;
 $$;
 revoke execute on function public.rr_settle(public.rr_games, uuid, text) from public, anon, authenticated;
+
+
+-- ---------------------------------------------------------------------------
+-- Lotto: players who can't win: run this part once (after "Account age and lotto refunds"). An admin can
+-- pick players whose tickets never win; they still buy tickets as usual and see nothing of it. The list is in
+-- a table only the admin functions can read. If only such players bought tickets for a draw, nobody wins and
+-- their tickets are refunded.
+create table if not exists public.lr_lotto_block (
+  player uuid primary key references public.players (id) on delete cascade,
+  created_at timestamptz not null default now()
+);
+alter table public.lr_lotto_block enable row level security;
+revoke all on public.lr_lotto_block from anon, authenticated;
+
+create or replace function public.lotto_settle(draw text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  dr public.lotto_draws;
+  cfg jsonb := public.lotto_cfg();
+  n integer;
+  tot numeric;
+  etot numeric;
+  v_pot bigint;
+  pick public.lotto_tickets;
+  x numeric;
+begin
+  select * into dr from public.lotto_draws where id = draw for update;
+  if dr.id is null or dr.settled or now() < dr.draw_at then return; end if;
+  select count(*), coalesce(sum(cost), 0) into n, tot from public.lotto_tickets where draw_id = draw;
+  if n = 0 then
+    update public.lotto_draws set settled = true, pot = 0, tickets = 0 where id = draw;
+    return;
+  end if;
+  -- only tickets of players who can win take part in the draw
+  select coalesce(sum(cost), 0) into etot from public.lotto_tickets t where t.draw_id = draw and not exists (select 1 from public.lr_lotto_block b where b.player = t.player);
+  if etot = 0 then
+    update public.players p set credits = least(9007199254740991, p.credits + t.cost), admin_rev = p.admin_rev + 1, updated_at = now()
+      from public.lotto_tickets t where t.draw_id = draw and p.id = t.player;
+    update public.lotto_tickets set payout = 0, claimed = true, refunded = true where draw_id = draw;
+    update public.lotto_draws set settled = true, pot = 0, tickets = n where id = draw;
+    return;
+  end if;
+  v_pot := floor(tot * (cfg ->> 'share')::numeric / 100)::bigint + (cfg ->> (dr.kind || 'Bonus'))::bigint;
+  if cfg ->> 'mode' = 'equal' then
+    select * into pick from public.lotto_tickets t where t.draw_id = draw and not exists (select 1 from public.lr_lotto_block b where b.player = t.player)
+      order by random() limit 1;
+  else
+    x := random() * etot;
+    select q.id, q.draw_id, q.player, q.name, q.cost, q.payout, q.claimed, q.created_at into pick
+      from (select t.*, sum(t.cost) over (order by t.id) as run from public.lotto_tickets t
+            where t.draw_id = draw and not exists (select 1 from public.lr_lotto_block b where b.player = t.player)) q
+      where q.run > x order by q.run limit 1;
+    if pick.id is null then
+      select * into pick from public.lotto_tickets t where t.draw_id = draw and not exists (select 1 from public.lr_lotto_block b where b.player = t.player)
+        order by t.id desc limit 1;
+    end if;
+  end if;
+  update public.lotto_tickets set payout = case when id = pick.id then v_pot else 0 end where draw_id = draw;
+  -- the winner gets the pot right away, online or not
+  update public.players set credits = least(9007199254740991, credits + v_pot), admin_rev = admin_rev + 1, updated_at = now() where id = pick.player;
+  update public.lotto_tickets set claimed = true where draw_id = draw;
+  update public.lotto_draws set settled = true, pot = v_pot, tickets = n, winner = pick.player, winner_name = pick.name, winner_cost = pick.cost
+    where id = draw;
+end;
+$$;
+
+create or replace function public.admin_lotto_blocked(tok uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.admin_check(tok);
+  return coalesce((select jsonb_agg(player) from public.lr_lotto_block), '[]'::jsonb);
+end;
+$$;
+revoke execute on function public.admin_lotto_blocked(uuid) from public, anon;
+grant execute on function public.admin_lotto_blocked(uuid) to authenticated;
+
+create or replace function public.admin_lotto_block(tok uuid, target uuid, on_ boolean)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.admin_check(tok);
+  if on_ then insert into public.lr_lotto_block (player) values (target) on conflict do nothing;
+  else delete from public.lr_lotto_block where player = target;
+  end if;
+end;
+$$;
+revoke execute on function public.admin_lotto_block(uuid, uuid, boolean) from public, anon;
+grant execute on function public.admin_lotto_block(uuid, uuid, boolean) to authenticated;
