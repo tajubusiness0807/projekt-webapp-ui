@@ -7742,3 +7742,93 @@ end;
 $$;
 revoke execute on function public.admin_lotto_block(uuid, uuid, boolean) from public, anon;
 grant execute on function public.admin_lotto_block(uuid, uuid, boolean) to authenticated;
+
+
+-- ---------------------------------------------------------------------------
+-- Mega-Prestige: run this part once (after "Games on the server"). Every 10 prestiges make one Mega-Prestige
+-- (the page shows a crowned badge). For Mega-Prestige I to V there is a name style in the shop that can only be
+-- bought from that tier on.
+alter table public.players drop constraint if exists players_flair_check;
+alter table public.players add constraint players_flair_check
+  check (flair is null or flair in ('neon', 'gold', 'fire', 'ice', 'galaxy', 'admin', 'mega1', 'mega2', 'mega3', 'mega4', 'mega5'));
+
+create or replace function public.players_0_lock()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+declare
+  o jsonb;
+  n jsonb;
+begin
+  if current_user <> 'authenticated' then return new; end if;
+  new.credits := old.credits; new.level := old.level; new.prestige := old.prestige;
+  new.spins := old.spins; new.jackpots := old.jackpots; new.best := old.best;
+  if new.game is distinct from old.game then
+    begin o := old.game::jsonb; exception when others then o := '{}'::jsonb; end;
+    begin n := new.game::jsonb; exception when others then n := o; end;
+    new.game := public.lr_protect(n, o)::text;
+  end if;
+  begin
+    if o is null then o := coalesce(old.game::jsonb, '{}'::jsonb); end if;
+    begin
+      if new.flair is not null and new.flair <> 'admin' and coalesce((o -> 'owned' ->> (case new.flair when 'neon' then 'neon' when 'gold' then 'goldName'
+        when 'fire' then 'fireName' when 'ice' then 'iceName' when 'galaxy' then 'galaxyName' when 'mega1' then 'mega1' when 'mega2' then 'mega2' when 'mega3' then 'mega3' when 'mega4' then 'mega4' when 'mega5' then 'mega5' else '-' end))::boolean, false) is not true then new.flair := null; end if;
+      if coalesce(array_length(new.trophies, 1), 0) > 0 then
+        new.trophies := array(select t from unnest(new.trophies) with ordinality u(t, i)
+          where (i = 1 and t = '') or coalesce((o -> 'owned' ->> t)::boolean, false) order by i);
+      end if;
+    end;
+  exception when others then null;
+  end;
+  return new;
+end;
+$$;
+
+create or replace function public.lr_price(id text, g jsonb) returns numeric language sql immutable as $$
+  select case id
+    when 'horseshoe' then 2000 * power(3, public.lr_n(g -> 'owned', 'horseshoe'))
+    when 'goldCherry' then 1500 when 'piggy' then 3000 when 'starPlus' then 30000 when 'autospin' then 1000
+    when 'gold' then 25000 when 'midnight' then 30000 when 'ruby' then 20000 when 'emerald' then 20000 when 'bubblegum' then 18000 when 'carbon' then 35000
+    when 'neon' then 40000 when 'goldName' then 15000 when 'fireName' then 22000 when 'iceName' then 22000 when 'galaxyName' then 50000 when 'adminName' then 0
+    when 'bronzeCup' then 5000 when 'silverCup' then 25000 when 'goldCup' then 100000 when 'diamondTrophy' then 500000 when 'crownTrophy' then 2000000
+    when 'nightMode' then 5000 when 'disco' then 8000 when 'royalFelt' then 15000 when 'goldBacks' then 12000 when 'fireworks' then 20000
+    when 'bjChip' then 15000 when 'bjShoe' then 8000 when 'bjPeek' then 20000 when 'rlStraight' then 12000 when 'rlOutside' then 20000 when 'rlZero' then 25000
+    when 'pkMagnet' then 15000 when 'pkCoach' then 10000 when 'plGold' then 20000 when 'plSoft' then 10000 when 'plBump' then 15000
+    when 'ckFeather' then 12000 when 'ckHelmet' then 12000 when 'ckGold' then 20000 when 'hrCrop' then 15000 when 'hrBino' then 15000 when 'hrSaddle' then 15000
+    when 'rkTurbo' then 25000 when 'rkChute' then 15000 when 'rkPilot' then 15000 when 'cfThumb' then 30000
+    when 'mega1' then 100000 when 'mega2' then 250000 when 'mega3' then 500000 when 'mega4' then 1000000 when 'mega5' then 2500000
+    when 'jbShoes' then 3000 when 'jbTimer' then 8000 when 'jbBadge' then 25000 when 'jbSchool' then 60000 when 'lightning' then 250000
+  end
+$$;
+
+create or replace function public.game_buy(p_id text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  p public.players := public.lr_me();
+  c jsonb := public.lr_cfg();
+  g jsonb := public.lr_g(p);
+  price numeric := public.lr_price(p_id, g);
+  d numeric := public.lr_evd(c);
+begin
+  if price is null then raise exception 'unknown goodie'; end if;
+  if p_id = 'adminName' and not p.is_admin then raise exception 'not allowed'; end if;
+  -- the Mega name styles only from their Mega-Prestige on (every 10 prestiges)
+  if p_id ~ '^mega[1-5]$' and p.prestige < 10 * substr(p_id, 5)::integer then raise exception 'locked'; end if;
+  if d > 0 then price := greatest(1, floor(price * (1 - d))); end if;
+  if public.lr_n(g, 'credits') < price then raise exception 'credits'; end if;
+  if p_id = 'horseshoe' then
+    if public.lr_n(g -> 'owned', 'horseshoe') >= 3 then raise exception 'maxed'; end if;
+    g := jsonb_set(g, '{owned,horseshoe}', to_jsonb(public.lr_n(g -> 'owned', 'horseshoe') + 1));
+  else
+    if public.lr_has(g, p_id) then raise exception 'owned'; end if;
+    g := jsonb_set(g, array['owned', p_id], 'true');
+  end if;
+  g := public.lr_ach(public.lr_add(g, 'credits', -price));
+  return public.lr_put(p.id, g, jsonb_build_object('id', p_id, 'price', price));
+end;
+$$;
