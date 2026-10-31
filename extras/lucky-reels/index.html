@@ -4218,7 +4218,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Blackjacks pay 1.55 to 1 instead of 3 to 2.': 'Blackjacks zahlen 1,55 zu 1 statt 3 zu 2.', 'Strategy Card': 'Strategiekarte', 'Shows the best move for your hand against the dealer’s card.': 'Zeigt den besten Zug für deine Hand gegen die Karte des Dealers.',
     'Dealer’s Peek': 'Dealer-Blick', 'When the dealer has blackjack you only lose your first bet: doubles and splits come back.': 'Hat der Dealer Blackjack, verlierst du nur deinen ersten Einsatz: Verdoppeln und Teilen kommen zurück.',
     'Strategy Card: the move that wins most in the long run.': 'Strategiekarte: der Zug, der auf Dauer am meisten bringt.',
-    'Close Call': 'Knapp daneben', 'auto nudge': 'Auto-Stupser', 'When the ball lands right next to your single number on the wheel, 45% of that chip comes back.': 'Landet die Kugel auf dem Rad direkt neben deiner Einzelzahl, kommen 45 % dieses Chips zurück.',
+    'Close Call': 'Knapp daneben', 'Leave the poker table first.': 'Verlass zuerst den Pokertisch.', 'Finish the Russian roulette first.': 'Bring zuerst das Russisch Roulette zu Ende.', 'auto nudge': 'Auto-Stupser', 'When the ball lands right next to your single number on the wheel, 45% of that chip comes back.': 'Landet die Kugel auf dem Rad direkt neben deiner Einzelzahl, kommen 45 % dieses Chips zurück.',
     'Winning outside bets (colours, odd or even, halves, dozens, columns) pay 2% more.': 'Gewonnene Außenwetten (Farben, Gerade/Ungerade, Hälften, Dutzende, Spalten) zahlen 2 % mehr.',
     'Zero Shield': 'Null-Schild', 'When the ball lands on 0, half of your outside bets (colours, odd or even, halves, dozens, columns) come back.': 'Landet die Kugel auf der 0, kommt die Hälfte deiner Außenwetten (Farben, Gerade/Ungerade, Hälften, Dutzende, Spalten) zurück.',
     'At the solo table the house takes half the rake from your pots (2.5% instead of 5%).': 'Am Solo-Tisch nimmt das Haus nur die halbe Gebühr von deinen Pots (2,5 % statt 5 %).',
@@ -6461,6 +6461,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const m = e?.message || '';
     if (/credits/.test(m)) return 'Not enough credits for that.';
     if (/paused/.test(m)) return 'The game is paused by an admin. Try again later.';
+    if (/poker table first/.test(m)) return 'Leave the poker table first.';
+    if (/russian roulette running/.test(m)) return 'Finish the Russian roulette first.';
     return 'That did not work. Check the connection and try again.';
   }
   async function srvSync() {
