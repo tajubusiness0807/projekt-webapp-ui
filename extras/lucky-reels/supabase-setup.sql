@@ -9007,3 +9007,53 @@ grant execute on function public.admin_sessions(uuid) to authenticated;
 -- Lucky Bank 3% a day: run this part once (after "Lucky Bank rises"). The calmest share now rises about 3% a day
 -- on average instead of 6% (most days between 1.3% and 4.8%), in smaller steps.
 update public.stocks set p_up = 0.65, up = 1.0005366, down = (1.0001026 - 0.65 * 1.0005366) / 0.35, news = 0, news_size = 0 where id = 'LBK';
+
+
+-- ---------------------------------------------------------------------------
+-- Lucky Burger paychecks that arrive a little early: run this part once (after "Games on the server"). A paycheck
+-- that reached the database a moment too early (a slow connection) was turned down, and without the shift start
+-- every paycheck was. Now each paycheck moves the shift clock on by 10 seconds, with 2.5 seconds of room; over
+-- a shift it still can't come more often than every 10 seconds.
+create or replace function public.game_job(p_act text, p_mood numeric default 0)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  p public.players := public.lr_me();
+  c jsonb := public.lr_cfg();
+  g jsonb := public.lr_g(p);
+  j jsonb := coalesce(g -> 'job', '{}'::jsonb);
+  t numeric := floor(extract(epoch from clock_timestamp()) * 1000);
+  pay numeric := 0;
+  pos integer;
+  now_pos integer;
+  promo boolean := false;
+begin
+  if p_act = 'start' then
+    j := j || jsonb_build_object('shifts', public.lr_n(j, 'shifts') + 1, 'paidAt', t - 10000);
+  elsif p_act = 'pay' then
+    -- one paycheck per 10 seconds of work: each one moves the clock on by 10 seconds, with a little room for
+    -- a slow connection (over time it can never be faster than every 10 seconds)
+    if public.lr_n(j, 'paidAt') > 0 and t < public.lr_n(j, 'paidAt') + 10000 - 2500 then
+      return public.lr_put(p.id, g, jsonb_build_object('pay', 0, 'early', true));
+    end if;
+    pos := public.lr_jb_pos(public.lr_n(j, 'worked'));
+    -- the happier the boss, the bigger the paycheck (80% to 120% of the wage), +10% with the badge
+    pay := round((array[14, 22, 34, 50, 72, 105, 160, 250])[pos + 1] * (0.8 + 0.4 * least(100, greatest(30, coalesce(p_mood, 0))) / 100)
+      * case when public.lr_has(g, 'jbBadge') then 1.1 else 1 end * public.lr_evf(c, 'wage'));
+    j := j || jsonb_build_object('worked', public.lr_n(j, 'worked') + 10 * case when public.lr_has(g, 'jbSchool') then 1.25 else 1 end,
+      'earned', public.lr_n(j, 'earned') + pay, 'paidAt', greatest(public.lr_n(j, 'paidAt') + 10000, t - 10000));
+    now_pos := public.lr_jb_pos(public.lr_n(j, 'worked'));
+    if now_pos > public.lr_n(j, 'pos') then j := j || jsonb_build_object('pos', now_pos); promo := true; end if;
+    g := public.lr_add(g, 'credits', pay) || jsonb_build_object('job', j);
+    g := public.lr_ach(g, jsonb_build_object('jobPaid', true, 'jobPos', now_pos));
+    return public.lr_put(p.id, g, jsonb_build_object('pay', pay, 'pos', now_pos, 'promoted', promo));
+  elsif p_act = 'stop' then
+    j := j - 'paidAt';
+  else raise exception 'unknown';
+  end if;
+  return public.lr_put(p.id, g || jsonb_build_object('job', j), '{}'::jsonb);
+end;
+$$;
