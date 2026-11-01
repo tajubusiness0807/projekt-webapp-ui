@@ -4670,7 +4670,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     ['Photo finish! {a} wins by a nose!', 'Fotofinish! {a} gewinnt um eine Nasenlänge!'], ['{a} wins!', '{a} gewinnt!'],
     ['{a} on {b} to win. Good luck!', '{a} auf {b} (Sieg). Viel Glück!'], ['{a} on {b} to place. Good luck!', '{a} auf {b} (Platz). Viel Glück!'],
     ['You won {a} credits!', 'Du hast {a} Credits gewonnen!'], ['Your bet came in: +{a} credits!', 'Deine Wette ist aufgegangen: +{a} Credits!'],
-    ['Bet {a} · {b}', 'Setzen {a} · {b}'], ['Win · {a}', 'Sieg · {a}'], ['Place · {a}', 'Platz · {a}'],
+    ['Bet {a} · Win {b}×', 'Setzen {a} · Sieg {b}×'], ['Bet {a} · Place {b}×', 'Setzen {a} · Platz {b}×'], ['Bet {a} · {b}', 'Setzen {a} · {b}'], ['Win · {a}', 'Sieg · {a}'], ['Place · {a}', 'Platz · {a}'],
     ['{a} · {b} players', '{a} · {b} Spieler'], ['{a} of 5', '{a} von 5'], ['Trophies ({a})', 'Trophäen ({a})'],
     ['Lane {a} made it! ×{b} · cash out {c} or keep going.', 'Spur {a} geschafft! ×{b} · {c} auszahlen oder weiter.'], ['Splat! Hit in lane {a}. The {b} is gone.', 'Platsch! In Spur {a} erwischt. Die {b} sind weg.'],
     ['Made it across! ×{a} · +{b}', 'Geschafft, ganz rüber! ×{a} · +{b}'], ['Cashed out at lane {a}: ×{b} · +{c}', 'In Spur {a} ausgezahlt: ×{b} · +{c}'],
@@ -8525,7 +8525,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           ${hrHorseLabel(race, h)}
           <span class="hr-form" aria-label="${stars} of 5">${'★'.repeat(stars)}<i>${'★'.repeat(5 - stars)}</i>${i === fav ? '<em>Favourite</em>' : ''}</span>
           <span class="hr-odds"><span>Win <b>${race.win[i].toFixed(2)}×</b></span><span>Place <b>${race.place[i].toFixed(2)}×</b></span></span>
-          ${pos ? `<span class="hr-pos">${pos}.</span>` : `<button class="chip-btn hr-betbtn" type="button" data-hb="${h}" ${open ? '' : 'disabled'}>Bet ${fmt(amt)} · ${odds.toFixed(state.hr.kind === 'win' ? 1 : 2)}×</button>`}
+          ${pos ? `<span class="hr-pos">${pos}.</span>` : `<button class="chip-btn hr-betbtn" type="button" data-hb="${h}" ${open ? '' : 'disabled'}>${esc(i18n(`Bet ${fmt(amt)} · ${state.hr.kind === 'win' ? 'Win' : 'Place'} ${odds.toFixed(2)}×`))}</button>`}
         </div>`;
       }).join('');
     }
