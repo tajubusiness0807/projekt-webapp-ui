@@ -631,6 +631,9 @@ body.th-lpRoyalTheme { --bg: #0e0518; --cabinet: #2a0f4a; --cabinet-edge: #5a2a8
 @media (max-width: 520px) { .rr-pick.lp-pick .gp-pass { width: 64px; } }
 .game-pick.inv-pick { position: relative; }
 .game-pick.inv-pick.locked { filter: grayscale(0.9); opacity: 0.62; }
+.game-pick.inv-pick .gp-title, .game-pick.inv-pick .gp-desc { max-width: 100%; overflow-wrap: anywhere; }
+.game-pick.inv-pick .gp-inv { max-width: 100%; }
+@media (max-width: 600px) { .game-pick.inv-pick .gp-title { font-size: clamp(15px, 4.6vw, 22px); letter-spacing: 0; } }
 .game-pick.inv-pick.locked .gp-title::before { content: "🔒"; font-size: 0.8em; margin-right: 6px; vertical-align: 0.05em; }
 .game-pick.inv-pick .gp-title { color: #ffd24a; }
 .gp-pass, .gp-inv { width: 120px; height: auto; }
