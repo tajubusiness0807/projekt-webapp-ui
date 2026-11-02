@@ -13543,3 +13543,22 @@ begin
   if not found then raise exception 'no such player'; end if;
 end;
 $$;
+
+
+-- ---------------------------------------------------------------------------
+-- More titles: run this part once (after "New title"). Admins can also give "Grinder" and "Daytrader".
+alter table public.players drop constraint if exists players_title_check;
+alter table public.players add constraint players_title_check check (title is null or title in ('bugabuser', 'tenmil', 'grinder', 'daytrader'));
+create or replace function public.admin_set_title(tok uuid, target uuid, new_title text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.admin_check(tok);
+  if new_title is not null and new_title not in ('bugabuser', 'tenmil', 'grinder', 'daytrader') then raise exception 'unknown title'; end if;
+  update public.players set title = new_title where id = target;
+  if not found then raise exception 'no such player'; end if;
+end;
+$$;
