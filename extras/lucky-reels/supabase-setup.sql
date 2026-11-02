@@ -13507,3 +13507,19 @@ begin
   return public.lr_put(p.id, g, jsonb_build_object('frames', frames, 'busted', busted));
 end;
 $$;
+
+
+-- ---------------------------------------------------------------------------
+-- Harder game missions: run this part once (after "XP from small bets"). The goals of the game missions grow with
+-- how fast a game is played (Plinko drops 10 balls a click, so its goals are by far the biggest), and the missions
+-- everyone has now are drawn again with the new goals.
+create or replace function public.lr_gm_goal(game text, kind text, tier integer) returns integer language sql immutable as $$
+  select (case game
+    when 'pl' then case kind when 'play' then array[150, 300, 500] when 'win' then array[60, 120, 200] else array[8, 15, 25] end
+    when 'cf' then case kind when 'play' then array[40, 80, 140] when 'win' then array[20, 40, 70] else array[3, 5, 8] end
+    when 'ck' then case kind when 'play' then array[20, 40, 70] when 'win' then array[10, 20, 35] else array[3, 5, 8] end
+    when 'bj' then case kind when 'play' then array[20, 40, 70] when 'win' then array[10, 20, 35] else array[3, 5, 8] end
+    when 'pk' then case kind when 'play' then array[10, 20, 35] when 'win' then array[4, 8, 14] else array[2, 3, 5] end
+    else case kind when 'play' then array[5, 10, 15] when 'win' then array[2, 4, 7] else array[1, 2, 3] end end)[tier + 1]
+$$;
+update public.players set game = (game::jsonb - 'gm')::text where game like '{%' and game::jsonb ? 'gm';
