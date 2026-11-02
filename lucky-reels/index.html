@@ -7330,9 +7330,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (!account || !backend?.roulette) return;
     const now = hrNow(), { id, e, phase } = rlPhaseOf(now);
     const watching = state.mode === 'rl' && $('lobby').hidden && $('shopPage').hidden;
+    // only a page that shows the table or has chips in this round asks the server about it
+    const rlNeed = watching || state.rl.open.includes(id);
     if (rlCur.id !== id) {
       rlCur = { id, result: null };
-      rlFetchR(id);
+      if (rlNeed) rlFetchR(id);
       if (watching) {
         $('rlResult').hidden = true;
         document.querySelectorAll('.rl-cell.hit, .rl-cell.won').forEach(x => x.classList.remove('hit', 'won'));
@@ -7344,7 +7346,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       }
     }
     if (rlReadyR === false && !watching) return;
-    if (!rlOpen(phase) && rlCur.result == null && performance.now() - rlFetchAt > 700) rlFetchR(id);
+    if (rlNeed && !rlOpen(phase) && rlCur.result == null && performance.now() - rlFetchAt > (watching ? 700 : 2500)) rlFetchR(id);
     // Chips still waiting when time runs out go in by themselves.
     if (phase === 'bet' && e >= RL_ROLL - 1500 && rlTotal() > 0 && rlAutoFor !== id && !rlSubmitting) { rlAutoFor = id; rlSubmit(true); }
     if (watching && phase === 'roll' && rlRollSaid !== id && !rlBusy) { rlRollSaid = id; rlSay('The ball is rolling: no new chips, but you can drag your stacks to move or swap them.', 'hot'); audio.whoosh(); voice.say('The ball is rolling.'); renderRLControls(); }
@@ -8467,9 +8469,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const now = hrNow(), { id, e, phase } = hrPhaseOf(now);
     const race = hrRaces.get(id);
     const watching = state.mode === 'hr' && $('lobby').hidden && $('shopPage').hidden;
-    if (hrReady !== false || watching) {
+    // only a page that shows the race or has a bet on it asks the server about it
+    if ((hrReady !== false || watching) && (watching || state.hr.open.includes(id))) {
       if (!race && performance.now() - hrLastFetch > 3000) hrFetch(id);
-      else if (race && phase !== 'bet' && !race.finish && performance.now() - hrLastFetch > 900) hrFetch(id);
+      else if (race && phase !== 'bet' && !race.finish && performance.now() - hrLastFetch > (watching ? 900 : 2500)) hrFetch(id);
     }
     if (watching && hrReady !== false) {
       if (hrBetsFor !== id || (phase === 'bet' && performance.now() - hrBetsAt > (backend.horse.shared ? 4000 : 1500))) { if (performance.now() - hrBetsAt > 1200) hrLoadBets(id); }
@@ -9372,8 +9375,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const watching = state.mode === 'rk' && $('lobby').hidden && $('shopPage').hidden;
     const mine = rkMine();
     const since = performance.now() - rkFetchAt;
+    // a page that neither shows the rocket nor has a ticket asks only once a minute (once every 5 in the background)
+    const rkNeed = watching || !!mine || state.rk.open.length > 0;
     if (rkReady !== false || watching) {
-      if (!rkCur || (rkCur.nextStart && now >= rkCur.nextStart)) { if (since > 1500) rkFetch(); }
+      if (!rkNeed) { if (since > (document.hidden ? 300000 : 60000)) rkFetch(); }
+      else if (!rkCur || (rkCur.nextStart && now >= rkCur.nextStart)) { if (since > 1500) rkFetch(); }
       else if (p.phase === 'fly' && (watching || (mine && mine.payout == null)) && since > (watching ? 400 : 1000)) rkFetch();
       else if (p.phase === 'bet' && since > 15000) rkFetch();
     }
@@ -11144,24 +11150,28 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const email = name => `${idFor(name)}@${EMAIL_DOMAIN}`;
     let hasJackpots = true;
     let onlineCh = null, onlineReady = false, onlineMe = null, dmPull = null;
+    // Which columns the database has (they come with the parts of supabase-setup.sql). One question for all of them,
+    // at the same time as the sign-up settings; only if that fails, each column is checked on its own (also at once).
+    const COLS = ['admin_rev', 'flair', 'avatar,medals', 'prestige', 'trophies', 'affiliate_code', 'title', 'archived', 'is_bot'];
+    const signupQ = fetch(`${SUPABASE.url}/auth/v1/settings`, { headers: { apikey: SUPABASE.anonKey } }).then(r => r.json()).catch(() => null);
+    let have = {};
+    const all = await sb.from('players').select(COLS.join(',')).limit(1);
+    if (!all.error) COLS.forEach(c => { have[c] = true; });
+    else (await Promise.all(COLS.map(c => sb.from('players').select(c).limit(1)))).forEach((r, i) => { have[COLS[i]] = !r.error; });
     // Admin columns exist once the admin part of supabase-setup.sql has run.
-    const adminSchema = !(await sb.from('players').select('admin_rev').limit(1)).error;
-    let hasFlair = !(await sb.from('players').select('flair').limit(1)).error;
-    let hasProfile = !(await sb.from('players').select('avatar,medals').limit(1)).error;
-    let hasPrestige = !(await sb.from('players').select('prestige').limit(1)).error;
-    let hasTrophies = !(await sb.from('players').select('trophies').limit(1)).error;
-    const hasAffiliate = !(await sb.from('players').select('affiliate_code').limit(1)).error;
-    const hasTitle = !(await sb.from('players').select('title').limit(1)).error;
-    const hasArchived = !(await sb.from('players').select('archived').limit(1)).error;
-    const hasBot = !(await sb.from('players').select('is_bot').limit(1)).error;
+    const adminSchema = have.admin_rev;
+    let hasFlair = have.flair;
+    let hasProfile = have['avatar,medals'];
+    let hasPrestige = have.prestige;
+    let hasTrophies = have.trophies;
+    const hasAffiliate = have.affiliate_code;
+    const hasTitle = have.title;
+    const hasArchived = have.archived;
+    const hasBot = have.is_bot;
     const adminCols = adminSchema ? ',is_admin,is_banned,admin_rev' : '';
     // New accounts are only offered when Supabase confirms them on the spot: the made-up addresses can't receive mail.
-    let canSignUp = false;
-    try {
-      const res = await fetch(`${SUPABASE.url}/auth/v1/settings`, { headers: { apikey: SUPABASE.anonKey } });
-      const cfg = await res.json();
-      canSignUp = !cfg.disable_signup && !!cfg.mailer_autoconfirm;
-    } catch {}
+    const cfg = await signupQ;
+    const canSignUp = !!cfg && !cfg.disable_signup && !!cfg.mailer_autoconfirm;
     let adminToken = null;
     const adminLocked = () => Object.assign(new Error('admin menu locked'), { code: 'admin_locked' });
     async function adminRpcData(fn, args) {
@@ -13844,7 +13854,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const now = hrNow();
     const near = lt?.slots.some(s => now > s.drawAt - 120000 && now < s.drawAt + LT_SHOW + 8000);
     const waiting = ltShow.open && !ltShow.preview && !ltShowSlot()?.winnerName;
-    if (Date.now() - ltFetchAt > (waiting ? 1500 : near ? 6000 : 60000)) ltFetch();
+    if (Date.now() - ltFetchAt > (waiting ? 1500 : near ? 6000 : document.hidden ? 300000 : 60000)) ltFetch();
     for (const s of lt?.slots || []) {
       const ph = ltPhase(s, now), mine = ltMineOf(s);
       // the show starts by itself at draw time, for everyone who is online

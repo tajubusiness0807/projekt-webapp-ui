@@ -10830,3 +10830,21 @@ end;
 $$;
 revoke execute on function public.admin_watch_log(uuid, uuid, integer) from public, anon;
 grant execute on function public.admin_watch_log(uuid, uuid, integer) to authenticated;
+
+
+-- ---------------------------------------------------------------------------
+-- Faster: run this part once (after "Watch list"). Indexes for questions the database answers all the time, which
+-- until now read whole tables that keep growing: claimed bets not yet shown to the player, and the gifts a player
+-- received or sent. The highscore rule asks "is this an admin?" once per question instead of once per row.
+-- (CREATE INDEX on these small tables takes a moment at most.)
+create index if not exists horse_bets_unseen on public.horse_bets (player) where claimed and not seen;
+create index if not exists roulette_bets_unseen on public.roulette_bets (player) where claimed and not seen;
+create index if not exists rocket_bets_unseen on public.rocket_bets (player) where claimed and not seen;
+create index if not exists lotto_tickets_unseen on public.lotto_tickets (player) where claimed and not seen;
+create index if not exists transfers_recipient on public.transfers (recipient, created_at desc);
+create index if not exists transfers_sender on public.transfers (sender, created_at desc);
+create index if not exists lr_suspicious_player on public.lr_suspicious (player);
+drop policy if exists "Highscores are public" on public.players;
+create policy "Highscores are public" on public.players
+  for select using (not archived or id = (select auth.uid()) or (select public.is_admin()));
+analyze public.players, public.horse_bets, public.roulette_bets, public.rocket_bets, public.lotto_tickets, public.transfers;
