@@ -620,7 +620,18 @@ body.th-lpRoyalTheme { --bg: #0e0518; --cabinet: #2a0f4a; --cabinet-edge: #5a2a8
 .inv-card .inv-sell { background: var(--chrome); }
 .inv-lock { display: grid; gap: 10px; justify-items: center; padding: 30px 16px; border-radius: 18px; background: var(--panel); text-align: center; }
 .inv-lock b { font: 400 22px var(--font-display); color: var(--accent); }
-.game-pick.pass-pick .gp-title { color: #7dff6a; }
+.rr-pick.lp-pick { margin: 6px 0 18px; border: 3px solid #2fa84a; background: radial-gradient(circle at 15% 50%, #1f6a30, #0a2410 70%); border-color: #2fa84a; box-shadow: 0 18px 40px -18px #000, inset 0 0 40px #7dff6a22; }
+.rr-pick.lp-pick:hover, .rr-pick.lp-pick:focus-visible { border-color: #7dff6a; box-shadow: 0 22px 46px -16px #000, 0 0 36px -6px #7dff6a99; }
+.rr-pick.lp-pick .gp-title { color: #7dff6a; text-shadow: 0 0 14px #7dff6a66; }
+.rr-pick.lp-pick .gp-desc { display: block; max-width: none; margin-top: 4px; color: #d6f5d0; font-size: 13px; }
+.rr-pick.lp-pick .gp-go { background: linear-gradient(#b6ff6a, #2fa84a); color: #0d2a12; }
+.rr-pick.lp-pick .gp-pass { width: 96px; filter: drop-shadow(0 6px 10px #000c); }
+.lp-pick-bar { display: block; height: 8px; margin-top: 8px; border-radius: 4px; background: #0006; overflow: hidden; }
+.lp-pick-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #2fd16a, #ffe14f); border-radius: 4px; }
+@media (max-width: 520px) { .rr-pick.lp-pick .gp-pass { width: 64px; } }
+.game-pick.inv-pick { position: relative; }
+.game-pick.inv-pick.locked { filter: grayscale(0.9); opacity: 0.62; }
+.game-pick.inv-pick.locked .gp-title::before { content: "🔒"; font-size: 0.8em; margin-right: 6px; vertical-align: 0.05em; }
 .game-pick.inv-pick .gp-title { color: #ffd24a; }
 .gp-pass, .gp-inv { width: 120px; height: auto; }
 
@@ -2964,6 +2975,11 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     <p class="lobby-credits">Credits <b id="lobbyCredits">0</b> · <span id="lobbyLimit"></span></p>
     <p class="lobby-online" id="lobbyOnline"></p>
     <button type="button" class="chip-btn lobby-job" id="lobbyJob" data-job hidden>Out of credits? Work a shift at Lucky Burger</button>
+    <button class="rr-pick lp-pick" type="button" id="passPick">
+      <svg class="gp-pass" viewBox="0 0 140 130" aria-hidden="true"><g transform="translate(70 62)"><circle r="44" fill="#145a24"/><g fill="#7dff6a" stroke="#0d2a12" stroke-width="3"><circle cx="-14" cy="-14" r="16"/><circle cx="14" cy="-14" r="16"/><circle cx="-14" cy="14" r="16"/><circle cx="14" cy="14" r="16"/></g><path d="M8 26c6 14 14 22 26 28" stroke="#0d2a12" stroke-width="5" fill="none" stroke-linecap="round"/><text y="10" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="26" fill="#fff8d6" stroke="#0d2a12" stroke-width="1.5">100</text></g></svg>
+      <span><span class="gp-title">Lucky-Pass</span><span class="gp-desc" id="passPickDesc">100 levels with credits, wheel spins and new cosmetics, earned by playing.</span><span class="lp-pick-bar"><i id="passPickBar"></i></span></span>
+      <span class="gp-go">Open</span>
+    </button>
     <div class="lobby-games">
       <section class="lotto-hero" id="lottoHero" aria-labelledby="ltLogo" hidden>
         <span class="lt-bulbs" aria-hidden="true"></span>
@@ -3180,23 +3196,6 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         <span class="gp-title">Poker</span>
         <span class="gp-desc">Texas Hold'em against bots, or online with up to 8 players.</span>
         <span class="gp-go">Play</span>
-      </button>
-      <button class="game-pick shop-pick" type="button" data-shop>
-        <svg class="gp-shop" viewBox="0 0 140 130" aria-hidden="true">
-          <path d="M14 46h112v70H14z" fill="#4a2f24"/><path d="M8 30h124l-8 18H16z" fill="#e0414a"/><path d="M22 30l-6 18M44 30l-4 18M66 30l-2 18M88 30l2 18M110 30l4 18" stroke="#f6efe3" stroke-width="7"/>
-          <rect x="26" y="62" width="88" height="6" rx="2" fill="#7a5236"/><rect x="26" y="92" width="88" height="6" rx="2" fill="#7a5236"/>
-          <g class="gp-shop-items"><circle cx="40" cy="54" r="7" fill="#f3c94b"/><rect x="56" y="48" width="14" height="14" rx="3" fill="#4fe3ff"/><path d="M84 62l7-14 7 14z" fill="#ff8fb8"/><circle cx="104" cy="55" r="6" fill="#7fd18b"/>
-          <path d="M36 92v-10h12v10z" fill="#c98a4b"/><path d="M60 92l6-12 6 12z" fill="#a77bff"/><rect x="82" y="80" width="12" height="12" rx="2" fill="#e9a23b"/></g>
-        </svg>
-        <span class="gp-title">Goodie Shop</span>
-        <span class="gp-desc">Power-ups, machine colours, name styles and trophies.</span>
-        <span class="gp-go">Shop</span>
-      </button>
-      <button class="game-pick pass-pick" type="button" id="passPick">
-        <svg class="gp-pass" viewBox="0 0 140 130" aria-hidden="true"><g transform="translate(70 62)"><circle r="44" fill="#145a24"/><g fill="#7dff6a" stroke="#0d2a12" stroke-width="3"><circle cx="-14" cy="-14" r="16"/><circle cx="14" cy="-14" r="16"/><circle cx="-14" cy="14" r="16"/><circle cx="14" cy="14" r="16"/></g><path d="M8 26c6 14 14 22 26 28" stroke="#0d2a12" stroke-width="5" fill="none" stroke-linecap="round"/><text y="10" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="26" fill="#fff8d6" stroke="#0d2a12" stroke-width="1.5">100</text></g></svg>
-        <span class="gp-title">Lucky-Pass</span>
-        <span class="gp-desc" id="passPickDesc">100 levels with credits, wheel spins and new cosmetics, earned by playing.</span>
-        <span class="gp-go">Open</span>
       </button>
       <button class="game-pick inv-pick" type="button" id="invPick">
         <svg class="gp-inv" viewBox="0 0 140 130" aria-hidden="true"><rect x="18" y="40" width="40" height="76" rx="3" fill="#4a2f24"/><rect x="62" y="16" width="54" height="100" rx="3" fill="#2a1d18" stroke="#e9a23b" stroke-width="3"/><g fill="#ffd24a"><rect x="72" y="28" width="10" height="10"/><rect x="96" y="28" width="10" height="10"/><rect x="72" y="50" width="10" height="10"/><rect x="96" y="50" width="10" height="10"/><rect x="72" y="72" width="10" height="10"/><rect x="96" y="72" width="10" height="10"/><rect x="26" y="52" width="9" height="9"/><rect x="41" y="52" width="9" height="9"/><rect x="26" y="72" width="9" height="9"/><rect x="41" y="72" width="9" height="9"/></g><rect x="82" y="96" width="14" height="20" fill="#e9a23b"/><circle cx="118" cy="110" r="14" fill="#f3c94b" stroke="#7a4a12" stroke-width="3"/><text x="118" y="116" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="16" fill="#7a4a12">$</text></svg>
@@ -10823,6 +10822,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (!account) return;
     const { lv } = passInfo();
     $('passPickDesc').textContent = i18n(`Pass level ${lv} of 100. Credits, wheel spins and new cosmetics, earned by playing.`);
+    const pi = passInfo();
+    $('passPickBar').style.width = `${pi.lv >= PASS_MAX ? 100 : Math.min(100, pi.into / pi.need * 100)}%`;
     $('invPickDesc').textContent = state.inv?.unlocked ? i18n('Shops and properties with income every hour.') : i18n('Shops and properties with income every hour. From Lucky-Pass level 30.');
     $('invPick').classList.toggle('locked', !state.inv?.unlocked);
   }
