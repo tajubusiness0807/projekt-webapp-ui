@@ -11773,3 +11773,15 @@ begin
   return public.lr_put(p.id, g);
 end;
 $$;
+
+
+-- ---------------------------------------------------------------------------
+-- Investments pay off faster: run this part once (after "Lucky-Pass and investments"). Every investment pays for
+-- itself in about 62 to 74 hours instead of about 100 (the bigger, the faster), and three small ones come below the
+-- kiosk: lemonade stand, snack machine and newspaper stand. What players own stays.
+create or replace function public.lr_assets() returns jsonb language sql immutable as $$
+  select '[{"id": "lemon", "price": 10000, "hour": 135}, {"id": "vending", "price": 25000, "hour": 345}, {"id": "news", "price": 50000, "hour": 700},
+    {"id": "kiosk", "price": 100000, "hour": 1420}, {"id": "truck", "price": 300000, "hour": 4350}, {"id": "burger", "price": 750000, "hour": 11000},
+    {"id": "flat", "price": 1500000, "hour": 22400}, {"id": "arcade", "price": 4000000, "hour": 60600}, {"id": "house", "price": 10000000, "hour": 154000},
+    {"id": "mall", "price": 30000000, "hour": 470000}, {"id": "hotel", "price": 100000000, "hour": 1600000}]'::jsonb
+$$;
