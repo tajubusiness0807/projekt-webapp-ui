@@ -11223,3 +11223,181 @@ begin
   raise exception 'unknown';
 end;
 $$;
+
+
+-- ---------------------------------------------------------------------------
+-- Closed loopholes: run this part once (after "Fixed mission rewards").
+-- * New accounts switched off now stops every sign-up, also one sent by hand without a name. (To make an account
+--   yourself while they are off, switch them on for a moment.)
+-- * Affiliate codes: only while new accounts are allowed; "only the first account on a device" now also checks the
+--   internet connection the request comes from (the device mark from the page can be faked), one bonus per
+--   connection in 30 days; and a code brings its owner at most 3 new players a day (setting affPerDay).
+-- * Lucky Burger: the boss drops by every 2 to 5 minutes and shows a code to tap within a minute; whoever misses it
+--   (asleep, or a page left alone) gets no wage until they answer. Paid work is limited to 2 hours a day (admin
+--   setting "jobDailyMinutes", 0 = no limit). The boss's mood still comes from the page, but it can add at most 20%.
+alter table public.affiliate_uses add column if not exists ip text;
+create index if not exists affiliate_uses_ip on public.affiliate_uses (ip, created_at desc);
+create index if not exists affiliate_uses_aff on public.affiliate_uses (affiliate, created_at desc);
+create or replace function public.create_player_for_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  display text := trim(coalesce(new.raw_user_meta_data ->> 'name', ''));
+  start_credits bigint;
+  open boolean;
+begin
+  select (data ->> 'startCredits')::bigint, (data ->> 'signupsOpen')::boolean
+    into start_credits, open
+    from public.settings where id = 1;
+  -- while new accounts are switched off, none are made: also not by a request sent without a name (until now only
+  -- sign-ups that carried a name were stopped, so one sent by hand got through)
+  if open is false then
+    raise exception 'Sign-ups are closed';
+  end if;
+  if display !~ '^[A-Za-z0-9_-]{3,20}$' then
+    display := split_part(new.email, '@', 1);
+  end if;
+  insert into public.players (id, name, credits)
+  values (new.id, display, coalesce(start_credits, 500))
+  on conflict (id) do nothing;
+  return new;
+end;
+$$;
+
+create or replace function public.affiliate_redeem(code text, dev text default null)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  c text := upper(trim(code));
+  s jsonb := coalesce((select data from public.settings where id = 1), '{}');
+  one_device boolean := coalesce((s ->> 'affOneDevice')::boolean, true);
+  new_bonus bigint := greatest(0, least(1000000, coalesce((s ->> 'affNew')::numeric, 4500)))::bigint;
+  pct numeric := greatest(0, least(100, coalesce((s ->> 'affPct')::numeric, 5)));
+  cap bigint := greatest(0, coalesce((s ->> 'affMax')::numeric, 10000))::bigint;
+  fixed bigint := greatest(0, least(1000000, coalesce((s ->> 'affFixed')::numeric, 0)))::bigint;
+  per_day integer := greatest(0, least(1000, coalesce((s ->> 'affPerDay')::numeric, 3)))::integer;
+  -- the address the request comes from, as the server sees it (the page can't make it up)
+  hdr jsonb := coalesce(nullif(current_setting('request.headers', true), '')::jsonb, '{}'::jsonb);
+  req_ip text := nullif(trim(split_part(coalesce(hdr ->> 'cf-connecting-ip', hdr ->> 'x-real-ip', hdr ->> 'x-forwarded-for', ''), ',', 1)), '');
+  me public.players;
+  aff public.players;
+  bonus bigint;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  if not coalesce((s ->> 'affOn')::boolean, true) then raise exception 'codes are off'; end if;
+  if exists (select 1 from public.affiliate_uses where new_player = auth.uid()) then raise exception 'code already used'; end if;
+  if (select created_at from auth.users where id = auth.uid()) < now() - interval '30 minutes' then raise exception 'only for new accounts'; end if;
+  if dev is null or length(dev) not between 8 and 64 then raise exception 'reload the page'; end if;
+  -- codes only for accounts made while new accounts are allowed
+  if (s ->> 'signupsOpen')::boolean is false then raise exception 'sign-ups are closed'; end if;
+  -- one bonus per internet connection in 30 days (the device mark comes from the page and can be faked)
+  if one_device and req_ip is not null and exists (select 1 from public.affiliate_uses u where u.ip = md5(req_ip) and u.created_at > now() - interval '30 days') then
+    raise exception 'device already has an account';
+  end if;
+  if one_device and (exists (select 1 from public.player_devices d where d.device = dev and d.player <> auth.uid())
+     or exists (select 1 from public.affiliate_uses u where u.device = dev)) then raise exception 'device already has an account'; end if;
+  select * into aff from public.players where affiliate_code = c for update;
+  if aff.id is null or aff.is_banned then raise exception 'no such code'; end if;
+  if aff.id = auth.uid() then raise exception 'not your own code'; end if;
+  -- a code brings its owner at most a few new players a day
+  if per_day > 0 and (select count(*) from public.affiliate_uses u where u.affiliate = aff.id and u.created_at > now() - interval '1 day') >= per_day then
+    raise exception 'code used enough today';
+  end if;
+  select * into me from public.players where id = auth.uid() for update;
+  if me.id is null or me.is_banned then raise exception 'not allowed'; end if;
+  -- the set share of the code owner's credits (up to the limit, 0 = no limit), plus the fixed extra
+  bonus := floor(greatest(aff.credits, 0) * pct / 100)::bigint;
+  if cap > 0 then bonus := least(cap, bonus); end if;
+  bonus := bonus + fixed;
+  update public.players set credits = credits + bonus, admin_rev = admin_rev + 1, updated_at = now() where id = aff.id;
+  update public.players set credits = credits + new_bonus, admin_rev = admin_rev + 1, updated_at = now() where id = me.id;
+  -- the unique device index allows a device only once, so without the device rule it is not stored
+  insert into public.affiliate_uses (new_player, new_name, affiliate, code, bonus, device, ip)
+    values (me.id, me.name, aff.id, c, bonus, case when one_device then dev end, md5(coalesce(req_ip, '')));
+  insert into public.player_devices (device, player) values (dev, me.id) on conflict do nothing;
+  return jsonb_build_object('credits', me.credits + new_bonus, 'rev', me.admin_rev + 1, 'affiliate', aff.name);
+end;
+$$;
+
+drop function if exists public.game_job(text, numeric);
+create or replace function public.game_job(p_act text, p_mood numeric default 0, p_code text default null)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  p public.players := public.lr_me();
+  c jsonb := public.lr_cfg();
+  g jsonb := public.lr_g(p);
+  j jsonb := coalesce(g -> 'job', '{}'::jsonb);
+  t numeric := floor(extract(epoch from clock_timestamp()) * 1000);
+  pay numeric := 0;
+  pos integer;
+  now_pos integer;
+  promo boolean := false;
+  -- paid work a day (minutes, 0 = no limit), counted per day in German time
+  cap numeric := public.lr_num((select data -> 'jobDailyMinutes' from public.settings where id = 1), 120, 0, 1440);
+  d text := to_char(now() at time zone 'Europe/Berlin', 'YYYY-MM-DD');
+  chk text;
+begin
+  if j ->> 'day' is distinct from d then j := j || jsonb_build_object('day', d, 'dayPaid', 0); end if;
+  -- the paycheck clock only ever moves forward: starting or ending a shift can't wind it back
+  if p_act = 'start' then
+    j := j || jsonb_build_object('shifts', public.lr_n(j, 'shifts') + 1, 'paidAt', greatest(public.lr_n(j, 'paidAt'), t - 10000));
+    -- the boss drops by now and then, 2 to 5 minutes apart
+    if j ->> 'chk' is null and public.lr_n(j, 'chkAt') < t then j := j || jsonb_build_object('chkAt', t + 120000 + public.lr_rand(180000)); end if;
+  elsif p_act = 'check' then
+    if j ->> 'chk' is not null and coalesce(p_code, '') = j ->> 'chk' then
+      j := (j - 'chk' - 'chkUntil') || jsonb_build_object('chkAt', t + 120000 + public.lr_rand(180000));
+      g := g || jsonb_build_object('job', j);
+      return public.lr_put(p.id, g, jsonb_build_object('checked', true));
+    end if;
+    return public.lr_put(p.id, g || jsonb_build_object('job', j), jsonb_build_object('checked', false, 'check', j ->> 'chk'));
+  elsif p_act = 'pay' then
+    -- one paycheck per 10 seconds of work: each one moves the clock on by 10 seconds, with a little room for
+    -- a slow connection (over time it can never be faster than every 10 seconds)
+    if t < public.lr_n(j, 'paidAt') + 10000 - 2500 then
+      return public.lr_put(p.id, g, jsonb_build_object('pay', 0, 'early', true));
+    end if;
+    -- enough paid work for today
+    if cap > 0 and public.lr_n(j, 'dayPaid') * 10 >= cap * 60 then
+      return public.lr_put(p.id, g || jsonb_build_object('job', j), jsonb_build_object('pay', 0, 'limit', true, 'minutes', cap));
+    end if;
+    -- the boss's check: a code to tap within a minute; whoever misses it gets no wage until they answer
+    if j ->> 'chk' is not null and t > public.lr_n(j, 'chkUntil') then
+      return public.lr_put(p.id, g || jsonb_build_object('job', j), jsonb_build_object('pay', 0, 'asleep', true, 'check', j ->> 'chk'));
+    end if;
+    if j ->> 'chk' is null and public.lr_n(j, 'chkAt') = 0 then j := j || jsonb_build_object('chkAt', t + 120000 + public.lr_rand(180000)); end if;
+    if j ->> 'chk' is null and t >= public.lr_n(j, 'chkAt') then
+      chk := (1 + public.lr_rand(9))::text || (1 + public.lr_rand(9))::text || (1 + public.lr_rand(9))::text || (1 + public.lr_rand(9))::text;
+      j := j || jsonb_build_object('chk', chk, 'chkUntil', t + 60000);
+    end if;
+    pos := public.lr_jb_pos(public.lr_n(j, 'worked'));
+    -- the happier the boss, the bigger the paycheck (80% to 120% of the wage), +10% with the badge
+    pay := round((array[14, 22, 34, 50, 72, 105, 160, 250])[pos + 1] * (0.8 + 0.4 * least(100, greatest(30, coalesce(p_mood, 0))) / 100)
+      * case when public.lr_has(g, 'jbBadge') then 1.1 else 1 end * public.lr_evf(c, 'wage'));
+    j := j || jsonb_build_object('worked', public.lr_n(j, 'worked') + 10 * case when public.lr_has(g, 'jbSchool') then 1.25 else 1 end,
+      'earned', public.lr_n(j, 'earned') + pay, 'paidAt', greatest(public.lr_n(j, 'paidAt') + 10000, t - 10000), 'dayPaid', public.lr_n(j, 'dayPaid') + 1);
+    now_pos := public.lr_jb_pos(public.lr_n(j, 'worked'));
+    if now_pos > public.lr_n(j, 'pos') then j := j || jsonb_build_object('pos', now_pos); promo := true; end if;
+    g := public.lr_add(g, 'credits', pay) || jsonb_build_object('job', j);
+    g := public.lr_ach(g, jsonb_build_object('jobPaid', true, 'jobPos', now_pos));
+    return public.lr_put(p.id, g, jsonb_build_object('pay', pay, 'pos', now_pos, 'promoted', promo, 'check', j ->> 'chk',
+      'checkLeft', case when j ->> 'chk' is not null then public.lr_n(j, 'chkUntil') - t end,
+      'dayLeft', case when cap > 0 then greatest(0, cap * 60 - public.lr_n(j, 'dayPaid') * 10) end));
+  elsif p_act = 'stop' then
+    null;
+  else raise exception 'unknown';
+  end if;
+  return public.lr_put(p.id, g || jsonb_build_object('job', j), '{}'::jsonb);
+end;
+$$;
+revoke execute on function public.game_job(text, numeric, text) from public, anon;
+grant execute on function public.game_job(text, numeric, text) to authenticated;
