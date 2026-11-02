@@ -11401,3 +11401,375 @@ end;
 $$;
 revoke execute on function public.game_job(text, numeric, text) from public, anon;
 grant execute on function public.game_job(text, numeric, text) to authenticated;
+
+
+-- ---------------------------------------------------------------------------
+-- Lucky-Pass and investments: run this part once (after "Closed loopholes").
+-- Lucky-Pass: 100 levels that fill with the XP from playing (every game that gives XP; it can't be bought). Each level
+-- has a reward on the Lucky-Pass and one on the Lucky-Royale-Pass: credits, wheel spins (the higher the level, the more
+-- they pay on average) and cosmetics; every 10th level something big. The Royale track is locked for everyone until an
+-- admin opens it (setting "royaleOpen", or "royale" on one player's pass). Level 30 of the Lucky-Pass unlocks
+-- investments: shops and properties that cost a lot and pay every full hour (up to 72 hours while away).
+alter table public.players drop constraint if exists players_flair_check;
+alter table public.players add constraint players_flair_check check (flair is null or flair in ('neon', 'gold', 'fire', 'ice', 'galaxy', 'admin', 'mega1', 'mega2', 'mega3', 'mega4', 'mega5')
+  or flair ~ '^lp[A-Z][A-Za-z]{1,20}$');
+
+-- XP for pass level n -> n + 1, and the level an XP total reaches
+create or replace function public.lr_pass_need(n integer) returns numeric language sql immutable as $$ select 4000 + 100 * n::numeric $$;
+create or replace function public.lr_pass_lvl(x numeric) returns integer language plpgsql immutable as $$
+declare
+  lv integer := 0;
+begin
+  while lv < 100 and x >= public.lr_pass_need(lv) loop x := x - public.lr_pass_need(lv); lv := lv + 1; end loop;
+  return lv;
+end;
+$$;
+-- credits worth of a level (wheel spins pay 1.6x that on average)
+create or replace function public.lr_pass_base(n integer) returns numeric language sql immutable as $$ select 500 + 250 * n::numeric $$;
+-- the rewards of every level: [{"l": 1, "f": [items], "r": [items]}, ...]; items: credits, wheel, cos (a cosmetic), invest
+create or replace function public.lr_pass_table() returns jsonb language plpgsql immutable as $$
+declare
+  fc jsonb := '{"10": "lpLava", "20": "lpSunset", "40": "lpSakura", "50": "lpStorm", "60": "lpOcean", "70": "lpArctic", "80": "lpGlitch", "90": "lpCyber", "100": "lpLucky"}';
+  rc jsonb := '{"10": "lpLavender", "20": "lpToxic", "30": "lpInferno", "40": "lpObsidian", "50": "lpDiamond", "60": "lpVapor", "70": "lpJade", "80": "lpRoyalName", "90": "lpRoyalTheme", "100": "lpRoyalCab"}';
+  out jsonb := '[]';
+  f jsonb;
+  rr jsonb;
+  b numeric;
+begin
+  for n in 1 .. 100 loop
+    b := public.lr_pass_base(n);
+    if n % 10 = 0 then
+      f := case when n = 30 then jsonb_build_array(jsonb_build_object('k', 'invest'), jsonb_build_object('k', 'credits', 'n', b * 3))
+        else jsonb_build_array(jsonb_build_object('k', 'cos', 'id', fc ->> n::text), jsonb_build_object('k', 'credits', 'n', b * case when n = 100 then 10 else 3 end)) end;
+      if n = 100 then f := f || jsonb_build_array(jsonb_build_object('k', 'cos', 'id', 'lpLegend'), jsonb_build_object('k', 'wheel', 'b', b * 2)); end if;
+      rr := jsonb_build_array(jsonb_build_object('k', 'cos', 'id', rc ->> n::text), jsonb_build_object('k', 'credits', 'n', b * case when n = 100 then 25 else 6 end), jsonb_build_object('k', 'wheel', 'b', b * 2));
+    elsif n % 5 = 0 then
+      f := jsonb_build_array(jsonb_build_object('k', 'wheel', 'b', b));
+      rr := jsonb_build_array(jsonb_build_object('k', 'wheel', 'b', b * 2), jsonb_build_object('k', 'credits', 'n', b * 2));
+    else
+      f := jsonb_build_array(jsonb_build_object('k', 'credits', 'n', b));
+      rr := jsonb_build_array(jsonb_build_object('k', 'credits', 'n', b * 2));
+    end if;
+    out := out || jsonb_build_array(jsonb_build_object('l', n, 'f', f, 'r', rr));
+  end loop;
+  return out;
+end;
+$$;
+-- the wheel: eight fields, 0.4x to 4.8x the wheel's base, 1.6x on average
+create or replace function public.lr_pass_wheel() returns numeric[] language sql immutable as $$ select array[0.4, 0.6, 0.8, 1, 1.2, 1.6, 2.4, 4.8]::numeric[] $$;
+
+create or replace function public.game_pass(p_act text, p_level integer default null, p_track text default 'f')
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  p public.players := public.lr_me();
+  c jsonb := public.lr_cfg();
+  g jsonb := public.lr_g(p);
+  ps jsonb;
+  tab jsonb := public.lr_pass_table();
+  lv integer;
+  royale boolean;
+  got jsonb := '[]';
+  it jsonb;
+  tr text;
+  seg integer;
+  amt numeric;
+begin
+  ps := case when jsonb_typeof(g -> 'pass') = 'object' then g -> 'pass' else '{}'::jsonb end;
+  lv := public.lr_pass_lvl(public.lr_n(ps, 'xp'));
+  royale := coalesce((select (data ->> 'royaleOpen')::boolean from public.settings where id = 1), false) or coalesce((ps ->> 'royale')::boolean, false);
+  if p_act = 'state' then
+    return jsonb_build_object('r', jsonb_build_object('table', tab, 'level', lv, 'royale', royale, 'wheel', to_jsonb(public.lr_pass_wheel())));
+  end if;
+  if p_act <> 'claim' then raise exception 'unknown'; end if;
+  if p_track not in ('f', 'r', 'all') then raise exception 'track'; end if;
+  if p_track = 'r' and not royale then raise exception 'royale locked'; end if;
+  for n in 1 .. lv loop
+    if p_level is not null and n <> p_level then continue; end if;
+    foreach tr in array case when p_track = 'all' then (case when royale then array['f', 'r'] else array['f'] end) else array[p_track] end loop
+      if coalesce(ps -> tr, '[]'::jsonb) @> to_jsonb(n) then continue; end if;
+      for it in select * from jsonb_array_elements(tab -> (n - 1) -> tr) loop
+        if it ->> 'k' = 'credits' then
+          g := public.lr_add(g, 'credits', (it ->> 'n')::numeric);
+          got := got || jsonb_build_array(it || jsonb_build_object('l', n, 't', tr));
+        elsif it ->> 'k' = 'wheel' then
+          seg := public.lr_rand(8);
+          amt := round((it ->> 'b')::numeric * (public.lr_pass_wheel())[seg + 1] / 10) * 10;
+          g := public.lr_add(g, 'credits', amt);
+          got := got || jsonb_build_array(it || jsonb_build_object('l', n, 't', tr, 'seg', seg, 'n', amt));
+        elsif it ->> 'k' = 'cos' then
+          g := jsonb_set(g, array['owned', it ->> 'id'], 'true');
+          ps := jsonb_set(ps || jsonb_build_object('cos', coalesce(ps -> 'cos', '{}'::jsonb)), array['cos', it ->> 'id'], 'true');
+          got := got || jsonb_build_array(it || jsonb_build_object('l', n, 't', tr));
+        elsif it ->> 'k' = 'invest' then
+          g := g || jsonb_build_object('inv', coalesce(g -> 'inv', '{}'::jsonb) || '{"unlocked": true}');
+          got := got || jsonb_build_array(it || jsonb_build_object('l', n, 't', tr));
+        end if;
+      end loop;
+      ps := ps || jsonb_build_object(tr, coalesce(ps -> tr, '[]'::jsonb) || to_jsonb(n));
+    end loop;
+  end loop;
+  if jsonb_array_length(got) = 0 then raise exception 'nothing to claim'; end if;
+  g := g || jsonb_build_object('pass', ps);
+  return public.lr_put(p.id, g, jsonb_build_object('got', got, 'level', lv));
+end;
+$$;
+revoke execute on function public.game_pass(text, integer, text) from public, anon;
+grant execute on function public.game_pass(text, integer, text) to authenticated;
+
+-- ----- Investments -----
+-- price of the first one, income per full hour; every further one of the same kind costs 15% more, at most 10 each
+create or replace function public.lr_assets() returns jsonb language sql immutable as $$
+  select '[{"id": "kiosk", "price": 100000, "hour": 900}, {"id": "truck", "price": 300000, "hour": 2800}, {"id": "burger", "price": 750000, "hour": 7200},
+    {"id": "flat", "price": 1500000, "hour": 14500}, {"id": "arcade", "price": 4000000, "hour": 40000}, {"id": "house", "price": 10000000, "hour": 100000},
+    {"id": "mall", "price": 30000000, "hour": 310000}, {"id": "hotel", "price": 100000000, "hour": 1050000}]'::jsonb
+$$;
+create or replace function public.lr_inv_hour(g jsonb) returns numeric language sql immutable as $$
+  select coalesce(sum((a ->> 'hour')::numeric * public.lr_n(g #> '{inv,own}', a ->> 'id')), 0) from jsonb_array_elements(public.lr_assets()) a
+$$;
+-- pays every full hour since the last payout (at most 72 of them)
+create or replace function public.lr_inv_settle(g jsonb) returns jsonb language plpgsql volatile as $$
+declare
+  t numeric := floor(extract(epoch from clock_timestamp()) * 1000);
+  h numeric := public.lr_inv_hour(g);
+  at numeric := public.lr_n(g -> 'inv', 'paidAt');
+  n numeric;
+begin
+  if jsonb_typeof(g -> 'inv') is distinct from 'object' then return g; end if;
+  if h <= 0 or at <= 0 then return g || jsonb_build_object('inv', (g -> 'inv') || jsonb_build_object('paidAt', t)); end if;
+  n := floor((t - at) / 3600000);
+  if n < 1 then return g; end if;
+  g := public.lr_add(g, 'credits', h * least(n, 72));
+  g := public.lr_out(g, 'invest', jsonb_build_object('hours', least(n, 72), 'amount', h * least(n, 72)));
+  return g || jsonb_build_object('inv', (g -> 'inv') || jsonb_build_object('paidAt', case when n > 72 then t - (t - at)::bigint % 3600000 else at + n * 3600000 end,
+    'earned', public.lr_n(g -> 'inv', 'earned') + h * least(n, 72)));
+end;
+$$;
+
+create or replace function public.game_inv(p_act text, p_asset text default null)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  p public.players := public.lr_me();
+  c jsonb := public.lr_cfg();
+  g jsonb := public.lr_inv_settle(public.lr_g(p));
+  a jsonb;
+  own numeric;
+  price numeric;
+  back numeric;
+  t numeric := floor(extract(epoch from clock_timestamp()) * 1000);
+begin
+  if p_act = 'state' then
+    return public.lr_put(p.id, g, jsonb_build_object('assets', public.lr_assets(), 'hour', public.lr_inv_hour(g)));
+  end if;
+  if not coalesce((g #>> '{inv,unlocked}')::boolean, false) then raise exception 'locked'; end if;
+  if (c ->> 'maintenance')::boolean and not p.is_admin then raise exception 'paused'; end if;
+  select x into a from jsonb_array_elements(public.lr_assets()) x where x ->> 'id' = p_asset;
+  if a is null then raise exception 'no such asset'; end if;
+  own := public.lr_n(g #> '{inv,own}', p_asset);
+  if p_act = 'buy' then
+    if own >= 10 then raise exception 'maxed'; end if;
+    price := round((a ->> 'price')::numeric * power(1.15, own));
+    if public.lr_n(g, 'credits') < price then raise exception 'credits'; end if;
+    -- the first one starts the hourly clock
+    if public.lr_inv_hour(g) <= 0 then g := g || jsonb_build_object('inv', (g -> 'inv') || jsonb_build_object('paidAt', t)); end if;
+    g := public.lr_add(g, 'credits', -price);
+    g := g || jsonb_build_object('inv', (g -> 'inv') || jsonb_build_object('own', coalesce(g #> '{inv,own}', '{}'::jsonb) || jsonb_build_object(p_asset, own + 1),
+      'spent', public.lr_n(g -> 'inv', 'spent') + price));
+    return public.lr_put(p.id, g, jsonb_build_object('price', price, 'hour', public.lr_inv_hour(g)));
+  elsif p_act = 'sell' then
+    if own < 1 then raise exception 'none'; end if;
+    -- half of what the last one cost
+    back := round((a ->> 'price')::numeric * power(1.15, own - 1) * 0.5);
+    g := public.lr_add(g, 'credits', back);
+    g := g || jsonb_build_object('inv', (g -> 'inv') || jsonb_build_object('own', (g #> '{inv,own}') || jsonb_build_object(p_asset, own - 1)));
+    return public.lr_put(p.id, g, jsonb_build_object('back', back, 'hour', public.lr_inv_hour(g)));
+  end if;
+  raise exception 'unknown';
+end;
+$$;
+revoke execute on function public.game_inv(text, text) from public, anon;
+grant execute on function public.game_inv(text, text) to authenticated;
+
+-- admin: open the Royale track for one player (or take it away)
+create or replace function public.admin_set_royale(tok uuid, target uuid, on_ boolean)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  g jsonb;
+begin
+  perform public.admin_check(tok);
+  select case when game is null or game = '' then '{}'::jsonb else game::jsonb end into g from public.players where id = target for update;
+  if g is null then raise exception 'no such player'; end if;
+  g := g || jsonb_build_object('pass', coalesce(case when jsonb_typeof(g -> 'pass') = 'object' then g -> 'pass' end, '{}'::jsonb) || jsonb_build_object('royale', on_));
+  update public.players set game = g::text, admin_rev = admin_rev + 1, updated_at = now() where id = target;
+end;
+$$;
+revoke execute on function public.admin_set_royale(uuid, uuid, boolean) from public, anon;
+grant execute on function public.admin_set_royale(uuid, uuid, boolean) to authenticated;
+
+create or replace function public.lr_xp(g jsonb, c jsonb, n numeric)
+returns jsonb
+language plpgsql
+immutable
+as $$
+declare
+  lv integer := public.lr_n(g, 'level')::integer;
+  xp numeric := public.lr_n(g, 'xp');
+  f numeric;
+  cr numeric := public.lr_n(g, 'credits');
+  pr integer := public.lr_n(g, 'prestige')::integer;
+begin
+  f := least(5, public.lr_evf(c, 'xp'));
+  xp := xp + case when f > 1 then round(n * f) else n end;
+  -- the Lucky-Pass fills from the same XP (it can't be bought)
+  if n > 0 then
+    g := jsonb_set(g || jsonb_build_object('pass', case when jsonb_typeof(g -> 'pass') = 'object' then g -> 'pass' else '{}'::jsonb end),
+      '{pass,xp}', to_jsonb(least(1e12, public.lr_n(g -> 'pass', 'xp') + case when f > 1 then round(n * f) else n end)));
+  end if;
+  while lv < 20 and xp >= public.lr_xp_need(lv) loop
+    xp := xp - public.lr_xp_need(lv);
+    lv := lv + 1;
+    cr := cr + 250 * lv;
+    g := public.lr_out(g, 'levels', to_jsonb(lv));
+  end loop;
+  if lv >= 20 and pr < 99 then
+    pr := pr + 1;
+    lv := 1;
+    xp := 0;
+    g := public.lr_out(g, 'prestige', to_jsonb(pr));
+    g := public.lr_ach(g || jsonb_build_object('credits', cr, 'prestige', pr, 'level', lv), jsonb_build_object('prestige', pr));
+    cr := public.lr_n(g, 'credits');
+  elsif lv >= 20 then xp := public.lr_xp_need(20);
+  end if;
+  return g || jsonb_build_object('xp', xp, 'level', lv, 'credits', cr, 'prestige', pr);
+end;
+$$;
+
+create or replace function public.lr_protect(n jsonb, o jsonb)
+returns jsonb
+language plpgsql
+immutable
+as $$
+declare
+  k text;
+  p text[];
+begin
+  if n is null or jsonb_typeof(n) <> 'object' then n := '{}'::jsonb; end if;
+  if o is null or jsonb_typeof(o) <> 'object' then o := '{}'::jsonb; end if;
+  foreach k in array array['credits', 'level', 'prestige', 'spins', 'jackpots', 'best', 'lastWin', 'owned', 'xp', 'streak', 'stars', 'starBank',
+    'freeSpins', 'freeBet', 'freeTotal', 'nudges', 'missions', 'missionsDone', 'ach', 'sl', 'job', 'jobReset', 'rrAt', 'srv', 'evGifts', 'wildSpins', 'wildBet', 'wildTotal', 'pass', 'inv'] loop
+    if o ? k then n := jsonb_set(n, array[k], o -> k); else n := n - k; end if;
+  end loop;
+  foreach p slice 1 in array array[['bj', 'round'], ['bj', 'hands'], ['bj', 'lastBet'], ['bj', 'shoe'], ['pl', 'drops'], ['pl', 'pending'],
+    ['ck', 'round'], ['ck', 'games'], ['cf', 'round'], ['cf', 'flips'], ['pk', 'solo'], ['pk', 'hands']] loop
+    if jsonb_typeof(n -> p[1]) is distinct from 'object' then n := jsonb_set(n, array[p[1]], '{}'::jsonb); end if;
+    if o #> p is not null then n := jsonb_set(n, p, o #> p); else n := n #- p; end if;
+  end loop;
+  return n;
+end;
+$$;
+
+create or replace function public.lr_view(g jsonb)
+returns jsonb
+language sql
+immutable
+as $$
+  select jsonb_build_object('credits', g -> 'credits', 'level', g -> 'level', 'prestige', g -> 'prestige', 'spins', g -> 'spins', 'jackpots', g -> 'jackpots',
+    'best', g -> 'best', 'lastWin', g -> 'lastWin', 'owned', g -> 'owned', 'xp', g -> 'xp', 'streak', g -> 'streak', 'stars', g -> 'stars',
+    'starBank', g -> 'starBank', 'freeSpins', g -> 'freeSpins', 'freeBet', g -> 'freeBet', 'freeTotal', g -> 'freeTotal', 'nudges', g -> 'nudges',
+    'missions', g -> 'missions', 'missionsDone', g -> 'missionsDone', 'ach', g -> 'ach', 'sl', g -> 'sl', 'job', g -> 'job', 'jobReset', g -> 'jobReset',
+    'rrAt', g -> 'rrAt', 'evGifts', g -> 'evGifts', 'wildSpins', g -> 'wildSpins', 'wildBet', g -> 'wildBet', 'wildTotal', g -> 'wildTotal', 'pass', g -> 'pass', 'inv', g -> 'inv',
+    'bj', jsonb_build_object('round', g #> '{bj,round}', 'hands', g #> '{bj,hands}', 'lastBet', g #> '{bj,lastBet}', 'shoeLeft', g #> '{bj,shoeLeft}'),
+    'pl', jsonb_build_object('drops', g #> '{pl,drops}'), 'ck', jsonb_build_object('round', g #> '{ck,round}', 'games', g #> '{ck,games}'),
+    'cf', jsonb_build_object('round', g #> '{cf,round}', 'flips', g #> '{cf,flips}'), 'pk', jsonb_build_object('solo', g #> '{pk,solo}', 'hands', g #> '{pk,hands}'))
+$$;
+
+create or replace function public.players_0_lock()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+declare
+  o jsonb;
+  n jsonb;
+begin
+  if current_user <> 'authenticated' then return new; end if;
+  new.credits := old.credits; new.level := old.level; new.prestige := old.prestige;
+  new.spins := old.spins; new.jackpots := old.jackpots; new.best := old.best;
+  if new.game is distinct from old.game then
+    begin o := old.game::jsonb; exception when others then o := '{}'::jsonb; end;
+    begin n := new.game::jsonb; exception when others then n := o; end;
+    new.game := public.lr_protect(n, o)::text;
+  end if;
+  begin
+    if o is null then o := coalesce(old.game::jsonb, '{}'::jsonb); end if;
+    begin
+      if new.flair is not null and new.flair <> 'admin' and coalesce((o -> 'owned' ->> (case new.flair when 'neon' then 'neon' when 'gold' then 'goldName'
+        when 'fire' then 'fireName' when 'ice' then 'iceName' when 'galaxy' then 'galaxyName' when 'mega1' then 'mega1' when 'mega2' then 'mega2' when 'mega3' then 'mega3' when 'mega4' then 'mega4' when 'mega5' then 'mega5' else case when new.flair ~ '^lp[A-Z][A-Za-z]{1,20}$' then new.flair else '-' end end))::boolean, false) is not true then new.flair := null; end if;
+      if coalesce(array_length(new.trophies, 1), 0) > 0 then
+        new.trophies := array(select t from unnest(new.trophies) with ordinality u(t, i)
+          where (i = 1 and t = '') or coalesce((o -> 'owned' ->> t)::boolean, false) order by i);
+      end if;
+    end;
+  exception when others then null;
+  end;
+  return new;
+end;
+$$;
+
+create or replace function public.game_restart()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  p public.players := public.lr_me();
+  c jsonb := public.lr_cfg();
+  g jsonb := public.lr_g(p);
+begin
+  -- starting over gives up everything: chips at the poker table and a running Russian roulette must be settled
+  -- first; shares, open bets and lotto tickets go with the old game (so they can't be carried into the new one)
+  if exists (select 1 from public.poker_seats where player_id = p.id) then raise exception 'leave the poker table first'; end if;
+  if exists (select 1 from public.rr_games where status in ('pending', 'active') and p.id in (challenger, opponent)) then raise exception 'russian roulette running'; end if;
+  delete from public.stock_holdings where player = p.id;
+  delete from public.horse_bets where player = p.id and not claimed;
+  delete from public.roulette_bets where player = p.id and not claimed;
+  delete from public.rocket_bets where player = p.id and not claimed;
+  delete from public.lotto_tickets where player = p.id and not claimed;
+  delete from public.lr_secret where player = p.id;
+  g := g || jsonb_build_object('credits', (c ->> 'startCredits')::numeric, 'level', 1, 'xp', 0, 'spins', 0, 'jackpots', 0, 'best', 0, 'lastWin', 0,
+    -- cosmetics from the Lucky-Pass stay (the pass itself stays too); investments go with the old game, the unlock stays
+    'owned', coalesce(g #> '{pass,cos}', '{}'::jsonb), 'inv', jsonb_build_object('unlocked', coalesce((g #>> '{inv,unlocked}')::boolean, false)), 'missions', '[]'::jsonb, 'missionsDone', 0, 'streak', 0, 'stars', 0, 'starBank', 0, 'freeSpins', 0,
+    'freeBet', 0, 'freeTotal', 0, 'wildSpins', 0, 'wildBet', 0, 'wildTotal', 0, 'nudges', 0, 'sl', '{}'::jsonb, 'job', jsonb_build_object('worked', 0, 'earned', 0, 'shifts', 0, 'pos', 0),
+    'jobReset', floor(extract(epoch from now()) * 1000));
+  g := g || jsonb_build_object('bj', coalesce(g -> 'bj', '{}'::jsonb) || '{"round": null, "hands": 0, "lastBet": 0, "shoe": []}',
+    'pl', coalesce(g -> 'pl', '{}'::jsonb) || '{"drops": 0, "pending": []}', 'ck', coalesce(g -> 'ck', '{}'::jsonb) || '{"round": null, "games": 0}',
+    'cf', coalesce(g -> 'cf', '{}'::jsonb) || '{"round": null, "flips": 0}', 'pk', coalesce(g -> 'pk', '{}'::jsonb) || '{"solo": null, "hands": 0}');
+  return public.lr_put(p.id, public.lr_fill(g), '{}'::jsonb);
+end;
+$$;
+
+create or replace function public.game_state()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  p public.players := public.lr_me();
+  g jsonb := public.lr_inv_settle(public.lr_g(p));
+begin
+  return public.lr_put(p.id, g);
+end;
+$$;

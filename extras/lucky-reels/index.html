@@ -489,6 +489,127 @@ details.paytable, details.bj-rules { background: var(--panel); border-radius: 10
 body.wide .layout { max-width: 980px; grid-template-columns: minmax(0, 1fr); }
 body.wide .account-bar { max-width: 980px; }
 
+/* ----- Lucky-Pass cosmetics ----- */
+.name-lpLava { font-weight: 800; color: transparent; background: linear-gradient(180deg, #ffe14f, #ff8a00 40%, #ff2a00 70%, #7a0f00) 0 0 / 100% 300%; -webkit-background-clip: text; background-clip: text; filter: drop-shadow(0 0 5px #ff4a00aa); animation: lpLavaFlow 2.4s ease-in-out infinite alternate; }
+@keyframes lpLavaFlow { to { background-position: 0 100%; filter: drop-shadow(0 0 9px #ff8a00); } }
+.name-lpStorm { font-weight: 800; color: #dff6ff; text-shadow: 0 0 4px #4fa8ff, 0 0 10px #1a5aff; animation: lpStorm 2.8s steps(1) infinite; }
+@keyframes lpStorm { 0%, 46%, 52%, 100% { text-shadow: 0 0 4px #4fa8ff, 0 0 10px #1a5aff; color: #dff6ff; } 47%, 51% { text-shadow: 0 0 8px #fff, 0 0 22px #9fe8ff, 0 0 40px #4fa8ff; color: #fff; } 49% { text-shadow: none; color: #7fa8d9; } }
+.name-lpGlitch { font-weight: 800; color: #fff; text-shadow: 2px 0 #00f0ff, -2px 0 #ff00c8; animation: lpGlitch 1.6s steps(2) infinite; }
+@keyframes lpGlitch { 0%, 80%, 100% { text-shadow: 2px 0 #00f0ff, -2px 0 #ff00c8; transform: none; } 85% { text-shadow: -3px 1px #00f0ff, 3px -1px #ff00c8; transform: translateX(1px) skewX(-8deg); } 90% { text-shadow: 3px -1px #00f0ff, -3px 1px #ff00c8; transform: translateX(-1px); } }
+.name-lpLucky { font-weight: 900; color: transparent; background: linear-gradient(100deg, #2fd16a, #b6ff6a, #ffe14f, #fffbe6, #ffe14f, #b6ff6a, #2fd16a) 0 0 / 300% 100%; -webkit-background-clip: text; background-clip: text; filter: drop-shadow(0 0 3px #fff8) drop-shadow(0 0 9px #7dff6a); animation: galaxyDrift 2.6s linear infinite; }
+.name-lpLucky::before { content: "🍀"; -webkit-text-fill-color: initial; margin-right: 3px; filter: drop-shadow(0 0 4px #7dff6a); }
+.name-lpToxic { font-weight: 800; color: #c6ff3a; text-shadow: 0 0 4px #39ff14, 0 0 12px #39ff1499, 0 2px 0 #143d00; animation: lpToxic 1.4s ease-in-out infinite; }
+@keyframes lpToxic { 50% { color: #e8ff8a; text-shadow: 0 0 8px #39ff14, 0 0 20px #39ff14, 0 2px 0 #143d00; } }
+.name-lpDiamond { font-weight: 800; color: transparent; background: linear-gradient(120deg, #ffffff 0 20%, #9fe8ff 30%, #ffffff 40%, #c9f4ff 55%, #ffffff 70%) 0 0 / 250% 100%; -webkit-background-clip: text; background-clip: text; filter: drop-shadow(0 0 4px #9fe8ffcc); animation: galaxyDrift 2s linear infinite; }
+.name-lpRoyalName { font-weight: 900; color: transparent; background: linear-gradient(90deg, #ffd24a, #b06bff, #ffd24a) 0 0 / 200% 100%; -webkit-background-clip: text; background-clip: text; filter: drop-shadow(0 0 4px #b06bff) drop-shadow(0 1px 0 #2a0a4a); animation: neonShift 2.4s linear infinite; }
+.name-lpRoyalName::before { content: "👑"; -webkit-text-fill-color: initial; margin-right: 3px; }
+@media (prefers-reduced-motion: reduce) { .name-lpLava, .name-lpStorm, .name-lpGlitch, .name-lpLucky, .name-lpToxic, .name-lpDiamond, .name-lpRoyalName { animation: none; } }
+.cabinet.lpSunset { background: linear-gradient(170deg, #ff8a3c, #c2306a 55%, #4a1430); border-color: #ffb36b; box-shadow: 0 30px 60px -20px #000, 0 0 44px -8px #ff6a4a99, inset 0 2px 0 #ffe0c444; }
+.cabinet.lpSunset .marquee h1 { color: #fff0d6; text-shadow: 0 0 18px #ff8a3caa, 0 3px 0 #7a1a3a; }
+.cabinet.lpOcean { background: linear-gradient(170deg, #127a8f, #0b3f66 55%, #04223a), repeating-radial-gradient(circle at 30% 0, #ffffff10 0 2px, transparent 2px 22px); border-color: #4fd8e6; box-shadow: 0 30px 60px -20px #000, 0 0 44px -8px #1fb6c999, inset 0 2px 0 #bff8ff33; }
+.cabinet.lpOcean .marquee h1 { color: #d6fbff; text-shadow: 0 0 18px #1fb6c9aa, 0 3px 0 #04324d; }
+.cabinet.lpCyber { background: linear-gradient(#00f0ff12 1px, transparent 1px) 0 0 / 22px 22px, linear-gradient(90deg, #ff00c812 1px, transparent 1px) 0 0 / 22px 22px, #07070f; border-color: #00f0ff; box-shadow: 0 30px 60px -20px #000, 0 0 30px -4px #00f0ffaa, 0 0 60px -10px #ff00c888, inset 0 0 30px #00f0ff22; }
+.cabinet.lpCyber .marquee h1 { color: #e6feff; text-shadow: 2px 0 #00f0ff, -2px 0 #ff00c8, 0 0 18px #00f0ff; }
+.cabinet.lpLegend { border-color: transparent; background: linear-gradient(160deg, #5a4210, #2a1e06 60%, #5a4210) padding-box, linear-gradient(120deg, #ffd24a, #7dff6a, #4fe3ff, #ff6ad5, #ffd24a) border-box; background-size: 100% 100%, 300% 300%; animation: wildBorder 4s linear infinite; box-shadow: 0 30px 60px -20px #000, 0 0 60px -6px #ffd24aaa, inset 0 2px 0 #fff2c455; }
+.cabinet.lpLegend .marquee h1 { color: #fff7d6; text-shadow: 0 0 22px #ffd24a, 0 3px 0 #6a4a0a; }
+.cabinet.lpLavender { background: linear-gradient(160deg, #9a7ad9, #5a3f99 60%, #2a1a4a); border-color: #e0d0ff; box-shadow: 0 30px 60px -20px #000, 0 0 40px -8px #c9a8ffaa, inset 0 2px 0 #ffffff44; }
+.cabinet.lpLavender .marquee h1 { color: #f4ecff; text-shadow: 0 0 18px #c9a8ffaa, 0 3px 0 #3a2a6a; }
+.cabinet.lpObsidian { background: radial-gradient(ellipse at 20% 20%, #3a0a0a, transparent 60%), linear-gradient(160deg, #141414, #050505 60%, #1a0505); border-color: #ff2a2a; box-shadow: 0 30px 60px -20px #000, 0 0 36px -6px #ff2a2a88, inset 0 0 40px #ff1a1a22; }
+.cabinet.lpObsidian .marquee h1 { color: #ffd6d6; text-shadow: 0 0 18px #ff2a2a, 0 3px 0 #3a0000; }
+.cabinet.lpJade { background: linear-gradient(160deg, #1f8a6a, #0f5a44 60%, #083a2c); border-color: #c9a24a; box-shadow: 0 30px 60px -20px #000, 0 0 40px -8px #3fd1a499, inset 0 2px 0 #f3e0a044; }
+.cabinet.lpJade .marquee h1 { color: #f3e0a0; text-shadow: 0 0 18px #3fd1a499, 0 3px 0 #0a3a2a; }
+.cabinet.lpRoyalCab { background: radial-gradient(ellipse at 50% 0, #ffd24a33, transparent 55%), linear-gradient(160deg, #4a1a8a, #1a0630 60%, #3a0f6a); border-color: #ffd24a; box-shadow: 0 30px 60px -20px #000, 0 0 60px -4px #8a3bffaa, 0 0 26px -6px #ffd24a, inset 0 2px 0 #ffe9a055; }
+.cabinet.lpRoyalCab .marquee h1 { color: #ffe9a0; text-shadow: 0 0 22px #b06bff, 0 3px 0 #2a0a4a; }
+.cabinet.lpRoyalCab .marquee h1::before { content: "👑"; font-size: 0.6em; vertical-align: 0.35em; margin-right: 4px; }
+@media (prefers-reduced-motion: reduce) { .cabinet.lpLegend { animation: none; } }
+body.th-lpSakura { --bg: #1e0f17; --cabinet: #3a1a2a; --cabinet-edge: #6a2f4a; --panel: #160a10; --accent: #ff8fc0; --accent-hi: #ffe0ef; --muted: #c99aae; --fg: #ffeef5; background: radial-gradient(ellipse at top, #4a1a33 0%, var(--bg) 60%) fixed, var(--bg); }
+body.th-lpArctic { --bg: #08131c; --cabinet: #12283a; --cabinet-edge: #2a4f6a; --panel: #060e15; --accent: #8fe3ff; --accent-hi: #e8fbff; --muted: #8fb3c9; --fg: #eef9ff; background: radial-gradient(ellipse at top, #163a55 0%, var(--bg) 60%) fixed, var(--bg); }
+body.th-lpInferno { --bg: #150604; --cabinet: #3a0f08; --cabinet-edge: #7a2a10; --panel: #0e0402; --accent: #ff7a1a; --accent-hi: #ffe14f; --muted: #c98a6a; --fg: #ffeedf; background: radial-gradient(ellipse at top, #5a1a08 0%, var(--bg) 60%) fixed, var(--bg); }
+body.th-lpVapor { --bg: #120a22; --cabinet: #2a1450; --cabinet-edge: #5a2a8a; --panel: #0c0618; --accent: #ff6ad5; --accent-hi: #b8f6ff; --muted: #a98ac9; --fg: #f3eaff; background: linear-gradient(#26e2ff14 1px, transparent 1px) 0 0 / 100% 28px, radial-gradient(ellipse at top, #3a1a6e 0%, var(--bg) 60%) fixed, var(--bg); }
+body.th-lpRoyalTheme { --bg: #0e0518; --cabinet: #2a0f4a; --cabinet-edge: #5a2a8a; --panel: #090312; --accent: #ffd24a; --accent-hi: #fff2c4; --muted: #b39ac9; --fg: #f6eeff; background: radial-gradient(ellipse at top, #3a1466 0%, var(--bg) 60%) fixed, var(--bg); }
+
+/* ----- Lucky-Pass page ----- */
+.lp-wrap { max-width: 860px; }
+.lp-hero { display: grid; gap: 10px; padding: 16px; border-radius: 18px; background: linear-gradient(135deg, #1f5a2e, #0f2a17 60%, #2a4a12); border: 2px solid #7dff6a66; box-shadow: 0 0 40px -12px #7dff6a; }
+.lp-hero-top { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; }
+.lp-lvl { display: flex; align-items: center; gap: 12px; }
+.lp-lvl b { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #b6ff6a, #2fa84a 70%); color: #0d2a12; font: 400 26px var(--font-display); box-shadow: 0 0 22px #7dff6a88, inset 0 -4px 0 #0003; }
+.lp-lvl span { display: grid; gap: 2px; }
+.lp-lvl small { color: #c9f5c4; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; }
+.lp-xpbar { height: 12px; border-radius: 6px; background: #0006; overflow: hidden; }
+.lp-xpbar i { display: block; height: 100%; width: 0; border-radius: 6px; background: linear-gradient(90deg, #2fd16a, #ffe14f); transition: width 0.5s; }
+.lp-note { margin: 0; font-size: 12px; color: #c9f5c4; }
+.lp-claimall { background: linear-gradient(#b6ff6a, #2fa84a); color: #0d2a12; font-weight: 800; padding: 10px 16px; box-shadow: 0 4px 0 #145a24; }
+.lp-cols { position: sticky; top: 0; z-index: 2; display: grid; grid-template-columns: 56px minmax(0, 1fr) minmax(0, 1fr); gap: 8px; padding: 8px 0; background: var(--bg); font: 400 13px var(--font-display); letter-spacing: 0.04em; }
+.lp-cols span:nth-child(2) { color: #7dff6a; }
+.lp-cols span:nth-child(3) { color: #ffd24a; }
+.lp-cols small { display: block; font: 600 11px var(--font-body); color: var(--muted); letter-spacing: 0; }
+.lp-list { display: grid; gap: 6px; }
+.lp-row { display: grid; grid-template-columns: 56px minmax(0, 1fr) minmax(0, 1fr); gap: 8px; align-items: stretch; }
+.lp-num { display: grid; place-items: center; border-radius: 12px; background: var(--panel); font: 400 18px var(--font-display); color: var(--muted); }
+.lp-row.reached .lp-num { color: #7dff6a; }
+.lp-row.now .lp-num { background: #7dff6a; color: #0d2a12; box-shadow: 0 0 16px #7dff6a; }
+.lp-cell { position: relative; display: flex; align-items: center; gap: 10px; min-height: 58px; padding: 8px 10px; border-radius: 12px; background: #ffffff08; border: 1px solid #ffffff14; min-width: 0; }
+.lp-cell.r { background: #ffd24a0a; border-color: #ffd24a26; }
+.lp-cell .lp-ico { flex: none; width: 36px; height: 36px; display: grid; place-items: center; font-size: 24px; }
+.lp-cell .lp-ico svg { width: 36px; height: 36px; }
+.lp-cell .lp-txt { display: grid; gap: 1px; min-width: 0; font-size: 13px; line-height: 1.25; }
+.lp-cell .lp-txt b { overflow-wrap: anywhere; }
+.lp-cell .lp-txt small { color: var(--muted); font-size: 11px; }
+.lp-cell button { margin-left: auto; flex: none; padding: 7px 10px; font-weight: 700; font-size: 12px; background: linear-gradient(#b6ff6a, #2fa84a); color: #0d2a12; }
+.lp-cell.r button { background: linear-gradient(#ffe9a0, #d9a520); }
+.lp-cell.done { opacity: 0.55; }
+.lp-cell.done::after { content: "✓"; margin-left: auto; color: var(--win); font-weight: 800; }
+.lp-cell.ready { border-color: #7dff6a; box-shadow: 0 0 14px -4px #7dff6a; }
+.lp-cell.r.ready { border-color: #ffd24a; box-shadow: 0 0 14px -4px #ffd24a; }
+.lp-cell.lock { filter: saturate(0.4); }
+.lp-cell.rlock::after { content: "🔒"; margin-left: auto; }
+.lp-row.big .lp-cell { min-height: 80px; background: linear-gradient(135deg, #7dff6a22, #ffffff05); border-width: 2px; }
+.lp-row.big .lp-cell.r { background: linear-gradient(135deg, #ffd24a26, #b06bff1a); }
+.lp-row.big .lp-num { font-size: 22px; background: linear-gradient(#2fa84a, #145a24); color: #fff; }
+.lp-row.big .lp-cell .lp-ico { width: 48px; height: 48px; font-size: 32px; }
+.lp-row.big .lp-cell .lp-ico svg { width: 48px; height: 48px; }
+.lp-royale-lock { margin: 0; padding: 10px 12px; border-radius: 12px; background: #ffd24a14; border: 1px dashed #ffd24a66; color: #ffe9a0; font-size: 13px; text-align: center; }
+@media (max-width: 560px) {
+  .lp-row, .lp-cols { grid-template-columns: 40px minmax(0, 1fr) minmax(0, 1fr); gap: 5px; }
+  .lp-cell { flex-direction: column; align-items: flex-start; gap: 4px; padding: 7px; }
+  .lp-cell .lp-ico { width: 28px; height: 28px; font-size: 20px; }
+  .lp-cell .lp-ico svg { width: 28px; height: 28px; }
+  .lp-cell button { margin-left: 0; width: 100%; }
+  .lp-cell.done::after, .lp-cell.rlock::after { position: absolute; top: 6px; right: 8px; }
+  .lp-num { font-size: 15px; }
+}
+#lpWheelModal { z-index: 70; }
+.lp-wheel-card { max-width: 380px; }
+.lp-wheel { position: relative; width: min(300px, 80vw); aspect-ratio: 1; margin: 0 auto; }
+.lp-wheel svg { width: 100%; height: 100%; transition: transform 4.2s cubic-bezier(.12, .7, .1, 1); }
+.lp-wheel::after { content: ""; position: absolute; left: 50%; top: -6px; translate: -50% 0; border: 12px solid transparent; border-top: 22px solid #fff; filter: drop-shadow(0 2px 2px #0008); }
+.lp-wheel-win { font: 400 30px var(--font-display); color: var(--win); min-height: 36px; }
+
+/* ----- Investments page ----- */
+.inv-hero { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.inv-hero div { display: grid; gap: 2px; padding: 12px 14px; border-radius: 14px; background: var(--panel); border: 1px solid #ffffff14; }
+.inv-hero small { color: var(--muted); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+.inv-hero b { font: 700 20px var(--font-mono); color: var(--accent); font-variant-numeric: tabular-nums; }
+.inv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 12px; }
+.inv-card { display: grid; gap: 8px; padding: 14px; border-radius: 16px; background: linear-gradient(160deg, #ffffff0d, #ffffff04); border: 1px solid #ffffff1a; min-width: 0; }
+.inv-card.own { border-color: var(--accent); box-shadow: 0 0 20px -8px var(--accent); }
+.inv-card .inv-top { display: flex; gap: 10px; align-items: center; }
+.inv-card .inv-ico { font-size: 34px; line-height: 1; }
+.inv-card h4 { margin: 0; font-size: 16px; }
+.inv-card p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.4; }
+.inv-card .inv-nums { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; font-size: 12px; }
+.inv-card .inv-nums b { font-family: var(--font-mono); color: var(--fg); }
+.inv-card .inv-acts { display: flex; gap: 8px; }
+.inv-card .inv-acts button { flex: 1; padding: 9px 8px; font-weight: 700; font-size: 13px; }
+.inv-card .inv-buy { background: linear-gradient(#f3b956, #c7801f); }
+.inv-card .inv-sell { background: var(--chrome); }
+.inv-lock { display: grid; gap: 10px; justify-items: center; padding: 30px 16px; border-radius: 18px; background: var(--panel); text-align: center; }
+.inv-lock b { font: 400 22px var(--font-display); color: var(--accent); }
+.game-pick.pass-pick .gp-title { color: #7dff6a; }
+.game-pick.inv-pick .gp-title { color: #ffd24a; }
+.gp-pass, .gp-inv { width: 120px; height: auto; }
+
 /* Russian roulette */
 .rr { display: grid; gap: 12px; }
 .rr-pick { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; width: 100%; margin-top: 18px; padding: 16px 20px; border-radius: 20px; text-align: left;
@@ -3057,6 +3178,18 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         <span class="gp-desc">Power-ups, machine colours, name styles and trophies.</span>
         <span class="gp-go">Shop</span>
       </button>
+      <button class="game-pick pass-pick" type="button" id="passPick">
+        <svg class="gp-pass" viewBox="0 0 140 130" aria-hidden="true"><g transform="translate(70 62)"><circle r="44" fill="#145a24"/><g fill="#7dff6a" stroke="#0d2a12" stroke-width="3"><circle cx="-14" cy="-14" r="16"/><circle cx="14" cy="-14" r="16"/><circle cx="-14" cy="14" r="16"/><circle cx="14" cy="14" r="16"/></g><path d="M8 26c6 14 14 22 26 28" stroke="#0d2a12" stroke-width="5" fill="none" stroke-linecap="round"/><text y="10" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="26" fill="#fff8d6" stroke="#0d2a12" stroke-width="1.5">100</text></g></svg>
+        <span class="gp-title">Lucky-Pass</span>
+        <span class="gp-desc" id="passPickDesc">100 levels with credits, wheel spins and new cosmetics, earned by playing.</span>
+        <span class="gp-go">Open</span>
+      </button>
+      <button class="game-pick inv-pick" type="button" id="invPick">
+        <svg class="gp-inv" viewBox="0 0 140 130" aria-hidden="true"><rect x="18" y="40" width="40" height="76" rx="3" fill="#4a2f24"/><rect x="62" y="16" width="54" height="100" rx="3" fill="#2a1d18" stroke="#e9a23b" stroke-width="3"/><g fill="#ffd24a"><rect x="72" y="28" width="10" height="10"/><rect x="96" y="28" width="10" height="10"/><rect x="72" y="50" width="10" height="10"/><rect x="96" y="50" width="10" height="10"/><rect x="72" y="72" width="10" height="10"/><rect x="96" y="72" width="10" height="10"/><rect x="26" y="52" width="9" height="9"/><rect x="41" y="52" width="9" height="9"/><rect x="26" y="72" width="9" height="9"/><rect x="41" y="72" width="9" height="9"/></g><rect x="82" y="96" width="14" height="20" fill="#e9a23b"/><circle cx="118" cy="110" r="14" fill="#f3c94b" stroke="#7a4a12" stroke-width="3"/><text x="118" y="116" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="16" fill="#7a4a12">$</text></svg>
+        <span class="gp-title">Investments</span>
+        <span class="gp-desc" id="invPickDesc">Shops and properties with income every hour. From Lucky-Pass level 30.</span>
+        <span class="gp-go">Open</span>
+      </button>
     </div>
     <button class="rr-pick" type="button" id="rrPick">
       <svg viewBox="0 0 260 130" aria-hidden="true">
@@ -3745,6 +3878,46 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   <p class="lt-show-msg" id="ltShowMsg" aria-live="polite"></p>
   <button class="chat-close lt-show-close" id="ltShowClose" type="button" aria-label="Close the draw">×</button>
 </div>
+<div class="shop-page" id="passPage" role="dialog" aria-modal="true" aria-labelledby="passTitle" hidden>
+  <div class="shop-wrap lp-wrap">
+    <header class="shop-head">
+      <button class="back-btn" id="passBack" type="button" aria-label="Back" title="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div class="shop-sign"><h1 id="passTitle">Lucky-Pass</h1><span>100 levels · earned by playing</span></div>
+      <span class="shop-credits">Credits <b id="passCredits">0</b></span>
+    </header>
+    <div class="lp-hero">
+      <div class="lp-hero-top">
+        <div class="lp-lvl"><b id="passLvl">0</b><span><small>Pass level</small><strong id="passXpTxt"></strong></span></div>
+        <button type="button" class="lp-claimall" id="passClaimAll" hidden></button>
+      </div>
+      <div class="lp-xpbar"><i id="passXpBar"></i></div>
+      <p class="lp-note">Every game that gives XP fills the pass too: slots, blackjack, roulette, Plinko, Chicken, coin flip, horses, rocket and more. Every 10th level brings something big.</p>
+    </div>
+    <p class="lp-royale-lock" id="passRoyaleLock">👑 The Lucky-Royale-Pass is locked for now. Its rewards are shown so you know what is coming.</p>
+    <div class="lp-cols"><span></span><span>Lucky-Pass<small>for everyone</small></span><span>Lucky-Royale-Pass<small id="passRoyaleSub">locked</small></span></div>
+    <div class="lp-list" id="passList"><p class="note">Loading…</p></div>
+  </div>
+</div>
+<div class="shop-page" id="invPage" role="dialog" aria-modal="true" aria-labelledby="invTitle" hidden>
+  <div class="shop-wrap">
+    <header class="shop-head">
+      <button class="back-btn" id="invBack" type="button" aria-label="Back" title="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div class="shop-sign"><h1 id="invTitle">Investments</h1><span>Shops and properties · paid every hour</span></div>
+      <span class="shop-credits">Credits <b id="invCredits">0</b></span>
+    </header>
+    <div id="invBody"><p class="note">Loading…</p></div>
+    <p class="admin-note">Income is paid for every full hour, also while you are away (up to 72 hours at a time). Every further one of the same kind costs 15% more, at most 10 of each. Selling gives back half of what the last one cost.</p>
+  </div>
+</div>
+<div class="modal" id="lpWheelModal" role="dialog" aria-modal="true" aria-labelledby="lpWheelTitle" hidden>
+  <div class="modal-card lp-wheel-card">
+    <div class="eyebrow" id="lpWheelEyebrow">Lucky-Pass</div>
+    <h2 id="lpWheelTitle">Lucky wheel</h2>
+    <div class="lp-wheel"><svg id="lpWheelSvg" viewBox="-100 -100 200 200"></svg></div>
+    <div class="lp-wheel-win" id="lpWheelWin"></div>
+    <button type="button" class="spin" id="lpWheelOk" disabled>Collect</button>
+  </div>
+</div>
 <div class="modal" id="watchModal" role="dialog" aria-modal="true" aria-labelledby="wlTitle" hidden>
   <div class="modal-card wl-card">
     <div class="wl-head"><div><div class="eyebrow">Watch list</div><h2 id="wlTitle"></h2></div><button type="button" class="chip-btn" id="wlClose">Close</button></div>
@@ -3883,6 +4056,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
           <label class="setting check"><input type="checkbox" name="signupsOpen"><span>New accounts allowed</span><small>Shows "Create an account" on the sign-in screen.</small></label>
           <label class="setting check"><input type="checkbox" name="chatEnabled"><span>Chat on</span><small>When off, only admins can open the chat.</small></label>
           <label class="setting check"><input type="checkbox" name="maintenance"><span>Pause the game</span><small>Nobody but admins can spin.</small></label>
+          <label class="setting check"><input type="checkbox" name="royaleOpen"><span>Lucky-Royale-Pass open for everyone</span><small>While off, the Royale track is locked (players can still see it).</small></label>
           <label class="setting"><span class="label">Start credits for new accounts</span><input name="startCredits" type="number" min="0" step="1"></label>
           <label class="setting"><span class="label">Lucky Burger: paid minutes a day</span><input name="jobDailyMinutes" type="number" min="0" max="1440" step="10"><small>How long a player can earn wages per day (German time). 0 = no limit.</small></label>
           <label class="setting"><span class="label">Price of a name change</span><input name="nameChangePrice" type="number" min="0" step="1"><small>Players pay it when they ask for a new name; it comes back if you decline.</small></label>
@@ -4273,7 +4447,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Blackjacks pay 1.55 to 1 instead of 3 to 2.': 'Blackjacks zahlen 1,55 zu 1 statt 3 zu 2.', 'Strategy Card': 'Strategiekarte', 'Shows the best move for your hand against the dealer’s card.': 'Zeigt den besten Zug für deine Hand gegen die Karte des Dealers.',
     'Dealer’s Peek': 'Dealer-Blick', 'When the dealer has blackjack you only lose your first bet: doubles and splits come back.': 'Hat der Dealer Blackjack, verlierst du nur deinen ersten Einsatz: Verdoppeln und Teilen kommen zurück.',
     'Strategy Card: the move that wins most in the long run.': 'Strategiekarte: der Zug, der auf Dauer am meisten bringt.',
-    'Close Call': 'Knapp daneben', '👀 The boss drops by!': '👀 Der Chef schaut vorbei!', 'The boss caught you asleep: no wage until you answer him.': 'Der Chef hat dich schlafend erwischt: kein Lohn, bis du ihm antwortest.', 'The boss nods and walks on.': 'Der Chef nickt und geht weiter.', 'This code brought enough new players today. Try it again tomorrow.': 'Dieser Code hat heute schon genug neue Spieler gebracht. Versuch es morgen wieder.', 'New players per code and day': 'Neue Spieler pro Code und Tag', '0 = no limit. Stops one code from being fed with many new accounts.': '0 = kein Limit. Verhindert, dass ein Code mit vielen neuen Konten gefüttert wird.', 'Lucky Burger: paid minutes a day': 'Lucky Burger: bezahlte Minuten am Tag', 'How long a player can earn wages per day (German time). 0 = no limit.': 'Wie lange ein Spieler pro Tag Lohn verdienen kann (deutsche Zeit). 0 = kein Limit.', 'Leave the poker table first.': 'Verlass zuerst den Pokertisch.', 'Finish the Russian roulette first.': 'Bring zuerst das Russisch Roulette zu Ende.', 'auto nudge': 'Auto-Stupser', 'When the ball lands right next to your single number on the wheel, 45% of that chip comes back.': 'Landet die Kugel auf dem Rad direkt neben deiner Einzelzahl, kommen 45 % dieses Chips zurück.',
+    'Close Call': 'Knapp daneben', "Lava Name": "Lava-Name", "Your name flows like glowing lava.": "Dein Name fließt wie glühende Lava.", "Thunder Name": "Gewitter-Name", "Lightning crackles through your name.": "Blitze zucken durch deinen Namen.", "Glitch Name": "Glitch-Name", "Your name glitches between cyan and magenta.": "Dein Name flackert zwischen Cyan und Magenta.", "Lucky Legend": "Lucky-Legende", "The crown of the Lucky-Pass: a golden clover shine that never stops.": "Die Krone des Lucky-Pass: ein goldener Kleeblatt-Schimmer, der nie aufhört.", "Toxic Name": "Toxic-Name", "Bubbling poison green.": "Blubberndes Giftgrün.", "Diamond Name": "Diamant-Name", "Ice-cold sparkle like cut diamonds.": "Eiskaltes Funkeln wie geschliffene Diamanten.", "Royale Name": "Royale-Name", "Purple and gold with a crown: only on the Royale track.": "Lila und Gold mit Krone: nur im Royale-Pass.", "Sunset Cabinet": "Sonnenuntergang-Gehäuse", "Orange and pink like a summer evening.": "Orange und Pink wie ein Sommerabend.", "Ocean Cabinet": "Ozean-Gehäuse", "Deep sea blue with light dancing on the waves.": "Tiefseeblau mit Licht, das auf den Wellen tanzt.", "Cyber Cabinet": "Cyber-Gehäuse", "Black glass with a glowing neon grid.": "Schwarzes Glas mit leuchtendem Neon-Gitter.", "Legend Cabinet": "Legenden-Gehäuse", "Gold with a rainbow edge that runs around the machine.": "Gold mit einem Regenbogen-Rand, der um den Automaten läuft.", "Lavender Cabinet": "Lavendel-Gehäuse", "Soft lilac with a silver shine.": "Zartes Flieder mit Silberglanz.", "Obsidian Cabinet": "Obsidian-Gehäuse", "Black volcanic glass with glowing red veins.": "Schwarzes Vulkanglas mit glühend roten Adern.", "Jade Cabinet": "Jade-Gehäuse", "Polished jade green with gold trim.": "Poliertes Jadegrün mit Goldrand.", "Royale Cabinet": "Royale-Gehäuse", "Purple velvet, gold and a crown of light: the top of the Royale track.": "Lila Samt, Gold und eine Krone aus Licht: die Spitze des Royale-Pass.", "Sakura colours": "Farbstil Sakura", "The whole casino in cherry-blossom pink.": "Das ganze Casino in Kirschblüten-Rosa.", "Arctic colours": "Farbstil Arktis", "The whole casino in icy blue and white.": "Das ganze Casino in Eisblau und Weiß.", "Inferno colours": "Farbstil Inferno", "The whole casino glows red and orange.": "Das ganze Casino glüht rot und orange.", "Vaporwave colours": "Farbstil Vaporwave", "The whole casino in purple and cyan, straight from the 80s.": "Das ganze Casino in Lila und Cyan, direkt aus den 80ern.", "Royale colours": "Farbstil Royale", "The whole casino in purple and gold.": "Das ganze Casino in Lila und Gold.", "100 levels · earned by playing": "100 Level · durchs Spielen verdient", "Pass level": "Pass-Level", "Every game that gives XP fills the pass too: slots, blackjack, roulette, Plinko, Chicken, coin flip, horses, rocket and more. Every 10th level brings something big.": "Jedes Spiel, das XP gibt, füllt auch den Pass: Slots, Blackjack, Roulette, Plinko, Chicken, Münzwurf, Pferde, Rakete und mehr. Jedes 10. Level bringt etwas Großes.", "👑 The Lucky-Royale-Pass is locked for now. Its rewards are shown so you know what is coming.": "👑 Der Lucky-Royale-Pass ist vorerst gesperrt. Seine Belohnungen siehst du schon, damit du weißt, was kommt.", "for everyone": "für alle", "locked": "gesperrt", "locked for now": "vorerst gesperrt", "unlocked": "freigeschaltet", "Investments": "Investitionen", "Shops and properties · paid every hour": "Läden und Immobilien · stündlich ausgezahlt", "Income is paid for every full hour, also while you are away (up to 72 hours at a time). Every further one of the same kind costs 15% more, at most 10 of each. Selling gives back half of what the last one cost.": "Das Einkommen wird für jede volle Stunde ausgezahlt, auch wenn du nicht da bist (bis zu 72 Stunden am Stück). Jedes weitere Objekt derselben Art kostet 15 % mehr, höchstens 10 von jedem. Beim Verkauf bekommst du die Hälfte dessen zurück, was das letzte gekostet hat.", "Lucky wheel": "Glücksrad", "Claim": "Abholen", "All 100 levels reached!": "Alle 100 Level erreicht!", "100 levels with credits, wheel spins and new cosmetics, earned by playing.": "100 Level mit Credits, Glücksrad-Drehs und neuen Cosmetics, durchs Spielen verdient.", "Shops and properties with income every hour. From Lucky-Pass level 30.": "Läden und Immobilien mit Einkommen jede Stunde. Ab Lucky-Pass Level 30.", "Shops and properties with income every hour.": "Läden und Immobilien mit Einkommen jede Stunde.", "Investments unlocked": "Investitionen freigeschaltet", "Shops and properties that pay every hour": "Läden und Immobilien, die jede Stunde zahlen", "Name style": "Namensstil", "Machine colour": "Gehäusefarbe", "Colour style": "Farbstil", "Cosmetic": "Cosmetic", "The Lucky-Pass needs the online database.": "Der Lucky-Pass braucht die Online-Datenbank.", "Investments need the online database.": "Investitionen brauchen die Online-Datenbank.", "This needs the “Lucky-Pass and investments” part of supabase-setup.sql.": "Dafür brauchst du den Teil „Lucky-Pass and investments“ aus supabase-setup.sql.", "The Lucky-Royale-Pass is locked for now.": "Der Lucky-Royale-Pass ist vorerst gesperrt.", "Nothing to claim right now.": "Gerade gibt es nichts abzuholen.", "From Lucky-Pass level 30": "Ab Lucky-Pass Level 30", "Open the Lucky-Pass": "Lucky-Pass öffnen", "Income per hour": "Einkommen pro Stunde", "Next payout": "Nächste Auszahlung", "Paid out so far": "Bisher ausgezahlt", "Each per hour": "Je Stück pro Std.", "Your income": "Dein Einkommen", "Pays for itself": "Rechnet sich", "Kiosk": "Kiosk", "A small kiosk on the corner: drinks, snacks and scratch cards.": "Ein kleiner Kiosk an der Ecke: Getränke, Snacks und Rubbellose.", "Food truck": "Food-Truck", "Burgers on wheels, wherever the crowd is.": "Burger auf Rädern, immer da, wo die Leute sind.", "Lucky Burger branch": "Lucky-Burger-Filiale", "Your own Lucky Burger. Somebody else flips the patties now.": "Dein eigener Lucky Burger. Die Patties wendet jetzt jemand anderes.", "Rented flat": "Mietwohnung", "A flat in town, rented out every month.": "Eine Wohnung in der Stadt, jeden Monat vermietet.", "Arcade": "Spielhalle", "Flashing machines and a constant clatter of coins.": "Blinkende Automaten und ständiges Münzgeklimper.", "Apartment block": "Mehrfamilienhaus", "Twelve flats, twelve rents.": "Zwölf Wohnungen, zwölf Mieten.", "Shopping mall": "Einkaufszentrum", "Fifty shops under one roof, all paying you rent.": "Fünfzig Läden unter einem Dach, alle zahlen dir Miete.", "Hotel & casino": "Hotel & Casino", "The big one: rooms, shows and a casino of your own.": "Das ganz Große: Zimmer, Shows und ein eigenes Casino.", "Investments open with Lucky-Pass level 30.": "Investitionen öffnen sich mit Lucky-Pass Level 30.", "You have 10 of these already.": "Davon hast du schon 10.", "Sell?": "Verkaufen?", "Lucky-Royale-Pass open for everyone": "Lucky-Royale-Pass für alle offen", "While off, the Royale track is locked (players can still see it).": "Solange aus, ist der Royale-Pass gesperrt (Spieler sehen ihn trotzdem).", '👀 The boss drops by!': '👀 Der Chef schaut vorbei!', 'The boss caught you asleep: no wage until you answer him.': 'Der Chef hat dich schlafend erwischt: kein Lohn, bis du ihm antwortest.', 'The boss nods and walks on.': 'Der Chef nickt und geht weiter.', 'This code brought enough new players today. Try it again tomorrow.': 'Dieser Code hat heute schon genug neue Spieler gebracht. Versuch es morgen wieder.', 'New players per code and day': 'Neue Spieler pro Code und Tag', '0 = no limit. Stops one code from being fed with many new accounts.': '0 = kein Limit. Verhindert, dass ein Code mit vielen neuen Konten gefüttert wird.', 'Lucky Burger: paid minutes a day': 'Lucky Burger: bezahlte Minuten am Tag', 'How long a player can earn wages per day (German time). 0 = no limit.': 'Wie lange ein Spieler pro Tag Lohn verdienen kann (deutsche Zeit). 0 = kein Limit.', 'Leave the poker table first.': 'Verlass zuerst den Pokertisch.', 'Finish the Russian roulette first.': 'Bring zuerst das Russisch Roulette zu Ende.', 'auto nudge': 'Auto-Stupser', 'When the ball lands right next to your single number on the wheel, 45% of that chip comes back.': 'Landet die Kugel auf dem Rad direkt neben deiner Einzelzahl, kommen 45 % dieses Chips zurück.',
     'Winning outside bets (colours, odd or even, halves, dozens, columns) pay 2% more.': 'Gewonnene Außenwetten (Farben, Gerade/Ungerade, Hälften, Dutzende, Spalten) zahlen 2 % mehr.',
     'Zero Shield': 'Null-Schild', 'When the ball lands on 0, half of your outside bets (colours, odd or even, halves, dozens, columns) come back.': 'Landet die Kugel auf der 0, kommt die Hälfte deiner Außenwetten (Farben, Gerade/Ungerade, Hälften, Dutzende, Spalten) zurück.',
     'At the solo table the house takes half the rake from your pots (2.5% instead of 5%).': 'Am Solo-Tisch nimmt das Haus nur die halbe Gebühr von deinen Pots (2,5 % statt 5 %).',
@@ -4630,7 +4804,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['{a} is now called {b} and signs in with that name.', '{a} heißt jetzt {b} und meldet sich mit diesem Namen an.'], ["With the loser's XP you are level {a} now.", 'Mit den XP des Verlierers bist du jetzt Level {a}.'], ["{a} can't win the lotto now.", '{a} kann jetzt nicht mehr im Lotto gewinnen.'], ['{a} can win the lotto again.', '{a} kann wieder im Lotto gewinnen.'], ['Unlocks at Mega-Prestige {a} (prestige {b}).', 'Wird ab Mega-Prestige {a} freigeschaltet (Prestige {b}).'], ['🔒 Mega {a}', '🔒 Mega {a}'], ['From prestige {a}', 'Ab Prestige {a}'], ['Mega-Prestige {a} · Prestige {b}', 'Mega-Prestige {a} · Prestige {b}'], ['Prestige {a}: a crowned Mega badge next to your name and a new name style in the shop.', 'Prestige {a}: ein gekröntes Mega-Abzeichen neben deinem Namen und ein neuer Namens-Stil im Shop.'], ['Mega-Prestige {a}!', 'Mega-Prestige {a}!'], ['Luck {a}%', 'Glück {a} %'], ['Tap {a} in this order · {b} s', 'Tippe {a} in dieser Reihenfolge · {b} s'], ['Tap {a} in this order to get your wage again', 'Tippe {a} in dieser Reihenfolge, um wieder Lohn zu bekommen'], ["That's enough work for today ({a} paid minutes a day). Come back tomorrow!", 'Genug gearbeitet für heute ({a} bezahlte Minuten am Tag). Komm morgen wieder!'], ['Spins count for missions from a bet of {a}.', 'Spins zählen für Missionen ab einem Einsatz von {a}.'], ['Page settings could not be saved for a while ({a}). Your credits and wins are safe: the server books them with every game.', 'Die Seiten-Einstellungen konnten eine Weile nicht gespeichert werden ({a}). Deine Credits und Gewinne sind sicher: Der Server bucht sie bei jedem Spiel.'], ['Saving failed ({a}). Your progress stays on this page; it will retry.', 'Speichern fehlgeschlagen ({a}). Dein Fortschritt bleibt auf der Seite, es wird erneut versucht.'], ['Watch list: {a}', 'Beobachtungsliste: {a}'], ['watched since {a}', 'beobachtet seit {a}'], ['Credits {a} to {b} · {c} notes', 'Credits {a} bis {b} · {c} Einträge'], ['{a} is on the watch list now: credits and XP are noted once a minute.', '{a} steht jetzt auf der Beobachtungsliste: Credits und XP werden jede Minute festgehalten.'], ['{a} is off the watch list; the notes so far stay for 30 days.', '{a} ist nicht mehr auf der Beobachtungsliste; die bisherigen Einträge bleiben 30 Tage.'], ['Chance to win for {a} in %', 'Gewinnchance für {a} in %'], ['{a} has the normal chance to win again.', '{a} hat wieder die normale Gewinnchance.'], ['{a} now has {b}% of the normal chance to win.', '{a} hat jetzt {b} % der normalen Gewinnchance.'], ['{a} got the goodie “{b}”.', '{a} hat das Goodie „{b}“ bekommen.'], ['{a} no longer has the goodie “{b}”.', '{a} hat das Goodie „{b}“ nicht mehr.'], ['Goodie for {a}', 'Goodie für {a}'], ['Change your name · {a} credits', 'Namen ändern · {a} Credits'], ['Waiting for an admin: “{a}” ({b} credits paid).', 'Wartet auf einen Admin: „{a}“ ({b} Credits bezahlt).'], ['An admin declined “{a}”; the credits came back.', 'Ein Admin hat „{a}“ abgelehnt; die Credits sind zurück.'], ['Approved: you are “{a}” now and sign in with that name.', 'Genehmigt: Du heißt jetzt „{a}“ und meldest dich mit diesem Namen an.'], ['A name change costs {a} credits.', 'Eine Namensänderung kostet {a} Credits.'], ['You are {a} now. Sign in with this name from now on.', 'Du heißt jetzt {a}. Melde dich ab jetzt mit diesem Namen an.'], ['Name change requests ({a})', 'Anträge auf Namensänderung ({a})'], ['{a} is now called {b}.', '{a} heißt jetzt {b}.'], ['Declined; {a} got the credits back.', 'Abgelehnt; {a} hat die Credits zurück.'], ['Wild spin {a} · wins ×{b}', 'Wild-Spin {a} · Gewinne ×{b}'], ['{a} spins · wilds stick · every win ×{b}', '{a} Spins · Wilds kleben · jeder Gewinn ×{b}'], ['Wild spins paid {a} in total.', 'Die Wild-Spins haben insgesamt {a} gezahlt.'], ['Wild spins', 'Wild-Spins'], ['{a} left', 'noch {a}'], ['{a} waiting', '{a} warten'], ['{a} is no longer marked as a bot.', '{a} ist nicht mehr als Bot markiert.'], ['{a} is marked as a bot now.', '{a} ist jetzt als Bot markiert.'], ['{a} is back in the game, as before.', '{a} ist wieder im Spiel, wie vorher.'], ['{a} is archived: out of the game, nothing deleted.', '{a} ist archiviert: aus dem Spiel genommen, nichts gelöscht.'], ['{a} is taken already.', '{a} ist schon vergeben.'], ['New name for {a}', 'Neuer Name für {a}'], ['account since {a} days', 'Konto seit {a} Tagen'], ['Refund all {a} tickets', 'Alle {a} Lose erstatten'], ['Nobody has reached {a} credits yet.', 'Noch niemand hat {a} Credits erreicht.'], ['Waiting for {a} to answer… {b} s', 'Warte auf die Antwort von {a} … {b} s'], ['{a} challenges you! {b} s', '{a} fordert dich heraus! {b} s'], ['{a} challenges you to Russian roulette!', '{a} fordert dich zum Russisch Roulette heraus!'], ['{a} s to answer', 'Noch {a} s zum Antworten'], ['1 in {a}', '1 zu {a}'], ['{a} has to pull…', '{a} muss abdrücken …'], ['Your turn. {a} s left, or you lose.', 'Du bist dran. Noch {a} s, sonst verlierst du.'], ['{a} has the revolver. {b} s.', '{a} hat den Revolver. {b} s.'], ['{a} goes first.', '{a} fängt an.'], ['*click* … empty. You live. Now {a}.', '*klick* … leer. Du lebst. Jetzt {a}.'], ['*click* … empty. {a} lives. Your turn.', '*klick* … leer. {a} lebt. Du bist dran.'], ['You waited too long: that counts as lost. Everything goes to {a}.', 'Du hast zu lange gewartet: Das zählt als verloren. Alles geht an {a}.'], ['{a} waited too long and loses everything to you!', '{a} hat zu lange gewartet und verliert alles an dich!'], ['BANG. You lost everything to {a}. Your account starts over.', 'PENG. Du hast alles an {a} verloren. Dein Konto fängt von vorne an.'], ['{a} is out. You take everything: +{b}!', '{a} ist raus. Du bekommst alles: +{b}!'], ['Everything went to {a}.', 'Alles ging an {a}.'], ['+{a} from {b}.', '+{a} von {b}.'], ['{a} credits and {b} goodies', '{a} Credits und {b} Goodies'], ['{a} credits and {b} goodie', '{a} Credits und {b} Goodie'], ['{a} won Russian roulette against {b}.', '{a} hat beim Russisch Roulette gegen {b} gewonnen.'], ['{a} said no.', '{a} hat abgelehnt.'], ['Challenge sent. {a} has 2 minutes to answer.', 'Herausforderung geschickt. {a} hat 2 Minuten zum Antworten.'], ['{a} challenges you!', '{a} fordert dich heraus!'], ['📺 Ad {a} s', '📺 Werbung {a} s'], ['Seconds (normal: {a})', 'Sekunden (normal: {a})'], ['Ad wait for {a} in seconds', 'Werbe-Wartezeit für {a} in Sekunden'], ['{a} has the normal ad wait again ({b} s).', '{a} hat wieder die normale Werbe-Wartezeit ({b} s).'], ['{a} can close the ad only after {b} seconds.', '{a} kann die Werbung erst nach {b} Sekunden schließen.'], ['Message {a}…', 'Nachricht an {a}…'], ['Sorry for the downtime! As a thank-you for your patience, everyone gets {a} credits.', 'Sorry für die Ausfallzeit! Als Dankeschön für eure Geduld bekommt jeder {a} Credits.'], ['Give everyone {a}?', 'Allen {a} geben?'], ['Everyone got {a} credits and sees a pop-up about it.', 'Alle haben {a} Credits bekommen und sehen ein Pop-up dazu.'], ['{a} now works as {b} at Lucky Burger.', '{a} arbeitet jetzt als {b} bei Lucky Burger.'], ['An admin made you {a}.', 'Ein Admin hat dich zu {a} gemacht.'], ['Lucky Burger position for {a}', 'Lucky-Burger-Position für {a}'], ['New password for {a} (6+)', 'Neues Passwort für {a} (6+)'], ['{a} has a new password now. Tell it to them yourself.', '{a} hat jetzt ein neues Passwort. Sag es ihm selbst.'], ['{a} can get credits from level {b} on.', '{a} kann erst ab Level {b} Credits bekommen.'], ['Got a code from a friend? You start with {a} credits instead of {b} (first account on this device only).', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits (nur beim ersten Konto auf diesem Gerät).'], ['Got a code from a friend? You start with {a} credits instead of {b}.', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits.'], ['New players who use it start with {a} credits.', 'Neue Spieler, die ihn nutzen, starten mit {a} Credits.'], ['New players who sign up with your code start with {a} credits.', 'Neue Spieler, die sich mit deinem Code anmelden, starten mit {a} Credits.'], ['You get {a} on top.', 'Du bekommst {a} obendrauf.'], ['{a} extra credits', '{a} Extra-Credits'], ['{a}% of your credits (at most {b})', '{a} % deiner Credits (höchstens {b})'], ['{a}% of your credits', '{a} % deiner Credits'], ['Example: a new player starts with {a} credits. A code owner with 50,000 credits gets {b}, one with 500,000 gets {c}.', 'Beispiel: Ein neuer Spieler startet mit {a} Credits. Ein Code-Besitzer mit 50,000 Credits bekommt {b}, einer mit 500,000 bekommt {c}.'], ['ends in {a}', 'endet in {a}'], ['starts in {a}', 'beginnt in {a}'], ['Event gift: +{a} credits!', 'Event-Geschenk: +{a} Credits!'], ['event ×{a}', 'Event ×{a}'], ['1st place', '1. Platz'], ['2nd place', '2. Platz'], ['3rd place', '3. Platz'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['{a} is now called {b} and signs in with that name.', '{a} heißt jetzt {b} und meldet sich mit diesem Namen an.'], ["With the loser's XP you are level {a} now.", 'Mit den XP des Verlierers bist du jetzt Level {a}.'], ["{a} can't win the lotto now.", '{a} kann jetzt nicht mehr im Lotto gewinnen.'], ['{a} can win the lotto again.', '{a} kann wieder im Lotto gewinnen.'], ['Unlocks at Mega-Prestige {a} (prestige {b}).', 'Wird ab Mega-Prestige {a} freigeschaltet (Prestige {b}).'], ['🔒 Mega {a}', '🔒 Mega {a}'], ['From prestige {a}', 'Ab Prestige {a}'], ['Mega-Prestige {a} · Prestige {b}', 'Mega-Prestige {a} · Prestige {b}'], ['Prestige {a}: a crowned Mega badge next to your name and a new name style in the shop.', 'Prestige {a}: ein gekröntes Mega-Abzeichen neben deinem Namen und ein neuer Namens-Stil im Shop.'], ['Mega-Prestige {a}!', 'Mega-Prestige {a}!'], ['Luck {a}%', 'Glück {a} %'], ["Comes with Lucky-Royale-Pass level {a}.", "Gibt es mit Lucky-Royale-Pass Level {a}."], ["Comes with Lucky-Pass level {a}.", "Gibt es mit Lucky-Pass Level {a}."], ["Lucky-Royale-Pass level {a}", "Lucky-Royale-Pass Level {a}"], ["Lucky-Pass level {a}", "Lucky-Pass Level {a}"], ["Lucky-Royale-Pass · level {a}", "Lucky-Royale-Pass · Level {a}"], ["Lucky-Pass · level {a}", "Lucky-Pass · Level {a}"], ["🔒 Royale {a}", "🔒 Royale {a}"], ["🔒 Pass {a}", "🔒 Pass {a}"], ["Passive income: +{a} credits ({b} h).", "Passives Einkommen: +{a} Credits ({b} Std.)."], ["+{a} credits", "+{a} Credits"], ["about {a} on average, up to {b}", "im Schnitt etwa {a}, bis zu {b}"], ["{a} / {b} XP to level {c}", "{a} / {b} XP bis Level {c}"], ["Claim all ({a})", "Alle abholen ({a})"], ["Investments open with the level 30 reward of the Lucky-Pass. You are at pass level {a}.", "Investitionen öffnen sich mit der Level-30-Belohnung des Lucky-Pass. Du bist auf Pass-Level {a}."], ["in {a} h", "nach {a} Std."], ["Buy · {a}", "Kaufen · {a}"], ["Sell · {a}", "Verkaufen · {a}"], ["{a} bought for {b}. Income now {c} per hour.", "{a} für {b} gekauft. Einkommen jetzt {c} pro Stunde."], ["{a} sold for {b}.", "{a} für {b} verkauft."], ["Pass level {a} of 100. Credits, wheel spins and new cosmetics, earned by playing.", "Pass-Level {a} von 100. Credits, Glücksrad-Drehs und neue Cosmetics, durchs Spielen verdient."], ['Tap {a} in this order · {b} s', 'Tippe {a} in dieser Reihenfolge · {b} s'], ['Tap {a} in this order to get your wage again', 'Tippe {a} in dieser Reihenfolge, um wieder Lohn zu bekommen'], ["That's enough work for today ({a} paid minutes a day). Come back tomorrow!", 'Genug gearbeitet für heute ({a} bezahlte Minuten am Tag). Komm morgen wieder!'], ['Spins count for missions from a bet of {a}.', 'Spins zählen für Missionen ab einem Einsatz von {a}.'], ['Page settings could not be saved for a while ({a}). Your credits and wins are safe: the server books them with every game.', 'Die Seiten-Einstellungen konnten eine Weile nicht gespeichert werden ({a}). Deine Credits und Gewinne sind sicher: Der Server bucht sie bei jedem Spiel.'], ['Saving failed ({a}). Your progress stays on this page; it will retry.', 'Speichern fehlgeschlagen ({a}). Dein Fortschritt bleibt auf der Seite, es wird erneut versucht.'], ['Watch list: {a}', 'Beobachtungsliste: {a}'], ['watched since {a}', 'beobachtet seit {a}'], ['Credits {a} to {b} · {c} notes', 'Credits {a} bis {b} · {c} Einträge'], ['{a} is on the watch list now: credits and XP are noted once a minute.', '{a} steht jetzt auf der Beobachtungsliste: Credits und XP werden jede Minute festgehalten.'], ['{a} is off the watch list; the notes so far stay for 30 days.', '{a} ist nicht mehr auf der Beobachtungsliste; die bisherigen Einträge bleiben 30 Tage.'], ['Chance to win for {a} in %', 'Gewinnchance für {a} in %'], ['{a} has the normal chance to win again.', '{a} hat wieder die normale Gewinnchance.'], ['{a} now has {b}% of the normal chance to win.', '{a} hat jetzt {b} % der normalen Gewinnchance.'], ['{a} got the goodie “{b}”.', '{a} hat das Goodie „{b}“ bekommen.'], ['{a} no longer has the goodie “{b}”.', '{a} hat das Goodie „{b}“ nicht mehr.'], ['Goodie for {a}', 'Goodie für {a}'], ['Change your name · {a} credits', 'Namen ändern · {a} Credits'], ['Waiting for an admin: “{a}” ({b} credits paid).', 'Wartet auf einen Admin: „{a}“ ({b} Credits bezahlt).'], ['An admin declined “{a}”; the credits came back.', 'Ein Admin hat „{a}“ abgelehnt; die Credits sind zurück.'], ['Approved: you are “{a}” now and sign in with that name.', 'Genehmigt: Du heißt jetzt „{a}“ und meldest dich mit diesem Namen an.'], ['A name change costs {a} credits.', 'Eine Namensänderung kostet {a} Credits.'], ['You are {a} now. Sign in with this name from now on.', 'Du heißt jetzt {a}. Melde dich ab jetzt mit diesem Namen an.'], ['Name change requests ({a})', 'Anträge auf Namensänderung ({a})'], ['{a} is now called {b}.', '{a} heißt jetzt {b}.'], ['Declined; {a} got the credits back.', 'Abgelehnt; {a} hat die Credits zurück.'], ['Wild spin {a} · wins ×{b}', 'Wild-Spin {a} · Gewinne ×{b}'], ['{a} spins · wilds stick · every win ×{b}', '{a} Spins · Wilds kleben · jeder Gewinn ×{b}'], ['Wild spins paid {a} in total.', 'Die Wild-Spins haben insgesamt {a} gezahlt.'], ['Wild spins', 'Wild-Spins'], ['{a} left', 'noch {a}'], ['{a} waiting', '{a} warten'], ['{a} is no longer marked as a bot.', '{a} ist nicht mehr als Bot markiert.'], ['{a} is marked as a bot now.', '{a} ist jetzt als Bot markiert.'], ['{a} is back in the game, as before.', '{a} ist wieder im Spiel, wie vorher.'], ['{a} is archived: out of the game, nothing deleted.', '{a} ist archiviert: aus dem Spiel genommen, nichts gelöscht.'], ['{a} is taken already.', '{a} ist schon vergeben.'], ['New name for {a}', 'Neuer Name für {a}'], ['account since {a} days', 'Konto seit {a} Tagen'], ['Refund all {a} tickets', 'Alle {a} Lose erstatten'], ['Nobody has reached {a} credits yet.', 'Noch niemand hat {a} Credits erreicht.'], ['Waiting for {a} to answer… {b} s', 'Warte auf die Antwort von {a} … {b} s'], ['{a} challenges you! {b} s', '{a} fordert dich heraus! {b} s'], ['{a} challenges you to Russian roulette!', '{a} fordert dich zum Russisch Roulette heraus!'], ['{a} s to answer', 'Noch {a} s zum Antworten'], ['1 in {a}', '1 zu {a}'], ['{a} has to pull…', '{a} muss abdrücken …'], ['Your turn. {a} s left, or you lose.', 'Du bist dran. Noch {a} s, sonst verlierst du.'], ['{a} has the revolver. {b} s.', '{a} hat den Revolver. {b} s.'], ['{a} goes first.', '{a} fängt an.'], ['*click* … empty. You live. Now {a}.', '*klick* … leer. Du lebst. Jetzt {a}.'], ['*click* … empty. {a} lives. Your turn.', '*klick* … leer. {a} lebt. Du bist dran.'], ['You waited too long: that counts as lost. Everything goes to {a}.', 'Du hast zu lange gewartet: Das zählt als verloren. Alles geht an {a}.'], ['{a} waited too long and loses everything to you!', '{a} hat zu lange gewartet und verliert alles an dich!'], ['BANG. You lost everything to {a}. Your account starts over.', 'PENG. Du hast alles an {a} verloren. Dein Konto fängt von vorne an.'], ['{a} is out. You take everything: +{b}!', '{a} ist raus. Du bekommst alles: +{b}!'], ['Everything went to {a}.', 'Alles ging an {a}.'], ['+{a} from {b}.', '+{a} von {b}.'], ['{a} credits and {b} goodies', '{a} Credits und {b} Goodies'], ['{a} credits and {b} goodie', '{a} Credits und {b} Goodie'], ['{a} won Russian roulette against {b}.', '{a} hat beim Russisch Roulette gegen {b} gewonnen.'], ['{a} said no.', '{a} hat abgelehnt.'], ['Challenge sent. {a} has 2 minutes to answer.', 'Herausforderung geschickt. {a} hat 2 Minuten zum Antworten.'], ['{a} challenges you!', '{a} fordert dich heraus!'], ['📺 Ad {a} s', '📺 Werbung {a} s'], ['Seconds (normal: {a})', 'Sekunden (normal: {a})'], ['Ad wait for {a} in seconds', 'Werbe-Wartezeit für {a} in Sekunden'], ['{a} has the normal ad wait again ({b} s).', '{a} hat wieder die normale Werbe-Wartezeit ({b} s).'], ['{a} can close the ad only after {b} seconds.', '{a} kann die Werbung erst nach {b} Sekunden schließen.'], ['Message {a}…', 'Nachricht an {a}…'], ['Sorry for the downtime! As a thank-you for your patience, everyone gets {a} credits.', 'Sorry für die Ausfallzeit! Als Dankeschön für eure Geduld bekommt jeder {a} Credits.'], ['Give everyone {a}?', 'Allen {a} geben?'], ['Everyone got {a} credits and sees a pop-up about it.', 'Alle haben {a} Credits bekommen und sehen ein Pop-up dazu.'], ['{a} now works as {b} at Lucky Burger.', '{a} arbeitet jetzt als {b} bei Lucky Burger.'], ['An admin made you {a}.', 'Ein Admin hat dich zu {a} gemacht.'], ['Lucky Burger position for {a}', 'Lucky-Burger-Position für {a}'], ['New password for {a} (6+)', 'Neues Passwort für {a} (6+)'], ['{a} has a new password now. Tell it to them yourself.', '{a} hat jetzt ein neues Passwort. Sag es ihm selbst.'], ['{a} can get credits from level {b} on.', '{a} kann erst ab Level {b} Credits bekommen.'], ['Got a code from a friend? You start with {a} credits instead of {b} (first account on this device only).', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits (nur beim ersten Konto auf diesem Gerät).'], ['Got a code from a friend? You start with {a} credits instead of {b}.', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits.'], ['New players who use it start with {a} credits.', 'Neue Spieler, die ihn nutzen, starten mit {a} Credits.'], ['New players who sign up with your code start with {a} credits.', 'Neue Spieler, die sich mit deinem Code anmelden, starten mit {a} Credits.'], ['You get {a} on top.', 'Du bekommst {a} obendrauf.'], ['{a} extra credits', '{a} Extra-Credits'], ['{a}% of your credits (at most {b})', '{a} % deiner Credits (höchstens {b})'], ['{a}% of your credits', '{a} % deiner Credits'], ['Example: a new player starts with {a} credits. A code owner with 50,000 credits gets {b}, one with 500,000 gets {c}.', 'Beispiel: Ein neuer Spieler startet mit {a} Credits. Ein Code-Besitzer mit 50,000 Credits bekommt {b}, einer mit 500,000 bekommt {c}.'], ['ends in {a}', 'endet in {a}'], ['starts in {a}', 'beginnt in {a}'], ['Event gift: +{a} credits!', 'Event-Geschenk: +{a} Credits!'], ['event ×{a}', 'Event ×{a}'], ['1st place', '1. Platz'], ['2nd place', '2. Platz'], ['3rd place', '3. Platz'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
     ['Rises in {a} of steps', 'Steigt in {a} der Schritte'], ['Usually {a} or {b}', 'Meist {a} oder {b}'], ['Swings: {a}', 'Schwankung: {a}'],
     ['Start {a} · bankrupt below {b} · takeover at {c}', 'Start {a} · Pleite unter {b} · Übernahme ab {c}'],
     ['Buy {a} for {b} · sell {c} for {d} (1% fee each way)', 'Kauf {a} für {b} · Verkauf {c} für {d} (je 1 % Gebühr)'],
@@ -4962,7 +5136,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   let HOLD_CHANCE = 15;
   // Game-wide settings an admin can change; every client applies them live.
   const DEFAULT_SETTINGS = {
-    announcement: '', signupsOpen: true, chatEnabled: true, maintenance: false,
+    announcement: '', signupsOpen: true, chatEnabled: true, maintenance: false, royaleOpen: false,
     startCredits: 500, nameChangePrice: 50000, winMultiplier: 1, jackpotPay: 150, maxBet: 0,
     starGoal: 15, freeSpins: 8, freeMult: 2, nudgeChance: 12, holdChance: 15,
     // econ 3: eight free spins instead of six; saved payout settings from before fall back to these defaults
@@ -5044,7 +5218,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     jbBadge: '<svg viewBox="0 0 48 48"><rect x="10" y="8" width="28" height="34" rx="5" fill="#d62828" stroke="#a4161a" stroke-width="2"/><rect x="14" y="12" width="20" height="8" rx="2" fill="#ffc72c"/><text x="24" y="34" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="11" fill="#fff">+10%</text></svg>',
     jbSchool: '<svg viewBox="0 0 48 48"><path d="M4 18l20-9 20 9-20 9z" fill="#3a3640" stroke="#1d1714" stroke-width="2" stroke-linejoin="round"/><path d="M12 22v9q12 7 24 0v-9" fill="#4a4652" stroke="#1d1714" stroke-width="2"/><path d="M40 20v12" stroke="#ffc72c" stroke-width="3"/><circle cx="40" cy="34" r="3" fill="#ffc72c"/></svg>',
   });
-  const NAME_FLAIRS = ['neon', 'gold', 'fire', 'ice', 'galaxy', 'admin', 'mega1', 'mega2', 'mega3', 'mega4', 'mega5'];
+  const NAME_FLAIRS = ['neon', 'gold', 'fire', 'ice', 'galaxy', 'admin', 'mega1', 'mega2', 'mega3', 'mega4', 'mega5', 'lpLava', 'lpStorm', 'lpGlitch', 'lpLucky', 'lpToxic', 'lpDiamond', 'lpRoyalName'];
   const TROPHY_IDS = ['bronzeCup', 'silverCup', 'goldCup', 'diamondTrophy', 'crownTrophy'];
   const GOODIES = [
     { id: 'horseshoe', kind: 'level', max: 3, name: 'Lucky Horseshoe', desc: 'Three sevens pay 8× more per level. Stack up to three.', price: () => 2000 * 3 ** state.owned.horseshoe },
@@ -5110,6 +5284,38 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     { id: 'jbSchool', game: 'jb', kind: 'perm', name: 'Night School', desc: 'Lucky Burger: worked time counts 25% more towards your next promotion.', price: () => 60000 },
     { id: 'lightning', kind: 'perm', name: 'Lightning Strike', desc: 'On 1% of your slot wins lightning strikes and multiplies the win ×2, ×3, ×5 or even ×10.', price: () => 250000 },
   ];
+  // Cosmetics from the Lucky-Pass: not for sale, they come with a pass level (t: 'f' Lucky-Pass, 'r' Royale)
+  const PASS_COS = [
+    { id: 'lpLava', g: 'name', l: 10, t: 'f', name: 'Lava Name', desc: 'Your name flows like glowing lava.', c: ['#ff3b1a', '#ffb000', '#5a0d00'] },
+    { id: 'lpStorm', g: 'name', l: 50, t: 'f', name: 'Thunder Name', desc: 'Lightning crackles through your name.', c: ['#bff3ff', '#4f7dff', '#1a2a6e'] },
+    { id: 'lpGlitch', g: 'name', l: 80, t: 'f', name: 'Glitch Name', desc: 'Your name glitches between cyan and magenta.', c: ['#00f0ff', '#ff00c8', '#111'] },
+    { id: 'lpLucky', g: 'name', l: 100, t: 'f', name: 'Lucky Legend', desc: 'The crown of the Lucky-Pass: a golden clover shine that never stops.', c: ['#7dff6a', '#ffe14f', '#0d5a2a'] },
+    { id: 'lpToxic', g: 'name', l: 20, t: 'r', name: 'Toxic Name', desc: 'Bubbling poison green.', c: ['#b6ff00', '#39ff14', '#143d00'] },
+    { id: 'lpDiamond', g: 'name', l: 50, t: 'r', name: 'Diamond Name', desc: 'Ice-cold sparkle like cut diamonds.', c: ['#ffffff', '#9fe8ff', '#4a6a8a'] },
+    { id: 'lpRoyalName', g: 'name', l: 80, t: 'r', name: 'Royale Name', desc: 'Purple and gold with a crown: only on the Royale track.', c: ['#b06bff', '#ffd24a', '#2a0a4a'] },
+    { id: 'lpSunset', g: 'cabinet', l: 20, t: 'f', name: 'Sunset Cabinet', desc: 'Orange and pink like a summer evening.', c: ['#ff7a3c', '#ff3f8e', '#4a1430'] },
+    { id: 'lpOcean', g: 'cabinet', l: 60, t: 'f', name: 'Ocean Cabinet', desc: 'Deep sea blue with light dancing on the waves.', c: ['#1fb6c9', '#0b4f7a', '#04223a'] },
+    { id: 'lpCyber', g: 'cabinet', l: 90, t: 'f', name: 'Cyber Cabinet', desc: 'Black glass with a glowing neon grid.', c: ['#00f0ff', '#ff00c8', '#07070f'] },
+    { id: 'lpLegend', g: 'cabinet', l: 100, t: 'f', name: 'Legend Cabinet', desc: 'Gold with a rainbow edge that runs around the machine.', c: ['#ffd24a', '#7dff6a', '#3a2a06'] },
+    { id: 'lpLavender', g: 'cabinet', l: 10, t: 'r', name: 'Lavender Cabinet', desc: 'Soft lilac with a silver shine.', c: ['#c9a8ff', '#7d5ac9', '#2a1a4a'] },
+    { id: 'lpObsidian', g: 'cabinet', l: 40, t: 'r', name: 'Obsidian Cabinet', desc: 'Black volcanic glass with glowing red veins.', c: ['#ff2a2a', '#3a0a0a', '#050505'] },
+    { id: 'lpJade', g: 'cabinet', l: 70, t: 'r', name: 'Jade Cabinet', desc: 'Polished jade green with gold trim.', c: ['#3fd1a4', '#0f5a44', '#c9a24a'] },
+    { id: 'lpRoyalCab', g: 'cabinet', l: 100, t: 'r', name: 'Royale Cabinet', desc: 'Purple velvet, gold and a crown of light: the top of the Royale track.', c: ['#8a3bff', '#ffd24a', '#1a0630'] },
+    { id: 'lpSakura', g: 'theme', l: 40, t: 'f', name: 'Sakura colours', desc: 'The whole casino in cherry-blossom pink.', c: ['#ff9ec7', '#ffd6e7', '#2a1020'] },
+    { id: 'lpArctic', g: 'theme', l: 70, t: 'f', name: 'Arctic colours', desc: 'The whole casino in icy blue and white.', c: ['#9fe8ff', '#e8fbff', '#0a1a26'] },
+    { id: 'lpInferno', g: 'theme', l: 30, t: 'r', name: 'Inferno colours', desc: 'The whole casino glows red and orange.', c: ['#ff5a1a', '#ffc04a', '#1e0805'] },
+    { id: 'lpVapor', g: 'theme', l: 60, t: 'r', name: 'Vaporwave colours', desc: 'The whole casino in purple and cyan, straight from the 80s.', c: ['#ff6ad5', '#26e2ff', '#1a0d2e'] },
+    { id: 'lpRoyalTheme', g: 'theme', l: 90, t: 'r', name: 'Royale colours', desc: 'The whole casino in purple and gold.', c: ['#b06bff', '#ffd24a', '#14061f'] },
+  ];
+  for (const x of PASS_COS) {
+    GOODIES.push({ id: x.id, kind: 'cosmetic', shelf: x.g === 'theme' ? 'effect' : x.g, group: x.g, flair: x.g === 'name' ? x.id : undefined, pass: { l: x.l, t: x.t }, name: x.name, desc: x.desc, price: () => 0 });
+    const [a, b, d] = x.c, gid = 'gi-' + x.id;
+    SHOP_ICONS[x.id] = x.g === 'name'
+      ? `<svg viewBox="0 0 48 48"><defs><linearGradient id="${gid}" x1="0" x2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs><rect x="4" y="12" width="40" height="24" rx="6" fill="${d}" stroke="url(#${gid})" stroke-width="2.5"/><text x="24" y="30" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="14" fill="url(#${gid})">Aa</text></svg>`
+      : x.g === 'cabinet'
+      ? `<svg viewBox="0 0 48 48"><defs><linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs><rect x="10" y="4" width="28" height="40" rx="6" fill="url(#${gid})" stroke="${d}" stroke-width="2"/><rect x="14" y="14" width="20" height="12" rx="2" fill="#f6efe3"/><circle cx="24" cy="34" r="3" fill="${d}"/></svg>`
+      : `<svg viewBox="0 0 48 48"><circle cx="17" cy="20" r="11" fill="${a}"/><circle cx="31" cy="20" r="11" fill="${b}" opacity=".9"/><circle cx="24" cy="32" r="11" fill="${d}" stroke="${a}" stroke-width="2"/></svg>`;
+  }
 
   const ACH = [
     { id: 'first', name: 'First Pull', desc: 'Spin once.', reward: 100, test: () => state.spins >= 1 },
@@ -6474,6 +6680,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     if (Array.isArray(g.missions)) state.missions = g.missions.filter(m => MISSIONS[m?.t]);
     if (g.job && typeof g.job === 'object') for (const k of ['worked', 'earned', 'shifts', 'pos']) state.job[k] = Number(g.job[k]) || 0;
     state.evGifts = Array.isArray(g.evGifts) ? g.evGifts : [];
+    state.pass = g.pass && typeof g.pass === 'object' ? g.pass : {};
+    state.inv = g.inv && typeof g.inv === 'object' ? g.inv : {};
     state.sl = g.sl && typeof g.sl === 'object' ? g.sl : {};
     if (g.bj) { state.bj.round = g.bj.round || null; state.bj.hands = Number(g.bj.hands) || 0; state.bj.lastBet = Number(g.bj.lastBet) || 0; if (g.bj.shoeLeft != null) state.bj.shoeLeft = Number(g.bj.shoeLeft); state.bj.shoe = []; }
     if (g.pl) state.pl.drops = Number(g.pl.drops) || 0;
@@ -6504,6 +6712,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       delay += 450;
     }
     for (const b of out.bonus || []) b.id === 'event' ? evPop(b.amount) : goodiePop(b.amount, b.id);
+    for (const v of out.invest || []) setTimeout(() => { toast('Investments', i18n(`Passive income: +${fmt(v.amount)} credits (${v.hours} h).`)); audio.coins(4); }, delay);
     // level 20 reached: the database made it the next prestige
     for (const n of out.prestige || []) {
       pendingLevels.length = 0;
@@ -10346,6 +10555,261 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     render();
   }
   document.addEventListener('click', e => { const t = e.target.closest('[data-shop]'); if (t) openShop(t.dataset.shop || undefined); });
+  // ---------- Lucky-Pass: 100 levels from the XP of playing; the database holds the rewards and hands them out ----------
+  const PASS_MAX = 100;
+  const passNeed = n => 4000 + 100 * n;
+  function passInfo() {
+    let x = Number(state.pass?.xp) || 0, lv = 0;
+    while (lv < PASS_MAX && x >= passNeed(lv)) { x -= passNeed(lv); lv++; }
+    return { lv, into: x, need: lv < PASS_MAX ? passNeed(lv) : 0 };
+  }
+  let passTab = null, passRoyale = false, passWheel = [0.4, 0.6, 0.8, 1, 1.2, 1.6, 2.4, 4.8], passBusy = false, passFrom = false;
+  async function passLoad() {
+    const res = await srvCall('game_pass', { p_act: 'state' });
+    const r = res?.r || {};
+    passTab = Array.isArray(r.table) ? r.table : null;
+    passRoyale = !!r.royale;
+    if (Array.isArray(r.wheel)) passWheel = r.wheel.map(Number);
+  }
+  const passDone = (n, t) => Array.isArray(state.pass?.[t]) && state.pass[t].includes(n);
+  const COS_KIND = { name: 'Name style', cabinet: 'Machine colour', theme: 'Colour style' };
+  function lpItem(it) {
+    if (it.k === 'credits') return { ico: '💰', t: i18n(`+${fmt(it.n)} credits`), s: '' };
+    if (it.k === 'wheel') return { ico: '🎡', t: i18n('Lucky wheel'), s: i18n(`about ${fmt(Math.round(it.b * 1.6))} on average, up to ${fmt(Math.round(it.b * passWheel[7]))}`) };
+    if (it.k === 'invest') return { ico: '🏢', t: i18n('Investments unlocked'), s: i18n('Shops and properties that pay every hour') };
+    const g = GOODIES.find(x => x.id === it.id);
+    // the icon's gradient needs its own id here (the shop holds the same icon, hidden)
+    return { ico: (SHOP_ICONS[it.id] || '🎁').replaceAll(`gi-${it.id}`, `gi-${it.id}-${it.l || 0}${it.t || ''}`), t: i18n(g?.name || it.id), s: i18n(COS_KIND[g?.group] || 'Cosmetic') };
+  }
+  function lpCell(n, t, items, lv) {
+    const main = items.find(x => x.k === 'cos' || x.k === 'invest') || items[0];
+    const m = lpItem({ ...main, l: n, t }), rest = items.filter(x => x !== main).map(x => lpItem(x).t);
+    const done = passDone(n, t), locked = t === 'r' && !passRoyale, ready = !done && !locked && n <= lv;
+    const cls = ['lp-cell', t, done ? 'done' : '', ready ? 'ready' : '', !done && n > lv ? 'lock' : '', locked && !done ? 'rlock' : ''].filter(Boolean).join(' ');
+    return `<div class="${cls}"><span class="lp-ico">${m.ico}</span><span class="lp-txt"><b>${esc(m.t)}</b>${m.s ? `<small>${esc(m.s)}</small>` : ''}${rest.length ? `<small>${esc(rest.join(' · '))}</small>` : ''}</span>` +
+      (ready ? `<button type="button" data-lp-claim="${n}" data-lp-t="${t}">${esc(i18n('Claim'))}</button>` : '') + '</div>';
+  }
+  function renderPass() {
+    if ($('passPage').hidden) return;
+    const { lv, into, need } = passInfo();
+    $('passCredits').textContent = fmt(state.credits);
+    $('passLvl').textContent = lv;
+    $('passXpTxt').textContent = lv >= PASS_MAX ? i18n('All 100 levels reached!') : i18n(`${fmt(into)} / ${fmt(need)} XP to level ${lv + 1}`);
+    $('passXpBar').style.width = `${lv >= PASS_MAX ? 100 : Math.min(100, into / need * 100)}%`;
+    $('passRoyaleLock').hidden = passRoyale;
+    $('passRoyaleSub').textContent = i18n(passRoyale ? 'unlocked' : 'locked for now');
+    if (!passTab) return;
+    let ready = 0;
+    for (let n = 1; n <= lv; n++) { if (!passDone(n, 'f')) ready++; if (passRoyale && !passDone(n, 'r')) ready++; }
+    $('passClaimAll').hidden = !ready;
+    $('passClaimAll').textContent = i18n(`Claim all (${ready})`);
+    $('passClaimAll').disabled = passBusy;
+    $('passList').innerHTML = passTab.map(row => {
+      const n = Number(row.l);
+      return `<div class="lp-row${n % 10 === 0 ? ' big' : ''}${n <= lv ? ' reached' : ''}${n === lv + 1 ? ' now' : ''}" data-lp-row="${n}"><span class="lp-num">${n}</span>${lpCell(n, 'f', row.f || [], lv)}${lpCell(n, 'r', row.r || [], lv)}</div>`;
+    }).join('');
+    if (passBusy) $('passList').querySelectorAll('[data-lp-claim]').forEach(b => { b.disabled = true; });
+  }
+  async function openPass() {
+    if (!account) return;
+    passFrom = !$('lobby').hidden;
+    $('lobby').hidden = true;
+    $('passPage').hidden = false;
+    $('passPage').scrollTop = 0;
+    renderPass();
+    $('passBack').focus();
+    sound.chime();
+    if (!srvOn()) { $('passList').innerHTML = `<p class="note">${esc(i18n('The Lucky-Pass needs the online database.'))}</p>`; return; }
+    try { await passLoad(); } catch (e) { $('passList').innerHTML = `<p class="note">${esc(i18n(/could not find the function|PGRST202/i.test(e?.message || '') ? 'This needs the “Lucky-Pass and investments” part of supabase-setup.sql.' : 'That did not work. Check the connection and try again.'))}</p>`; return; }
+    renderPass();
+    const lv = passInfo().lv;
+    requestAnimationFrame(() => document.querySelector(`[data-lp-row="${Math.max(1, Math.min(PASS_MAX, lv))}"]`)?.scrollIntoView({ block: 'center' }));
+  }
+  function closePass() {
+    $('passPage').hidden = true;
+    if (passFrom) showLobby(); else applyGameMode();
+    render();
+  }
+  async function passClaim(level, track) {
+    if (passBusy) return;
+    passBusy = true;
+    renderPass();
+    try {
+      const res = await srvCall('game_pass', { p_act: 'claim', p_level: level, p_track: track });
+      const x = srvApply(res);
+      const got = Array.isArray(x.got) ? x.got : [];
+      const wheels = got.filter(i => i.k === 'wheel'), cos = got.filter(i => i.k === 'cos'), inv = got.some(i => i.k === 'invest');
+      const credits = got.filter(i => i.k === 'credits' || i.k === 'wheel').reduce((a, i) => a + Number(i.n || 0), 0);
+      audio.coins(5);
+      for (let k = 0; k < (cos.length ? 50 : 20); k++) fxTop.confetti(['#7dff6a', '#ffe14f', '#fff8d6']);
+      if (wheels.length === 1 && level != null) await lpSpinWheel(wheels[0]);
+      const parts = [i18n(`+${fmt(credits)} credits`)].concat(cos.map(i => i18n(GOODIES.find(g => g.id === i.id)?.name || i.id)));
+      if (inv) parts.push(i18n('Investments unlocked'));
+      toast('Lucky-Pass', parts.join(' · '));
+      srvShowOut(res.out);
+    } catch (e) {
+      toast('Lucky-Pass', i18n(/royale locked/.test(e?.message || '') ? 'The Lucky-Royale-Pass is locked for now.' : /nothing to claim/.test(e?.message || '') ? 'Nothing to claim right now.' : srvErr(e)));
+    }
+    passBusy = false;
+    renderPass();
+    render();
+  }
+  // the wheel for one reward: eight fields, it stops where the database drew
+  function lpSpinWheel(it) {
+    return new Promise(resolve => {
+      const svg = $('lpWheelSvg'), cols = ['#2fa84a', '#e9a23b', '#4fa8e0', '#c8323a', '#7d5ac9', '#2fa84a', '#e9a23b', '#ff6ad5'];
+      const amt = m => Math.round(Number(it.b) * m / 10) * 10;
+      let html = '';
+      for (let i = 0; i < 8; i++) {
+        const a0 = (i * 45 - 90) * Math.PI / 180, a1 = ((i + 1) * 45 - 90) * Math.PI / 180, am = ((i + 0.5) * 45 - 90) * Math.PI / 180;
+        html += `<path d="M0 0L${(96 * Math.cos(a0)).toFixed(2)} ${(96 * Math.sin(a0)).toFixed(2)}A96 96 0 0 1 ${(96 * Math.cos(a1)).toFixed(2)} ${(96 * Math.sin(a1)).toFixed(2)}Z" fill="${cols[i]}" stroke="#1d1714" stroke-width="2"/>` +
+          `<text x="${(62 * Math.cos(am)).toFixed(2)}" y="${(62 * Math.sin(am)).toFixed(2)}" transform="rotate(${(i + 0.5) * 45} ${(62 * Math.cos(am)).toFixed(2)} ${(62 * Math.sin(am)).toFixed(2)})" text-anchor="middle" dominant-baseline="middle" font-family="Chivo Mono, monospace" font-weight="700" font-size="11" fill="#fff">${fmt(amt(passWheel[i]))}</text>`;
+      }
+      html += '<circle r="16" fill="#1d1714" stroke="#ffe14f" stroke-width="3"/><text y="5" text-anchor="middle" font-size="15">🍀</text>';
+      svg.innerHTML = html;
+      svg.style.transition = 'none';
+      svg.style.transform = 'rotate(0deg)';
+      $('lpWheelEyebrow').textContent = i18n(it.t === 'r' ? `Lucky-Royale-Pass · level ${it.l}` : `Lucky-Pass · level ${it.l}`);
+      $('lpWheelWin').textContent = '';
+      $('lpWheelOk').disabled = true;
+      $('lpWheelModal').hidden = false;
+      const seg = Number(it.seg) || 0, turn = 360 * 6 - (seg * 45 + 22.5) + (Math.random() * 30 - 15);
+      requestAnimationFrame(() => requestAnimationFrame(() => { svg.style.transition = ''; svg.style.transform = `rotate(${turn}deg)`; }));
+      for (let k = 0; k < 16; k++) setTimeout(() => sound.tick(), k * 230 * (1 + k / 14));
+      setTimeout(() => {
+        $('lpWheelWin').textContent = `+${fmt(Number(it.n) || 0)}`;
+        $('lpWheelOk').disabled = false;
+        sound.win();
+        for (let k = 0; k < 40; k++) fxTop.confetti(['#7dff6a', '#ffe14f', '#4fe3ff']);
+        $('lpWheelOk').focus();
+      }, reduceMotion ? 50 : 4300);
+      $('lpWheelOk').onclick = () => { $('lpWheelModal').hidden = true; resolve(); };
+    });
+  }
+  $('passPick').addEventListener('click', openPass);
+  $('passBack').addEventListener('click', closePass);
+  $('passPage').addEventListener('keydown', e => { if (e.key === 'Escape' && $('lpWheelModal').hidden) closePass(); });
+  $('passClaimAll').addEventListener('click', () => passClaim(null, 'all'));
+  $('passList').addEventListener('click', e => { const b = e.target.closest('[data-lp-claim]'); if (b) passClaim(Number(b.dataset.lpClaim), b.dataset.lpT); });
+
+  // ---------- Investments: bought with credits, paid by the database for every full hour ----------
+  const ASSET_TXT = {
+    kiosk: ['🏪', 'Kiosk', 'A small kiosk on the corner: drinks, snacks and scratch cards.'],
+    truck: ['🚚', 'Food truck', 'Burgers on wheels, wherever the crowd is.'],
+    burger: ['🍔', 'Lucky Burger branch', 'Your own Lucky Burger. Somebody else flips the patties now.'],
+    flat: ['🏠', 'Rented flat', 'A flat in town, rented out every month.'],
+    arcade: ['🕹️', 'Arcade', 'Flashing machines and a constant clatter of coins.'],
+    house: ['🏢', 'Apartment block', 'Twelve flats, twelve rents.'],
+    mall: ['🛍️', 'Shopping mall', 'Fifty shops under one roof, all paying you rent.'],
+    hotel: ['🏨', 'Hotel & casino', 'The big one: rooms, shows and a casino of your own.'],
+  };
+  let invAssets = null, invFrom = false, invBusy = false, invTick = 0, invAskedAt = 0;
+  const invOwn = id => Number(state.inv?.own?.[id]) || 0;
+  const invHour = () => (invAssets || []).reduce((a, x) => a + Number(x.hour) * invOwn(x.id), 0);
+  const invNextAt = () => (Number(state.inv?.paidAt) || 0) + 3600000;
+  async function invLoad() {
+    invAskedAt = Date.now();
+    const res = await srvCall('game_inv', { p_act: 'state' });
+    srvApply(res);
+    srvShowOut(res.out);
+    if (Array.isArray(res?.r?.assets)) invAssets = res.r.assets;
+    render();
+  }
+  function renderInv() {
+    if ($('invPage').hidden) return;
+    $('invCredits').textContent = fmt(state.credits);
+    const body = $('invBody');
+    if (!state.inv?.unlocked) {
+      const { lv } = passInfo();
+      body.innerHTML = `<div class="inv-lock"><span style="font-size:44px">🔒</span><b>${esc(i18n('From Lucky-Pass level 30'))}</b><p class="note">${esc(i18n(`Investments open with the level 30 reward of the Lucky-Pass. You are at pass level ${lv}.`))}</p><button type="button" class="spin" data-open-pass>${esc(i18n('Open the Lucky-Pass'))}</button></div>`;
+      return;
+    }
+    if (!invAssets) { body.innerHTML = `<p class="note">${esc(i18n('Loading…'))}</p>`; return; }
+    const h = invHour(), left = invNextAt() - Date.now(), own = (invAssets || []).reduce((a, x) => a + invOwn(x.id), 0);
+    const mm = Math.max(0, Math.floor(left / 60000)), ss = Math.max(0, Math.floor(left / 1000) % 60);
+    const hero = `<div class="inv-hero"><div><small>${esc(i18n('Income per hour'))}</small><b>${fmt(h)}</b></div>` +
+      `<div><small>${esc(i18n('Next payout'))}</small><b id="invNext">${h > 0 ? `${mm}:${String(ss).padStart(2, '0')}` : '–'}</b></div>` +
+      `<div><small>${esc(i18n('Paid out so far'))}</small><b>${fmt(Number(state.inv?.earned) || 0)}</b></div>` +
+      `<div><small>${esc(i18n('Owned'))}</small><b>${fmt(own)}</b></div></div>`;
+    const cards = invAssets.map(a => {
+      const n = invOwn(a.id), [ico, name, desc] = ASSET_TXT[a.id] || ['🏷️', a.id, ''];
+      const price = Math.round(Number(a.price) * 1.15 ** n), back = n ? Math.round(Number(a.price) * 1.15 ** (n - 1) * 0.5) : 0;
+      const hours = Math.round(price / Number(a.hour));
+      return `<div class="inv-card${n ? ' own' : ''}"><div class="inv-top"><span class="inv-ico" aria-hidden="true">${ico}</span><div><h4>${esc(i18n(name))}</h4><p>${esc(i18n(desc))}</p></div></div>` +
+        `<div class="inv-nums"><span>${esc(i18n('Owned'))} <b>${n} / 10</b></span><span>${esc(i18n('Each per hour'))} <b>+${fmt(Number(a.hour))}</b></span>` +
+        `<span>${esc(i18n('Your income'))} <b>+${fmt(Number(a.hour) * n)}/h</b></span><span>${esc(i18n('Pays for itself'))} <b>${esc(i18n(`in ${fmt(hours)} h`))}</b></span></div>` +
+        `<div class="inv-acts"><button type="button" class="inv-buy" data-inv-buy="${a.id}"${n >= 10 || invBusy || state.credits < price ? ' disabled' : ''}>${n >= 10 ? esc(i18n('Maxed')) : esc(i18n(`Buy · ${fmt(price)}`))}</button>` +
+        (n ? `<button type="button" class="inv-sell" data-inv-sell="${a.id}"${invBusy ? ' disabled' : ''}>${esc(i18n(`Sell · ${fmt(back)}`))}</button>` : '') + '</div></div>';
+    }).join('');
+    body.innerHTML = hero + `<div class="inv-grid">${cards}</div>`;
+  }
+  async function openInv() {
+    if (!account) return;
+    invFrom = !$('lobby').hidden;
+    $('lobby').hidden = true;
+    $('invPage').hidden = false;
+    $('invPage').scrollTop = 0;
+    renderInv();
+    $('invBack').focus();
+    sound.chime();
+    if (!srvOn()) { $('invBody').innerHTML = `<p class="note">${esc(i18n('Investments need the online database.'))}</p>`; return; }
+    try { await invLoad(); } catch (e) { $('invBody').innerHTML = `<p class="note">${esc(i18n(/could not find the function|PGRST202/i.test(e?.message || '') ? 'This needs the “Lucky-Pass and investments” part of supabase-setup.sql.' : 'That did not work. Check the connection and try again.'))}</p>`; return; }
+    renderInv();
+    clearInterval(invTick);
+    invTick = setInterval(() => {
+      if ($('invPage').hidden) { clearInterval(invTick); return; }
+      const left = invNextAt() - Date.now();
+      if (invHour() > 0 && left < -2000 && Date.now() - invAskedAt > 15000) invLoad().then(renderInv).catch(() => {});
+      const el = $('invNext');
+      if (el && invHour() > 0) el.textContent = `${Math.max(0, Math.floor(left / 60000))}:${String(Math.max(0, Math.floor(left / 1000) % 60)).padStart(2, '0')}`;
+    }, 1000);
+  }
+  function closeInv() {
+    clearInterval(invTick);
+    $('invPage').hidden = true;
+    if (invFrom) showLobby(); else applyGameMode();
+    render();
+  }
+  async function invAct(act, id) {
+    if (invBusy) return;
+    invBusy = true;
+    renderInv();
+    try {
+      const res = await srvCall('game_inv', { p_act: act, p_asset: id });
+      const x = srvApply(res);
+      const name = i18n((ASSET_TXT[id] || [])[1] || id);
+      if (act === 'buy') { toast('Investments', i18n(`${name} bought for ${fmt(x.price)}. Income now ${fmt(x.hour)} per hour.`)); audio.coins(5); for (let k = 0; k < 30; k++) fxTop.confetti(['#ffd24a', '#e9a23b', '#fff8d6']); }
+      else { toast('Investments', i18n(`${name} sold for ${fmt(x.back)}.`)); sound.chip(); }
+    } catch (e) { toast('Investments', i18n(/locked/.test(e?.message || '') ? 'Investments open with Lucky-Pass level 30.' : /maxed/.test(e?.message || '') ? 'You have 10 of these already.' : srvErr(e))); }
+    invBusy = false;
+    renderInv();
+    render();
+  }
+  $('invPick').addEventListener('click', openInv);
+  $('invBack').addEventListener('click', closeInv);
+  $('invPage').addEventListener('keydown', e => { if (e.key === 'Escape') closeInv(); });
+  $('invBody').addEventListener('click', e => {
+    const b = e.target.closest('[data-inv-buy]'), s = e.target.closest('[data-inv-sell]');
+    if (b) invAct('buy', b.dataset.invBuy);
+    else if (s && confirmed(s, 'Sell?')) invAct('sell', s.dataset.invSell);
+    else if (e.target.closest('[data-open-pass]')) { closeInv(); openPass(); }
+  });
+  // hourly payouts also while playing: once the next full hour has passed, the page asks the database to pay it
+  setInterval(() => {
+    if (!account || !srvOn() || document.hidden || !$('invPage').hidden) return;
+    if (!state.inv?.own || !Object.values(state.inv.own).some(v => Number(v) > 0)) return;
+    if (Date.now() < invNextAt() + 3000 || Date.now() - invAskedAt < 60000) return;
+    invLoad().catch(() => {});
+  }, 30000);
+  // the lobby cards say where you are
+  function renderPassPick() {
+    if (!account) return;
+    const { lv } = passInfo();
+    $('passPickDesc').textContent = i18n(`Pass level ${lv} of 100. Credits, wheel spins and new cosmetics, earned by playing.`);
+    $('invPickDesc').textContent = state.inv?.unlocked ? i18n('Shops and properties with income every hour.') : i18n('Shops and properties with income every hour. From Lucky-Pass level 30.');
+    $('invPick').classList.toggle('locked', !state.inv?.unlocked);
+  }
+
   $('shopBack').addEventListener('click', closeShop);
   $('shopPage').addEventListener('keydown', e => { if (e.key === 'Escape') closeShop(); });
   document.querySelectorAll('[data-shelf-tab]').forEach(b => b.addEventListener('click', () => { showShopTab(b.dataset.shelfTab); sound.chip(); }));
@@ -10374,6 +10838,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     }
     if (g.adminOnly && !account?.isAdmin) return;
     if (g.mega && megaOf(state.prestige) < g.mega) { toast('Shop', `Unlocks at Mega-Prestige ${roman(g.mega)} (prestige ${g.mega * 10}).`); return; }
+    if (g.pass) { toast('Lucky-Pass', i18n(g.pass.t === 'r' ? `Comes with Lucky-Royale-Pass level ${g.pass.l}.` : `Comes with Lucky-Pass level ${g.pass.l}.`)); return; }
     const price = priceOf(g);
     if (state.credits < price) return;
     if (!srvOn()) { toast('Shop', i18n(SRV === null ? 'Loading the game…' : 'The games need the online database. Check the connection and reload the page.')); return; }
@@ -10401,6 +10866,10 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
         btn.disabled = busy;
         btn.classList.toggle('on', on);
         status.textContent = on ? 'On' : 'Off';
+      } else if (g.pass && !state.owned[g.id]) {
+        btn.textContent = `🔒 ${g.pass.t === 'r' ? 'Royale' : 'Pass'} ${g.pass.l}`;
+        btn.disabled = true;
+        status.textContent = i18n(g.pass.t === 'r' ? `Lucky-Royale-Pass level ${g.pass.l}` : `Lucky-Pass level ${g.pass.l}`);
       } else if (g.mega && !state.owned[g.id] && megaOf(state.prestige) < g.mega) {
         btn.textContent = `🔒 Mega ${roman(g.mega)}`;
         btn.disabled = true;
@@ -10513,8 +10982,12 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     auto.textContent = autoLeft ? 'Stop auto spin' : 'Auto spin';
     auto.classList.toggle('running', autoLeft > 0);
     auto.disabled = !autoLeft && (busy || (!free && state.credits < cost));
-    for (const id of ['gold', 'midnight', 'ruby', 'emerald', 'bubblegum', 'carbon']) cabinet.classList.toggle(id, cosOn(id));
+    for (const g of GOODIES) if (g.group === 'cabinet') cabinet.classList.toggle(g.id, cosOn(g.id));
+    for (const g of GOODIES) if (g.group === 'theme') document.body.classList.toggle('th-' + g.id, cosOn(g.id));
     if (!$('shopPage').hidden) renderShop();
+    if (!$('passPage').hidden) renderPass();
+    if (!$('invPage').hidden) $('invCredits').textContent = fmt(state.credits);
+    renderPassPick();
     for (const id of ['disco', 'royalFelt', 'goldBacks', 'ckGold']) document.body.classList.toggle('cos-' + id, cosOn(id));
     if ((document.documentElement.dataset.theme === 'night') !== (!!account && cosOn('nightMode'))) setTheme(!!account && cosOn('nightMode'));
     const forMe = GOODIES.filter(g => !g.adminOnly || account?.isAdmin);
@@ -12296,12 +12769,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Which game each online player has open, shown in the highscores and on the lobby cards.
   const GAME_INFO = {
     slots: ['🎰', 'Slots'], bj: ['🃏', 'Blackjack'], rl: ['🎡', 'Roulette'], pk: ['♠️', 'Poker'], pl: ['🔻', 'Plinko'],
-    ck: ['🐔', 'Chicken'], hr: ['🏇', 'Horse Racing'], rk: ['🚀', 'Rocket'], lobby: ['🏠', 'Lobby'], shop: ['🛍️', 'Shop'], jb: ['🍔', 'Lucky Burger'], cf: ['🪙', 'Coin Flip'], st: ['📈', 'Stock Market'],
+    ck: ['🐔', 'Chicken'], hr: ['🏇', 'Horse Racing'], rk: ['🚀', 'Rocket'], lobby: ['🏠', 'Lobby'], shop: ['🛍️', 'Shop'], pass: ['🍀', 'Lucky-Pass'], inv: ['🏢', 'Investments'], jb: ['🍔', 'Lucky Burger'], cf: ['🪙', 'Coin Flip'], st: ['📈', 'Stock Market'],
   };
   let playing = new Map(), presenceGame = null;
   function currentGame() {
     if (!account) return null;
     if (!$('shopPage').hidden) return 'shop';
+    if (!$('passPage').hidden) return 'pass';
+    if (!$('invPage').hidden) return 'inv';
     if (!$('lobby').hidden) return 'lobby';
     return state.mode;
   }
@@ -13436,7 +13911,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       });
     } else if (act === 'goodie') {
       const acts = btn.closest('.acts');
-      const opts = GOODIES.filter(g => !g.adminOnly).map(g => `<option value="${esc(g.id)}">${esc(i18n(g.name))}${g.kind === 'level' ? ` (${esc(i18n('one level'))})` : ''}</option>`).join('');
+      const opts = GOODIES.filter(g => !g.adminOnly && !g.pass).map(g => `<option value="${esc(g.id)}">${esc(i18n(g.name))}${g.kind === 'level' ? ` (${esc(i18n('one level'))})` : ''}</option>`).join('');
       acts.innerHTML = `<select class="new-goodie" aria-label="Goodie for ${esc(p.name)}">${opts}</select>` +
         '<button class="abtn ok" data-act="goodie-give">Give</button><button class="abtn warn" data-act="goodie-take">Take away</button><button class="abtn" data-act="admin-cancel">Cancel</button>';
       acts.querySelector('select').focus();
