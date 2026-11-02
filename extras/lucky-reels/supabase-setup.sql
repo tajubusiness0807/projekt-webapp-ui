@@ -13523,3 +13523,23 @@ create or replace function public.lr_gm_goal(game text, kind text, tier integer)
     else case kind when 'play' then array[5, 10, 15] when 'win' then array[2, 4, 7] else array[1, 2, 3] end end)[tier + 1]
 $$;
 update public.players set game = (game::jsonb - 'gm')::text where game like '{%' and game::jsonb ? 'gm';
+
+
+-- ---------------------------------------------------------------------------
+-- New title: run this part once (after "Harder game missions"). Admins can give the title "10 Million Pioneer"
+-- (for the first player to crack 10 million credits) next to "Bug Abuser".
+alter table public.players drop constraint if exists players_title_check;
+alter table public.players add constraint players_title_check check (title is null or title in ('bugabuser', 'tenmil'));
+create or replace function public.admin_set_title(tok uuid, target uuid, new_title text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.admin_check(tok);
+  if new_title is not null and new_title not in ('bugabuser', 'tenmil') then raise exception 'unknown title'; end if;
+  update public.players set title = new_title where id = target;
+  if not found then raise exception 'no such player'; end if;
+end;
+$$;
