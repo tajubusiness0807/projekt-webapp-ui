@@ -12439,3 +12439,279 @@ begin
   return public.lr_put(p.id, public.lr_fill(g), '{}'::jsonb);
 end;
 $$;
+
+
+-- ---------------------------------------------------------------------------
+-- Horse racing: run this part once (after "XP and missions in every game"). Winnings, goodie extras and missions
+-- arrive only once the race is over on screen (until now the database paid at the start, so the balance and the
+-- pop-up told the result before the horses ran). And betting is 1:30 instead of 2:00: a race every 2:30.
+create or replace function public.horse_race(race bigint default null)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+  cur bigint := now_ms / 150000;
+  r public.horse_races;
+  fin smallint[];
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  perform public.lr_sweep();
+  race := coalesce(race, cur);
+  if race > cur or race < cur - 1000 then raise exception 'no such race'; end if;
+  r := public.horse_make(race);
+  if now_ms >= race * 150000 + 90000 then fin := public.horse_settle(race); end if;
+  return jsonb_build_object('id', race, 'now', now_ms, 'weights', to_jsonb(r.weights), 'win', to_jsonb(r.win_odds),
+    'place', to_jsonb(r.place_odds), 'finish', to_jsonb(fin));
+end;
+$$;
+
+create or replace function public.horse_bet(race bigint, horse_no integer, bet_kind text, amount bigint)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+  me public.players;
+  r public.horse_races;
+  o numeric;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  if race <> now_ms / 150000 or now_ms >= race * 150000 + 90000 then raise exception 'betting closed'; end if;
+  if horse_no is null or horse_no < 1 or horse_no > 6 or bet_kind not in ('win', 'place') then raise exception 'no such bet'; end if;
+  if amount is null or amount < 1 then raise exception 'bet at least 1'; end if;
+  select * into me from public.players where id = auth.uid() for update;
+  if me is null or me.is_banned then raise exception 'not allowed'; end if;
+  if me.credits < amount then raise exception 'not enough credits'; end if;
+  if public.lr_over_limit(me, (amount + coalesce((select sum(b.amount) from public.horse_bets b where b.race_id = race and b.player = me.id), 0))::bigint) then raise exception 'over your bet limit'; end if;
+  if (select count(*) from public.horse_bets where race_id = race and player = me.id) >= 12 then raise exception 'too many bets'; end if;
+  r := public.horse_make(race);
+  o := case when bet_kind = 'win' then r.win_odds[horse_no] else r.place_odds[horse_no] end;
+  update public.players set credits = credits - amount, admin_rev = admin_rev + 1, updated_at = now() where id = me.id;
+  insert into public.horse_bets (race_id, player, name, horse, kind, amount, odds) values (race, me.id, me.name, horse_no, bet_kind, amount, o);
+  return jsonb_build_object('odds', o, 'credits', me.credits - amount, 'rev', me.admin_rev + 1);
+end;
+$$;
+
+create or replace function public.admin_rig_horse(race bigint, horse_no integer)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not public.admin_me() then raise exception 'not allowed'; end if;
+  if not coalesce((select (data ->> 'cheats')::boolean from public.settings where id = 1), true) then raise exception 'cheats are off'; end if;
+  if horse_no is null or horse_no < 1 or horse_no > 6 then raise exception 'no such horse'; end if;
+  if public.horse_now_ms() >= race * 150000 + 90000 then raise exception 'betting closed'; end if;
+  perform public.horse_make(race);
+  update public.horse_races set forced = horse_no where id = race and finish is null;
+end;
+$$;
+
+create or replace function public.lr_sweep()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+  x bigint;
+  d text;
+begin
+  -- only one page at a time does the sweep; the others go on right away instead of queueing behind it
+  perform 1 from public.lr_sweep_at where id = 1 and at < now() - interval '2 seconds' for update skip locked;
+  if not found then return; end if;
+  update public.lr_sweep_at set at = now() where id = 1;
+  for x in select distinct race_id from public.horse_bets where payout is null and race_id * 150000 + 90000 <= now_ms limit 20 loop
+    perform public.horse_settle(x);
+  end loop;
+  for x in select distinct round_id from public.roulette_bets where payout is null and round_id * 45000 + 34000 <= now_ms limit 20 loop
+    perform public.roulette_settle(x);
+  end loop;
+  for x in select distinct b.round_id from public.rocket_bets b join public.rocket_rounds r on r.id = b.round_id
+      where b.payout is null and r.crash_at <= now_ms limit 20 loop
+    perform public.rocket_settle(x);
+  end loop;
+  if to_regclass('public.lotto_draws') is not null then
+    for d in select id from public.lotto_draws where not settled and draw_at <= now() limit 5 loop
+      perform public.lotto_settle(d);
+    end loop;
+  end if;
+end;
+$$;
+
+create or replace function public.horse_settle(race bigint)
+returns smallint[]
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  r public.horse_races;
+  left_ smallint[] := '{1,2,3,4,5,6}';
+  fin smallint[] := '{}';
+  tot double precision;
+  x double precision;
+  pick smallint;
+begin
+  perform public.horse_make(race);
+  select * into r from public.horse_races where id = race for update;
+  if r.finish is not null then
+    return r.finish;
+  end if;
+  -- The admin's secret code can name the winner; the rest of the field is drawn as usual.
+  if (to_jsonb(r) ->> 'forced') is not null then
+    pick := (to_jsonb(r) ->> 'forced')::smallint;
+    fin := array[pick];
+    left_ := array_remove(left_, pick);
+  end if;
+  while cardinality(left_) > 0 loop
+    tot := 0;
+    foreach pick in array left_ loop tot := tot + r.weights[pick]; end loop;
+    x := random() * tot;
+    foreach pick in array left_ loop
+      x := x - r.weights[pick];
+      exit when x <= 0;
+    end loop;
+    fin := fin || pick;
+    left_ := array_remove(left_, pick);
+  end loop;
+  update public.horse_races set finish = fin where id = race;
+  update public.horse_bets set payout = case
+      when (kind = 'win' and horse = fin[1]) or (kind = 'place' and horse in (fin[1], fin[2])) then floor(amount * odds)::bigint
+      else 0 end
+    where race_id = race and payout is null;
+  -- the winnings are paid by horse_claim once the race is over (not at the start)
+  return fin;
+end;
+$$;
+
+create or replace function public.horse_claim()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  now_ms bigint := public.horse_now_ms();
+  x bigint;
+  won bigint;
+  rows_ jsonb;
+  me public.players;
+begin
+  if auth.uid() is null then raise exception 'not allowed'; end if;
+  for x in select distinct race_id from public.horse_bets where player = auth.uid() and payout is null and race_id * 150000 + 90000 <= now_ms loop perform public.horse_settle(x); end loop;
+  select * into me from public.players where id = auth.uid() for update;
+  if me is null then raise exception 'not allowed'; end if;
+  -- bets paid out before this update was installed
+  -- only for races that are over: the winner crosses the line about 25 seconds after betting closes
+  select coalesce(sum(payout), 0) into won from public.horse_bets where player = me.id and not claimed and payout is not null and race_id * 150000 + 118000 <= now_ms;
+  update public.horse_bets set claimed = true where player = me.id and not claimed and payout is not null and race_id * 150000 + 118000 <= now_ms;
+  if won > 0 then
+    update public.players set credits = credits + won, admin_rev = admin_rev + 1, updated_at = now() where id = me.id returning * into me;
+  end if;
+  with c as (
+    update public.horse_bets set seen = true
+    where player = me.id and claimed and not seen and payout is not null
+    returning race_id, horse, kind, amount, odds, payout
+  )
+  select coalesce(jsonb_agg(to_jsonb(c)), '[]') into rows_ from c;
+  return jsonb_build_object('bets', rows_, 'credits', me.credits, 'rev', me.admin_rev);
+end;
+$$;
+
+create or replace function public.game_live()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  p public.players := public.lr_me();
+  c jsonb := public.lr_cfg();
+  g jsonb := public.lr_g(p);
+  b record;
+  k text;
+  v numeric;
+  at integer;
+  ord integer[] := array[0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
+  bon jsonb := '{}'::jsonb;
+  xp numeric := 0;
+  ev numeric;
+  any_ boolean := false;
+  t numeric;
+begin
+  -- roulette: a quarter back for a single number right next to the ball, outside wins 2% more, half of the even-money bets back on zero
+  for b in select rb.id, rb.bets, rb.total, rb.payout, rr.result from public.roulette_bets rb join public.roulette_rounds rr on rr.id = rb.round_id
+           where rb.player = p.id and not rb.bonused and rb.payout is not null and rr.result is not null loop
+    any_ := true;
+    at := array_position(ord, b.result::integer) - 1;
+    for k, v in select key, value::numeric from jsonb_each_text(b.bets) loop
+      if left(k, 1) = 'n' and public.lr_has(g, 'rlStraight') and substr(k, 2)::integer <> b.result
+         and substr(k, 2)::integer in (ord[(at + 1) % 37 + 1], ord[(at + 36) % 37 + 1]) then bon := bon || jsonb_build_object('rlStraight', public.lr_n(bon, 'rlStraight') + v * 0.45); end if;
+      if b.result = 0 and public.lr_has(g, 'rlZero') and k in ('red', 'black', 'odd', 'even', 'low', 'high', 'd1', 'd2', 'd3', 'c1', 'c2', 'c3') then bon := bon || jsonb_build_object('rlZero', public.lr_n(bon, 'rlZero') + v * 0.5); end if;
+      if left(k, 1) <> 'n' and public.roulette_hit(k, b.result::integer) and public.lr_has(g, 'rlOutside') then
+        bon := bon || jsonb_build_object('rlOutside', public.lr_n(bon, 'rlOutside') + v * public.roulette_pays(k) * 0.02);
+      end if;
+    end loop;
+    ev := greatest(0, b.payout - b.total) * (public.lr_evm(c, 'rl') - 1);
+    if ev > 0 then bon := bon || jsonb_build_object('event', public.lr_n(bon, 'event') + ev); end if;
+    xp := xp + public.lr_bet_xp(b.total) + case when b.payout > b.total then 8 else 0 end;
+    g := public.lr_gmission(g, 'rl', 'play', 1, b.total);
+    if b.payout > b.total then g := public.lr_gmission(g, 'rl', 'win', 1, b.total); end if;
+    if b.payout >= b.total * 3 then g := public.lr_gmission(g, 'rl', 'big', 1, b.total); end if;
+    g := public.lr_ach(g, jsonb_build_object('bullseye', exists (select 1 from jsonb_each_text(b.bets) x where left(x.key, 1) = 'n' and substr(x.key, 2)::integer = b.result),
+      'win', greatest(0, b.payout - b.total), 'bet', b.total));
+    update public.roulette_bets set bonused = true where id = b.id;
+  end loop;
+  -- horses: winning Win or Place bets 6% more, 2% of losing bets back
+  for b in select * from public.horse_bets where player = p.id and not bonused and payout is not null and claimed loop
+    any_ := true;
+    if b.payout = 0 and public.lr_has(g, 'hrSaddle') then bon := bon || jsonb_build_object('hrSaddle', public.lr_n(bon, 'hrSaddle') + b.amount * 0.02); end if;
+    if b.payout > 0 and b.kind = 'win' and public.lr_has(g, 'hrCrop') then bon := bon || jsonb_build_object('hrCrop', public.lr_n(bon, 'hrCrop') + b.payout * 0.06); end if;
+    if b.payout > 0 and b.kind = 'place' and public.lr_has(g, 'hrBino') then bon := bon || jsonb_build_object('hrBino', public.lr_n(bon, 'hrBino') + b.payout * 0.06); end if;
+    ev := greatest(0, b.payout - b.amount) * (public.lr_evm(c, 'hr') - 1);
+    if ev > 0 then bon := bon || jsonb_build_object('event', public.lr_n(bon, 'event') + ev); end if;
+    xp := xp + public.lr_bet_xp(b.amount) + case when b.payout > 0 then 8 else 0 end;
+    g := public.lr_gmission(g, 'hr', 'play', 1, b.amount);
+    if b.payout > 0 then g := public.lr_gmission(g, 'hr', 'win', 1, b.amount); end if;
+    if b.payout >= b.amount * 3 then g := public.lr_gmission(g, 'hr', 'big', 1, b.amount); end if;
+    if b.payout > 0 then g := public.lr_ach(g, jsonb_build_object('horseWin', true, 'horseOdds', b.odds, 'win', b.payout)); end if;
+    update public.horse_bets set bonused = true where id = b.id;
+  end loop;
+  -- rocket: every cash-out 2% more, 2% back after an explosion
+  for b in select * from public.rocket_bets where player = p.id and not bonused and payout is not null loop
+    any_ := true;
+    if b.payout > 0 and public.lr_has(g, 'rkTurbo') then bon := bon || jsonb_build_object('rkTurbo', public.lr_n(bon, 'rkTurbo') + b.payout * 0.02); end if;
+    if b.payout = 0 and public.lr_has(g, 'rkChute') then bon := bon || jsonb_build_object('rkChute', public.lr_n(bon, 'rkChute') + b.amount * 0.02); end if;
+    ev := greatest(0, b.payout - b.amount) * (public.lr_evm(c, 'rk') - 1);
+    if ev > 0 then bon := bon || jsonb_build_object('event', public.lr_n(bon, 'event') + ev); end if;
+    xp := xp + public.lr_bet_xp(b.amount) + case when b.payout > 0 then 8 else 0 end;
+    g := public.lr_gmission(g, 'rk', 'play', 1, b.amount);
+    if b.payout > 0 then g := public.lr_gmission(g, 'rk', 'win', 1, b.amount); end if;
+    if b.payout >= b.amount * 3 then g := public.lr_gmission(g, 'rk', 'big', 1, b.amount); end if;
+    if b.payout > 0 then g := public.lr_ach(g, jsonb_build_object('rocketMult', b.cashed, 'win', b.payout - b.amount, 'bet', b.amount)); end if;
+    update public.rocket_bets set bonused = true where id = b.id;
+  end loop;
+  -- lotto tickets: XP
+  select count(*) into t from public.lotto_tickets where player = p.id and not bonused;
+  if t > 0 then
+    any_ := true;
+    xp := xp + 5 * t;
+    update public.lotto_tickets set bonused = true where player = p.id and not bonused;
+  end if;
+  if not any_ then return jsonb_build_object('r', jsonb_build_object('none', true)); end if;
+  for k, v in select key, floor(value::numeric) from jsonb_each_text(bon) loop
+    if v > 0 then g := public.lr_out(public.lr_add(g, 'credits', v), 'bonus', jsonb_build_object('id', k, 'amount', v)); end if;
+  end loop;
+  if xp > 0 then g := public.lr_xp(g, c, xp); end if;
+  g := public.lr_ach(g);
+  return public.lr_put(p.id, g, '{}'::jsonb);
+end;
+$$;
