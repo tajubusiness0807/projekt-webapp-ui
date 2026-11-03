@@ -742,24 +742,29 @@ body.th-lpRoyalTheme { --bg: #0e0518; --cabinet: #2a0f4a; --cabinet-edge: #5a2a8
 .lb-stage.torn .lb-pk { animation: lbJolt 0.35s; }
 @keyframes lbJolt { 40% { transform: translateY(6px) rotate(-2deg) scale(1.03); } }
 /* the light from inside: rays and a glow above the open edge, in the colour of the best card (a rainbow for a holo) */
-.lb-in { position: absolute; z-index: 0; left: 50%; top: 18%; width: calc(var(--pw) * 3.2); aspect-ratio: 1; translate: -50% -50%; pointer-events: none; opacity: 0; scale: 0.15;
-  mask: linear-gradient(#000 49%, transparent 51%); -webkit-mask: linear-gradient(#000 49%, transparent 51%); transition: opacity 0.4s, scale 1s cubic-bezier(.2, 1.1, .3, 1); }
+.lb-in { position: absolute; z-index: 0; left: 50%; top: 18%; width: calc(var(--pw) * 2.4); aspect-ratio: 1; translate: -50% -50%; pointer-events: none; opacity: 0; scale: 0.3;
+  mask: linear-gradient(#000 49%, transparent 51%); -webkit-mask: linear-gradient(#000 49%, transparent 51%); transition: opacity 0.5s, scale 1s cubic-bezier(.2, 1, .3, 1); }
 .lb-in::before, .lb-in::after, .lb-aura::before { content: ""; position: absolute; inset: 0; border-radius: 50%; }
-.lb-in::before { background: repeating-conic-gradient(from 0deg, var(--gc) 0 5deg, transparent 5deg 15deg); mask: radial-gradient(circle, #000 8%, transparent 62%); -webkit-mask: radial-gradient(circle, #000 8%, transparent 62%); animation: lbSpinGlow 9s linear infinite; opacity: 0.75; }
-.lb-in::after { background: radial-gradient(circle, #fff 0 4%, var(--gc) 12%, transparent 46%); animation: lbGlow 1.1s ease-in-out infinite; }
+/* a soft beam of light out of the open edge and a few thin, slow rays, only in the colour of the best card's rarity */
+.lb-in::before { background: repeating-conic-gradient(from 0deg, var(--gc) 0 1.5deg, transparent 1.5deg 22.5deg); mask: radial-gradient(circle, #000 10%, transparent 58%); -webkit-mask: radial-gradient(circle, #000 10%, transparent 58%); opacity: 0.4; filter: blur(1.5px); animation: lbSpinGlow 30s linear infinite; }
+.lb-in::after { background: radial-gradient(ellipse 30% 46% at 50% 50%, #fff 0 6%, var(--gc) 22%, transparent 72%); filter: blur(4px); opacity: 0.85; animation: lbBreath 2.4s ease-in-out infinite; }
+@keyframes lbBreath { 50% { opacity: 1; transform: scale(1.05); } }
 .lb-stage.lit .lb-in { opacity: 1; scale: 1; }
-.lb-stage.lit .lb-pc.body .lb-pack { box-shadow: 0 -6px 30px -4px var(--gc), 0 14px 26px -10px #000c, inset 0 0 0 2px #ffffff44; }
-.lb-stage.holo .lb-in, .lb-stage.holo .lb-aura, .lb-stage.holo .lb-flash { animation: lbHue 2.4s linear infinite; }
-@keyframes lbHue { to { filter: hue-rotate(360deg); } }
-.lb-stage.holo { --gc: #ff4fd8; }
+.lb-stage.lit .lb-pc.body .lb-pack { box-shadow: 0 -4px 22px -6px var(--gc), 0 14px 26px -10px #000c, inset 0 0 0 2px #ffffff44; }
+/* a holo in the pack: white sparkles twinkle up out of the opening, whatever the colour of the light */
+.lb-sparks { position: absolute; z-index: 3; left: 0; right: 0; top: 18%; height: 0; pointer-events: none; opacity: 0; transition: opacity 0.4s 0.3s; }
+.lb-stage.lit.holo .lb-sparks { opacity: 1; }
+.lb-sparks i { position: absolute; left: var(--x); top: 0; font-style: normal; line-height: 1; color: #fff; font-size: calc(var(--pw) / 6.5 * var(--s)); text-shadow: 0 0 6px #d8f7ff, 0 0 14px #ffffffaa; opacity: 0; animation: lbSpark 1.8s var(--d) ease-out infinite; }
+.lb-sparks i::before { content: "✦"; }
+@keyframes lbSpark { 0% { transform: translate(-50%, 0) scale(0.2) rotate(0deg); opacity: 0; } 20% { opacity: 1; } 60% { opacity: 1; } 100% { transform: translate(calc(-50% + var(--dx)), calc(var(--pw) * -0.85)) scale(1) rotate(120deg); opacity: 0; } }
 @keyframes lbGlow { 50% { transform: scale(1.12); opacity: 1; } }
 @keyframes lbSpinGlow { to { rotate: 360deg; } }
 .lb-stage.deal .lb-pkw { transform: translateY(45%) scale(0.5); opacity: 0; animation: none; }
 .lb-aura { position: absolute; left: 50%; top: 50%; translate: -50% -50%; z-index: 0; width: calc(var(--cw) * 2.6); aspect-ratio: 1; pointer-events: none; opacity: 0; scale: 0.4; transition: opacity 0.6s, scale 0.8s cubic-bezier(.2, 1, .3, 1); }
 .lb-aura::before { background: radial-gradient(circle, var(--gc) 0%, transparent 58%); opacity: 0.35; animation: lbGlow 2s ease-in-out infinite; }
 .lb-stage.deal .lb-aura { opacity: 1; scale: 1; }
-.lb-flash { position: fixed; inset: 0; z-index: 67; pointer-events: none; background: radial-gradient(circle, #fff, var(--gc, #fff) 40%, transparent 75%); animation: lbFlash 0.7s ease-out forwards; }
-@keyframes lbFlash { from { opacity: 0.95; } to { opacity: 0; } }
+.lb-flash { position: fixed; inset: 0; z-index: 67; pointer-events: none; background: radial-gradient(circle at 50% 42%, #ffffffcc, var(--gc, #fff) 18%, transparent 52%); animation: lbFlash 0.6s ease-out forwards; }
+@keyframes lbFlash { from { opacity: 0.6; } to { opacity: 0; } }
 /* the card on screen */
 .lb-cur { position: relative; z-index: 3; width: var(--cw); aspect-ratio: 5 / 7; perspective: 1200px; animation: lbRise 0.6s cubic-bezier(.2, 1.15, .4, 1) both; }
 @keyframes lbRise { from { transform: translateY(38%) scale(0.3) rotate(-6deg); opacity: 0; } 35% { opacity: 1; } }
@@ -792,7 +797,7 @@ body.th-lpRoyalTheme { --bg: #0e0518; --cabinet: #2a0f4a; --cabinet-edge: #5a2a8
 .lb-open-btns .spin { font-size: 18px; padding: 10px 22px; }
 .lb-open-btns .chip-btn { padding: 10px 16px; font-size: 14px; }
 @media (max-width: 560px) { .lb-reveal.done .lb-mini { --mw: calc((100vw - 56px) / 3); } .lb-mini { --mw: 40px; } }
-@media (prefers-reduced-motion: reduce) { .lb-pkw, .lb-pk, .lb-in::before, .lb-in::after, .lb-aura::before, .lb-cur.last .lb-flip, .lb-stage.holo .lb-in { animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { .lb-pkw, .lb-pk, .lb-in::before, .lb-in::after, .lb-aura::before, .lb-cur.last .lb-flip, .lb-sparks i { animation: none !important; } }
 
 /* album */
 .lb-album-wrap { max-width: 1100px; }
@@ -10702,7 +10707,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     stage.className = `lb-stage g${br}${anyHolo ? ' holo' : ''}`;
     const pack = lbPackHtml(b);
     stage.innerHTML = `<div class="lb-aura" aria-hidden="true"></div><div class="lb-pkw"><div class="lb-pk"><div class="lb-in" aria-hidden="true"></div>` +
-      `<div class="lb-pc body" style="clip-path:${LB_CUT.body}">${pack}</div><div class="lb-pc top" style="clip-path:${LB_CUT.top}">${pack}</div><span class="lb-cut"></span></div></div>`;
+      `<div class="lb-pc body" style="clip-path:${LB_CUT.body}">${pack}</div><div class="lb-pc top" style="clip-path:${LB_CUT.top}">${pack}</div><span class="lb-cut"></span>` +
+      (anyHolo ? `<span class="lb-sparks" aria-hidden="true">${[[22, 0, 0.9, -14], [38, 0.5, 0.6, 6], [52, 0.2, 1.1, -4], [64, 0.9, 0.7, 12], [78, 0.35, 0.85, 18], [46, 1.2, 0.55, -10], [30, 1.4, 0.75, -20]].map(([x, dl, s, dx]) => `<i style="--x:${x}%;--d:${dl}s;--s:${s};--dx:${dx}px"></i>`).join('')}</span>` : '') + '</div></div>';
     $('lbHint').textContent = i18n('Tap the booster to tear it open');
     $('lbOpen').hidden = false;
     stage.focus({ preventScroll: true });
@@ -10716,15 +10722,15 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       lbLater(() => {
         stage.classList.add('torn', 'lit');
         audio.whoosh();
-        if (br >= 2 || anyHolo) {
+        if (br >= 2) {
           const f = document.createElement('div');
           f.className = 'lb-flash';
-          f.style.setProperty('--gc', anyHolo ? '#ff4fd8' : LB_RAR[br].col);
-          if (anyHolo) f.style.animation = 'lbFlash 0.7s ease-out forwards, lbHue 0.7s linear';
+          f.style.setProperty('--gc', LB_RAR[br].col);
           document.body.append(f);
           setTimeout(() => f.remove(), 800);
         }
         if (br >= 2) setTimeout(() => sound.star(), 200);
+        if (anyHolo) [450, 700, 950].forEach(t => setTimeout(() => sound.chip(), t));
         if (br >= 3) setTimeout(() => sound.chime(), 650);
       }, 320);
       // the rarer the best card, the longer it shines before the cards come out
