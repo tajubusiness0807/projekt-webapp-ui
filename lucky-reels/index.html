@@ -5784,6 +5784,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       });
     } catch {}
   })();
+  // bets are whole credits: a field left with decimals (10000.88) shows what is really bet (10000)
+  document.addEventListener('change', e => {
+    const t = e.target;
+    if (!(t instanceof HTMLInputElement) || t.type !== 'number' || t.step !== '1' || t.value === '') return;
+    const v = Number(t.value);
+    if (Number.isFinite(v) && !Number.isInteger(v)) { t.value = String(Math.floor(v)); t.dispatchEvent(new Event('input', { bubbles: true })); }
+  }, true);
   // writes the markup only when it differs from what the element was last given
   const setHtml = (el, html) => { if (el && el.lrHtml !== html) { el.lrHtml = html; el.innerHTML = html; } };
   // ---------- saving power ----------
