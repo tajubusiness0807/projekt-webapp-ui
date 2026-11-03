@@ -13759,3 +13759,117 @@ $$;
 create or replace function public.lr_lb_cards() returns jsonb language sql immutable as $$
   select '[[0,1.0,90],[0,1.0,80],[0,1.0,130],[1,1.0,400],[1,1.0,700],[0,1.0,100],[0,1.0,70],[0,1.0,110],[1,1.0,400],[1,1.0,600],[0,1.0,70],[0,1.0,70],[0,1.0,100],[1,1.0,800],[2,1.0,2800],[0,1.0,80],[0,1.0,120],[0,1.0,150],[1,1.0,700],[2,1.0,3500],[0,1.0,160],[0,1.0,60],[0,1.0,150],[1,1.0,500],[2,1.0,2900],[0,1.0,70],[0,1.0,90],[0,1.0,140],[1,1.0,500],[2,1.0,4000],[0,1.0,120],[0,1.0,100],[1,1.0,700],[1,1.0,400],[2,1.0,2600],[0,1.0,80],[0,1.0,130],[1,1.0,600],[1,1.0,600],[2,1.0,4000],[0,1.0,110],[0,1.0,90],[1,1.0,800],[1,1.0,700],[2,1.0,3100],[0,1.0,120],[0,1.0,110],[1,1.0,800],[1,1.0,800],[2,1.0,3200],[0,1.0,160],[0,1.0,70],[1,1.0,600],[2,1.0,4400],[2,1.0,2900],[0,1.0,110],[0,1.0,60],[1,1.0,700],[2,1.0,4400],[2,1.0,3900],[0,1.0,150],[0,1.0,90],[1,1.0,700],[2,1.0,4000],[2,1.0,3900],[0,1.0,110],[0,1.0,140],[1,1.0,900],[2,1.0,3700],[2,1.0,4200],[0,1.0,70],[1,1.0,800],[1,1.0,700],[2,1.0,5000],[2,1.0,4600],[1,1.0,500],[2,1.0,3500],[3,1.0,29000],[3,1.0,18000],[4,1.0,113000],[1,1.0,500],[2,1.0,2800],[3,1.0,19000],[3,1.0,31000],[4,1.0,96000],[1,1.0,500],[2,1.0,3500],[3,1.0,33000],[3,1.0,19000],[4,0.006,3000000],[2,1.0,3900],[3,1.0,33000],[3,1.0,32000],[4,1.0,133000],[4,0.006,6000000],[1,1.0,600],[2,1.0,3400],[3,1.0,33000],[3,1.0,34000],[4,0.006,15000000]]'::jsonb
 $$;
+
+
+-- ---------------------------------------------------------------------------
+-- Lucky-Booster: Legendary and Treasure Boosters. Run this part once (after "Lucky-Booster: rare cards only in the last collections").
+-- Legendary Booster (250,000): at least one legendary card or better in every pack, and the best odds per card.
+-- Treasure Booster (1,000,000): no guarantee of good cards, but the three treasures are 110 times as likely as in
+-- the other boosters (about one pack in 13 holds one).
+create or replace function public.lr_lb_boosters() returns jsonb language sql immutable as $$
+  select '{"classic":{"price":5000,"p":[7400,2100,430,60,10],"holo":250},"gold":{"price":25000,"p":[4300,3500,1700,420,80],"holo":500},"diamond":{"price":100000,"p":[1500,3200,3300,1600,400],"holo":1000},"legendary":{"price":250000,"p":[400,1800,3600,3100,1100],"holo":1500,"min":3},"treasure":{"price":1000000,"p":[3000,3000,2500,1100,400],"holo":800,"jm":110}}'::jsonb
+$$;
+create or replace function public.game_booster(p_act text, p_tier text default null, p_card integer default null, p_holo boolean default false)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  p public.players := public.lr_me();
+  c jsonb := public.lr_cfg();
+  g jsonb := public.lr_g(p);
+  cs jsonb := public.lr_lb_cards();
+  b jsonb;
+  own jsonb := case when jsonb_typeof(g -> 'cards') = 'object' then g -> 'cards' else '{}'::jsonb end;
+  st jsonb := case when jsonb_typeof(g -> 'lb') = 'object' then g -> 'lb' else '{}'::jsonb end;
+  lf numeric := public.lr_lf(auth.uid());
+  got jsonb := '[]';
+  price numeric;
+  x integer;
+  acc numeric;
+  rar integer;
+  best integer := 0;
+  pick numeric;
+  id integer;
+  holo boolean;
+  cur jsonb;
+  v numeric;
+  total numeric := 0;
+  n integer := 0;
+  e record;
+begin
+  if p_act = 'state' then
+    return jsonb_build_object('r', jsonb_build_object('boosters', public.lr_lb_boosters(), 'holo', 5));
+  end if;
+  if p_act = 'open' then
+    if (c ->> 'maintenance')::boolean and not p.is_admin then raise exception 'paused'; end if;
+    b := public.lr_lb_boosters() -> p_tier;
+    if b is null then raise exception 'no such booster'; end if;
+    price := (b ->> 'price')::numeric;
+    if public.lr_n(g, 'credits') < price then raise exception 'credits'; end if;
+    g := public.lr_add(g, 'credits', -price);
+    for k in 1 .. 5 loop
+      -- the rarity (the player's luck setting can draw an epic or better again, or a lower one)
+      for att in 1 .. 12 loop
+        x := public.lr_rand(10000);
+        -- a booster with a minimum: when the first four cards are all below it, the last one is drawn among the
+        -- rarities from the minimum up, in the booster's own proportions
+        if k = 5 and best < coalesce((b ->> 'min')::integer, 0) then
+          x := (select coalesce(sum((b -> 'p' ->> i)::numeric), 0) from generate_series(0, (b ->> 'min')::integer - 1) i)
+            + floor(random() * (select sum((b -> 'p' ->> i)::numeric) from generate_series((b ->> 'min')::integer, 4) i));
+        end if;
+        acc := 0;
+        rar := 4;
+        for i in 0 .. 4 loop
+          acc := acc + (b -> 'p' ->> i)::numeric;
+          if x < acc then rar := i; exit; end if;
+        end loop;
+        exit when att = 12 or (k = 5 and best < coalesce((b ->> 'min')::integer, 0)) or not public.lr_reroll(lf, rar >= 2, att);
+      end loop;
+      -- the card: by weight among the cards of that rarity
+      pick := random() * (select sum((y ->> 1)::numeric * case when (y ->> 1)::numeric < 1 then coalesce((b ->> 'jm')::numeric, 1) else 1 end) from jsonb_array_elements(cs) y where (y ->> 0)::integer = rar);
+      acc := 0;
+      id := null;
+      for e in select y, o from jsonb_array_elements(cs) with ordinality u(y, o) where (y ->> 0)::integer = rar loop
+        acc := acc + (e.y ->> 1)::numeric * case when (e.y ->> 1)::numeric < 1 then coalesce((b ->> 'jm')::numeric, 1) else 1 end;
+        id := e.o;
+        exit when pick < acc;
+      end loop;
+      holo := public.lr_rand(10000) < (b ->> 'holo')::integer;
+      cur := coalesce(own -> id::text, '[0, 0]'::jsonb);
+      got := got || jsonb_build_array(jsonb_build_object('id', id, 'holo', holo, 'new', (cur ->> 0)::integer + (cur ->> 1)::integer = 0,
+        'newHolo', holo and (cur ->> 1)::integer = 0));
+      own := own || jsonb_build_object(id::text, jsonb_build_array((cur ->> 0)::integer + case when holo then 0 else 1 end, (cur ->> 1)::integer + case when holo then 1 else 0 end));
+      best := greatest(best, rar);
+    end loop;
+    st := st || jsonb_build_object('opened', public.lr_n(st, 'opened') + 1, 'spent', public.lr_n(st, 'spent') + price);
+    g := g || jsonb_build_object('cards', own, 'lb', st);
+    -- XP like a bet of the booster's price
+    g := public.lr_xp(g, c, public.lr_bet_xp(price, best >= 2));
+    return public.lr_put(p.id, g, jsonb_build_object('cards', got, 'tier', p_tier, 'price', price));
+  end if;
+  if p_act = 'sell' then
+    cur := own -> p_card::text;
+    if cur is null or (cur ->> case when p_holo then 1 else 0 end)::integer < 1 then raise exception 'none'; end if;
+    v := ((cs -> (p_card - 1)) ->> 2)::numeric * case when p_holo then 5 else 1 end;
+    own := own || jsonb_build_object(p_card::text, case when p_holo then jsonb_build_array(cur -> 0, (cur ->> 1)::integer - 1) else jsonb_build_array((cur ->> 0)::integer - 1, cur -> 1) end);
+    g := public.lr_add(g, 'credits', v) || jsonb_build_object('cards', own, 'lb', st || jsonb_build_object('earned', public.lr_n(st, 'earned') + v));
+    return public.lr_put(p.id, g, jsonb_build_object('value', v));
+  end if;
+  if p_act = 'dupes' then
+    -- keep one plain and one holo of every card, sell the rest
+    for e in select key, value from jsonb_each(own) loop
+      v := ((cs -> ((e.key)::integer - 1)) ->> 2)::numeric;
+      if v is null then continue; end if;
+      total := total + v * greatest(0, (e.value ->> 0)::integer - 1) + v * 5 * greatest(0, (e.value ->> 1)::integer - 1);
+      n := n + greatest(0, (e.value ->> 0)::integer - 1) + greatest(0, (e.value ->> 1)::integer - 1);
+      own := own || jsonb_build_object(e.key, jsonb_build_array(least(1, (e.value ->> 0)::integer), least(1, (e.value ->> 1)::integer)));
+    end loop;
+    if n = 0 then raise exception 'no duplicates'; end if;
+    g := public.lr_add(g, 'credits', total) || jsonb_build_object('cards', own, 'lb', st || jsonb_build_object('earned', public.lr_n(st, 'earned') + total));
+    return public.lr_put(p.id, g, jsonb_build_object('value', total, 'sold', n));
+  end if;
+  raise exception 'unknown';
+end;
+$$;
