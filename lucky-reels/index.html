@@ -260,10 +260,11 @@ body.cos-goldBacks .card.back { background: repeating-linear-gradient(45deg, #e9
   width: 8px; height: 8px; border-radius: 50%;
   background: var(--accent);
   opacity: 0.35;
+  box-shadow: 0 0 8px currentColor;
   animation: blink 1.2s infinite;
 }
 .bulbs span:nth-child(even) { animation-delay: 0.6s; }
-@keyframes blink { 50% { opacity: 1; box-shadow: 0 0 8px currentColor; } }
+@keyframes blink { 50% { opacity: 1; } }
 .cabinet.bonus .bulbs span { background: var(--bonus); animation-duration: 0.5s; }
 .cabinet.jackpot .bulbs span { animation-duration: 0.2s; }
 
@@ -738,6 +739,9 @@ body.th-lpRoyalTheme { --bg: #0e0518; --cabinet: #2a0f4a; --cabinet-edge: #5a2a8
 .lbc-back span { font-size: 3.6em; filter: drop-shadow(0 0 0.3em #7dff6a); }
 .lbc-back b { font: 400 0.95em var(--font-display); letter-spacing: 0.06em; }
 
+/* power saver: no blur behind panels and no drop shadows on effect text */
+html.eco * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+
 /* opening: the booster is torn open, light shines out of it, then one card at a time, the worst first and the best last */
 .lb-open { position: fixed; inset: 0; z-index: 66; display: grid; grid-template-rows: minmax(0, 1fr) auto auto auto auto; justify-items: center; align-items: center; gap: 12px; padding: max(16px, env(safe-area-inset-top, 0px)) 16px max(18px, env(safe-area-inset-bottom, 0px)); overflow: hidden auto;
   background: radial-gradient(ellipse at 50% 40%, #241a33ee, #07050aF5 70%); animation: fadeIn 0.3s; }
@@ -955,7 +959,7 @@ body.th-lpRoyalTheme { --bg: #0e0518; --cabinet: #2a0f4a; --cabinet-edge: #5a2a8
 .rr-chambers i.live { background: radial-gradient(circle, #ff3b47, #6b0a10); box-shadow: 0 0 12px #ff1f2f; }
 .rr-odds { font: 700 13px var(--font-mono); color: #ff8a8f; letter-spacing: 0.08em; min-height: 18px; }
 .rr-timer { height: 6px; border-radius: 3px; background: #ffffff14; overflow: hidden; }
-.rr-timer i { display: block; height: 100%; width: 100%; background: var(--accent); transition: width 0.25s linear; }
+.rr-timer i { display: block; height: 100%; width: 100%; background: var(--accent); }
 .rr-timer i.low { background: #ff3b47; }
 .rr-pull { background: linear-gradient(#ff4b55, #a8141c); color: #fff; box-shadow: 0 5px 0 #5a0a10, 0 12px 24px -8px #000; font-size: 22px; }
 .rr-pull:disabled { background: #3a2626; color: var(--muted); box-shadow: none; }
@@ -1703,11 +1707,12 @@ body.wide .help-line { max-width: 980px; }
 .board tr.top td:nth-child(2) { color: var(--tc); font-weight: 600; }
 .board tr.top .rank { position: relative; display: inline-grid; place-items: center; width: 22px; height: 22px; margin-right: 6px; border-radius: 50%; vertical-align: middle;
   background: radial-gradient(circle at 35% 30%, #fff 0 10%, var(--tc) 35%, var(--tc2) 100%); color: #1d1714; font-weight: 700; font-size: 12px; box-shadow: 0 0 0 2px #0006, 0 2px 6px #0008; }
-.board tr.top1 .rank { width: 26px; height: 26px; font-size: 13px; animation: podiumGlow 2.4s ease-in-out infinite; }
+.board tr.top1 .rank { width: 26px; height: 26px; font-size: 13px; }
+.board tr.top1 .rank::before { content: ''; position: absolute; inset: 0; border-radius: 50%; pointer-events: none; box-shadow: 0 0 14px #f3c94bcc; opacity: 0; animation: podiumGlow 2.4s ease-in-out infinite; }
 .board tr.top1 td { padding-top: 14px; padding-bottom: 10px; }
 .board tr.top1 .rank::after { content: '👑'; position: absolute; top: -13px; left: 50%; translate: -50% 0; font-size: 12px; filter: drop-shadow(0 1px 1px #000); }
 .board tr.top1 { background: linear-gradient(90deg, #f3c94b38 0%, #f3c94b1c 45%, #f3c94b08 100%); }
-@keyframes podiumGlow { 50% { box-shadow: 0 0 0 2px #0006, 0 0 14px #f3c94bcc; } }
+@keyframes podiumGlow { 50% { opacity: 1; } }
 .board-title::before { content: '🏆 '; }
 @media (prefers-reduced-motion: reduce) { .board tr.top1 .rank { animation: none; } }
 .board .you { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-left: 4px; }
@@ -2135,15 +2140,15 @@ html[data-lang="de"] .reel.held::after { content: "GEHALTEN"; }
   box-shadow: 0 5px 0 #7a4a12, 0 12px 24px -8px #000, 0 0 0 0 #ffd36b99;
   font-family: var(--font-display);
   font-size: 18px;
-  animation: chatFabGlow 2.6s ease-in-out infinite;
 }
+.chat-fab::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; box-shadow: 0 0 22px 4px #ffd36b88; opacity: 0; animation: chatFabGlow 2.6s ease-in-out infinite; }
 .chat-fab-ico { font-size: 22px; line-height: 1; animation: chatFabWiggle 2.6s ease-in-out infinite; }
 .chat-fab:hover { filter: brightness(1.1); transform: translateY(-2px); }
 .chat-fab:has(.badge:not([hidden])) { animation: chatFabRing 1.1s ease-out infinite; }
-@keyframes chatFabGlow { 50% { box-shadow: 0 5px 0 #7a4a12, 0 12px 24px -8px #000, 0 0 22px 4px #ffd36b88; } }
+@keyframes chatFabGlow { 50% { opacity: 1; } }
 @keyframes chatFabRing { 0% { box-shadow: 0 5px 0 #7a4a12, 0 12px 24px -8px #000, 0 0 0 0 #ff5a5fcc; } 100% { box-shadow: 0 5px 0 #7a4a12, 0 12px 24px -8px #000, 0 0 0 16px #ff5a5f00; } }
 @keyframes chatFabWiggle { 0%, 80%, 100% { rotate: 0deg; } 85% { rotate: -14deg; } 90% { rotate: 12deg; } 95% { rotate: -6deg; } }
-@media (prefers-reduced-motion: reduce) { .chat-fab, .chat-fab-ico, .chat-fab:has(.badge:not([hidden])) { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .chat-fab, .chat-fab::after, .chat-fab-ico, .chat-fab:has(.badge:not([hidden])) { animation: none; } }
 .chat-fab .badge {
   min-width: 22px; height: 22px; padding: 0 6px;
   border-radius: 11px;
@@ -2528,7 +2533,7 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
 .jb-mood b { font-size: 16px; }
 .jb-face { grid-row: span 2; font-size: 34px; line-height: 1; }
 .jb-moodbar { height: 8px; border-radius: 4px; background: #0006; overflow: hidden; }
-.jb-moodbar i { display: block; height: 100%; width: 0; background: var(--win); border-radius: 4px; transition: width 0.25s, background 0.3s; }
+.jb-moodbar i { display: block; height: 100%; width: 0; background: var(--win); border-radius: 4px; transition: background 0.3s; }
 .jb-mood[data-m="meh"] .jb-moodbar i { background: #f2a516; }
 .jb-mood[data-m="bad"] .jb-moodbar i { background: var(--lose); }
 .jb-mood[data-m="bad"] .jb-face { animation: jbShake 0.5s infinite; }
@@ -2617,7 +2622,7 @@ button.av:hover { box-shadow: 0 0 0 2px var(--accent); }
 .jb-next { display: grid; gap: 6px; font-size: 13px; }
 .jb-next small { color: var(--muted); }
 .jb-nextbar { height: 10px; border-radius: 5px; background: #0006; overflow: hidden; }
-.jb-nextbar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #d62828, #ffc72c); border-radius: 5px; transition: width 0.4s; }
+.jb-nextbar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #d62828, #ffc72c); border-radius: 5px; }
 .jb-ladder { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
 @media (max-width: 560px) { .jb-ladder { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .jb-ladder li { display: grid; gap: 1px; padding: 8px 10px; border-radius: 10px; background: var(--panel); font-size: 12px; color: var(--muted); }
@@ -3063,7 +3068,7 @@ html:has(#lobby:not([hidden])), html:has(#shopPage:not([hidden])), html:has(#log
 @keyframes hrLive { to { box-shadow: 0 0 14px #e0414a88; } }
 .hr-clock { margin-left: auto; font: 700 18px var(--font-mono); color: var(--fg); }
 .hr-bar { height: 6px; border-radius: 3px; background: var(--track); overflow: hidden; }
-.hr-bar span { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, var(--win), var(--accent)); transition: width 0.5s linear; }
+.hr-bar span { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, var(--win), var(--accent)); }
 .hr-view { position: relative; height: clamp(230px, 38vw, 360px); border-radius: 16px; overflow: hidden; border: 3px solid #1d1714; box-shadow: inset 0 0 0 2px #ffffff14, 0 14px 30px -14px #000; background: #4f9a45; }
 .hr-view canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .hr-overlay { position: absolute; inset: auto 10px 10px; display: grid; gap: 6px; padding: 12px; border-radius: 14px; background: #120d0bdd; border: 2px solid var(--accent); box-shadow: 0 10px 30px #000a; animation: hrPop 0.45s cubic-bezier(.2, 1.4, .4, 1); }
@@ -3999,6 +4004,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       <span class="links">
         <button class="link-btn" id="sound">Sound: on</button>
         <button class="link-btn" id="voice">Voice: on</button>
+        <button class="link-btn" id="powerBtn" type="button">Power saver: auto</button>
         <button class="link-btn" id="refill">Start over</button>
       </span>
     </div>
@@ -4626,7 +4632,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Nudge reel 1 down': 'Walze 1 runterstupsen', 'Nudge reel 2 down': 'Walze 2 runterstupsen', 'Nudge reel 3 down': 'Walze 3 runterstupsen',
     'Last win': 'Letzter Gewinn', 'Last bet': 'Letzter Einsatz', 'Level': 'Level', 'Bonus stars': 'Bonussterne', 'Win streak': 'Gewinnserie',
     'Bet per spin · no limit': 'Einsatz pro Spin · ohne Limit', 'Halve bet': 'Einsatz halbieren', 'Double bet': 'Einsatz verdoppeln', 'Max': 'Max', 'Min': 'Min',
-    'Auto ×10': 'Auto ×10', 'Sound: on': 'Ton: an', 'Sound: off': 'Ton: aus', 'Start over': 'Neu anfangen',
+    'Auto ×10': 'Auto ×10', 'Sound: on': 'Ton: an', 'Power saver: on': 'Energiesparen: an', 'Power saver: off': 'Energiesparen: aus', 'Power saver: auto': 'Energiesparen: auto', 'Power saver: auto (on)': 'Energiesparen: auto (an)', 'Saves battery: fewer animations and lower frame rates. Auto turns it on when the battery is low.': 'Spart Akku: weniger Animationen und niedrigere Bildraten. Auto schaltet es bei niedrigem Akku ein.', 'Sound: off': 'Ton: aus', 'Start over': 'Neu anfangen',
     'Paytable & rules': 'Gewinntabelle & Regeln', 'any two': 'zwei beliebige', 'on reel one': 'auf Walze eins',
     'Pick a bet and pull.': 'Wähl einen Einsatz und zieh den Hebel.', 'Spinning…': 'Dreht…', 'Spinning the reels you did not hold…': 'Die nicht gehaltenen Walzen drehen…',
     'Bet raised, so the holds are off. Spinning…': 'Einsatz erhöht, das Halten fällt weg. Dreht…', 'Two sevens… come on!': 'Zwei Siebenen… komm schon!',
@@ -5760,6 +5766,91 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const reels = [...document.querySelectorAll('.reel')];
   const strips = reels.map(r => r.querySelector('.strip'));
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Many timers set the same values again and again (hide this, show that text); each such write made the browser
+  // work out the styles of the page anew. Writes that change nothing are now skipped.
+  (() => {
+    const same = (proto, key, eq) => {
+      const d = Object.getOwnPropertyDescriptor(proto, key);
+      if (!d?.set || !d.get) return;
+      Object.defineProperty(proto, key, { ...d, set(v) { if (!eq(d.get.call(this), v, this)) d.set.call(this, v); } });
+    };
+    try {
+      same(HTMLElement.prototype, 'hidden', (cur, v) => cur === (v === 'until-found' ? v : !!v));
+      same(HTMLButtonElement.prototype, 'disabled', (cur, v) => cur === !!v);
+      // only when the element holds just that one piece of text (otherwise the write also clears child elements)
+      same(Node.prototype, 'textContent', (cur, v, el) => {
+        const s = v == null ? '' : String(v), f = el.firstChild;
+        return el.nodeType === 1 && (s === '' ? !f : !!f && f === el.lastChild && f.nodeType === 3 && f.data === s);
+      });
+    } catch {}
+  })();
+  // writes the markup only when it differs from what the element was last given
+  const setHtml = (el, html) => { if (el && el.lrHtml !== html) { el.lrHtml = html; el.innerHTML = html; } };
+  // ---------- saving power ----------
+  // The page asks as little of the device as it can: the frame loops of the games draw at full speed only while
+  // something moves (a race, a flight, a rolling ball), slower between rounds and hardly at all once nobody has touched
+  // the page for a while. The endless decorative animations stop when the page sits idle. The power saver (on, off,
+  // or auto: on with a low battery that is not charging, or with data saver) stops them for good and lowers the
+  // frame rates further. It is kept per device.
+  const power = (() => {
+    let pref = 'auto';
+    try { pref = localStorage.getItem('lr_power') || 'auto'; } catch {}
+    const p = { pref, low: false, eco: false, idle: false, last: performance.now(), gates: {}, stopped: false };
+    const IDLE_MS = 40000;
+    // pause the endless CSS animations, or let them run again (they are decoration only; the games run in script)
+    const sweep = () => {
+      const stop = p.eco || p.idle;
+      if (!stop && !p.stopped) return;
+      p.stopped = stop;
+      let list;
+      try { list = document.getAnimations(); } catch { return; }
+      for (const a of list) {
+        let t;
+        try { t = a.effect?.getComputedTiming(); } catch { continue; }
+        if (!t || t.iterations !== Infinity) continue;
+        if (stop && a.playState === 'running') { a.pause(); a.lrPowered = true; }
+        else if (!stop && a.lrPowered) { a.lrPowered = false; if (a.playState === 'paused') a.play(); }
+      }
+    };
+    const apply = () => {
+      p.eco = p.pref === 'on' || (p.pref === 'auto' && p.low);
+      document.documentElement.classList.toggle('eco', p.eco);
+      sweep();
+    };
+    p.setPref = v => { p.pref = v; try { localStorage.setItem('lr_power', v); } catch {} apply(); };
+    // may a frame loop draw now? busy: something moves that has to look smooth
+    p.frame = (key, busy) => {
+      const fps = busy ? (p.eco ? 30 : 60) : p.idle ? 4 : p.eco ? 12 : 24;
+      if (fps >= 60) return true;
+      const now = performance.now();
+      if (now - (p.gates[key] || 0) < 1000 / fps - 4) return false;
+      p.gates[key] = now;
+      return true;
+    };
+    const wake = () => { p.last = performance.now(); if (p.idle) { p.idle = false; sweep(); } };
+    for (const ev of ['pointerdown', 'pointermove', 'keydown', 'wheel', 'touchstart', 'scroll']) addEventListener(ev, wake, { passive: true, capture: true });
+    setInterval(() => {
+      if (document.hidden) return;
+      if (!p.idle && performance.now() - p.last > IDLE_MS) p.idle = true;
+      // animations that started since the last look are caught here as well
+      if (p.idle || p.eco || p.stopped) sweep();
+    }, 2500);
+    try { if (navigator.connection?.saveData) p.low = true; } catch {}
+    navigator.getBattery?.().then(b => {
+      const f = () => { p.low = (!b.charging && b.level <= 0.3) || !!navigator.connection?.saveData; apply(); if (typeof render === 'function' && account) renderPower(); };
+      b.addEventListener('levelchange', f);
+      b.addEventListener('chargingchange', f);
+      f();
+    }).catch(() => {});
+    apply();
+    return p;
+  })();
+  function renderPower() {
+    const b = $('powerBtn');
+    if (!b) return;
+    b.textContent = i18n(power.pref === 'on' ? 'Power saver: on' : power.pref === 'off' ? 'Power saver: off' : power.eco ? 'Power saver: auto (on)' : 'Power saver: auto');
+    b.title = i18n('Saves battery: fewer animations and lower frame rates. Auto turns it on when the battery is low.');
+  }
   let busy = false;
   let inBonus = false;
   let freeDone = 0;
@@ -5942,7 +6033,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const r = Math.random;
     let parts = [], emitters = [], running = false, W = innerWidth, H = innerHeight;
     // how many particles at once: less on small screens, and less again while frames come too slowly
-    const capMax = () => (innerWidth < 700 ? 500 : 1000);
+    const capMax = () => (power.eco ? 150 : innerWidth < 700 ? 500 : 1000);
     let cap = capMax(), lastFrame = 0;
     function start() {
       if (running) return;
@@ -6780,16 +6871,21 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   }
   // Between spins the wheel keeps turning slowly, with the last ball in its pocket; once the ball is thrown it
   // runs on the track until the number is drawn and the landing takes over.
-  function rlIdle() {
-    if (!(state.mode === 'rl' && account && $('lobby').hidden && $('shopPage').hidden && !document.hidden)) { rlIdleOn = false; return; }
+  let rlIdleT = 0;
+  function rlIdle(ts) {
+    if (!(state.mode === 'rl' && account && $('lobby').hidden && $('shopPage').hidden && !document.hidden)) { rlIdleOn = false; rlIdleT = 0; return; }
     const { phase, e, id } = rlPhaseOf(hrNow());
-    if (!rlBusy) {
-      if ((phase === 'roll' || phase === 'closed' || (phase === 'spin' && rlAnimFor !== id)) && !reduceMotion) {
+    const rolling = (phase === 'roll' || phase === 'closed' || (phase === 'spin' && rlAnimFor !== id)) && !reduceMotion;
+    // between rounds the slow wheel is drawn at a lower frame rate; the ball on its track at full speed
+    if (!rlBusy && power.frame('rl', rolling)) {
+      const dt = rlIdleT ? Math.min(500, ts - rlIdleT) : 16.7;
+      rlIdleT = ts;
+      if (rolling) {
         if (rlRoll?.id !== id) { rlRoll = { id, w: rlAngle, b: rlAngle + Math.random() * Math.PI * 2 }; rlBallRel = null; sound.chip(); }
         const at = rlRollAt(e - RL_ROLL);
         rlAngle = at.w;
         drawRoulette(at.w, { angle: at.b, r: 0.86 + Math.sin(e / 90) * 0.006 });
-      } else { rlAngle += reduceMotion ? 0 : 0.004; drawRoulette(rlAngle, rlBallRel == null ? null : { angle: rlAngle + rlBallRel, r: 0.56 }); }
+      } else { rlAngle += reduceMotion ? 0 : 0.004 * dt / 16.7; drawRoulette(rlAngle, rlBallRel == null ? null : { angle: rlAngle + rlBallRel, r: 0.56 }); }
     }
     requestAnimationFrame(rlIdle);
   }
@@ -8962,10 +9058,14 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
   // ----- Game flow -----
   let hrLastLead = 0, hrLastRace = -1;
+  let hrBusyNow = true;
   function hrFrame() {
-    if (!(state.mode === 'hr' && account && $('lobby').hidden && $('shopPage').hidden && !document.hidden)) { hrFrameOn = false; return; }
+    if (!(state.mode === 'hr' && account && $('lobby').hidden && $('shopPage').hidden && !document.hidden)) { hrFrameOn = false; hrBusyNow = true; return; }
+    // while no race runs the track is drawn at a lower frame rate
+    if (!power.frame('hr', hrBusyNow)) { requestAnimationFrame(hrFrame); return; }
     const now = hrNow();
     const v = hrScene(now);
+    hrBusyNow = !!v.running || hrFlash > 0.02;
     // commentary and sounds that go with the picture
     if (v.running) {
       const race = v.race, said = hrSaid[race.id] || (hrSaid[race.id] = {});
@@ -9861,9 +9961,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     return p;
   }
   let rkLastPhase = '', rkLastTone = 0, rkLastCount = -1;
+  let rkBusyNow = true;
   function rkFrame() {
-    if (!(state.mode === 'rk' && account && $('lobby').hidden && $('shopPage').hidden && !document.hidden)) { rkFrameOn = false; return; }
+    if (!(state.mode === 'rk' && account && $('lobby').hidden && $('shopPage').hidden && !document.hidden)) { rkFrameOn = false; rkBusyNow = true; return; }
+    // on the pad and after a flight the picture is drawn at a lower frame rate; in the air at full speed
+    if (!power.frame('rk', rkBusyNow)) { requestAnimationFrame(rkFrame); return; }
     const now = hrNow(), p = rkDraw(now);
+    rkBusyNow = p.phase === 'fly' || ((p.phase === 'boom' || p.phase === 'moon') && p.since < 4000);
     if (p.phase !== rkLastPhase) {
       if (p.phase === 'bet' && rkLastPhase && rkLastPhase !== 'wait') rkSay('Bet and board the rocket before liftoff. The higher it flies, the more it pays.');
       if (p.phase === 'fly' && rkLastPhase === 'bet') { sound.rumble(); audio.whoosh(); audio.noise(1.2, { type: 'lowpass', freq: 200, to: 900, vol: 0.3, attack: 0.05 }); rkSay('Liftoff! Cash out before it blows.', 'hot'); voice.say('Liftoff!', { urgent: true, rocket: true }); }
@@ -11796,6 +11900,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     const chips = [];
     if (inBonus) chips.unshift(`<span class="boost-chip bonus">Free spin ${freeDone} · bonus +${fmt(state.freeTotal)}</span>`);
     $('sound').textContent = `Sound: ${state.sound ? 'on' : 'off'}`;
+    renderPower();
     $('voice').textContent = `Voice: ${state.voice !== false ? 'on' : 'off'}`;
     $('voice').hidden = state.mode !== 'rk';
 
@@ -11857,6 +11962,8 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   });
   $('betInput').addEventListener('change', () => { $('betInput').value = state.bet; });
   $('sound').addEventListener('click', () => { state.sound = !state.sound; render(); });
+  // power saver: auto, on, off, auto …
+  $('powerBtn').addEventListener('click', () => { power.setPref(power.pref === 'auto' ? 'on' : power.pref === 'on' ? 'off' : 'auto'); renderPower(); });
   // Prestige: from level 20 back to level 1, for a badge everyone sees. Credits, goodies and achievements stay.
   function openPrestige() {
     if (!account || state.level < MAX_LEVEL) return;
@@ -12965,8 +13072,9 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
             `<td>${fmt(p.credits)}</td><td>${fmt(p.best)}</td><td>${p.level}</td></tr>`;
         }).join('') + '</tbody>'
       : '<tbody><tr><td class="empty" colspan="4">No players yet.</td></tr></tbody>';
-    $('boardGame').innerHTML = html;
-    $('boardLogin').innerHTML = html;
+    // rebuilt only when something on it changed (a new table also restarted its glowing animations)
+    setHtml($('boardGame'), html);
+    setHtml($('boardLogin'), html);
     renderTitles();
 
     // No name suggestions on the sign-in screen: everyone types their own name.
@@ -12977,13 +13085,13 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   function renderTitles() {
     const box = $('titlesList');
     if (!box) return;
-    box.innerHTML = TITLES.map(t => {
+    setHtml(box, TITLES.map(t => {
       const who = players.filter(p => p.title === t.id);
       return `<div class="title-card${who.length ? '' : ' empty'}" style="--tc:${TITLE_COLOR[t.id] || '#e9a23b'}">` +
         `<span class="p-title t-${t.id}"><span aria-hidden="true">${t.icon}</span>${esc(i18n(t.name))}</span><small>${esc(i18n(t.desc))}</small>` +
         (who.length ? `<div class="title-holders">${who.map(p => `<span class="title-holder">${avatarHtml(p.id, p.name, '')}${nameHtml(p.id, p.name)}</span>`).join('')}</div>`
           : `<span class="title-none">${esc(i18n('Not awarded yet'))}</span>`) + '</div>';
-    }).join('');
+    }).join(''));
   }
   function syncPick() {
     document.querySelectorAll('.pick-btn').forEach(x => x.classList.toggle('on', idFor(x.dataset.user) === idFor($('loginUser').value)));
