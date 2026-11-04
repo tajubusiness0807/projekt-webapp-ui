@@ -14000,3 +14000,257 @@ begin
   return public.lr_put(p.id, public.lr_fill(g), '{}'::jsonb);
 end;
 $$;
+
+
+-- ---------------------------------------------------------------------------
+-- Kiosk gifts: run this part once (after "Scratchcards").
+-- Everyone can give boosters and scratchcards from the kiosk to another player: the giver pays for them, the other
+-- player finds them in the kiosk and opens or scratches them for free. Like sending credits, both need level 3 (or a
+-- prestige); a scratchcard has to be within the giver's bet limit.
+create table if not exists public.kiosk_gifts (
+  id bigint generated always as identity primary key,
+  sender uuid references public.players (id) on delete set null,
+  recipient uuid not null references public.players (id) on delete cascade,
+  sender_name text not null,
+  kind text not null check (kind in ('booster', 'scratch')),
+  tier text not null,
+  qty integer not null check (qty between 1 and 20),
+  opened integer not null default 0,
+  created_at timestamptz not null default now()
+);
+create index if not exists kiosk_gifts_recipient on public.kiosk_gifts (recipient, created_at);
+alter table public.kiosk_gifts enable row level security;
+revoke all on public.kiosk_gifts from anon, authenticated;
+
+create or replace function public.kiosk_gift(target uuid, p_kind text, p_tier text, p_qty integer default 1)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  p public.players := public.lr_me();
+  c jsonb := public.lr_cfg();
+  g jsonb := public.lr_g(p);
+  them public.players;
+  price numeric;
+  cost numeric;
+begin
+  if (c ->> 'maintenance')::boolean and not p.is_admin then raise exception 'paused'; end if;
+  if target is null or target = p.id then raise exception 'cannot give to yourself'; end if;
+  if p_qty is null or p_qty < 1 or p_qty > 20 then raise exception 'qty'; end if;
+  select * into them from public.players where id = target;
+  if them is null or them.is_banned then raise exception 'no such player'; end if;
+  if p.level < 3 and p.prestige = 0 then raise exception 'reach level 3 first'; end if;
+  if them.level < 3 and them.prestige = 0 then raise exception 'recipient below level 3'; end if;
+  if p_kind = 'booster' then price := (public.lr_lb_boosters() -> p_tier ->> 'price')::numeric;
+  elsif p_kind = 'scratch' then
+    price := (public.lr_sc_tickets() -> p_tier ->> 'price')::numeric;
+    if price > public.lr_lim(c, p.level) then raise exception 'limit'; end if;
+  end if;
+  if price is null then raise exception 'no such item'; end if;
+  cost := price * p_qty;
+  if public.lr_n(g, 'credits') < cost then raise exception 'credits'; end if;
+  g := public.lr_add(g, 'credits', -cost);
+  insert into public.kiosk_gifts (sender, recipient, sender_name, kind, tier, qty) values (p.id, them.id, p.name, p_kind, p_tier, p_qty);
+  return public.lr_put(p.id, g, jsonb_build_object('to', them.name, 'kind', p_kind, 'tier', p_tier, 'qty', p_qty, 'cost', cost));
+end;
+$$;
+revoke execute on function public.kiosk_gift(uuid, text, text, integer) from public, anon;
+grant execute on function public.kiosk_gift(uuid, text, text, integer) to authenticated;
+
+-- what is waiting for me in the kiosk, and (with a time) the gifts that came since then, for the pop-ups
+create or replace function public.kiosk_gift_list(since timestamptz default null)
+returns jsonb
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select jsonb_build_object(
+    'inv', coalesce((select jsonb_object_agg(k, n) from (select kind || ':' || tier k, sum(qty - opened) n from public.kiosk_gifts
+      where recipient = auth.uid() and opened < qty group by 1) x), '{}'::jsonb),
+    'recent', case when since is null then '[]'::jsonb else coalesce((select jsonb_agg(jsonb_build_object('id', id, 'from', sender_name, 'kind', kind, 'tier', tier, 'qty', qty,
+      'at', floor(extract(epoch from created_at) * 1000)) order by created_at) from public.kiosk_gifts where recipient = auth.uid() and created_at > since), '[]'::jsonb) end)
+$$;
+revoke execute on function public.kiosk_gift_list(timestamptz) from public, anon;
+grant execute on function public.kiosk_gift_list(timestamptz) to authenticated;
+
+-- opening and scratching learn to use a gift (the old versions without it go first)
+drop function if exists public.game_booster(text, text, integer, boolean);
+drop function if exists public.game_scratch(text, text);
+create or replace function public.game_booster(p_act text, p_tier text default null, p_card integer default null, p_holo boolean default false, p_gift boolean default false)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  p public.players := public.lr_me();
+  c jsonb := public.lr_cfg();
+  g jsonb := public.lr_g(p);
+  cs jsonb := public.lr_lb_cards();
+  b jsonb;
+  own jsonb := case when jsonb_typeof(g -> 'cards') = 'object' then g -> 'cards' else '{}'::jsonb end;
+  st jsonb := case when jsonb_typeof(g -> 'lb') = 'object' then g -> 'lb' else '{}'::jsonb end;
+  lf numeric := public.lr_lf(auth.uid());
+  got jsonb := '[]';
+  price numeric;
+  x integer;
+  acc numeric;
+  rar integer;
+  best integer := 0;
+  pick numeric;
+  id integer;
+  holo boolean;
+  cur jsonb;
+  v numeric;
+  total numeric := 0;
+  n integer := 0;
+  e record;
+  gid bigint;
+begin
+  if p_act = 'state' then
+    return jsonb_build_object('r', jsonb_build_object('boosters', public.lr_lb_boosters(), 'holo', 5));
+  end if;
+  if p_act = 'open' then
+    if (c ->> 'maintenance')::boolean and not p.is_admin then raise exception 'paused'; end if;
+    b := public.lr_lb_boosters() -> p_tier;
+    if b is null then raise exception 'no such booster'; end if;
+    price := (b ->> 'price')::numeric;
+    if p_gift then
+      -- a booster someone gave you: one of them is used up, it costs nothing
+      select kg.id into gid from public.kiosk_gifts kg where kg.recipient = p.id and kg.kind = 'booster' and kg.tier = p_tier and kg.opened < kg.qty order by kg.created_at limit 1 for update;
+      if gid is null then raise exception 'no gift'; end if;
+      update public.kiosk_gifts kg set opened = kg.opened + 1 where kg.id = gid;
+    else
+      if public.lr_n(g, 'credits') < price then raise exception 'credits'; end if;
+      g := public.lr_add(g, 'credits', -price);
+    end if;
+    for k in 1 .. 5 loop
+      -- the rarity (the player's luck setting can draw an epic or better again, or a lower one)
+      for att in 1 .. 12 loop
+        x := public.lr_rand(10000);
+        -- a booster with a minimum: when the first four cards are all below it, the last one is drawn among the
+        -- rarities from the minimum up, in the booster's own proportions
+        if k = 5 and best < coalesce((b ->> 'min')::integer, 0) then
+          x := (select coalesce(sum((b -> 'p' ->> i)::numeric), 0) from generate_series(0, (b ->> 'min')::integer - 1) i)
+            + floor(random() * (select sum((b -> 'p' ->> i)::numeric) from generate_series((b ->> 'min')::integer, 4) i));
+        end if;
+        acc := 0;
+        rar := 4;
+        for i in 0 .. 4 loop
+          acc := acc + (b -> 'p' ->> i)::numeric;
+          if x < acc then rar := i; exit; end if;
+        end loop;
+        exit when att = 12 or (k = 5 and best < coalesce((b ->> 'min')::integer, 0)) or not public.lr_reroll(lf, rar >= 2, att);
+      end loop;
+      -- the card: by weight among the cards of that rarity
+      pick := random() * (select sum((y ->> 1)::numeric * case when (y ->> 1)::numeric < 1 then coalesce((b ->> 'jm')::numeric, 1) else 1 end) from jsonb_array_elements(cs) y where (y ->> 0)::integer = rar);
+      acc := 0;
+      id := null;
+      for e in select y, o from jsonb_array_elements(cs) with ordinality u(y, o) where (y ->> 0)::integer = rar loop
+        acc := acc + (e.y ->> 1)::numeric * case when (e.y ->> 1)::numeric < 1 then coalesce((b ->> 'jm')::numeric, 1) else 1 end;
+        id := e.o;
+        exit when pick < acc;
+      end loop;
+      holo := public.lr_rand(10000) < (b ->> 'holo')::integer;
+      cur := coalesce(own -> id::text, '[0, 0]'::jsonb);
+      got := got || jsonb_build_array(jsonb_build_object('id', id, 'holo', holo, 'new', (cur ->> 0)::integer + (cur ->> 1)::integer = 0,
+        'newHolo', holo and (cur ->> 1)::integer = 0));
+      own := own || jsonb_build_object(id::text, jsonb_build_array((cur ->> 0)::integer + case when holo then 0 else 1 end, (cur ->> 1)::integer + case when holo then 1 else 0 end));
+      best := greatest(best, rar);
+    end loop;
+    st := st || jsonb_build_object('opened', public.lr_n(st, 'opened') + 1, 'spent', public.lr_n(st, 'spent') + case when p_gift then 0 else price end);
+    g := g || jsonb_build_object('cards', own, 'lb', st);
+    -- XP like a bet of the booster's price
+    g := public.lr_xp(g, c, public.lr_bet_xp(price, best >= 2));
+    return public.lr_put(p.id, g, jsonb_build_object('cards', got, 'tier', p_tier, 'price', price, 'gift', p_gift));
+  end if;
+  if p_act = 'sell' then
+    cur := own -> p_card::text;
+    if cur is null or (cur ->> case when p_holo then 1 else 0 end)::integer < 1 then raise exception 'none'; end if;
+    v := ((cs -> (p_card - 1)) ->> 2)::numeric * case when p_holo then 5 else 1 end;
+    own := own || jsonb_build_object(p_card::text, case when p_holo then jsonb_build_array(cur -> 0, (cur ->> 1)::integer - 1) else jsonb_build_array((cur ->> 0)::integer - 1, cur -> 1) end);
+    g := public.lr_add(g, 'credits', v) || jsonb_build_object('cards', own, 'lb', st || jsonb_build_object('earned', public.lr_n(st, 'earned') + v));
+    return public.lr_put(p.id, g, jsonb_build_object('value', v));
+  end if;
+  if p_act = 'dupes' then
+    -- keep one plain and one holo of every card, sell the rest
+    for e in select key, value from jsonb_each(own) loop
+      v := ((cs -> ((e.key)::integer - 1)) ->> 2)::numeric;
+      if v is null then continue; end if;
+      total := total + v * greatest(0, (e.value ->> 0)::integer - 1) + v * 5 * greatest(0, (e.value ->> 1)::integer - 1);
+      n := n + greatest(0, (e.value ->> 0)::integer - 1) + greatest(0, (e.value ->> 1)::integer - 1);
+      own := own || jsonb_build_object(e.key, jsonb_build_array(least(1, (e.value ->> 0)::integer), least(1, (e.value ->> 1)::integer)));
+    end loop;
+    if n = 0 then raise exception 'no duplicates'; end if;
+    g := public.lr_add(g, 'credits', total) || jsonb_build_object('cards', own, 'lb', st || jsonb_build_object('earned', public.lr_n(st, 'earned') + total));
+    return public.lr_put(p.id, g, jsonb_build_object('value', total, 'sold', n));
+  end if;
+  raise exception 'unknown';
+end;
+$$;
+revoke execute on function public.game_booster(text, text, integer, boolean, boolean) from public, anon;
+grant execute on function public.game_booster(text, text, integer, boolean, boolean) to authenticated;
+create or replace function public.game_scratch(p_act text, p_tier text default null, p_gift boolean default false)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  p public.players := public.lr_me();
+  c jsonb := public.lr_cfg();
+  g jsonb := public.lr_g(p);
+  t jsonb;
+  st jsonb := case when jsonb_typeof(g -> 'sc') = 'object' then g -> 'sc' else '{}'::jsonb end;
+  lf numeric := public.lr_lf(auth.uid());
+  price numeric;
+  x integer;
+  acc numeric;
+  mult numeric;
+  win numeric;
+  e jsonb;
+  gid bigint;
+  cost numeric;
+begin
+  if p_act <> 'buy' then raise exception 'no such action'; end if;
+  if (c ->> 'maintenance')::boolean and not p.is_admin then raise exception 'paused'; end if;
+  t := public.lr_sc_tickets() -> p_tier;
+  if t is null then raise exception 'no such ticket'; end if;
+  price := (t ->> 'price')::numeric;
+  if p_gift then
+    -- a card someone gave you: one of them is used up, it costs nothing (and the giver's bet limit counted)
+    select kg.id into gid from public.kiosk_gifts kg where kg.recipient = p.id and kg.kind = 'scratch' and kg.tier = p_tier and kg.opened < kg.qty order by kg.created_at limit 1 for update;
+    if gid is null then raise exception 'no gift'; end if;
+    update public.kiosk_gifts kg set opened = kg.opened + 1 where kg.id = gid;
+    cost := 0;
+  else
+    if price > public.lr_lim(c, p.level) then raise exception 'limit'; end if;
+    if public.lr_n(g, 'credits') < price then raise exception 'credits'; end if;
+    cost := price;
+  end if;
+  -- the prize (the player's luck setting can draw a win again, or a blank)
+  for att in 1 .. 12 loop
+    x := public.lr_rand(1000000);
+    acc := 0;
+    mult := 0;
+    for e in select y from jsonb_array_elements(t -> 'p') y loop
+      acc := acc + (e ->> 1)::numeric;
+      if x < acc then mult := (e ->> 0)::numeric; exit; end if;
+    end loop;
+    exit when att = 12 or not public.lr_reroll(lf, mult > 1, att);
+  end loop;
+  win := price * mult;
+  g := public.lr_add(g, 'credits', win - cost);
+  st := st || jsonb_build_object('bought', public.lr_n(st, 'bought') + 1, 'spent', public.lr_n(st, 'spent') + cost,
+    'won', public.lr_n(st, 'won') + win, 'best', greatest(public.lr_n(st, 'best'), win));
+  g := g || jsonb_build_object('sc', st, 'lastWin', win, 'best', greatest(public.lr_n(g, 'best'), win - cost));
+  g := public.lr_xp(g, c, public.lr_bet_xp(price, win > price));
+  g := public.lr_ach(g, jsonb_build_object('win', greatest(0, win - price), 'bet', price));
+  return public.lr_put(p.id, g, jsonb_build_object('tier', p_tier, 'price', price, 'gift', p_gift, 'mult', mult, 'win', win, 'seed', public.lr_rand(2000000000)));
+end;
+$$;
+revoke execute on function public.game_scratch(text, text, boolean) from public, anon;
+grant execute on function public.game_scratch(text, text, boolean) to authenticated;
