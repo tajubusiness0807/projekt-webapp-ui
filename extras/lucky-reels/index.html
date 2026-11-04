@@ -877,6 +877,121 @@ html.eco * { backdrop-filter: none !important; -webkit-backdrop-filter: none !im
 .lb-cv-btns .sell { background: linear-gradient(#f3b956, #c7801f); }
 .lb-cv-btns .sellh { background: linear-gradient(90deg, #ff9ef0, #9fefff); color: #120d16; }
 
+/* kiosk: scratchcards and booster packs */
+.ks { position: relative; display: grid; gap: 14px; padding: 0 0 12px; border-radius: 18px; overflow: hidden; background: linear-gradient(#2b1d14, #1d140e); box-shadow: inset 0 0 0 2px #ffffff12, 0 18px 40px -22px #000; }
+.ks-awning { position: relative; height: 40px; background: repeating-linear-gradient(90deg, #d8353f 0 32px, #fff1dc 32px 64px); box-shadow: inset 0 -6px 10px -6px #0006; }
+.ks-awning::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 14px; background: radial-gradient(circle at 16px 0, #d8353f 15px, transparent 15.5px) 0 0 / 64px 14px repeat-x, radial-gradient(circle at 48px 0, #fff1dc 15px, transparent 15.5px) 0 0 / 64px 14px repeat-x; filter: drop-shadow(0 4px 3px #0007); }
+.ks-sign { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 2px 10px; margin: 14px 14px 0; padding: 10px 14px; border-radius: 12px; background: #120c09; box-shadow: inset 0 0 0 2px #3b2a1e, 0 6px 14px -8px #000; }
+.ks-neon { font: 400 30px/1 var(--font-display); letter-spacing: 0.12em; color: #ffe9f6; text-shadow: 0 0 4px #ff5fc8, 0 0 12px #ff2fae, 0 0 24px #ff2fae; }
+.ks-sign small { grid-column: 1; color: #c9b8a6; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
+.ks-open { grid-row: 1 / span 2; grid-column: 2; padding: 6px 10px; border: 2px solid #7dff9a; border-radius: 8px; font: 800 14px var(--font-mono); color: #d9ffe1; text-shadow: 0 0 6px #3dff6a; box-shadow: 0 0 10px #3dff6a66, inset 0 0 8px #3dff6a44; animation: ksFlicker 5s steps(1) infinite; }
+@keyframes ksFlicker { 0%, 100% { opacity: 1; } 91% { opacity: 0.35; } 93% { opacity: 1; } 95% { opacity: 0.5; } }
+.ks-shelf { position: relative; display: grid; gap: 12px; margin: 0 14px; padding: 14px 12px 22px; border-radius: 12px; background: radial-gradient(circle, #ffffff0c 1.2px, transparent 1.6px) 0 0 / 14px 14px, linear-gradient(#3a2a1f, #2c2018); box-shadow: inset 0 0 0 2px #00000040, inset 0 8px 18px -10px #000; }
+.ks-shelf::after { content: ""; position: absolute; left: -6px; right: -6px; bottom: -6px; height: 14px; border-radius: 4px; background: linear-gradient(#a26a3c, #6b4423); box-shadow: 0 6px 10px -4px #000a, inset 0 2px 0 #ffffff30; }
+.ks-h { margin: 0; display: flex; align-items: center; gap: 8px; font: 400 18px/1.1 var(--font-display); letter-spacing: 0.04em; color: #ffe3b8; }
+.ks-counter { display: flex; justify-content: space-around; align-items: flex-end; margin: 6px 0 0; padding: 14px 18px 10px; font-size: 26px; background: repeating-linear-gradient(90deg, #8a5a33 0 46px, #7a4e2b 46px 92px); box-shadow: inset 0 3px 0 #b07a48, inset 0 -8px 12px -6px #0008; }
+.ks-cat { display: inline-block; transform-origin: 50% 100%; animation: ksBreath 3.6s ease-in-out infinite; }
+@keyframes ksBreath { 50% { transform: scale(1.06, 0.95); } }
+.ks-lb .lb-head { margin: 0; }
+.sc-rack { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 14px; }
+.sc-slot { container-type: inline-size; position: relative; display: grid; justify-items: center; gap: 8px; padding-top: 12px; text-align: center; min-width: 0; }
+.sc-slot .sc-hang { position: relative; transform-origin: 50% 0; transition: transform 0.35s cubic-bezier(.3, 1.6, .5, 1); cursor: pointer; }
+.sc-slot .sc-hang::before, .sc-slot .sc-hang::after { content: ""; position: absolute; inset: 0; border-radius: 6px; background: var(--b); z-index: -1; transform: translate(4px, 4px) rotate(2deg); filter: brightness(0.6); }
+.sc-slot .sc-hang::after { transform: translate(8px, 7px) rotate(4deg); filter: brightness(0.4); }
+.sc-slot:hover .sc-hang { transform: rotate(-3deg); }
+.sc-slot.pull .sc-hang { animation: scPull 0.45s ease-in; }
+@keyframes scPull { 40% { transform: translateY(16px) rotate(2deg); } 100% { transform: none; } }
+.sc-clip { position: absolute; z-index: 3; top: 3px; left: 50%; width: 34px; height: 13px; translate: -50% 0; border-radius: 4px 4px 8px 8px; background: linear-gradient(#f1f3f6, #8e96a3); box-shadow: 0 3px 4px #0008, inset 0 1px 0 #fff; }
+.sc-tag { position: absolute; z-index: 3; top: 26%; right: -4px; padding: 4px 8px; border-radius: 6px; background: #ffd24a; color: #3a2506; font: 800 12px var(--font-mono); box-shadow: 0 3px 6px #0008; rotate: 8deg; }
+.sc-tag::before { content: ""; position: absolute; left: 4px; top: 50%; width: 5px; height: 5px; margin-top: -2.5px; border-radius: 50%; background: #3a2506; }
+.sc-tag { padding-left: 13px; }
+.sc-slot small { color: var(--muted); font-size: 12px; line-height: 1.3; }
+.sc-slot .spin { width: 100%; font-size: 15px; padding: 9px 6px; }
+.sc-slot .spin.over { font-size: 12px; line-height: 1.2; }
+.sc-msg.message { height: auto; min-height: 36px; text-align: center; line-height: 1.35; }
+.sc-stats { display: flex; flex-wrap: wrap; gap: 6px 14px; justify-content: center; color: var(--muted); font-size: 13px; }
+.sc-stats b { color: var(--fg); font-family: var(--font-mono); }
+.sc-odds table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 6px 0 12px; }
+.sc-odds th, .sc-odds td { padding: 4px 6px; text-align: right; border-bottom: 1px solid #ffffff10; }
+.sc-odds th:first-child, .sc-odds td:first-child { text-align: left; }
+.sc-odds h4 { margin: 10px 0 0; font-size: 14px; }
+
+/* a scratchcard */
+.sct { --tw: 300px; --a: #0b6b3a; --b: #38b65a; --c: #ffe14f; --ink: #fff; --play: #fff8e1; --fi: #14532d; --fb: #ffffff;
+  position: relative; width: var(--tw); aspect-ratio: 0.64; display: flex; flex-direction: column; gap: 0.45em; padding: 0.9em 0.8em 0.7em; border-radius: 0.55em; font-size: calc(var(--tw) / 20); color: var(--ink); user-select: none; -webkit-user-select: none;
+  background: repeating-radial-gradient(circle at 25% 15%, #ffffff12 0 0.08em, transparent 0.1em 0.45em), repeating-radial-gradient(circle at 80% 90%, #00000014 0 0.08em, transparent 0.1em 0.5em), linear-gradient(160deg, var(--a), var(--b));
+  box-shadow: 0 1.2em 2em -0.9em #000c, inset 0 0 0 0.12em #ffffff40, inset 0 0 0 0.35em #0002;
+  -webkit-mask: radial-gradient(circle at 50% 0, transparent 0.22em, #000 0.24em) 0 0 / 0.8em 51% repeat-x, radial-gradient(circle at 50% 100%, transparent 0.22em, #000 0.24em) 0 100% / 0.8em 51% repeat-x;
+  mask: radial-gradient(circle at 50% 0, transparent 0.22em, #000 0.24em) 0 0 / 0.8em 51% repeat-x, radial-gradient(circle at 50% 100%, transparent 0.22em, #000 0.24em) 0 100% / 0.8em 51% repeat-x; }
+.sct.t-gold { --a: #2e1c04; --b: #a8720f; --c: #ffd34f; --play: #fff1cf; --fi: #5a3a06; }
+.sct.t-diamond { --a: #120e45; --b: #4a2ab4; --c: #7fe7ff; --play: #eaf1ff; --fi: #1f1a6b; }
+.sct.t-million { --a: #0b0b0d; --b: #2e2616; --c: #e7b53c; --play: #17130d; --fi: #ffd979; --fb: #2a2318; }
+.sct-head { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 0 0.4em; }
+.sct-ico { grid-row: span 2; font-size: 2.2em; line-height: 1; filter: drop-shadow(0 0.08em 0.1em #0008); }
+.sct-title { font: 400 1.45em/1 var(--font-display); letter-spacing: 0.03em; color: var(--c); text-shadow: 0 0.06em 0 #0008; overflow-wrap: anywhere; }
+.sct-top { font-size: 0.72em; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; opacity: 0.9; }
+.sct-top b { color: var(--c); font-family: var(--font-mono); }
+.sct-play { position: relative; flex: 1; min-height: 0; display: grid; gap: 0.35em; padding: 0.45em; border-radius: 0.4em; background: var(--play); box-shadow: inset 0 0 0 0.1em #0003, inset 0 0.2em 0.5em #0003; }
+.sct-play.k-sym { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); }
+.sct-play.k-amt { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); }
+.sct-play.k-amt.n12 { grid-template-columns: repeat(4, 1fr); }
+.sct-play.k-num { grid-template-rows: auto 1fr; }
+.sct-wins { display: flex; align-items: center; justify-content: center; gap: 0.5em; padding-bottom: 0.35em; border-bottom: 0.08em dashed color-mix(in srgb, var(--fi) 40%, transparent); color: var(--fi); font-size: 0.7em; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; }
+.sct-own { display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(2, 1fr); gap: 0.35em; }
+.sct-f { display: grid; place-items: center; align-content: center; min-width: 0; border-radius: 0.35em; background: var(--fb); color: var(--fi); box-shadow: 0 0.06em 0.12em #0002; text-align: center; transition: box-shadow 0.3s; }
+.sct-f .sct-v { display: block; font: 400 1.25em/1 var(--font-display); white-space: nowrap; }
+.sct-play.k-sym .sct-v { font-size: 2.2em; font-family: inherit; }
+.sct-play.k-amt.n12 .sct-v { font-size: 1.05em; }
+.sct-f small { display: block; font-size: 0.52em; font-weight: 800; letter-spacing: 0.05em; opacity: 0.75; white-space: nowrap; }
+.sct-f.w { width: 2.6em; height: 2.6em; border-radius: 50%; background: var(--c); color: #1a1033; font-size: 1.43em; }
+.sct-f.w .sct-v { font-size: 0.9em; }
+.sct-f.shown .sct-v { animation: scPop 0.45s cubic-bezier(.3, 1.8, .5, 1); }
+@keyframes scPop { from { transform: scale(0.35); } }
+.sct-f.hit { box-shadow: 0 0 0 0.14em var(--c), 0 0 0.9em 0.1em var(--c); animation: scHit 1.1s ease-in-out infinite; }
+@keyframes scHit { 50% { transform: scale(1.07); } }
+.sct-rule { font-size: 0.62em; line-height: 1.3; text-align: center; opacity: 0.92; }
+.sct-legend { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.15em 0.4em; font-size: 0.66em; }
+.sct-legend span { white-space: nowrap; }
+.sct-legend b { font-family: var(--font-mono); color: var(--c); }
+.sct-foot { display: flex; align-items: center; gap: 0.5em; font-size: 0.55em; opacity: 0.85; }
+.sct-price { padding: 0.25em 0.6em; border-radius: 999px; background: var(--c); color: #1a1206; font: 800 1.15em var(--font-mono); }
+.sct-bar { flex: 1; height: 1.6em; background: repeating-linear-gradient(90deg, currentColor 0 0.12em, transparent 0.12em 0.3em, currentColor 0.3em 0.36em, transparent 0.36em 0.5em, currentColor 0.5em 0.72em, transparent 0.72em 0.86em); opacity: 0.55; }
+.sct-no { font-family: var(--font-mono); }
+.sct-foil, .sct-foilcss { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: inherit; }
+.sct-foil { touch-action: none; cursor: grab; transition: opacity 0.5s; }
+.sct-foil.gone { opacity: 0; pointer-events: none; }
+.sct-foilcss { display: grid; place-items: center; background: repeating-linear-gradient(115deg, #ffffff22 0 0.3em, transparent 0.3em 0.9em), linear-gradient(135deg, #b9bec7, #eef0f4 45%, #a3a9b4 60%, #dfe2e7); color: #6d7480; font: 400 1.1em var(--font-display); letter-spacing: 0.1em; text-shadow: 0 0.06em 0 #fff8; }
+.sct.t-gold .sct-foilcss, .sct.t-million .sct-foilcss { background: repeating-linear-gradient(115deg, #ffffff22 0 0.3em, transparent 0.3em 0.9em), linear-gradient(135deg, #b8862a, #f7dc8a 45%, #a87419, #e5c063); color: #7a5410; }
+.sct.mini { --tw: min(92cqw, 170px); }
+.sct-stamp { position: absolute; z-index: 4; left: 50%; top: 47%; translate: -50% -50%; rotate: -13deg; padding: 0.25em 0.6em 0.3em; border: 0.14em double currentColor; border-radius: 0.3em; color: #ff3b3b; font: 400 2.3em/1 var(--font-display); letter-spacing: 0.05em; text-align: center; white-space: nowrap; background: #ffffffd9; box-shadow: 0 0.3em 1em -0.3em #0009; pointer-events: none; animation: scStamp 0.42s cubic-bezier(.3, 1.6, .5, 1) both; }
+.sct-stamp.lose { color: #3b4a6b; }
+.sct-stamp small { display: block; margin-top: 0.15em; font: 800 max(0.42em, 0.9rem) var(--font-mono); letter-spacing: 0; }
+@keyframes scStamp { from { scale: 2.6; opacity: 0; } 60% { scale: 0.93; opacity: 1; } }
+
+/* the scratch table */
+.sc-play { position: fixed; inset: 0; z-index: 66; display: grid; grid-template-rows: minmax(0, 1fr) auto auto auto; justify-items: center; align-items: center; gap: 10px; padding: max(14px, env(safe-area-inset-top, 0px)) 16px max(16px, env(safe-area-inset-bottom, 0px)); overflow: hidden;
+  background: radial-gradient(ellipse at 50% 42%, #0000 30%, #000b 100%), repeating-linear-gradient(90deg, #6e4526 0 9px, #774b2a 9px 11px, #6a4224 11px 60px, #5e3a1f 60px 62px), #6e4526; animation: fadeIn 0.3s; }
+.sc-table { position: relative; display: grid; place-items: center; width: 100%; height: 100%; min-height: 0; }
+.sc-table > .sct { grid-area: 1 / 1; --tw: min(92vw, 430px, calc((100dvh - 200px) * 0.64)); }
+.sct.enter { animation: scIn 0.75s cubic-bezier(.2, 1.1, .35, 1) both; }
+@keyframes scIn { from { transform: translateY(-115vh) rotate(-16deg); } 72% { transform: translateY(10px) rotate(1.5deg); } }
+.sct.away { animation: scAway 0.5s ease-in forwards; pointer-events: none; }
+@keyframes scAway { to { transform: translate(-115vw, 30px) rotate(-28deg); } }
+.sct.thump { animation: scThump 0.4s; }
+@keyframes scThump { 30% { transform: scale(0.965) rotate(-0.8deg); } }
+.sc-hint { margin: 0; min-height: 22px; color: #f3e3cf; font-weight: 700; text-align: center; text-shadow: 0 2px 4px #000; }
+.sc-result { padding: 8px 18px; border-radius: 999px; background: #0009; font: 400 20px var(--font-display); letter-spacing: 0.03em; text-align: center; animation: lbDeal 0.4s cubic-bezier(.2, 1.2, .4, 1) both; }
+.sc-result.win { color: #ffd24a; box-shadow: 0 0 0 2px #ffd24a, 0 0 24px #ffd24a66; }
+.sc-result.back { color: #d9e3ef; }
+.sc-result.lose { color: #b9c3d3; }
+.sc-flakes { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
+.sc-coin { position: fixed; z-index: 3; left: 0; top: 0; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; display: grid; place-items: center; pointer-events: none; opacity: 0; transition: opacity 0.2s;
+  background: radial-gradient(circle at 35% 30%, #fff6c8, #f3c94b 40%, #b8860b 75%); box-shadow: 0 6px 10px #0009, inset 0 0 0 3px #c9961f, inset 0 0 0 5px #f7dd86; font: 400 20px var(--font-display); color: #a8740f; }
+.sc-coin.on { opacity: 1; }
+@media (pointer: fine) { .sct-foil { cursor: none; } }
+@media (max-width: 560px) { .sc-rack { gap: 16px 10px; } .ks-neon { font-size: 24px; } .ks-shelf { margin: 0 8px; padding: 12px 8px 20px; } }
+@media (prefers-reduced-motion: reduce) { .ks-open, .ks-cat, .sct.enter, .sct-f.hit, .sct-stamp { animation: none; } }
+
 /* Russian roulette */
 .rr { display: grid; gap: 12px; }
 .rr-pick { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; width: 100%; margin-top: 18px; padding: 16px 20px; border-radius: 20px; text-align: left;
@@ -3440,13 +3555,15 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       </button>
       <button class="game-pick lb-pick" type="button" data-mode="lb">
         <svg class="gp-lb" viewBox="0 0 140 130" aria-hidden="true">
-          <g transform="rotate(-12 50 70)"><rect x="22" y="22" width="52" height="78" rx="6" fill="#7d5ac9" stroke="#fff" stroke-width="3"/><rect x="30" y="34" width="36" height="36" rx="4" fill="#ffd24a"/><text x="48" y="60" text-anchor="middle" font-size="24">🐉</text></g>
-          <g transform="rotate(10 92 70)"><rect x="66" y="22" width="52" height="78" rx="6" fill="#ff1f3d" stroke="#ffd0d0" stroke-width="3"/><rect x="74" y="34" width="36" height="36" rx="4" fill="#3a0a12"/><text x="92" y="60" text-anchor="middle" font-size="24">💎</text></g>
-          <path d="M44 96h52l4 22H40z" fill="#2a6ae0" stroke="#fff" stroke-width="3"/><text x="70" y="112" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="9" fill="#fff">BOOSTER</text>
+          <rect x="8" y="10" width="124" height="16" fill="#e0414a"/><path d="M23 10h15v16H23zM53 10h15v16H53zM83 10h15v16H83zM113 10h15v16h-15z" fill="#fff4e0"/>
+          <path d="M8 26a7.5 7.5 0 0 0 15 0a7.5 7.5 0 0 0 15 0a7.5 7.5 0 0 0 15 0a7.5 7.5 0 0 0 15 0a7.5 7.5 0 0 0 15 0a7.5 7.5 0 0 0 15 0a7.5 7.5 0 0 0 15 0a7.5 7.5 0 0 0 15 0a2 2 0 0 0 4 0z" fill="#e0414a"/>
+          <g transform="rotate(-10 48 78)"><rect x="18" y="42" width="58" height="80" rx="5" fill="#1f8a45" stroke="#fff" stroke-width="2.5"/><text x="47" y="58" text-anchor="middle" font-size="12">🍀</text><rect x="25" y="63" width="44" height="40" rx="3" fill="#fff8e1"/><text x="38" y="80" text-anchor="middle" font-size="11">🍀</text><text x="57" y="98" text-anchor="middle" font-size="11">🍀</text><path d="M25 63h44v40H25z" fill="#c3c8d0"/><path d="M27 66q12 6 18 16t22 14" stroke="#fff8e1" stroke-width="9" fill="none" stroke-linecap="round" class="gp-scratch"/></g>
+          <g transform="rotate(9 98 78)"><rect x="76" y="40" width="50" height="80" rx="6" fill="#7d5ac9" stroke="#fff" stroke-width="2.5"/><path d="M76 48h50M76 112h50" stroke="#e8ecf2" stroke-width="6"/><text x="101" y="86" text-anchor="middle" font-size="22">💎</text></g>
+          <circle cx="66" cy="112" r="11" fill="#f3c94b" stroke="#b8860b" stroke-width="2.5"/><text x="66" y="116" text-anchor="middle" font-family="Bungee, Impact, sans-serif" font-size="10" fill="#a8740f">L</text>
         </svg>
-        <span class="gp-title">Lucky-Booster</span>
-        <span class="gp-desc">Open booster packs, collect 100 cards in 20 collections and hunt for holos and the three treasures.</span>
-        <span class="gp-go">Open</span>
+        <span class="gp-title">Kiosk</span>
+        <span class="gp-desc">Scratchcards and booster packs: scratch for prizes and collect 100 cards in the album.</span>
+        <span class="gp-go">Enter</span>
       </button>
       <button class="game-pick" type="button" data-mode="cf">
         <svg class="gp-cf" viewBox="0 0 140 130" aria-hidden="true">
@@ -3761,13 +3878,28 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
       </details>
     </section>
 
-    <section class="lb" id="lb" aria-label="Lucky-Booster">
+    <section class="lb" id="lb" aria-label="Kiosk">
+      <div class="ks">
+        <div class="ks-awning" aria-hidden="true"></div>
+        <div class="ks-sign"><span class="ks-neon">KIOSK</span><small>Scratchcards · Booster packs</small><span class="ks-open" aria-hidden="true">OPEN</span></div>
+        <div class="ks-shelf">
+          <h3 class="ks-h"><span aria-hidden="true">🎟️</span> Scratchcards</h3>
+          <div class="sc-rack" id="scRack"></div>
+          <div class="sc-stats" id="scStats"></div>
+          <p class="sc-msg message" id="scMsg">Pick a scratchcard. Its prize is decided the moment you buy it, then you scratch it free.</p>
+        </div>
+        <div class="ks-shelf ks-lb">
+          <h3 class="ks-h"><span aria-hidden="true">🎴</span> Lucky-Booster</h3>
       <div class="lb-head">
         <button type="button" class="lb-albumbtn" id="lbAlbumBtn"><span aria-hidden="true">📖</span><span><b>Album</b><small id="lbAlbumSub">0 / 100 cards</small></span></button>
         <div class="lb-stats" id="lbStats"></div>
       </div>
       <div class="lb-packs" id="lbPacks"></div>
       <p class="lb-msg message" id="lbMsg">Pick a booster: 5 cards each, the dearer the pack, the better the odds.</p>
+        </div>
+        <div class="ks-counter" aria-hidden="true"><span>🗞️</span><span>🍬</span><span class="ks-cat">🐈</span><span>☕</span><span class="ks-bell">🛎️</span></div>
+      </div>
+      <details class="paytable sc-odds"><summary>Scratchcard prizes and odds</summary><div id="scOdds"></div></details>
       <details class="paytable lb-odds"><summary>Odds and values</summary><div id="lbOdds"></div></details>
     </section>
     <section class="cf" id="cf" aria-label="Coin flip">
@@ -4239,6 +4371,18 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     <div class="lp-wheel-win" id="lpWheelWin"></div>
     <button type="button" class="spin" id="lpWheelOk" disabled>Collect</button>
   </div>
+</div>
+<div class="sc-play" id="scPlay" role="dialog" aria-modal="true" aria-label="Scratchcard" hidden>
+  <div class="sc-table" id="scTable"></div>
+  <p class="sc-hint" id="scHint"></p>
+  <div class="sc-result" id="scResult" hidden></div>
+  <div class="lb-open-btns">
+    <button type="button" class="chip-btn" id="scAuto">Scratch it all</button>
+    <button type="button" class="spin" id="scAgain" hidden>Another</button>
+    <button type="button" class="chip-btn" id="scBack">Back to the kiosk</button>
+  </div>
+  <canvas class="sc-flakes" id="scFlakes" aria-hidden="true"></canvas>
+  <div class="sc-coin" id="scCoin" aria-hidden="true"><b>L</b></div>
 </div>
 <div class="lb-open" id="lbOpen" role="dialog" aria-modal="true" aria-label="Opening a booster" hidden>
   <div class="lb-stage" id="lbStage" role="button" tabindex="0"></div>
@@ -4808,7 +4952,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     'Blackjacks pay 1.55 to 1 instead of 3 to 2.': 'Blackjacks zahlen 1,55 zu 1 statt 3 zu 2.', 'Strategy Card': 'Strategiekarte', 'Shows the best move for your hand against the dealer’s card.': 'Zeigt den besten Zug für deine Hand gegen die Karte des Dealers.',
     'Dealer’s Peek': 'Dealer-Blick', 'When the dealer has blackjack you only lose your first bet: doubles and splits come back.': 'Hat der Dealer Blackjack, verlierst du nur deinen ersten Einsatz: Verdoppeln und Teilen kommen zurück.',
     'Strategy Card: the move that wins most in the long run.': 'Strategiekarte: der Zug, der auf Dauer am meisten bringt.',
-    'Close Call': 'Knapp daneben', "Open booster packs, collect 100 cards in 20 collections and hunt for holos and the three treasures.": "Öffne Booster, sammle 100 Karten in 20 Kollektionen und jag nach Holos und den drei Schätzen.", "Pick a booster: 5 cards each, the dearer the pack, the better the odds.": "Wähl einen Booster: je 5 Karten. Je teurer, desto besser die Chancen.", "Odds and values": "Chancen und Werte", "Reveal all": "Alle aufdecken", "To the album": "Zum Album", "Again": "Nochmal", "Card album": "Sammelalbum", "Tap the booster to tear it open": "Tippe auf den Booster, um ihn aufzureißen", "Tap for the next card": "Tippe für die nächste Karte", "At least 1 legendary or better": "Mind. 1 legendäre oder besser", "The best chance of a treasure": "Die beste Chance auf einen Schatz", "The Treasure Booster promises no good cards, but it finds the treasures far more often than any other booster.": "Der Schatz-Booster verspricht keine guten Karten, findet die Schätze aber viel öfter als jeder andere Booster.", "The Legendary Booster always holds at least one legendary card or better.": "Der Legendär-Booster enthält immer mindestens eine legendäre Karte oder besser.", "Opened": "Geöffnet", "Album worth": "Albumwert", "Per card": "Pro Karte", "Value": "Wert", "Best": "Beste", "NEW": "NEU", "Plain": "Normal", "Rarity": "Rarität", "Collection": "Kollektion", "Number": "Nummer", "Holo value": "Holo-Wert", "You own": "Du besitzt", "No duplicates": "Keine Doppelten", "Three mythic cards are treasures worth millions, and they are far rarer than the other mythic cards. A holo card is worth five times as much.": "Drei mythische Karten sind Schätze, die Millionen wert sind, und viel seltener als die anderen mythischen Karten. Eine Holo-Karte ist fünfmal so viel wert.", "Lucky-Booster needs the online database.": "Lucky-Booster braucht die Online-Datenbank.", "This needs the “Lucky-Booster” part of supabase-setup.sql.": "Dafür brauchst du den Teil „Lucky-Booster“ aus supabase-setup.sql.", "One of the three treasures!": "Einer der drei Schätze!", '10 Million Pioneer': '10-Mio-Pionier', 'Title holders': 'Titelträger', 'Not awarded yet': 'Noch nicht vergeben', 'Grinder': 'Grinder', 'Plays and plays and plays: never stops grinding.': 'Spielt und spielt und spielt: hört nie auf zu grinden.', 'Daytrader': 'Daytrader', 'Lives on the stock market, buying low and selling high.': 'Lebt an der Börse: billig kaufen, teuer verkaufen.', 'The first player to crack 10 million credits.': 'Der erste Spieler, der 10 Millionen Credits geknackt hat.', 'No title': 'Kein Titel', 'Title': 'Titel', 'Give this player a title next to the name, or take it away': 'Diesem Spieler einen Titel neben dem Namen geben oder wegnehmen', "Get a blackjack or a double win": "Hol einen Blackjack oder einen doppelten Gewinn", "Land a ball on 3× or more": "Lande eine Kugel auf 3× oder mehr", "Cash out once": "Zahle einmal aus", "Cash out once at 3× or more": "Zahle einmal bei 3× oder mehr aus", "Cash out once at 4× or more": "Zahle einmal bei 4× oder mehr aus", "Win a round": "Gewinne eine Runde", "Win 3× your stake once": "Gewinne einmal das 3-Fache deines Einsatzes", "Win a bet": "Gewinne eine Wette", "Win a bet at 3× or more": "Gewinne eine Wette mit 3× oder mehr", "Win a pot of 3× your stake": "Gewinne einen Pot mit dem 3-Fachen deines Einsatzes", "Every hand counts for the poker missions.": "Jede Hand zählt für die Poker-Missionen.", "Lava Name": "Lava-Name", "Your name flows like glowing lava.": "Dein Name fließt wie glühende Lava.", "Thunder Name": "Gewitter-Name", "Lightning crackles through your name.": "Blitze zucken durch deinen Namen.", "Glitch Name": "Glitch-Name", "Your name glitches between cyan and magenta.": "Dein Name flackert zwischen Cyan und Magenta.", "Lucky Legend": "Lucky-Legende", "The crown of the Lucky-Pass: a golden clover shine that never stops.": "Die Krone des Lucky-Pass: ein goldener Kleeblatt-Schimmer, der nie aufhört.", "Toxic Name": "Toxic-Name", "Bubbling poison green.": "Blubberndes Giftgrün.", "Diamond Name": "Diamant-Name", "Ice-cold sparkle like cut diamonds.": "Eiskaltes Funkeln wie geschliffene Diamanten.", "Royale Name": "Royale-Name", "Purple and gold with a crown: only on the Royale track.": "Lila und Gold mit Krone: nur im Royale-Pass.", "Sunset Cabinet": "Sonnenuntergang-Gehäuse", "Orange and pink like a summer evening.": "Orange und Pink wie ein Sommerabend.", "Ocean Cabinet": "Ozean-Gehäuse", "Deep sea blue with light dancing on the waves.": "Tiefseeblau mit Licht, das auf den Wellen tanzt.", "Cyber Cabinet": "Cyber-Gehäuse", "Black glass with a glowing neon grid.": "Schwarzes Glas mit leuchtendem Neon-Gitter.", "Legend Cabinet": "Legenden-Gehäuse", "Gold with a rainbow edge that runs around the machine.": "Gold mit einem Regenbogen-Rand, der um den Automaten läuft.", "Lavender Cabinet": "Lavendel-Gehäuse", "Soft lilac with a silver shine.": "Zartes Flieder mit Silberglanz.", "Obsidian Cabinet": "Obsidian-Gehäuse", "Black volcanic glass with glowing red veins.": "Schwarzes Vulkanglas mit glühend roten Adern.", "Jade Cabinet": "Jade-Gehäuse", "Polished jade green with gold trim.": "Poliertes Jadegrün mit Goldrand.", "Royale Cabinet": "Royale-Gehäuse", "Purple velvet, gold and a crown of light: the top of the Royale track.": "Lila Samt, Gold und eine Krone aus Licht: die Spitze des Royale-Pass.", "Sakura colours": "Farbstil Sakura", "The whole casino in cherry-blossom pink.": "Das ganze Casino in Kirschblüten-Rosa.", "Arctic colours": "Farbstil Arktis", "The whole casino in icy blue and white.": "Das ganze Casino in Eisblau und Weiß.", "Inferno colours": "Farbstil Inferno", "The whole casino glows red and orange.": "Das ganze Casino glüht rot und orange.", "Vaporwave colours": "Farbstil Vaporwave", "The whole casino in purple and cyan, straight from the 80s.": "Das ganze Casino in Lila und Cyan, direkt aus den 80ern.", "Royale colours": "Farbstil Royale", "The whole casino in purple and gold.": "Das ganze Casino in Lila und Gold.", "100 levels · earned by playing": "100 Level · durchs Spielen verdient", "Pass level": "Pass-Level", "Every game that gives XP fills the pass too: slots, blackjack, roulette, Plinko, Chicken, coin flip, horses, rocket and more. Every 10th level brings something big.": "Jedes Spiel, das XP gibt, füllt auch den Pass: Slots, Blackjack, Roulette, Plinko, Chicken, Münzwurf, Pferde, Rakete und mehr. Jedes 10. Level bringt etwas Großes.", "👑 The Lucky-Royale-Pass is locked for now. Its rewards are shown so you know what is coming.": "👑 Der Lucky-Royale-Pass ist vorerst gesperrt. Seine Belohnungen siehst du schon, damit du weißt, was kommt.", "for everyone": "für alle", "locked": "gesperrt", "locked for now": "vorerst gesperrt", "unlocked": "freigeschaltet", "Investments": "Investitionen", "Shops and properties · paid every hour": "Läden und Immobilien · stündlich ausgezahlt", "Income is paid for every full hour, also while you are away (up to 72 hours at a time). Every further one of the same kind costs 15% more, at most 10 of each. Selling gives back half of what the last one cost.": "Das Einkommen wird für jede volle Stunde ausgezahlt, auch wenn du nicht da bist (bis zu 72 Stunden am Stück). Jedes weitere Objekt derselben Art kostet 15 % mehr, höchstens 10 von jedem. Beim Verkauf bekommst du die Hälfte dessen zurück, was das letzte gekostet hat.", "Lucky wheel": "Glücksrad", "Claim": "Abholen", "All 100 levels reached!": "Alle 100 Level erreicht!", "100 levels with credits, wheel spins and new cosmetics, earned by playing.": "100 Level mit Credits, Glücksrad-Drehs und neuen Cosmetics, durchs Spielen verdient.", "Shops and properties with income every hour. From Lucky-Pass level 30.": "Läden und Immobilien mit Einkommen jede Stunde. Ab Lucky-Pass Level 30.", "Shops and properties with income every hour.": "Läden und Immobilien mit Einkommen jede Stunde.", "Investments unlocked": "Investitionen freigeschaltet", "Shops and properties that pay every hour": "Läden und Immobilien, die jede Stunde zahlen", "Name style": "Namensstil", "Machine colour": "Gehäusefarbe", "Colour style": "Farbstil", "Cosmetic": "Cosmetic", "The Lucky-Pass needs the online database.": "Der Lucky-Pass braucht die Online-Datenbank.", "Investments need the online database.": "Investitionen brauchen die Online-Datenbank.", "This needs the “Lucky-Pass and investments” part of supabase-setup.sql.": "Dafür brauchst du den Teil „Lucky-Pass and investments“ aus supabase-setup.sql.", "The Lucky-Royale-Pass is locked for now.": "Der Lucky-Royale-Pass ist vorerst gesperrt.", "Nothing to claim right now.": "Gerade gibt es nichts abzuholen.", "From Lucky-Pass level 30": "Ab Lucky-Pass Level 30", "Open the Lucky-Pass": "Lucky-Pass öffnen", "Income per hour": "Einkommen pro Stunde", "Next payout": "Nächste Auszahlung", "Paid out so far": "Bisher ausgezahlt", "Each per hour": "Je Stück pro Std.", "Your income": "Dein Einkommen", "Pays for itself": "Rechnet sich", "Kiosk": "Kiosk", "Lemonade stand": "Limonadenstand", "A table, a jug and a sign. Everybody starts somewhere.": "Ein Tisch, ein Krug und ein Schild. Jeder fängt mal klein an.", "Snack machine": "Snackautomat", "Crisps and fizzy drinks around the clock, no staff needed.": "Chips und Limo rund um die Uhr, ganz ohne Personal.", "Newspaper stand": "Zeitungsstand", "Papers, magazines and gossip at the station.": "Zeitungen, Zeitschriften und Klatsch am Bahnhof.", "A small kiosk on the corner: drinks, snacks and scratch cards.": "Ein kleiner Kiosk an der Ecke: Getränke, Snacks und Rubbellose.", "Food truck": "Food-Truck", "Burgers on wheels, wherever the crowd is.": "Burger auf Rädern, immer da, wo die Leute sind.", "Lucky Burger branch": "Lucky-Burger-Filiale", "Your own Lucky Burger. Somebody else flips the patties now.": "Dein eigener Lucky Burger. Die Patties wendet jetzt jemand anderes.", "Rented flat": "Mietwohnung", "A flat in town, rented out every month.": "Eine Wohnung in der Stadt, jeden Monat vermietet.", "Arcade": "Spielhalle", "Flashing machines and a constant clatter of coins.": "Blinkende Automaten und ständiges Münzgeklimper.", "Apartment block": "Mehrfamilienhaus", "Twelve flats, twelve rents.": "Zwölf Wohnungen, zwölf Mieten.", "Shopping mall": "Einkaufszentrum", "Fifty shops under one roof, all paying you rent.": "Fünfzig Läden unter einem Dach, alle zahlen dir Miete.", "Hotel & casino": "Hotel & Casino", "The big one: rooms, shows and a casino of your own.": "Das ganz Große: Zimmer, Shows und ein eigenes Casino.", "Investments open with Lucky-Pass level 30.": "Investitionen öffnen sich mit Lucky-Pass Level 30.", "You have 10 of these already.": "Davon hast du schon 10.", "Sell?": "Verkaufen?", "Lucky-Royale-Pass open for everyone": "Lucky-Royale-Pass für alle offen", "While off, the Royale track is locked (players can still see it).": "Solange aus, ist der Royale-Pass gesperrt (Spieler sehen ihn trotzdem).", '👀 The boss drops by!': '👀 Der Chef schaut vorbei!', 'The boss caught you asleep: no wage until you answer him.': 'Der Chef hat dich schlafend erwischt: kein Lohn, bis du ihm antwortest.', 'The boss nods and walks on.': 'Der Chef nickt und geht weiter.', 'This code brought enough new players today. Try it again tomorrow.': 'Dieser Code hat heute schon genug neue Spieler gebracht. Versuch es morgen wieder.', 'New players per code and day': 'Neue Spieler pro Code und Tag', '0 = no limit. Stops one code from being fed with many new accounts.': '0 = kein Limit. Verhindert, dass ein Code mit vielen neuen Konten gefüttert wird.', 'Lucky Burger: paid minutes a day': 'Lucky Burger: bezahlte Minuten am Tag', 'How long a player can earn wages per day (German time). 0 = no limit.': 'Wie lange ein Spieler pro Tag Lohn verdienen kann (deutsche Zeit). 0 = kein Limit.', 'Leave the poker table first.': 'Verlass zuerst den Pokertisch.', 'Finish the Russian roulette first.': 'Bring zuerst das Russisch Roulette zu Ende.', 'auto nudge': 'Auto-Stupser', 'When the ball lands right next to your single number on the wheel, 45% of that chip comes back.': 'Landet die Kugel auf dem Rad direkt neben deiner Einzelzahl, kommen 45 % dieses Chips zurück.',
+    'Close Call': 'Knapp daneben', "Scratchcards": "Rubbellose", "Scratchcards · Booster packs": "Rubbellose · Booster", "Pick a scratchcard. Its prize is decided the moment you buy it, then you scratch it free.": "Wähl ein Rubbellos. Der Gewinn steht beim Kauf fest, dann rubbelst du ihn frei.", "Scratchcard prizes and odds": "Rubbellose: Gewinne und Chancen", "Scratch it all": "Alles aufrubbeln", "Another": "Noch eins", "Back to the kiosk": "Zurück zum Kiosk", "Scratchcards and booster packs: scratch for prizes and collect 100 cards in the album.": "Rubbellose und Booster: Gewinne freirubbeln und 100 Karten im Album sammeln.", "Enter": "Rein", "Kiosk": "Kiosk", "Kiosk · scratchcards and booster packs · play credits": "Kiosk · Rubbellose und Booster · Spiel-Credits", "SCRATCH": "RUBBELN", "Winning numbers": "Gewinnzahlen", "Top prize": "Hauptgewinn", "Find 3 matching symbols and win the prize for that symbol.": "3 gleiche Symbole gewinnen den Preis für dieses Symbol.", "Find 3 matching amounts and win that amount.": "3 gleiche Beträge gewinnen diesen Betrag.", "Match one of your numbers with a winning number and win the prize below it.": "Stimmt eine deiner Zahlen mit einer Gewinnzahl überein, gewinnst du den Betrag darunter.", "Above your bet limit": "Über deinem Einsatzlimit", "Bought": "Gekauft", "Spent": "Ausgegeben", "Won": "Gewonnen", "Best prize": "Bester Gewinn", "Prize": "Gewinn", "Chance": "Chance", "money back": "Einsatz zurück", "Any prize": "Irgendein Gewinn", "Scratchcards need the online database.": "Rubbellose brauchen die Online-Datenbank.", "This needs the “Scratchcards” part of supabase-setup.sql.": "Dafür brauchst du den Teil „Scratchcards“ aus supabase-setup.sql.", "Scratch the silver layer with your finger or the mouse": "Rubbel die Schicht mit dem Finger oder der Maus frei", "NO WIN": "NIETE", "MONEY BACK": "EINSATZ ZURÜCK", "WINNER": "GEWINN", "No win this time.": "Diesmal leider nichts.", "Scratchcard": "Rubbellos", "Open booster packs, collect 100 cards in 20 collections and hunt for holos and the three treasures.": "Öffne Booster, sammle 100 Karten in 20 Kollektionen und jag nach Holos und den drei Schätzen.", "Pick a booster: 5 cards each, the dearer the pack, the better the odds.": "Wähl einen Booster: je 5 Karten. Je teurer, desto besser die Chancen.", "Odds and values": "Chancen und Werte", "Reveal all": "Alle aufdecken", "To the album": "Zum Album", "Again": "Nochmal", "Card album": "Sammelalbum", "Tap the booster to tear it open": "Tippe auf den Booster, um ihn aufzureißen", "Tap for the next card": "Tippe für die nächste Karte", "At least 1 legendary or better": "Mind. 1 legendäre oder besser", "The best chance of a treasure": "Die beste Chance auf einen Schatz", "The Treasure Booster promises no good cards, but it finds the treasures far more often than any other booster.": "Der Schatz-Booster verspricht keine guten Karten, findet die Schätze aber viel öfter als jeder andere Booster.", "The Legendary Booster always holds at least one legendary card or better.": "Der Legendär-Booster enthält immer mindestens eine legendäre Karte oder besser.", "Opened": "Geöffnet", "Album worth": "Albumwert", "Per card": "Pro Karte", "Value": "Wert", "Best": "Beste", "NEW": "NEU", "Plain": "Normal", "Rarity": "Rarität", "Collection": "Kollektion", "Number": "Nummer", "Holo value": "Holo-Wert", "You own": "Du besitzt", "No duplicates": "Keine Doppelten", "Three mythic cards are treasures worth millions, and they are far rarer than the other mythic cards. A holo card is worth five times as much.": "Drei mythische Karten sind Schätze, die Millionen wert sind, und viel seltener als die anderen mythischen Karten. Eine Holo-Karte ist fünfmal so viel wert.", "Lucky-Booster needs the online database.": "Lucky-Booster braucht die Online-Datenbank.", "This needs the “Lucky-Booster” part of supabase-setup.sql.": "Dafür brauchst du den Teil „Lucky-Booster“ aus supabase-setup.sql.", "One of the three treasures!": "Einer der drei Schätze!", '10 Million Pioneer': '10-Mio-Pionier', 'Title holders': 'Titelträger', 'Not awarded yet': 'Noch nicht vergeben', 'Grinder': 'Grinder', 'Plays and plays and plays: never stops grinding.': 'Spielt und spielt und spielt: hört nie auf zu grinden.', 'Daytrader': 'Daytrader', 'Lives on the stock market, buying low and selling high.': 'Lebt an der Börse: billig kaufen, teuer verkaufen.', 'The first player to crack 10 million credits.': 'Der erste Spieler, der 10 Millionen Credits geknackt hat.', 'No title': 'Kein Titel', 'Title': 'Titel', 'Give this player a title next to the name, or take it away': 'Diesem Spieler einen Titel neben dem Namen geben oder wegnehmen', "Get a blackjack or a double win": "Hol einen Blackjack oder einen doppelten Gewinn", "Land a ball on 3× or more": "Lande eine Kugel auf 3× oder mehr", "Cash out once": "Zahle einmal aus", "Cash out once at 3× or more": "Zahle einmal bei 3× oder mehr aus", "Cash out once at 4× or more": "Zahle einmal bei 4× oder mehr aus", "Win a round": "Gewinne eine Runde", "Win 3× your stake once": "Gewinne einmal das 3-Fache deines Einsatzes", "Win a bet": "Gewinne eine Wette", "Win a bet at 3× or more": "Gewinne eine Wette mit 3× oder mehr", "Win a pot of 3× your stake": "Gewinne einen Pot mit dem 3-Fachen deines Einsatzes", "Every hand counts for the poker missions.": "Jede Hand zählt für die Poker-Missionen.", "Lava Name": "Lava-Name", "Your name flows like glowing lava.": "Dein Name fließt wie glühende Lava.", "Thunder Name": "Gewitter-Name", "Lightning crackles through your name.": "Blitze zucken durch deinen Namen.", "Glitch Name": "Glitch-Name", "Your name glitches between cyan and magenta.": "Dein Name flackert zwischen Cyan und Magenta.", "Lucky Legend": "Lucky-Legende", "The crown of the Lucky-Pass: a golden clover shine that never stops.": "Die Krone des Lucky-Pass: ein goldener Kleeblatt-Schimmer, der nie aufhört.", "Toxic Name": "Toxic-Name", "Bubbling poison green.": "Blubberndes Giftgrün.", "Diamond Name": "Diamant-Name", "Ice-cold sparkle like cut diamonds.": "Eiskaltes Funkeln wie geschliffene Diamanten.", "Royale Name": "Royale-Name", "Purple and gold with a crown: only on the Royale track.": "Lila und Gold mit Krone: nur im Royale-Pass.", "Sunset Cabinet": "Sonnenuntergang-Gehäuse", "Orange and pink like a summer evening.": "Orange und Pink wie ein Sommerabend.", "Ocean Cabinet": "Ozean-Gehäuse", "Deep sea blue with light dancing on the waves.": "Tiefseeblau mit Licht, das auf den Wellen tanzt.", "Cyber Cabinet": "Cyber-Gehäuse", "Black glass with a glowing neon grid.": "Schwarzes Glas mit leuchtendem Neon-Gitter.", "Legend Cabinet": "Legenden-Gehäuse", "Gold with a rainbow edge that runs around the machine.": "Gold mit einem Regenbogen-Rand, der um den Automaten läuft.", "Lavender Cabinet": "Lavendel-Gehäuse", "Soft lilac with a silver shine.": "Zartes Flieder mit Silberglanz.", "Obsidian Cabinet": "Obsidian-Gehäuse", "Black volcanic glass with glowing red veins.": "Schwarzes Vulkanglas mit glühend roten Adern.", "Jade Cabinet": "Jade-Gehäuse", "Polished jade green with gold trim.": "Poliertes Jadegrün mit Goldrand.", "Royale Cabinet": "Royale-Gehäuse", "Purple velvet, gold and a crown of light: the top of the Royale track.": "Lila Samt, Gold und eine Krone aus Licht: die Spitze des Royale-Pass.", "Sakura colours": "Farbstil Sakura", "The whole casino in cherry-blossom pink.": "Das ganze Casino in Kirschblüten-Rosa.", "Arctic colours": "Farbstil Arktis", "The whole casino in icy blue and white.": "Das ganze Casino in Eisblau und Weiß.", "Inferno colours": "Farbstil Inferno", "The whole casino glows red and orange.": "Das ganze Casino glüht rot und orange.", "Vaporwave colours": "Farbstil Vaporwave", "The whole casino in purple and cyan, straight from the 80s.": "Das ganze Casino in Lila und Cyan, direkt aus den 80ern.", "Royale colours": "Farbstil Royale", "The whole casino in purple and gold.": "Das ganze Casino in Lila und Gold.", "100 levels · earned by playing": "100 Level · durchs Spielen verdient", "Pass level": "Pass-Level", "Every game that gives XP fills the pass too: slots, blackjack, roulette, Plinko, Chicken, coin flip, horses, rocket and more. Every 10th level brings something big.": "Jedes Spiel, das XP gibt, füllt auch den Pass: Slots, Blackjack, Roulette, Plinko, Chicken, Münzwurf, Pferde, Rakete und mehr. Jedes 10. Level bringt etwas Großes.", "👑 The Lucky-Royale-Pass is locked for now. Its rewards are shown so you know what is coming.": "👑 Der Lucky-Royale-Pass ist vorerst gesperrt. Seine Belohnungen siehst du schon, damit du weißt, was kommt.", "for everyone": "für alle", "locked": "gesperrt", "locked for now": "vorerst gesperrt", "unlocked": "freigeschaltet", "Investments": "Investitionen", "Shops and properties · paid every hour": "Läden und Immobilien · stündlich ausgezahlt", "Income is paid for every full hour, also while you are away (up to 72 hours at a time). Every further one of the same kind costs 15% more, at most 10 of each. Selling gives back half of what the last one cost.": "Das Einkommen wird für jede volle Stunde ausgezahlt, auch wenn du nicht da bist (bis zu 72 Stunden am Stück). Jedes weitere Objekt derselben Art kostet 15 % mehr, höchstens 10 von jedem. Beim Verkauf bekommst du die Hälfte dessen zurück, was das letzte gekostet hat.", "Lucky wheel": "Glücksrad", "Claim": "Abholen", "All 100 levels reached!": "Alle 100 Level erreicht!", "100 levels with credits, wheel spins and new cosmetics, earned by playing.": "100 Level mit Credits, Glücksrad-Drehs und neuen Cosmetics, durchs Spielen verdient.", "Shops and properties with income every hour. From Lucky-Pass level 30.": "Läden und Immobilien mit Einkommen jede Stunde. Ab Lucky-Pass Level 30.", "Shops and properties with income every hour.": "Läden und Immobilien mit Einkommen jede Stunde.", "Investments unlocked": "Investitionen freigeschaltet", "Shops and properties that pay every hour": "Läden und Immobilien, die jede Stunde zahlen", "Name style": "Namensstil", "Machine colour": "Gehäusefarbe", "Colour style": "Farbstil", "Cosmetic": "Cosmetic", "The Lucky-Pass needs the online database.": "Der Lucky-Pass braucht die Online-Datenbank.", "Investments need the online database.": "Investitionen brauchen die Online-Datenbank.", "This needs the “Lucky-Pass and investments” part of supabase-setup.sql.": "Dafür brauchst du den Teil „Lucky-Pass and investments“ aus supabase-setup.sql.", "The Lucky-Royale-Pass is locked for now.": "Der Lucky-Royale-Pass ist vorerst gesperrt.", "Nothing to claim right now.": "Gerade gibt es nichts abzuholen.", "From Lucky-Pass level 30": "Ab Lucky-Pass Level 30", "Open the Lucky-Pass": "Lucky-Pass öffnen", "Income per hour": "Einkommen pro Stunde", "Next payout": "Nächste Auszahlung", "Paid out so far": "Bisher ausgezahlt", "Each per hour": "Je Stück pro Std.", "Your income": "Dein Einkommen", "Pays for itself": "Rechnet sich", "Kiosk": "Kiosk", "Lemonade stand": "Limonadenstand", "A table, a jug and a sign. Everybody starts somewhere.": "Ein Tisch, ein Krug und ein Schild. Jeder fängt mal klein an.", "Snack machine": "Snackautomat", "Crisps and fizzy drinks around the clock, no staff needed.": "Chips und Limo rund um die Uhr, ganz ohne Personal.", "Newspaper stand": "Zeitungsstand", "Papers, magazines and gossip at the station.": "Zeitungen, Zeitschriften und Klatsch am Bahnhof.", "A small kiosk on the corner: drinks, snacks and scratch cards.": "Ein kleiner Kiosk an der Ecke: Getränke, Snacks und Rubbellose.", "Food truck": "Food-Truck", "Burgers on wheels, wherever the crowd is.": "Burger auf Rädern, immer da, wo die Leute sind.", "Lucky Burger branch": "Lucky-Burger-Filiale", "Your own Lucky Burger. Somebody else flips the patties now.": "Dein eigener Lucky Burger. Die Patties wendet jetzt jemand anderes.", "Rented flat": "Mietwohnung", "A flat in town, rented out every month.": "Eine Wohnung in der Stadt, jeden Monat vermietet.", "Arcade": "Spielhalle", "Flashing machines and a constant clatter of coins.": "Blinkende Automaten und ständiges Münzgeklimper.", "Apartment block": "Mehrfamilienhaus", "Twelve flats, twelve rents.": "Zwölf Wohnungen, zwölf Mieten.", "Shopping mall": "Einkaufszentrum", "Fifty shops under one roof, all paying you rent.": "Fünfzig Läden unter einem Dach, alle zahlen dir Miete.", "Hotel & casino": "Hotel & Casino", "The big one: rooms, shows and a casino of your own.": "Das ganz Große: Zimmer, Shows und ein eigenes Casino.", "Investments open with Lucky-Pass level 30.": "Investitionen öffnen sich mit Lucky-Pass Level 30.", "You have 10 of these already.": "Davon hast du schon 10.", "Sell?": "Verkaufen?", "Lucky-Royale-Pass open for everyone": "Lucky-Royale-Pass für alle offen", "While off, the Royale track is locked (players can still see it).": "Solange aus, ist der Royale-Pass gesperrt (Spieler sehen ihn trotzdem).", '👀 The boss drops by!': '👀 Der Chef schaut vorbei!', 'The boss caught you asleep: no wage until you answer him.': 'Der Chef hat dich schlafend erwischt: kein Lohn, bis du ihm antwortest.', 'The boss nods and walks on.': 'Der Chef nickt und geht weiter.', 'This code brought enough new players today. Try it again tomorrow.': 'Dieser Code hat heute schon genug neue Spieler gebracht. Versuch es morgen wieder.', 'New players per code and day': 'Neue Spieler pro Code und Tag', '0 = no limit. Stops one code from being fed with many new accounts.': '0 = kein Limit. Verhindert, dass ein Code mit vielen neuen Konten gefüttert wird.', 'Lucky Burger: paid minutes a day': 'Lucky Burger: bezahlte Minuten am Tag', 'How long a player can earn wages per day (German time). 0 = no limit.': 'Wie lange ein Spieler pro Tag Lohn verdienen kann (deutsche Zeit). 0 = kein Limit.', 'Leave the poker table first.': 'Verlass zuerst den Pokertisch.', 'Finish the Russian roulette first.': 'Bring zuerst das Russisch Roulette zu Ende.', 'auto nudge': 'Auto-Stupser', 'When the ball lands right next to your single number on the wheel, 45% of that chip comes back.': 'Landet die Kugel auf dem Rad direkt neben deiner Einzelzahl, kommen 45 % dieses Chips zurück.',
     'Winning outside bets (colours, odd or even, halves, dozens, columns) pay 2% more.': 'Gewonnene Außenwetten (Farben, Gerade/Ungerade, Hälften, Dutzende, Spalten) zahlen 2 % mehr.',
     'Zero Shield': 'Null-Schild', 'When the ball lands on 0, half of your outside bets (colours, odd or even, halves, dozens, columns) come back.': 'Landet die Kugel auf der 0, kommt die Hälfte deiner Außenwetten (Farben, Gerade/Ungerade, Hälften, Dutzende, Spalten) zurück.',
     'At the solo table the house takes half the rake from your pots (2.5% instead of 5%).': 'Am Solo-Tisch nimmt das Haus nur die halbe Gebühr von deinen Pots (2,5 % statt 5 %).',
@@ -5165,7 +5309,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Patterns: {a}, {b}, … stand for numbers, names and other inserted text.
   const DE_PATTERNS = [
     ['Spins: {a} · Biggest win: {b}', 'Spins: {a} · Größter Gewinn: {b}'],
-    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['{a} is now called {b} and signs in with that name.', '{a} heißt jetzt {b} und meldet sich mit diesem Namen an.'], ["With the loser's XP you are level {a} now.", 'Mit den XP des Verlierers bist du jetzt Level {a}.'], ["{a} can't win the lotto now.", '{a} kann jetzt nicht mehr im Lotto gewinnen.'], ['{a} can win the lotto again.', '{a} kann wieder im Lotto gewinnen.'], ['Unlocks at Mega-Prestige {a} (prestige {b}).', 'Wird ab Mega-Prestige {a} freigeschaltet (Prestige {b}).'], ['🔒 Mega {a}', '🔒 Mega {a}'], ['From prestige {a}', 'Ab Prestige {a}'], ['Mega-Prestige {a} · Prestige {b}', 'Mega-Prestige {a} · Prestige {b}'], ['Prestige {a}: a crowned Mega badge next to your name and a new name style in the shop.', 'Prestige {a}: ein gekröntes Mega-Abzeichen neben deinem Namen und ein neuer Namens-Stil im Shop.'], ['Mega-Prestige {a}!', 'Mega-Prestige {a}!'], ['Luck {a}%', 'Glück {a} %'], ["{a} / 100 cards", "{a} / 100 Karten"], ["Epic or better: {a}% per card · holo {b}%", "Episch oder besser: {a} % pro Karte · Holo {b} %"], ["Open · {a}", "Öffnen · {a}"], ["Not enough credits for the {a} ({b}).", "Nicht genug Credits für den {a} ({b})."], ["{a} new", "{a} neu"], ["Treasure: about 1 in {a} packs", "Schatz: etwa 1 in {a} Boostern"], ["Card {a} of {b} · tap to turn it over", "Karte {a} von {b} · tippen zum Umdrehen"], ["Last card: the best one! · {a} of {b}", "Letzte Karte: die beste! · {a} von {b}"], ["Again · {a}", "Nochmal · {a}"], ["Collection {a} of 20", "Kollektion {a} von 20"], ["Pages {a}–{b} of 20", "Seiten {a}–{b} von 20"], ["Page {a} of 20", "Seite {a} von 20"], ["{a} of 100 cards · album worth {b}", "{a} von 100 Karten · Albumwert {b}"], ["Sell all duplicates ({a}) · +{b}", "Alle Doppelten verkaufen ({a}) · +{b}"], ["{a} plain · {b} holo", "{a} normal · {b} Holo"], ["Sell · +{a}", "Verkaufen · +{a}"], ["Sell holo · +{a}", "Holo verkaufen · +{a}"], ["Sold for {a}.", "Für {a} verkauft."], ["Sell {a}?", "{a} verkaufen?"], ["{a} duplicates sold for {b}.", "{a} Doppelte für {b} verkauft."], ['{a} now has the title “{b}”.', '{a} hat jetzt den Titel „{b}“.'], ['{a} has no title now.', '{a} hat jetzt keinen Titel.'], ['Title for {a}', 'Titel für {a}'], ["Play {a} hands", "Spiele {a} Hände"], ["Win {a} hands", "Gewinne {a} Hände"], ["Get {a} blackjacks or double wins", "Hol {a} Blackjacks oder doppelte Gewinne"], ["Drop {a} balls", "Lass {a} Kugeln fallen"], ["Land {a} balls above your bet", "Lande {a} Kugeln über deinem Einsatz"], ["Land {a} balls on 3× or more", "Lande {a} Kugeln auf 3× oder mehr"], ["Play {a} rounds", "Spiele {a} Runden"], ["Cash out {a} times", "Zahle {a}-mal aus"], ["Cash out {a} times at 3× or more", "Zahle {a}-mal bei 3× oder mehr aus"], ["Flip the coin {a} times", "Wirf die Münze {a}-mal"], ["Win {a} flips", "Gewinne {a} Würfe"], ["Cash out {a} times at 4× or more", "Zahle {a}-mal bei 4× oder mehr aus"], ["Win {a} rounds", "Gewinne {a} Runden"], ["Win 3× your stake {a} times", "Gewinne {a}-mal das 3-Fache deines Einsatzes"], ["Bet on {a} races", "Wette auf {a} Rennen"], ["Win {a} bets", "Gewinne {a} Wetten"], ["Win {a} bets at 3× or more", "Gewinne {a} Wetten mit 3× oder mehr"], ["Fly {a} rockets", "Flieg mit {a} Raketen"], ["Win {a} pots", "Gewinne {a} Pots"], ["Win {a} pots of 3× your stake", "Gewinne {a} Pots mit dem 3-Fachen deines Einsatzes"], ["Missions · {a}", "Missionen · {a}"], ["Rounds count for missions from a bet of {a}.", "Runden zählen für Missionen ab einem Einsatz von {a}."], ["{a}: {b} · +{c} credits", "{a}: {b} · +{c} Credits"], ["Comes with Lucky-Royale-Pass level {a}.", "Gibt es mit Lucky-Royale-Pass Level {a}."], ["Comes with Lucky-Pass level {a}.", "Gibt es mit Lucky-Pass Level {a}."], ["Lucky-Royale-Pass level {a}", "Lucky-Royale-Pass Level {a}"], ["Lucky-Pass level {a}", "Lucky-Pass Level {a}"], ["Lucky-Royale-Pass · level {a}", "Lucky-Royale-Pass · Level {a}"], ["Lucky-Pass · level {a}", "Lucky-Pass · Level {a}"], ["🔒 Royale {a}", "🔒 Royale {a}"], ["🔒 Pass {a}", "🔒 Pass {a}"], ["Passive income: +{a} credits ({b} h).", "Passives Einkommen: +{a} Credits ({b} Std.)."], ["+{a} credits", "+{a} Credits"], ["about {a} on average, up to {b}", "im Schnitt etwa {a}, bis zu {b}"], ["{a} / {b} XP to level {c}", "{a} / {b} XP bis Level {c}"], ["Claim all ({a})", "Alle abholen ({a})"], ["Investments open with the level 30 reward of the Lucky-Pass. You are at pass level {a}.", "Investitionen öffnen sich mit der Level-30-Belohnung des Lucky-Pass. Du bist auf Pass-Level {a}."], ["in {a} h", "nach {a} Std."], ["Buy · {a}", "Kaufen · {a}"], ["Sell · {a}", "Verkaufen · {a}"], ["{a} bought for {b}. Income now {c} per hour.", "{a} für {b} gekauft. Einkommen jetzt {c} pro Stunde."], ["{a} sold for {b}.", "{a} für {b} verkauft."], ["Pass level {a} of 100. Credits, wheel spins and new cosmetics, earned by playing.", "Pass-Level {a} von 100. Credits, Glücksrad-Drehs und neue Cosmetics, durchs Spielen verdient."], ['Tap {a} in this order · {b} s', 'Tippe {a} in dieser Reihenfolge · {b} s'], ['Tap {a} in this order to get your wage again', 'Tippe {a} in dieser Reihenfolge, um wieder Lohn zu bekommen'], ["That's enough work for today ({a} paid minutes a day). Come back tomorrow!", 'Genug gearbeitet für heute ({a} bezahlte Minuten am Tag). Komm morgen wieder!'], ['Spins count for missions from a bet of {a}.', 'Spins zählen für Missionen ab einem Einsatz von {a}.'], ['Page settings could not be saved for a while ({a}). Your credits and wins are safe: the server books them with every game.', 'Die Seiten-Einstellungen konnten eine Weile nicht gespeichert werden ({a}). Deine Credits und Gewinne sind sicher: Der Server bucht sie bei jedem Spiel.'], ['Saving failed ({a}). Your progress stays on this page; it will retry.', 'Speichern fehlgeschlagen ({a}). Dein Fortschritt bleibt auf der Seite, es wird erneut versucht.'], ['Watch list: {a}', 'Beobachtungsliste: {a}'], ['watched since {a}', 'beobachtet seit {a}'], ['Credits {a} to {b} · {c} notes', 'Credits {a} bis {b} · {c} Einträge'], ['{a} is on the watch list now: credits and XP are noted once a minute.', '{a} steht jetzt auf der Beobachtungsliste: Credits und XP werden jede Minute festgehalten.'], ['{a} is off the watch list; the notes so far stay for 30 days.', '{a} ist nicht mehr auf der Beobachtungsliste; die bisherigen Einträge bleiben 30 Tage.'], ['Chance to win for {a} in %', 'Gewinnchance für {a} in %'], ['{a} has the normal chance to win again.', '{a} hat wieder die normale Gewinnchance.'], ['{a} now has {b}% of the normal chance to win.', '{a} hat jetzt {b} % der normalen Gewinnchance.'], ['{a} got the goodie “{b}”.', '{a} hat das Goodie „{b}“ bekommen.'], ['{a} no longer has the goodie “{b}”.', '{a} hat das Goodie „{b}“ nicht mehr.'], ['Goodie for {a}', 'Goodie für {a}'], ['Change your name · {a} credits', 'Namen ändern · {a} Credits'], ['Waiting for an admin: “{a}” ({b} credits paid).', 'Wartet auf einen Admin: „{a}“ ({b} Credits bezahlt).'], ['An admin declined “{a}”; the credits came back.', 'Ein Admin hat „{a}“ abgelehnt; die Credits sind zurück.'], ['Approved: you are “{a}” now and sign in with that name.', 'Genehmigt: Du heißt jetzt „{a}“ und meldest dich mit diesem Namen an.'], ['A name change costs {a} credits.', 'Eine Namensänderung kostet {a} Credits.'], ['You are {a} now. Sign in with this name from now on.', 'Du heißt jetzt {a}. Melde dich ab jetzt mit diesem Namen an.'], ['Name change requests ({a})', 'Anträge auf Namensänderung ({a})'], ['{a} is now called {b}.', '{a} heißt jetzt {b}.'], ['Declined; {a} got the credits back.', 'Abgelehnt; {a} hat die Credits zurück.'], ['Wild spin {a} · wins ×{b}', 'Wild-Spin {a} · Gewinne ×{b}'], ['{a} spins · wilds stick · every win ×{b}', '{a} Spins · Wilds kleben · jeder Gewinn ×{b}'], ['Wild spins paid {a} in total.', 'Die Wild-Spins haben insgesamt {a} gezahlt.'], ['Wild spins', 'Wild-Spins'], ['{a} left', 'noch {a}'], ['{a} waiting', '{a} warten'], ['{a} is no longer marked as a bot.', '{a} ist nicht mehr als Bot markiert.'], ['{a} is marked as a bot now.', '{a} ist jetzt als Bot markiert.'], ['{a} is back in the game, as before.', '{a} ist wieder im Spiel, wie vorher.'], ['{a} is archived: out of the game, nothing deleted.', '{a} ist archiviert: aus dem Spiel genommen, nichts gelöscht.'], ['{a} is taken already.', '{a} ist schon vergeben.'], ['New name for {a}', 'Neuer Name für {a}'], ['account since {a} days', 'Konto seit {a} Tagen'], ['Refund all {a} tickets', 'Alle {a} Lose erstatten'], ['Nobody has reached {a} credits yet.', 'Noch niemand hat {a} Credits erreicht.'], ['Waiting for {a} to answer… {b} s', 'Warte auf die Antwort von {a} … {b} s'], ['{a} challenges you! {b} s', '{a} fordert dich heraus! {b} s'], ['{a} challenges you to Russian roulette!', '{a} fordert dich zum Russisch Roulette heraus!'], ['{a} s to answer', 'Noch {a} s zum Antworten'], ['1 in {a}', '1 zu {a}'], ['{a} has to pull…', '{a} muss abdrücken …'], ['Your turn. {a} s left, or you lose.', 'Du bist dran. Noch {a} s, sonst verlierst du.'], ['{a} has the revolver. {b} s.', '{a} hat den Revolver. {b} s.'], ['{a} goes first.', '{a} fängt an.'], ['*click* … empty. You live. Now {a}.', '*klick* … leer. Du lebst. Jetzt {a}.'], ['*click* … empty. {a} lives. Your turn.', '*klick* … leer. {a} lebt. Du bist dran.'], ['You waited too long: that counts as lost. Everything goes to {a}.', 'Du hast zu lange gewartet: Das zählt als verloren. Alles geht an {a}.'], ['{a} waited too long and loses everything to you!', '{a} hat zu lange gewartet und verliert alles an dich!'], ['BANG. You lost everything to {a}. Your account starts over.', 'PENG. Du hast alles an {a} verloren. Dein Konto fängt von vorne an.'], ['{a} is out. You take everything: +{b}!', '{a} ist raus. Du bekommst alles: +{b}!'], ['Everything went to {a}.', 'Alles ging an {a}.'], ['+{a} from {b}.', '+{a} von {b}.'], ['{a} credits and {b} goodies', '{a} Credits und {b} Goodies'], ['{a} credits and {b} goodie', '{a} Credits und {b} Goodie'], ['{a} won Russian roulette against {b}.', '{a} hat beim Russisch Roulette gegen {b} gewonnen.'], ['{a} said no.', '{a} hat abgelehnt.'], ['Challenge sent. {a} has 2 minutes to answer.', 'Herausforderung geschickt. {a} hat 2 Minuten zum Antworten.'], ['{a} challenges you!', '{a} fordert dich heraus!'], ['📺 Ad {a} s', '📺 Werbung {a} s'], ['Seconds (normal: {a})', 'Sekunden (normal: {a})'], ['Ad wait for {a} in seconds', 'Werbe-Wartezeit für {a} in Sekunden'], ['{a} has the normal ad wait again ({b} s).', '{a} hat wieder die normale Werbe-Wartezeit ({b} s).'], ['{a} can close the ad only after {b} seconds.', '{a} kann die Werbung erst nach {b} Sekunden schließen.'], ['Message {a}…', 'Nachricht an {a}…'], ['Sorry for the downtime! As a thank-you for your patience, everyone gets {a} credits.', 'Sorry für die Ausfallzeit! Als Dankeschön für eure Geduld bekommt jeder {a} Credits.'], ['Give everyone {a}?', 'Allen {a} geben?'], ['Everyone got {a} credits and sees a pop-up about it.', 'Alle haben {a} Credits bekommen und sehen ein Pop-up dazu.'], ['{a} now works as {b} at Lucky Burger.', '{a} arbeitet jetzt als {b} bei Lucky Burger.'], ['An admin made you {a}.', 'Ein Admin hat dich zu {a} gemacht.'], ['Lucky Burger position for {a}', 'Lucky-Burger-Position für {a}'], ['New password for {a} (6+)', 'Neues Passwort für {a} (6+)'], ['{a} has a new password now. Tell it to them yourself.', '{a} hat jetzt ein neues Passwort. Sag es ihm selbst.'], ['{a} can get credits from level {b} on.', '{a} kann erst ab Level {b} Credits bekommen.'], ['Got a code from a friend? You start with {a} credits instead of {b} (first account on this device only).', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits (nur beim ersten Konto auf diesem Gerät).'], ['Got a code from a friend? You start with {a} credits instead of {b}.', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits.'], ['New players who use it start with {a} credits.', 'Neue Spieler, die ihn nutzen, starten mit {a} Credits.'], ['New players who sign up with your code start with {a} credits.', 'Neue Spieler, die sich mit deinem Code anmelden, starten mit {a} Credits.'], ['You get {a} on top.', 'Du bekommst {a} obendrauf.'], ['{a} extra credits', '{a} Extra-Credits'], ['{a}% of your credits (at most {b})', '{a} % deiner Credits (höchstens {b})'], ['{a}% of your credits', '{a} % deiner Credits'], ['Example: a new player starts with {a} credits. A code owner with 50,000 credits gets {b}, one with 500,000 gets {c}.', 'Beispiel: Ein neuer Spieler startet mit {a} Credits. Ein Code-Besitzer mit 50,000 Credits bekommt {b}, einer mit 500,000 bekommt {c}.'], ['ends in {a}', 'endet in {a}'], ['starts in {a}', 'beginnt in {a}'], ['Event gift: +{a} credits!', 'Event-Geschenk: +{a} Credits!'], ['event ×{a}', 'Event ×{a}'], ['1st place', '1. Platz'], ['2nd place', '2. Platz'], ['3rd place', '3. Platz'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
+    ['Race #{a}', 'Rennen #{a}'], ['Next rocket {a}', 'Nächste Rakete {a}'], ['{a} is now called {b} and signs in with that name.', '{a} heißt jetzt {b} und meldet sich mit diesem Namen an.'], ["With the loser's XP you are level {a} now.", 'Mit den XP des Verlierers bist du jetzt Level {a}.'], ["{a} can't win the lotto now.", '{a} kann jetzt nicht mehr im Lotto gewinnen.'], ['{a} can win the lotto again.', '{a} kann wieder im Lotto gewinnen.'], ['Unlocks at Mega-Prestige {a} (prestige {b}).', 'Wird ab Mega-Prestige {a} freigeschaltet (Prestige {b}).'], ['🔒 Mega {a}', '🔒 Mega {a}'], ['From prestige {a}', 'Ab Prestige {a}'], ['Mega-Prestige {a} · Prestige {b}', 'Mega-Prestige {a} · Prestige {b}'], ['Prestige {a}: a crowned Mega badge next to your name and a new name style in the shop.', 'Prestige {a}: ein gekröntes Mega-Abzeichen neben deinem Namen und ein neuer Namens-Stil im Shop.'], ['Mega-Prestige {a}!', 'Mega-Prestige {a}!'], ['Luck {a}%', 'Glück {a} %'], ["Top prize {a}", "Hauptgewinn {a}"], ["Buy · {a}", "Kaufen · {a}"], ["Pays back {a}% on average.", "Zahlt im Schnitt {a} % aus."], ["Not enough credits for a {a} ({b}).", "Nicht genug Credits für ein {a} ({b})."], ["Your {a} back.", "Dein Einsatz von {a} zurück."], ["You win {a}! ({b}×)", "Du gewinnst {a}! ({b}×)"], ["Another · {a}", "Noch eins · {a}"], ["{a} / 100 cards", "{a} / 100 Karten"], ["Epic or better: {a}% per card · holo {b}%", "Episch oder besser: {a} % pro Karte · Holo {b} %"], ["Open · {a}", "Öffnen · {a}"], ["Not enough credits for the {a} ({b}).", "Nicht genug Credits für den {a} ({b})."], ["{a} new", "{a} neu"], ["Treasure: about 1 in {a} packs", "Schatz: etwa 1 in {a} Boostern"], ["Card {a} of {b} · tap to turn it over", "Karte {a} von {b} · tippen zum Umdrehen"], ["Last card: the best one! · {a} of {b}", "Letzte Karte: die beste! · {a} von {b}"], ["Again · {a}", "Nochmal · {a}"], ["Collection {a} of 20", "Kollektion {a} von 20"], ["Pages {a}–{b} of 20", "Seiten {a}–{b} von 20"], ["Page {a} of 20", "Seite {a} von 20"], ["{a} of 100 cards · album worth {b}", "{a} von 100 Karten · Albumwert {b}"], ["Sell all duplicates ({a}) · +{b}", "Alle Doppelten verkaufen ({a}) · +{b}"], ["{a} plain · {b} holo", "{a} normal · {b} Holo"], ["Sell · +{a}", "Verkaufen · +{a}"], ["Sell holo · +{a}", "Holo verkaufen · +{a}"], ["Sold for {a}.", "Für {a} verkauft."], ["Sell {a}?", "{a} verkaufen?"], ["{a} duplicates sold for {b}.", "{a} Doppelte für {b} verkauft."], ['{a} now has the title “{b}”.', '{a} hat jetzt den Titel „{b}“.'], ['{a} has no title now.', '{a} hat jetzt keinen Titel.'], ['Title for {a}', 'Titel für {a}'], ["Play {a} hands", "Spiele {a} Hände"], ["Win {a} hands", "Gewinne {a} Hände"], ["Get {a} blackjacks or double wins", "Hol {a} Blackjacks oder doppelte Gewinne"], ["Drop {a} balls", "Lass {a} Kugeln fallen"], ["Land {a} balls above your bet", "Lande {a} Kugeln über deinem Einsatz"], ["Land {a} balls on 3× or more", "Lande {a} Kugeln auf 3× oder mehr"], ["Play {a} rounds", "Spiele {a} Runden"], ["Cash out {a} times", "Zahle {a}-mal aus"], ["Cash out {a} times at 3× or more", "Zahle {a}-mal bei 3× oder mehr aus"], ["Flip the coin {a} times", "Wirf die Münze {a}-mal"], ["Win {a} flips", "Gewinne {a} Würfe"], ["Cash out {a} times at 4× or more", "Zahle {a}-mal bei 4× oder mehr aus"], ["Win {a} rounds", "Gewinne {a} Runden"], ["Win 3× your stake {a} times", "Gewinne {a}-mal das 3-Fache deines Einsatzes"], ["Bet on {a} races", "Wette auf {a} Rennen"], ["Win {a} bets", "Gewinne {a} Wetten"], ["Win {a} bets at 3× or more", "Gewinne {a} Wetten mit 3× oder mehr"], ["Fly {a} rockets", "Flieg mit {a} Raketen"], ["Win {a} pots", "Gewinne {a} Pots"], ["Win {a} pots of 3× your stake", "Gewinne {a} Pots mit dem 3-Fachen deines Einsatzes"], ["Missions · {a}", "Missionen · {a}"], ["Rounds count for missions from a bet of {a}.", "Runden zählen für Missionen ab einem Einsatz von {a}."], ["{a}: {b} · +{c} credits", "{a}: {b} · +{c} Credits"], ["Comes with Lucky-Royale-Pass level {a}.", "Gibt es mit Lucky-Royale-Pass Level {a}."], ["Comes with Lucky-Pass level {a}.", "Gibt es mit Lucky-Pass Level {a}."], ["Lucky-Royale-Pass level {a}", "Lucky-Royale-Pass Level {a}"], ["Lucky-Pass level {a}", "Lucky-Pass Level {a}"], ["Lucky-Royale-Pass · level {a}", "Lucky-Royale-Pass · Level {a}"], ["Lucky-Pass · level {a}", "Lucky-Pass · Level {a}"], ["🔒 Royale {a}", "🔒 Royale {a}"], ["🔒 Pass {a}", "🔒 Pass {a}"], ["Passive income: +{a} credits ({b} h).", "Passives Einkommen: +{a} Credits ({b} Std.)."], ["+{a} credits", "+{a} Credits"], ["about {a} on average, up to {b}", "im Schnitt etwa {a}, bis zu {b}"], ["{a} / {b} XP to level {c}", "{a} / {b} XP bis Level {c}"], ["Claim all ({a})", "Alle abholen ({a})"], ["Investments open with the level 30 reward of the Lucky-Pass. You are at pass level {a}.", "Investitionen öffnen sich mit der Level-30-Belohnung des Lucky-Pass. Du bist auf Pass-Level {a}."], ["in {a} h", "nach {a} Std."], ["Buy · {a}", "Kaufen · {a}"], ["Sell · {a}", "Verkaufen · {a}"], ["{a} bought for {b}. Income now {c} per hour.", "{a} für {b} gekauft. Einkommen jetzt {c} pro Stunde."], ["{a} sold for {b}.", "{a} für {b} verkauft."], ["Pass level {a} of 100. Credits, wheel spins and new cosmetics, earned by playing.", "Pass-Level {a} von 100. Credits, Glücksrad-Drehs und neue Cosmetics, durchs Spielen verdient."], ['Tap {a} in this order · {b} s', 'Tippe {a} in dieser Reihenfolge · {b} s'], ['Tap {a} in this order to get your wage again', 'Tippe {a} in dieser Reihenfolge, um wieder Lohn zu bekommen'], ["That's enough work for today ({a} paid minutes a day). Come back tomorrow!", 'Genug gearbeitet für heute ({a} bezahlte Minuten am Tag). Komm morgen wieder!'], ['Spins count for missions from a bet of {a}.', 'Spins zählen für Missionen ab einem Einsatz von {a}.'], ['Page settings could not be saved for a while ({a}). Your credits and wins are safe: the server books them with every game.', 'Die Seiten-Einstellungen konnten eine Weile nicht gespeichert werden ({a}). Deine Credits und Gewinne sind sicher: Der Server bucht sie bei jedem Spiel.'], ['Saving failed ({a}). Your progress stays on this page; it will retry.', 'Speichern fehlgeschlagen ({a}). Dein Fortschritt bleibt auf der Seite, es wird erneut versucht.'], ['Watch list: {a}', 'Beobachtungsliste: {a}'], ['watched since {a}', 'beobachtet seit {a}'], ['Credits {a} to {b} · {c} notes', 'Credits {a} bis {b} · {c} Einträge'], ['{a} is on the watch list now: credits and XP are noted once a minute.', '{a} steht jetzt auf der Beobachtungsliste: Credits und XP werden jede Minute festgehalten.'], ['{a} is off the watch list; the notes so far stay for 30 days.', '{a} ist nicht mehr auf der Beobachtungsliste; die bisherigen Einträge bleiben 30 Tage.'], ['Chance to win for {a} in %', 'Gewinnchance für {a} in %'], ['{a} has the normal chance to win again.', '{a} hat wieder die normale Gewinnchance.'], ['{a} now has {b}% of the normal chance to win.', '{a} hat jetzt {b} % der normalen Gewinnchance.'], ['{a} got the goodie “{b}”.', '{a} hat das Goodie „{b}“ bekommen.'], ['{a} no longer has the goodie “{b}”.', '{a} hat das Goodie „{b}“ nicht mehr.'], ['Goodie for {a}', 'Goodie für {a}'], ['Change your name · {a} credits', 'Namen ändern · {a} Credits'], ['Waiting for an admin: “{a}” ({b} credits paid).', 'Wartet auf einen Admin: „{a}“ ({b} Credits bezahlt).'], ['An admin declined “{a}”; the credits came back.', 'Ein Admin hat „{a}“ abgelehnt; die Credits sind zurück.'], ['Approved: you are “{a}” now and sign in with that name.', 'Genehmigt: Du heißt jetzt „{a}“ und meldest dich mit diesem Namen an.'], ['A name change costs {a} credits.', 'Eine Namensänderung kostet {a} Credits.'], ['You are {a} now. Sign in with this name from now on.', 'Du heißt jetzt {a}. Melde dich ab jetzt mit diesem Namen an.'], ['Name change requests ({a})', 'Anträge auf Namensänderung ({a})'], ['{a} is now called {b}.', '{a} heißt jetzt {b}.'], ['Declined; {a} got the credits back.', 'Abgelehnt; {a} hat die Credits zurück.'], ['Wild spin {a} · wins ×{b}', 'Wild-Spin {a} · Gewinne ×{b}'], ['{a} spins · wilds stick · every win ×{b}', '{a} Spins · Wilds kleben · jeder Gewinn ×{b}'], ['Wild spins paid {a} in total.', 'Die Wild-Spins haben insgesamt {a} gezahlt.'], ['Wild spins', 'Wild-Spins'], ['{a} left', 'noch {a}'], ['{a} waiting', '{a} warten'], ['{a} is no longer marked as a bot.', '{a} ist nicht mehr als Bot markiert.'], ['{a} is marked as a bot now.', '{a} ist jetzt als Bot markiert.'], ['{a} is back in the game, as before.', '{a} ist wieder im Spiel, wie vorher.'], ['{a} is archived: out of the game, nothing deleted.', '{a} ist archiviert: aus dem Spiel genommen, nichts gelöscht.'], ['{a} is taken already.', '{a} ist schon vergeben.'], ['New name for {a}', 'Neuer Name für {a}'], ['account since {a} days', 'Konto seit {a} Tagen'], ['Refund all {a} tickets', 'Alle {a} Lose erstatten'], ['Nobody has reached {a} credits yet.', 'Noch niemand hat {a} Credits erreicht.'], ['Waiting for {a} to answer… {b} s', 'Warte auf die Antwort von {a} … {b} s'], ['{a} challenges you! {b} s', '{a} fordert dich heraus! {b} s'], ['{a} challenges you to Russian roulette!', '{a} fordert dich zum Russisch Roulette heraus!'], ['{a} s to answer', 'Noch {a} s zum Antworten'], ['1 in {a}', '1 zu {a}'], ['{a} has to pull…', '{a} muss abdrücken …'], ['Your turn. {a} s left, or you lose.', 'Du bist dran. Noch {a} s, sonst verlierst du.'], ['{a} has the revolver. {b} s.', '{a} hat den Revolver. {b} s.'], ['{a} goes first.', '{a} fängt an.'], ['*click* … empty. You live. Now {a}.', '*klick* … leer. Du lebst. Jetzt {a}.'], ['*click* … empty. {a} lives. Your turn.', '*klick* … leer. {a} lebt. Du bist dran.'], ['You waited too long: that counts as lost. Everything goes to {a}.', 'Du hast zu lange gewartet: Das zählt als verloren. Alles geht an {a}.'], ['{a} waited too long and loses everything to you!', '{a} hat zu lange gewartet und verliert alles an dich!'], ['BANG. You lost everything to {a}. Your account starts over.', 'PENG. Du hast alles an {a} verloren. Dein Konto fängt von vorne an.'], ['{a} is out. You take everything: +{b}!', '{a} ist raus. Du bekommst alles: +{b}!'], ['Everything went to {a}.', 'Alles ging an {a}.'], ['+{a} from {b}.', '+{a} von {b}.'], ['{a} credits and {b} goodies', '{a} Credits und {b} Goodies'], ['{a} credits and {b} goodie', '{a} Credits und {b} Goodie'], ['{a} won Russian roulette against {b}.', '{a} hat beim Russisch Roulette gegen {b} gewonnen.'], ['{a} said no.', '{a} hat abgelehnt.'], ['Challenge sent. {a} has 2 minutes to answer.', 'Herausforderung geschickt. {a} hat 2 Minuten zum Antworten.'], ['{a} challenges you!', '{a} fordert dich heraus!'], ['📺 Ad {a} s', '📺 Werbung {a} s'], ['Seconds (normal: {a})', 'Sekunden (normal: {a})'], ['Ad wait for {a} in seconds', 'Werbe-Wartezeit für {a} in Sekunden'], ['{a} has the normal ad wait again ({b} s).', '{a} hat wieder die normale Werbe-Wartezeit ({b} s).'], ['{a} can close the ad only after {b} seconds.', '{a} kann die Werbung erst nach {b} Sekunden schließen.'], ['Message {a}…', 'Nachricht an {a}…'], ['Sorry for the downtime! As a thank-you for your patience, everyone gets {a} credits.', 'Sorry für die Ausfallzeit! Als Dankeschön für eure Geduld bekommt jeder {a} Credits.'], ['Give everyone {a}?', 'Allen {a} geben?'], ['Everyone got {a} credits and sees a pop-up about it.', 'Alle haben {a} Credits bekommen und sehen ein Pop-up dazu.'], ['{a} now works as {b} at Lucky Burger.', '{a} arbeitet jetzt als {b} bei Lucky Burger.'], ['An admin made you {a}.', 'Ein Admin hat dich zu {a} gemacht.'], ['Lucky Burger position for {a}', 'Lucky-Burger-Position für {a}'], ['New password for {a} (6+)', 'Neues Passwort für {a} (6+)'], ['{a} has a new password now. Tell it to them yourself.', '{a} hat jetzt ein neues Passwort. Sag es ihm selbst.'], ['{a} can get credits from level {b} on.', '{a} kann erst ab Level {b} Credits bekommen.'], ['Got a code from a friend? You start with {a} credits instead of {b} (first account on this device only).', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits (nur beim ersten Konto auf diesem Gerät).'], ['Got a code from a friend? You start with {a} credits instead of {b}.', 'Code von einem Freund? Dann startest du mit {a} statt {b} Credits.'], ['New players who use it start with {a} credits.', 'Neue Spieler, die ihn nutzen, starten mit {a} Credits.'], ['New players who sign up with your code start with {a} credits.', 'Neue Spieler, die sich mit deinem Code anmelden, starten mit {a} Credits.'], ['You get {a} on top.', 'Du bekommst {a} obendrauf.'], ['{a} extra credits', '{a} Extra-Credits'], ['{a}% of your credits (at most {b})', '{a} % deiner Credits (höchstens {b})'], ['{a}% of your credits', '{a} % deiner Credits'], ['Example: a new player starts with {a} credits. A code owner with 50,000 credits gets {b}, one with 500,000 gets {c}.', 'Beispiel: Ein neuer Spieler startet mit {a} Credits. Ein Code-Besitzer mit 50,000 Credits bekommt {b}, einer mit 500,000 bekommt {c}.'], ['ends in {a}', 'endet in {a}'], ['starts in {a}', 'beginnt in {a}'], ['Event gift: +{a} credits!', 'Event-Geschenk: +{a} Credits!'], ['event ×{a}', 'Event ×{a}'], ['1st place', '1. Platz'], ['2nd place', '2. Platz'], ['3rd place', '3. Platz'], ['Reach a win streak of {a}', 'Erreiche eine Gewinnserie von {a}'], ['Reorder {a}', '{a} nachbestellen'], ['We ran out of {a}!', 'Uns sind die {a} ausgegangen!'], ['Hard reset in {a}', 'Hard Reset in {a}'], ['Scheduled for {a}.', 'Geplant für {a}.'], ['Next prices in {a}', 'Neue Kurse in {a}'], ['Live · {a}', 'Live · {a}'], ['{a} · 8 h {b}', '{a} · 8 Std. {b}'],
     ['Rises in {a} of steps', 'Steigt in {a} der Schritte'], ['Usually {a} or {b}', 'Meist {a} oder {b}'], ['Swings: {a}', 'Schwankung: {a}'],
     ['Start {a} · bankrupt below {b} · takeover at {c}', 'Start {a} · Pleite unter {b} · Übernahme ab {c}'],
     ['Buy {a} for {b} · sell {c} for {d} (1% fee each way)', 'Kauf {a} für {b} · Verkauf {c} für {d} (je 1 % Gebühr)'],
@@ -6688,7 +6832,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
 
   // A reload can land mid-deal or mid-dealer-turn; complete the deal and let the dealer finish.
   const MODE_SUBS = {
-    lb: 'Lucky-Booster · 100 cards to collect · play credits',
+    lb: 'Kiosk · scratchcards and booster packs · play credits',
     slots: 'Three reels · one payline · play credits',
     bj: 'Blackjack · pays 3 to 2 · play credits',
     rl: 'Roulette · one wheel for everyone · play credits',
@@ -7152,6 +7296,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     state.pass = g.pass && typeof g.pass === 'object' ? g.pass : {};
     state.gm = g.gm && typeof g.gm === 'object' ? g.gm : {};
     state.cards = g.cards && typeof g.cards === 'object' ? g.cards : {};
+    state.sc = g.sc && typeof g.sc === 'object' ? g.sc : {};
     state.lb = g.lb && typeof g.lb === 'object' ? g.lb : {};
     state.inv = g.inv && typeof g.inv === 'object' ? g.inv : {};
     state.sl = g.sl && typeof g.sl === 'object' ? g.sl : {};
@@ -10773,6 +10918,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   const lbSay = (t, k = '') => showMessage($('lbMsg'), t, k);
   function renderLB() {
     if (state.mode !== 'lb') return;
+    renderSC();
     const st = lbStats(), lb = state.lb || {};
     $('lbAlbumSub').textContent = i18n(`${st.uniq} / 100 cards`);
     const stats = `<span>${esc(i18n('Opened'))} <b>${fmt(Number(lb.opened) || 0)}</b></span><span>${esc(i18n('Album worth'))} <b>${fmt(st.worth)}</b></span>`;
@@ -11086,6 +11232,437 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
     renderAlbum();
     render();
   });
+
+  // ---------- Kiosk: scratchcards (the boosters are above) ----------
+  // The database decides the prize the moment a card is bought and pays it at once (the credits shown wait until the
+  // card is scratched free); the page draws the card from that prize: three of a kind, or a matching number.
+  const SC_T = [{"id":"clover","en":"Lucky Clover","de":"Glücksklee","price":100,"kind":"sym","n":6,"m":[1,2,5,10,20,100],"p":[200000,110000,40000,15000,5000,800],"sym":["🐝","🌻","🍄","🐞","🌈","🍀"]},{"id":"gold","en":"Gold Rush","de":"Goldrausch","price":1000,"kind":"amt","n":9,"m":[1,2,5,10,25,50,250],"p":[120000,90000,40000,15000,5000,2000,300]},{"id":"diamond","en":"Diamond Fever","de":"Diamantfieber","price":10000,"kind":"num","n":10,"m":[1,2,5,10,20,50,100,500],"p":[150000,80000,34000,15000,5000,2000,700,100]},{"id":"million","en":"Millionaire","de":"Millionen-Los","price":100000,"kind":"amt","n":12,"m":[1,2,5,10,20,50,100,500],"p":[150000,85000,32000,15000,5000,2000,700,100]}];
+  const SC_ICON = { clover: '🍀', gold: '💰', diamond: '💎', million: '👑' };
+  const SC_GOLD = { gold: true, million: true };
+  const scT = x => (lang === 'de' && x.de) || x.en;
+  const scTop = t => t.price * t.m[t.m.length - 1];
+  // amounts on the card: short where room is short
+  const scAmt = n => n >= 1e6 ? `${+(n / 1e6).toFixed(2)}M` : n >= 1e5 ? `${+(n / 1e3).toFixed(1)}K` : fmt(n);
+  function scRng(seed) {
+    let a = (seed >>> 0) || 1;
+    return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  }
+  const scShuffle = (a, r) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  // the fields of a card for its prize: values are indexes into the card's prize list, never three alike but for the win
+  function scLayout(t, mult, seed) {
+    const r = scRng(seed), win = t.m.indexOf(mult), K = t.m.length;
+    if (t.kind === 'num') {
+      const pool = scShuffle(Array.from({ length: 40 }, (_, i) => i + 1), r);
+      const wins = pool.slice(0, 2), own = pool.slice(2, 2 + t.n);
+      // smaller prizes show up more often under the numbers
+      const prizes = own.map(() => Math.min(K - 1, Math.floor(Math.pow(r(), 1.7) * K)));
+      if (win >= 0) { const at = Math.floor(r() * t.n); own[at] = wins[Math.floor(r() * 2)]; prizes[at] = win; }
+      const fields = [...wins.map(v => ({ w: true, num: v })), ...own.map((v, i) => ({ num: v, val: prizes[i] }))];
+      const hits = win >= 0 ? fields.map((f, i) => (wins.includes(f.num) ? i : -1)).filter(i => i >= 0) : [];
+      return { fields, hits };
+    }
+    const vals = [], count = {};
+    if (win >= 0) { vals.push(win, win, win); count[win] = 3; }
+    while (vals.length < t.n) {
+      const k = Math.floor(r() * K);
+      if (k === win || (count[k] || 0) >= 2) continue;
+      count[k] = (count[k] || 0) + 1;
+      vals.push(k);
+    }
+    scShuffle(vals, r);
+    const fields = vals.map(v => ({ val: v }));
+    return { fields, hits: win >= 0 ? vals.map((v, i) => (v === win ? i : -1)).filter(i => i >= 0) : [] };
+  }
+  function scFieldHtml(t, f, i) {
+    if (t.kind === 'sym') return `<div class="sct-f" data-f="${i}"><span class="sct-v">${t.sym[f.val]}</span></div>`;
+    if (t.kind === 'amt') return `<div class="sct-f" data-f="${i}"><span class="sct-v">${scAmt(t.price * t.m[f.val])}</span><small>CREDITS</small></div>`;
+    if (f.w) return `<div class="sct-f w" data-f="${i}"><span class="sct-v">${f.num}</span></div>`;
+    return `<div class="sct-f" data-f="${i}"><span class="sct-v">${f.num}</span><small>${scAmt(t.price * t.m[f.val])}</small></div>`;
+  }
+  const SC_RULE = {
+    sym: 'Find 3 matching symbols and win the prize for that symbol.',
+    amt: 'Find 3 matching amounts and win that amount.',
+    num: 'Match one of your numbers with a winning number and win the prize below it.',
+  };
+  function scTicketHtml(t, lay, serial, cls = '') {
+    let play;
+    if (!lay) play = `<div class="sct-play k-${t.kind} n${t.n}"><div class="sct-foilcss">${esc(i18n('SCRATCH'))}</div></div>`;
+    else if (t.kind === 'num') {
+      const fs = lay.fields.map((f, i) => scFieldHtml(t, f, i));
+      play = `<div class="sct-play k-num"><div class="sct-wins"><span>${esc(i18n('Winning numbers'))}</span>${fs.slice(0, 2).join('')}</div><div class="sct-own">${fs.slice(2).join('')}</div></div>`;
+    } else play = `<div class="sct-play k-${t.kind} n${t.n}">${lay.fields.map((f, i) => scFieldHtml(t, f, i)).join('')}</div>`;
+    const legend = t.kind === 'sym' ? `<div class="sct-legend">${t.sym.map((s, i) => `<span>${s} <b>${scAmt(t.price * t.m[i])}</b></span>`).reverse().join('')}</div>` : '';
+    return `<div class="sct t-${t.id}${cls}"><div class="sct-head"><span class="sct-ico" aria-hidden="true">${SC_ICON[t.id]}</span><span class="sct-title">${esc(scT(t))}</span>` +
+      `<span class="sct-top">${esc(i18n('Top prize'))} <b>${scAmt(scTop(t))}</b></span></div>${play}<div class="sct-rule">${esc(i18n(SC_RULE[t.kind]))}</div>${legend}` +
+      `<div class="sct-foot"><span class="sct-price">${fmt(t.price)}</span><span class="sct-bar"></span><span class="sct-no">${serial || '0000-000000'}</span></div></div>`;
+  }
+  let scBusy = false, scLast = null, scCur = null;
+  function scSay(text, kind = '') { showMessage($('scMsg'), i18n(text), kind); }
+  function renderSC() {
+    if (state.mode !== 'lb' || !account) return;
+    const lim = betLimit();
+    const html = SC_T.map(t => {
+      const over = t.price > lim, poor = state.credits < t.price;
+      return `<div class="sc-slot" data-sc-slot="${t.id}"><span class="sc-clip"></span><div class="sc-hang" data-sc-buy="${t.id}" style="--b:${{ clover: '#1f8a45', gold: '#8a5d0c', diamond: '#3a24a0', million: '#2e2616' }[t.id]}">${scTicketHtml(t, null, '', ' mini')}</div>` +
+        `<span class="sc-tag">${scAmt(t.price)}</span><small>${esc(i18n(`Top prize ${fmt(scTop(t))}`))}</small>` +
+        `<button type="button" class="spin${over ? ' over' : ''}" data-sc-buy="${t.id}"${scBusy || over || poor ? ' disabled' : ''}>${esc(over ? i18n('Above your bet limit') : i18n(`Buy · ${fmt(t.price)}`))}</button></div>`;
+    }).join('');
+    setHtml($('scRack'), html);
+    const s = state.sc || {};
+    setHtml($('scStats'), s.bought ? [[i18n('Bought'), fmt(s.bought)], [i18n('Spent'), fmt(s.spent || 0)], [i18n('Won'), fmt(s.won || 0)], [i18n('Best prize'), fmt(s.best || 0)]].map(([k, v]) => `<span>${esc(k)} <b>${v}</b></span>`).join('') : '');
+    const odds = SC_T.map(t => {
+      const tot = t.p.reduce((a, b) => a + b, 0), rtp = t.m.reduce((a, m, i) => a + m * t.p[i], 0) / 1e6;
+      return `<h4>${SC_ICON[t.id]} ${esc(scT(t))} · ${fmt(t.price)}</h4><table><thead><tr><th>${esc(i18n('Prize'))}</th><th>${esc(i18n('Chance'))}</th></tr></thead><tbody>` +
+        t.m.map((m, i) => `<tr><td>${t.kind === 'sym' ? t.sym[i] + ' ' : ''}${fmt(t.price * m)}${m === 1 ? ` (${esc(i18n('money back'))})` : ''}</td><td>1 : ${fmt(Math.round(1e6 / t.p[i]))}</td></tr>`).reverse().join('') +
+        `<tr><td><b>${esc(i18n('Any prize'))}</b></td><td><b>1 : ${(1e6 / tot).toFixed(1)}</b></td></tr></tbody></table><p class="note">${esc(i18n(`Pays back ${(rtp * 100).toFixed(0)}% on average.`))}</p>`;
+    }).join('');
+    setHtml($('scOdds'), odds);
+  }
+  async function scBuy(id) {
+    if (scBusy || !account) return;
+    const t = SC_T.find(x => x.id === id);
+    if (!t) return;
+    const say = (m, k) => (!$('scPlay').hidden ? (($('scHint').textContent = i18n(m)), 0) : scSay(m, k));
+    if (!srvOn()) { say('Scratchcards need the online database.', 'lose'); return; }
+    if (t.price > betLimit()) { say(limitMsg(), 'lose'); return; }
+    if (state.credits < t.price) { say(`Not enough credits for a ${scT(t)} (${fmt(t.price)}).`, 'lose'); return; }
+    scBusy = true;
+    renderSC();
+    document.querySelector(`[data-sc-slot="${id}"]`)?.classList.add('pull');
+    let res;
+    try { res = await srvCall('game_scratch', { p_act: 'buy', p_tier: id }); }
+    catch (e) {
+      scBusy = false; renderSC();
+      const m = e?.message || '';
+      say(/could not find the function|PGRST202/i.test(m) ? 'This needs the “Scratchcards” part of supabase-setup.sql.' : /limit/.test(m) ? limitMsg() : srvErr(e), 'lose');
+      return;
+    }
+    // the prize is paid already; the credits shown wait for the card to be scratched free
+    const x = srvApply(res, res?.r?.win || 0);
+    scBusy = false;
+    scLast = id;
+    render();
+    scShow(t, x, res.out);
+  }
+  // ----- the scratch table -----
+  let scNoise = null;
+  function scSoundOn() {
+    const c = sound.ensure();
+    if (!c) return null;
+    if (!scNoise || scNoise.c !== c) {
+      const b = c.createBuffer(1, c.sampleRate, c.sampleRate), d = b.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      scNoise = { c, b };
+    }
+    const src = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+    src.buffer = scNoise.b; src.loop = true;
+    f.type = 'bandpass'; f.frequency.value = 2600; f.Q.value = 0.8;
+    g.gain.value = 0;
+    src.connect(f).connect(g).connect(c.destination);
+    src.start();
+    return { c, src, f, g };
+  }
+  function scSoundOff(s) {
+    if (!s) return;
+    try { s.g.gain.setTargetAtTime(0, s.c.currentTime, 0.03); s.src.stop(s.c.currentTime + 0.25); } catch {}
+  }
+  // foil flakes that fall off the card
+  const scFx = { parts: [], on: false, cv: null, ctx: null };
+  function scFlakes(x, y, n, gold, vx = 0) {
+    if (reduceMotion) return;
+    const cap = power.eco ? 60 : 220;
+    for (let k = 0; k < n && scFx.parts.length < cap; k++) {
+      const c = gold ? ['#f7dc8a', '#c9961f', '#fff3c4', '#a87419'] : ['#e8ebf0', '#aab0ba', '#ffffff', '#8d94a0'];
+      scFx.parts.push({ x: x + (Math.random() - 0.5) * 10, y: y + (Math.random() - 0.5) * 10, vx: vx * 0.15 + (Math.random() - 0.5) * 120, vy: -40 - Math.random() * 120, s: 1.5 + Math.random() * 3.2, r: Math.random() * 6, vr: (Math.random() - 0.5) * 14, life: 0.7 + Math.random() * 0.7, t: 0, c: c[k % 4] });
+    }
+    if (!scFx.on) { scFx.on = true; scFx.last = 0; requestAnimationFrame(scFxTick); }
+  }
+  function scFxTick(ts) {
+    const cv = $('scFlakes'), ctx = cv.getContext('2d');
+    const dpr = Math.min(1.5, devicePixelRatio || 1), W = innerWidth, H = innerHeight;
+    if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+    const dt = scFx.last ? Math.min(0.05, (ts - scFx.last) / 1000) : 0.016;
+    scFx.last = ts;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    scFx.parts = scFx.parts.filter(p => (p.t += dt) < p.life);
+    for (const p of scFx.parts) {
+      p.vy += 900 * dt; p.vx *= 0.98; p.x += p.vx * dt; p.y += p.vy * dt; p.r += p.vr * dt;
+      ctx.globalAlpha = Math.max(0, 1 - p.t / p.life);
+      ctx.fillStyle = p.c;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.fillRect(-p.s, -p.s * 0.45, p.s * 2, p.s * 0.9); ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+    if (scFx.parts.length) requestAnimationFrame(scFxTick);
+    else { scFx.on = false; ctx.clearRect(0, 0, W, H); }
+  }
+  // the silver (or gold) layer over the play area, with the fields pressed into it
+  function scPaintFoil(ctx, W, H, gold, rects, diamond) {
+    const g = ctx.createLinearGradient(0, 0, W, H);
+    const st = gold ? ['#b8862a', '#f7dc8a', '#b07c1c', '#e9c86c', '#a87419'] : ['#a9afb9', '#eef0f4', '#a3a9b4', '#dfe2e7', '#9aa1ac'];
+    st.forEach((c, i) => g.addColorStop(i / (st.length - 1), c));
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+    if (diamond) {
+      const h = ctx.createLinearGradient(0, H, W, 0);
+      ['#ff7ad933', '#7fe7ff33', '#9dff8a2a', '#ffe14f2a', '#ff7ad933'].forEach((c, i) => h.addColorStop(i / 4, c));
+      ctx.fillStyle = h; ctx.fillRect(0, 0, W, H);
+    }
+    // a fine grain and a sheen
+    for (let k = 0, n = Math.round(W * H / 26); k < n; k++) {
+      ctx.fillStyle = Math.random() < 0.5 ? '#ffffff22' : '#0000001a';
+      ctx.fillRect(Math.random() * W, Math.random() * H, 1 + Math.random(), 1 + Math.random());
+    }
+    ctx.save();
+    ctx.translate(W / 2, H / 2); ctx.rotate(-0.35);
+    ctx.font = `700 ${Math.max(9, Math.round(W / 22))}px system-ui, sans-serif`;
+    ctx.fillStyle = gold ? '#7a54101f' : '#5a62701c';
+    ctx.textAlign = 'center';
+    for (let y = -H; y < H; y += W / 9) ctx.fillText('LUCKY ✦ LUCKY ✦ LUCKY ✦ LUCKY ✦ LUCKY ✦ LUCKY', 0, y);
+    ctx.restore();
+    // where the fields are, pressed into the foil
+    for (const r of rects) {
+      ctx.save();
+      ctx.beginPath(); ctx.roundRect(r.x + 1, r.y + 1, r.w - 2, r.h - 2, Math.min(r.w, r.h) * (r.round ? 0.5 : 0.14));
+      ctx.lineWidth = 2; ctx.strokeStyle = '#ffffff55'; ctx.stroke();
+      ctx.translate(1.2, 1.2); ctx.strokeStyle = '#00000022'; ctx.stroke();
+      ctx.restore();
+      ctx.font = `${Math.round(Math.min(r.w, r.h) * 0.38)}px system-ui, sans-serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = gold ? '#7a541055' : '#5a627055';
+      ctx.fillText(r.round ? '★' : '?', r.x + r.w / 2, r.y + r.h / 2 + 1);
+    }
+  }
+  let scLive = null;
+  function scShow(t, x, out) {
+    const ov = $('scPlay'), table = $('scTable');
+    scLive?.stop?.();
+    const old = table.querySelector('.sct:not(.away)');
+    if (old) { old.classList.add('away'); setTimeout(() => old.remove(), 520); }
+    const seed = Number(x.seed) || Math.floor(Math.random() * 2e9), mult = Number(x.mult) || 0, win = Number(x.win) || 0;
+    const lay = scLayout(t, mult, seed);
+    const serial = `${String(seed % 10000).padStart(4, '0')}-${String(Math.floor(seed / 10000) % 1000000).padStart(6, '0')}`;
+    table.insertAdjacentHTML('beforeend', scTicketHtml(t, lay, serial, reduceMotion ? ' big' : ' big enter'));
+    const tk = table.lastElementChild;
+    ov.hidden = false;
+    $('scResult').hidden = true;
+    $('scAgain').hidden = true;
+    $('scAuto').hidden = false;
+    $('scBack').textContent = i18n('Back to the kiosk');
+    $('scHint').textContent = i18n('Scratch the silver layer with your finger or the mouse');
+    audio.noise(0.22, { type: 'highpass', freq: 2400, to: 5200, vol: 0.18, attack: 0.005 });
+    setTimeout(() => audio.whoosh(), 80);
+    setTimeout(() => { sound.clunk(); tk.classList.remove('enter'); }, reduceMotion ? 0 : 640);
+    // ---- the foil
+    const play = tk.querySelector('.sct-play'), cv = document.createElement('canvas');
+    cv.className = 'sct-foil';
+    play.append(cv);
+    const W = play.clientWidth, H = play.clientHeight, dpr = Math.min(2, devicePixelRatio || 1), gold = !!SC_GOLD[t.id];
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    const ctx = cv.getContext('2d');
+    ctx.scale(dpr, dpr);
+    const els = [...play.querySelectorAll('.sct-f')];
+    const rects = els.map(el => ({ x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight, round: el.classList.contains('w') }));
+    scPaintFoil(ctx, W, H, gold, rects, t.id === 'diamond');
+    // a coarse grid of what is scratched off already, to tell when a field is free
+    const C = 5, cols = Math.ceil(W / C), rows = Math.ceil(H / C), clear = new Uint8Array(cols * rows);
+    const cells = rects.map(rc => { const a = []; for (let y = Math.floor(rc.y / C); y < Math.ceil((rc.y + rc.h) / C); y++) for (let xx = Math.floor(rc.x / C); xx < Math.ceil((rc.x + rc.w) / C); xx++) if (xx < cols && y < rows) a.push(y * cols + xx); return a; });
+    const shown = new Array(rects.length).fill(false);
+    const R = Math.max(11, W * 0.055);
+    let done = false, finished = false, nShown = 0, lastCheck = 0, hitSaid = false;
+    const coin = $('scCoin');
+    const mark = (x0, y0, x1, y1, rr) => {
+      const minX = Math.max(0, Math.floor((Math.min(x0, x1) - rr) / C)), maxX = Math.min(cols - 1, Math.floor((Math.max(x0, x1) + rr) / C));
+      const minY = Math.max(0, Math.floor((Math.min(y0, y1) - rr) / C)), maxY = Math.min(rows - 1, Math.floor((Math.max(y0, y1) + rr) / C));
+      const dx = x1 - x0, dy = y1 - y0, L2 = dx * dx + dy * dy || 1;
+      for (let cy = minY; cy <= maxY; cy++) for (let cx = minX; cx <= maxX; cx++) {
+        const px = cx * C + C / 2, py = cy * C + C / 2;
+        const u = Math.max(0, Math.min(1, ((px - x0) * dx + (py - y0) * dy) / L2));
+        const ex = x0 + u * dx - px, ey = y0 + u * dy - py;
+        if (ex * ex + ey * ey <= rr * rr) clear[cy * cols + cx] = 1;
+      }
+    };
+    const scrape = (x0, y0, x1, y1) => {
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = R * 2;
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+      // a rough edge, like a real coin leaves
+      for (let k = 0; k < 3; k++) { const a = Math.random() * Math.PI * 2, d = R * (0.8 + Math.random() * 0.35); ctx.beginPath(); ctx.arc(x1 + Math.cos(a) * d, y1 + Math.sin(a) * d, R * (0.18 + Math.random() * 0.2), 0, Math.PI * 2); ctx.fill(); }
+      ctx.globalCompositeOperation = 'source-over';
+      mark(x0, y0, x1, y1, R);
+    };
+    const toScreen = (x, y) => { const b = cv.getBoundingClientRect(); return [b.left + x * b.width / W, b.top + y * b.height / H]; };
+    const check = force => {
+      const now = performance.now();
+      if (!force && now - lastCheck < 70) return;
+      lastCheck = now;
+      rects.forEach((rc, i) => {
+        if (shown[i]) return;
+        let n = 0;
+        for (const c of cells[i]) n += clear[c];
+        if (n / Math.max(1, cells[i].length) >= 0.5) reveal(i);
+      });
+    };
+    const reveal = (i, quiet) => {
+      if (shown[i]) return;
+      shown[i] = true; nShown++;
+      const rc = rects[i];
+      for (const c of cells[i]) clear[c] = 1;
+      // the rest of the foil on that field snaps off
+      let k = 0;
+      const peel = () => {
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.globalAlpha = k < 4 ? 0.45 : 1;
+        ctx.beginPath(); ctx.roundRect(rc.x - 1, rc.y - 1, rc.w + 2, rc.h + 2, Math.min(rc.w, rc.h) * (rc.round ? 0.5 : 0.14)); ctx.fill();
+        ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+        if (++k <= 4) requestAnimationFrame(peel);
+      };
+      peel();
+      const [sx, sy] = toScreen(rc.x + rc.w / 2, rc.y + rc.h / 2);
+      scFlakes(sx, sy, quiet ? 4 : 12, gold);
+      els[i].classList.add('shown');
+      if (!quiet) sound.tone(1400 + nShown * 60, 0, 0.05, 'triangle', 0.035);
+      // three alike (or the number and its match) are all out: they light up
+      if (lay.hits.includes(i)) {
+        const out2 = lay.hits.filter(h => shown[h]).length;
+        if (out2 === lay.hits.length && !hitSaid) { hitSaid = true; lay.hits.forEach(h => els[h].classList.add('hit')); sound.chime(); if (navigator.vibrate) try { navigator.vibrate([20, 40, 20]); } catch {} }
+        else if (out2 === lay.hits.length - 1 && lay.hits.length === 3 && !quiet) sound.tease();
+      }
+      if (nShown === rects.length) setTimeout(finish, quiet ? 250 : 450);
+    };
+    // ---- scratching with the finger or the mouse
+    let down = false, lx = 0, ly = 0, lt = 0, snd = null, quietT = 0, buzzAt = 0;
+    const local = e => { const b = cv.getBoundingClientRect(); return [(e.clientX - b.left) * W / b.width, (e.clientY - b.top) * H / b.height]; };
+    const moveCoin = (e, ang = 0) => { coin.style.transform = `translate(${e.clientX}px, ${e.clientY}px) rotate(${ang}deg)`; };
+    cv.addEventListener('pointerdown', e => {
+      if (done) return;
+      e.preventDefault();
+      try { cv.setPointerCapture(e.pointerId); } catch {}
+      down = true; [lx, ly] = local(e); lt = performance.now();
+      coin.classList.add('on'); moveCoin(e);
+      snd = snd || scSoundOn();
+      scrape(lx, ly, lx + 0.1, ly + 0.1);
+      check();
+    });
+    cv.addEventListener('pointermove', e => {
+      if (matchMedia('(pointer: fine)').matches && !done) { coin.classList.add('on'); }
+      if (!down) { if (!done) moveCoin(e); return; }
+      const [x, y] = local(e), now = performance.now();
+      const d = Math.hypot(x - lx, y - ly);
+      if (d < 1) return;
+      scrape(lx, ly, x, y);
+      const [sx, sy] = toScreen(x, y);
+      scFlakes(sx, sy, Math.min(5, 1 + Math.floor(d / 7)), gold, (x - lx) * 30);
+      moveCoin(e, Math.atan2(y - ly, x - lx) * 57.3);
+      if (snd) {
+        const v = d / Math.max(1, now - lt);
+        snd.g.gain.setTargetAtTime(Math.min(0.22, 0.04 + v * 0.09), snd.c.currentTime, 0.02);
+        snd.f.frequency.setTargetAtTime(1600 + Math.min(3200, v * 1400), snd.c.currentTime, 0.03);
+        clearTimeout(quietT);
+        quietT = setTimeout(() => snd?.g.gain.setTargetAtTime(0, snd.c.currentTime, 0.04), 70);
+      }
+      if (e.pointerType === 'touch' && navigator.vibrate && now - buzzAt > 70) { buzzAt = now; try { navigator.vibrate(4); } catch {} }
+      lx = x; ly = y; lt = now;
+      check();
+    });
+    const up = () => { if (!down) return; down = false; check(true); scSoundOff(snd); snd = null; if (!matchMedia('(pointer: fine)').matches) coin.classList.remove('on'); };
+    cv.addEventListener('pointerup', up);
+    cv.addEventListener('pointercancel', up);
+    cv.addEventListener('pointerleave', () => { if (!down) coin.classList.remove('on'); });
+    // ---- the coin scratches it all by itself
+    let autoRaf = 0;
+    const auto = () => {
+      if (done) return;
+      done = true;
+      $('scAuto').hidden = true;
+      if (reduceMotion) { rects.forEach((_, i) => reveal(i, true)); return; }
+      const pts = [], step = R * 1.5;
+      let dir = 1;
+      for (let y = R * 0.6; y < H + R * 0.5; y += step) { pts.push([dir > 0 ? R * 0.4 : W - R * 0.4, y], [dir > 0 ? W - R * 0.4 : R * 0.4, y + step * 0.45]); dir = -dir; }
+      const seg = pts.slice(1).map((p, i) => [pts[i], p, Math.hypot(p[0] - pts[i][0], p[1] - pts[i][1])]);
+      const total = seg.reduce((a, s) => a + s[2], 0), dur = 1500;
+      let t0 = 0, at = 0, prev = pts[0];
+      const s2 = scSoundOn();
+      if (s2) { s2.g.gain.setTargetAtTime(0.13, s2.c.currentTime, 0.04); s2.f.frequency.value = 3400; }
+      coin.classList.add('on');
+      const frame = ts => {
+        if (!t0) t0 = ts;
+        const want = Math.min(total, (ts - t0) / dur * total);
+        while (at < want) {
+          let rest = Math.min(want, at + 6) , acc = 0, p = pts[0];
+          for (const [a, b, l] of seg) { if (acc + l >= rest) { const u = (rest - acc) / l; p = [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u]; break; } acc += l; p = b; }
+          scrape(prev[0], prev[1], p[0], p[1]);
+          prev = p; at = rest;
+        }
+        const [sx, sy] = toScreen(prev[0], prev[1]);
+        coin.style.transform = `translate(${sx}px, ${sy}px) rotate(${(ts - t0) / 3}deg)`;
+        scFlakes(sx, sy, 3, gold);
+        check(true);
+        if (want < total && !finished) autoRaf = requestAnimationFrame(frame);
+        else { scSoundOff(s2); coin.classList.remove('on'); rects.forEach((_, i) => setTimeout(() => reveal(i, true), i * 40)); }
+      };
+      autoRaf = requestAnimationFrame(frame);
+    };
+    // ---- the result
+    const finish = () => {
+      if (finished) return;
+      finished = true; done = true;
+      cancelAnimationFrame(autoRaf);
+      cv.classList.add('gone');
+      coin.classList.remove('on');
+      $('scAuto').hidden = true;
+      srvRelease(win);
+      const big = mult >= 10, back = mult === 1;
+      // the stamp's text gets smaller the longer it is, so it always fits the card
+      const word = i18n(!win ? 'NO WIN' : back ? 'MONEY BACK' : 'WINNER');
+      tk.insertAdjacentHTML('beforeend', `<div class="sct-stamp ${win ? 'win' : 'lose'}" style="font-size:${Math.min(2.3, 15 / word.length).toFixed(2)}em">${esc(word)}${win ? `<small>+${fmt(win)}</small>` : ''}</div>`);
+      setTimeout(() => { tk.classList.add('thump'); sound.clunk(); audio.noise(0.08, { type: 'lowpass', freq: 400, vol: 0.35 }); }, 160);
+      setTimeout(() => tk.classList.remove('thump'), 600);
+      const res = $('scResult');
+      res.className = `sc-result ${win > t.price ? 'win' : back ? 'back' : 'lose'}`;
+      res.textContent = i18n(!win ? 'No win this time.' : back ? `Your ${fmt(win)} back.` : `You win ${fmt(win)}! (${mult}×)`);
+      res.hidden = false;
+      const b = tk.getBoundingClientRect(), cx = b.left + b.width / 2, cy = b.top + b.height / 2;
+      if (win > t.price) {
+        setTimeout(() => {
+          (big ? sound.bigWin : sound.win).call(sound);
+          audio.coins(Math.min(16, 3 + Math.round(Math.log2(mult) * 2)));
+          fxTop.coinBurst(cx, cy, Math.min(60, 12 + mult), 9);
+          if (big) for (let k = 0; k < (mult >= 50 ? 90 : 40); k++) setTimeout(() => fxTop.confetti(CONFETTI), k * 8);
+          if (mult >= 50) { fireworks(mult >= 100 ? 12 : 6); sound.fanfare(); }
+          floatText('+' + fmt(win));
+        }, 300);
+      } else if (!win) setTimeout(() => sound.lose(), 250);
+      else setTimeout(() => sound.chime(), 250);
+      $('scHint').textContent = '';
+      $('scAgain').textContent = i18n(`Another · ${fmt(t.price)}`);
+      $('scAgain').disabled = state.credits < t.price || t.price > betLimit();
+      $('scAgain').hidden = false;
+      srvShowOut(out);
+      renderSC();
+    };
+    // leaving or skipping: everything comes off at once
+    const reveal_all = () => { if (finished) return; done = true; cancelAnimationFrame(autoRaf); rects.forEach((_, i) => reveal(i, true)); finish(); };
+    scLive = { auto, now: reveal_all, stop: reveal_all, done: () => finished };
+  }
+  function scClose() {
+    scLive?.now();
+    $('scPlay').hidden = true;
+    $('scCoin').classList.remove('on');
+    setTimeout(() => { if ($('scPlay').hidden) $('scTable').innerHTML = ''; }, 50);
+    render();
+    while (pendingLevels.length) levelUp(pendingLevels.shift());
+  }
+  $('scRack').addEventListener('click', e => { const b = e.target.closest('[data-sc-buy]'); if (b && !b.disabled && !document.querySelector(`button[data-sc-buy="${b.dataset.scBuy}"]`)?.disabled) scBuy(b.dataset.scBuy); });
+  $('scAuto').addEventListener('click', () => scLive?.auto());
+  $('scAgain').addEventListener('click', () => { if (scLast) scBuy(scLast); });
+  $('scBack').addEventListener('click', scClose);
+  document.addEventListener('keydown', e => {
+    if ($('scPlay').hidden) return;
+    if (e.key === 'Escape') { e.preventDefault(); scClose(); }
+    else if ((e.key === ' ' || e.key === 'Enter') && e.target.tagName !== 'BUTTON') { e.preventDefault(); if (scLive && !scLive.done()) scLive.auto(); else if (!$('scAgain').disabled) $('scAgain').click(); }
+  });
+
   // ---------- XP, Lucky-Pass and the missions of every game ----------
   const GM_TXT = {
     bj: { name: 'Blackjack', play: n => `Play ${n} hands`, win: n => `Win ${n} hands`, big: n => n === 1 ? 'Get a blackjack or a double win' : `Get ${n} blackjacks or double wins` },
@@ -13669,7 +14246,7 @@ button, summary, .rl-cell { touch-action: manipulation; -webkit-tap-highlight-co
   // Which game each online player has open, shown in the highscores and on the lobby cards.
   const GAME_INFO = {
     slots: ['🎰', 'Slots'], bj: ['🃏', 'Blackjack'], rl: ['🎡', 'Roulette'], pk: ['♠️', 'Poker'], pl: ['🔻', 'Plinko'],
-    ck: ['🐔', 'Chicken'], hr: ['🏇', 'Horse Racing'], rk: ['🚀', 'Rocket'], lobby: ['🏠', 'Lobby'], shop: ['🛍️', 'Shop'], pass: ['🍀', 'Lucky-Pass'], inv: ['🏢', 'Investments'], lb: ['🎴', 'Lucky-Booster'], jb: ['🍔', 'Lucky Burger'], cf: ['🪙', 'Coin Flip'], st: ['📈', 'Stock Market'],
+    ck: ['🐔', 'Chicken'], hr: ['🏇', 'Horse Racing'], rk: ['🚀', 'Rocket'], lobby: ['🏠', 'Lobby'], shop: ['🛍️', 'Shop'], pass: ['🍀', 'Lucky-Pass'], inv: ['🏢', 'Investments'], lb: ['🏪', 'Kiosk'], jb: ['🍔', 'Lucky Burger'], cf: ['🪙', 'Coin Flip'], st: ['📈', 'Stock Market'],
   };
   let playing = new Map(), presenceGame = null;
   function currentGame() {

@@ -13873,3 +13873,130 @@ begin
   raise exception 'unknown';
 end;
 $$;
+
+
+-- ---------------------------------------------------------------------------
+-- Scratchcards: run this part once (after "Lucky-Booster: Legendary and Treasure Boosters").
+-- Four scratchcards in the kiosk, next to the boosters. The database decides the prize the moment a card is bought
+-- (the page only lets you scratch it free) and pays it at once; the card's price has to be within the bet limit.
+-- per card: price and its prizes as [multiple of the price, chance out of 1,000,000]
+create or replace function public.lr_sc_tickets() returns jsonb language sql immutable as $$
+  select '{"clover":{"price":100,"p":[[1,200000],[2,110000],[5,40000],[10,15000],[20,5000],[100,800]]},"gold":{"price":1000,"p":[[1,120000],[2,90000],[5,40000],[10,15000],[25,5000],[50,2000],[250,300]]},"diamond":{"price":10000,"p":[[1,150000],[2,80000],[5,34000],[10,15000],[20,5000],[50,2000],[100,700],[500,100]]},"million":{"price":100000,"p":[[1,150000],[2,85000],[5,32000],[10,15000],[20,5000],[50,2000],[100,700],[500,100]]}}'::jsonb
+$$;
+create or replace function public.game_scratch(p_act text, p_tier text default null)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  p public.players := public.lr_me();
+  c jsonb := public.lr_cfg();
+  g jsonb := public.lr_g(p);
+  t jsonb;
+  st jsonb := case when jsonb_typeof(g -> 'sc') = 'object' then g -> 'sc' else '{}'::jsonb end;
+  lf numeric := public.lr_lf(auth.uid());
+  price numeric;
+  x integer;
+  acc numeric;
+  mult numeric;
+  win numeric;
+  e jsonb;
+begin
+  if p_act <> 'buy' then raise exception 'no such action'; end if;
+  if (c ->> 'maintenance')::boolean and not p.is_admin then raise exception 'paused'; end if;
+  t := public.lr_sc_tickets() -> p_tier;
+  if t is null then raise exception 'no such ticket'; end if;
+  price := (t ->> 'price')::numeric;
+  if price > public.lr_lim(c, p.level) then raise exception 'limit'; end if;
+  if public.lr_n(g, 'credits') < price then raise exception 'credits'; end if;
+  -- the prize (the player's luck setting can draw a win again, or a blank)
+  for att in 1 .. 12 loop
+    x := public.lr_rand(1000000);
+    acc := 0;
+    mult := 0;
+    for e in select y from jsonb_array_elements(t -> 'p') y loop
+      acc := acc + (e ->> 1)::numeric;
+      if x < acc then mult := (e ->> 0)::numeric; exit; end if;
+    end loop;
+    exit when att = 12 or not public.lr_reroll(lf, mult > 1, att);
+  end loop;
+  win := price * mult;
+  g := public.lr_add(g, 'credits', win - price);
+  st := st || jsonb_build_object('bought', public.lr_n(st, 'bought') + 1, 'spent', public.lr_n(st, 'spent') + price,
+    'won', public.lr_n(st, 'won') + win, 'best', greatest(public.lr_n(st, 'best'), win));
+  g := g || jsonb_build_object('sc', st, 'lastWin', win, 'best', greatest(public.lr_n(g, 'best'), win - price));
+  g := public.lr_xp(g, c, public.lr_bet_xp(price, win > price));
+  g := public.lr_ach(g, jsonb_build_object('win', greatest(0, win - price), 'bet', price));
+  return public.lr_put(p.id, g, jsonb_build_object('tier', p_tier, 'price', price, 'mult', mult, 'win', win, 'seed', public.lr_rand(2000000000)));
+end;
+$$;
+create or replace function public.lr_protect(n jsonb, o jsonb)
+returns jsonb
+language plpgsql
+immutable
+as $$
+declare
+  k text;
+  p text[];
+begin
+  if n is null or jsonb_typeof(n) <> 'object' then n := '{}'::jsonb; end if;
+  if o is null or jsonb_typeof(o) <> 'object' then o := '{}'::jsonb; end if;
+  foreach k in array array['credits', 'level', 'prestige', 'spins', 'jackpots', 'best', 'lastWin', 'owned', 'xp', 'streak', 'stars', 'starBank',
+    'freeSpins', 'freeBet', 'freeTotal', 'nudges', 'missions', 'missionsDone', 'ach', 'sl', 'job', 'jobReset', 'rrAt', 'srv', 'evGifts', 'wildSpins', 'wildBet', 'wildTotal', 'pass', 'inv', 'gm', 'cards', 'lb', 'sc'] loop
+    if o ? k then n := jsonb_set(n, array[k], o -> k); else n := n - k; end if;
+  end loop;
+  foreach p slice 1 in array array[['bj', 'round'], ['bj', 'hands'], ['bj', 'lastBet'], ['bj', 'shoe'], ['pl', 'drops'], ['pl', 'pending'],
+    ['ck', 'round'], ['ck', 'games'], ['cf', 'round'], ['cf', 'flips'], ['pk', 'solo'], ['pk', 'hands']] loop
+    if jsonb_typeof(n -> p[1]) is distinct from 'object' then n := jsonb_set(n, array[p[1]], '{}'::jsonb); end if;
+    if o #> p is not null then n := jsonb_set(n, p, o #> p); else n := n #- p; end if;
+  end loop;
+  return n;
+end;
+$$;
+create or replace function public.lr_view(g jsonb)
+returns jsonb
+language sql
+immutable
+as $$
+  select jsonb_build_object('credits', g -> 'credits', 'level', g -> 'level', 'prestige', g -> 'prestige', 'spins', g -> 'spins', 'jackpots', g -> 'jackpots',
+    'best', g -> 'best', 'lastWin', g -> 'lastWin', 'owned', g -> 'owned', 'xp', g -> 'xp', 'streak', g -> 'streak', 'stars', g -> 'stars',
+    'starBank', g -> 'starBank', 'freeSpins', g -> 'freeSpins', 'freeBet', g -> 'freeBet', 'freeTotal', g -> 'freeTotal', 'nudges', g -> 'nudges',
+    'missions', g -> 'missions', 'missionsDone', g -> 'missionsDone', 'ach', g -> 'ach', 'sl', g -> 'sl', 'job', g -> 'job', 'jobReset', g -> 'jobReset',
+    'rrAt', g -> 'rrAt', 'evGifts', g -> 'evGifts', 'wildSpins', g -> 'wildSpins', 'wildBet', g -> 'wildBet', 'wildTotal', g -> 'wildTotal', 'pass', g -> 'pass', 'inv', g -> 'inv', 'gm', g -> 'gm', 'cards', g -> 'cards', 'lb', g -> 'lb', 'sc', g -> 'sc',
+    'bj', jsonb_build_object('round', g #> '{bj,round}', 'hands', g #> '{bj,hands}', 'lastBet', g #> '{bj,lastBet}', 'shoeLeft', g #> '{bj,shoeLeft}'),
+    'pl', jsonb_build_object('drops', g #> '{pl,drops}'), 'ck', jsonb_build_object('round', g #> '{ck,round}', 'games', g #> '{ck,games}'),
+    'cf', jsonb_build_object('round', g #> '{cf,round}', 'flips', g #> '{cf,flips}'), 'pk', jsonb_build_object('solo', g #> '{pk,solo}', 'hands', g #> '{pk,hands}'))
+$$;
+create or replace function public.game_restart()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  p public.players := public.lr_me();
+  c jsonb := public.lr_cfg();
+  g jsonb := public.lr_g(p);
+begin
+  -- starting over gives up everything: chips at the poker table and a running Russian roulette must be settled
+  -- first; shares, open bets and lotto tickets go with the old game (so they can't be carried into the new one)
+  if exists (select 1 from public.poker_seats where player_id = p.id) then raise exception 'leave the poker table first'; end if;
+  if exists (select 1 from public.rr_games where status in ('pending', 'active') and p.id in (challenger, opponent)) then raise exception 'russian roulette running'; end if;
+  delete from public.stock_holdings where player = p.id;
+  delete from public.horse_bets where player = p.id and not claimed;
+  delete from public.roulette_bets where player = p.id and not claimed;
+  delete from public.rocket_bets where player = p.id and not claimed;
+  delete from public.lotto_tickets where player = p.id and not claimed;
+  delete from public.lr_secret where player = p.id;
+  g := g || jsonb_build_object('credits', (c ->> 'startCredits')::numeric, 'level', 1, 'xp', 0, 'spins', 0, 'jackpots', 0, 'best', 0, 'lastWin', 0,
+    -- cosmetics from the Lucky-Pass stay (the pass itself stays too); investments go with the old game, the unlock stays
+    'owned', coalesce(g #> '{pass,cos}', '{}'::jsonb), 'gm', '{}'::jsonb, 'cards', '{}'::jsonb, 'lb', '{}'::jsonb, 'sc', '{}'::jsonb, 'inv', jsonb_build_object('unlocked', coalesce((g #>> '{inv,unlocked}')::boolean, false)), 'missions', '[]'::jsonb, 'missionsDone', 0, 'streak', 0, 'stars', 0, 'starBank', 0, 'freeSpins', 0,
+    'freeBet', 0, 'freeTotal', 0, 'wildSpins', 0, 'wildBet', 0, 'wildTotal', 0, 'nudges', 0, 'sl', '{}'::jsonb, 'job', jsonb_build_object('worked', 0, 'earned', 0, 'shifts', 0, 'pos', 0),
+    'jobReset', floor(extract(epoch from now()) * 1000));
+  g := g || jsonb_build_object('bj', coalesce(g -> 'bj', '{}'::jsonb) || '{"round": null, "hands": 0, "lastBet": 0, "shoe": []}',
+    'pl', coalesce(g -> 'pl', '{}'::jsonb) || '{"drops": 0, "pending": []}', 'ck', coalesce(g -> 'ck', '{}'::jsonb) || '{"round": null, "games": 0}',
+    'cf', coalesce(g -> 'cf', '{}'::jsonb) || '{"round": null, "flips": 0}', 'pk', coalesce(g -> 'pk', '{}'::jsonb) || '{"solo": null, "hands": 0}');
+  return public.lr_put(p.id, public.lr_fill(g), '{}'::jsonb);
+end;
+$$;
