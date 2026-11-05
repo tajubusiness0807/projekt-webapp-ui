@@ -14254,3 +14254,177 @@ end;
 $$;
 revoke execute on function public.game_scratch(text, text, boolean) from public, anon;
 grant execute on function public.game_scratch(text, text, boolean) to authenticated;
+
+
+-- ---------------------------------------------------------------------------
+-- Collection bonuses: run this part once (after "Kiosk gifts").
+-- A complete collection (all 5 cards, plain or holo) pays a bonus once: per card 1,000 (common), 4,000 (rare),
+-- 15,000 (epic), 75,000 (legendary) or 300,000 (mythic). All 5 as holo pay five times that once more, and the
+-- whole album (all 100 cards) pays 10,000,000 once. Selling a card later takes nothing back, and a collection pays
+-- only once even when it is completed again.
+create or replace function public.lr_lb_sets(g jsonb) returns jsonb language plpgsql volatile as $$
+declare
+  cs jsonb := public.lr_lb_cards();
+  own jsonb := case when jsonb_typeof(g -> 'cards') = 'object' then g -> 'cards' else '{}'::jsonb end;
+  st jsonb := case when jsonb_typeof(g -> 'lb') = 'object' then g -> 'lb' else '{}'::jsonb end;
+  sets jsonb;
+  o jsonb;
+  have boolean;
+  holo boolean;
+  everything boolean := true;
+  lvl integer;
+  pay numeric;
+  tot numeric := 0;
+  n integer;
+  h integer;
+begin
+  sets := case when jsonb_typeof(st -> 'sets') = 'object' then st -> 'sets' else '{}'::jsonb end;
+  for ci in 0 .. 19 loop
+    have := true; holo := true; pay := 0;
+    for k in 1 .. 5 loop
+      o := own -> (ci * 5 + k)::text;
+      n := coalesce((o ->> 0)::integer, 0); h := coalesce((o ->> 1)::integer, 0);
+      if n + h <= 0 then have := false; end if;
+      if h <= 0 then holo := false; end if;
+      pay := pay + (array[1000, 4000, 15000, 75000, 300000])[(cs -> (ci * 5 + k - 1) ->> 0)::integer + 1];
+    end loop;
+    if not have then everything := false; end if;
+    lvl := coalesce((sets ->> ci::text)::integer, 0);
+    if have and lvl < 1 then
+      tot := tot + pay; lvl := 1;
+      g := public.lr_out(g, 'lbsets', jsonb_build_object('c', ci, 'holo', false, 'pay', pay));
+    end if;
+    if holo and lvl < 2 then
+      tot := tot + pay * 5; lvl := 2;
+      g := public.lr_out(g, 'lbsets', jsonb_build_object('c', ci, 'holo', true, 'pay', pay * 5));
+    end if;
+    if lvl > 0 then sets := sets || jsonb_build_object(ci::text, lvl); end if;
+  end loop;
+  if everything and not coalesce((st ->> 'album')::boolean, false) then
+    tot := tot + 10000000;
+    st := st || jsonb_build_object('album', true);
+    g := public.lr_out(g, 'lbsets', jsonb_build_object('album', true, 'pay', 10000000));
+  end if;
+  if tot = 0 then return g; end if;
+  st := st || jsonb_build_object('sets', sets, 'setPaid', public.lr_n(st, 'setPaid') + tot);
+  return public.lr_add(g, 'credits', tot) || jsonb_build_object('lb', st);
+end;
+$$;
+create or replace function public.game_booster(p_act text, p_tier text default null, p_card integer default null, p_holo boolean default false, p_gift boolean default false)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  p public.players := public.lr_me();
+  c jsonb := public.lr_cfg();
+  g jsonb := public.lr_g(p);
+  cs jsonb := public.lr_lb_cards();
+  b jsonb;
+  own jsonb := case when jsonb_typeof(g -> 'cards') = 'object' then g -> 'cards' else '{}'::jsonb end;
+  st jsonb := case when jsonb_typeof(g -> 'lb') = 'object' then g -> 'lb' else '{}'::jsonb end;
+  lf numeric := public.lr_lf(auth.uid());
+  got jsonb := '[]';
+  price numeric;
+  x integer;
+  acc numeric;
+  rar integer;
+  best integer := 0;
+  pick numeric;
+  id integer;
+  holo boolean;
+  cur jsonb;
+  v numeric;
+  total numeric := 0;
+  n integer := 0;
+  e record;
+  gid bigint;
+begin
+  if p_act = 'state' then
+    return jsonb_build_object('r', jsonb_build_object('boosters', public.lr_lb_boosters(), 'holo', 5));
+  end if;
+  if p_act = 'open' then
+    if (c ->> 'maintenance')::boolean and not p.is_admin then raise exception 'paused'; end if;
+    b := public.lr_lb_boosters() -> p_tier;
+    if b is null then raise exception 'no such booster'; end if;
+    price := (b ->> 'price')::numeric;
+    if p_gift then
+      -- a booster someone gave you: one of them is used up, it costs nothing
+      select kg.id into gid from public.kiosk_gifts kg where kg.recipient = p.id and kg.kind = 'booster' and kg.tier = p_tier and kg.opened < kg.qty order by kg.created_at limit 1 for update;
+      if gid is null then raise exception 'no gift'; end if;
+      update public.kiosk_gifts kg set opened = kg.opened + 1 where kg.id = gid;
+    else
+      if public.lr_n(g, 'credits') < price then raise exception 'credits'; end if;
+      g := public.lr_add(g, 'credits', -price);
+    end if;
+    for k in 1 .. 5 loop
+      -- the rarity (the player's luck setting can draw an epic or better again, or a lower one)
+      for att in 1 .. 12 loop
+        x := public.lr_rand(10000);
+        -- a booster with a minimum: when the first four cards are all below it, the last one is drawn among the
+        -- rarities from the minimum up, in the booster's own proportions
+        if k = 5 and best < coalesce((b ->> 'min')::integer, 0) then
+          x := (select coalesce(sum((b -> 'p' ->> i)::numeric), 0) from generate_series(0, (b ->> 'min')::integer - 1) i)
+            + floor(random() * (select sum((b -> 'p' ->> i)::numeric) from generate_series((b ->> 'min')::integer, 4) i));
+        end if;
+        acc := 0;
+        rar := 4;
+        for i in 0 .. 4 loop
+          acc := acc + (b -> 'p' ->> i)::numeric;
+          if x < acc then rar := i; exit; end if;
+        end loop;
+        exit when att = 12 or (k = 5 and best < coalesce((b ->> 'min')::integer, 0)) or not public.lr_reroll(lf, rar >= 2, att);
+      end loop;
+      -- the card: by weight among the cards of that rarity
+      pick := random() * (select sum((y ->> 1)::numeric * case when (y ->> 1)::numeric < 1 then coalesce((b ->> 'jm')::numeric, 1) else 1 end) from jsonb_array_elements(cs) y where (y ->> 0)::integer = rar);
+      acc := 0;
+      id := null;
+      for e in select y, o from jsonb_array_elements(cs) with ordinality u(y, o) where (y ->> 0)::integer = rar loop
+        acc := acc + (e.y ->> 1)::numeric * case when (e.y ->> 1)::numeric < 1 then coalesce((b ->> 'jm')::numeric, 1) else 1 end;
+        id := e.o;
+        exit when pick < acc;
+      end loop;
+      holo := public.lr_rand(10000) < (b ->> 'holo')::integer;
+      cur := coalesce(own -> id::text, '[0, 0]'::jsonb);
+      got := got || jsonb_build_array(jsonb_build_object('id', id, 'holo', holo, 'new', (cur ->> 0)::integer + (cur ->> 1)::integer = 0,
+        'newHolo', holo and (cur ->> 1)::integer = 0));
+      own := own || jsonb_build_object(id::text, jsonb_build_array((cur ->> 0)::integer + case when holo then 0 else 1 end, (cur ->> 1)::integer + case when holo then 1 else 0 end));
+      best := greatest(best, rar);
+    end loop;
+    st := st || jsonb_build_object('opened', public.lr_n(st, 'opened') + 1, 'spent', public.lr_n(st, 'spent') + case when p_gift then 0 else price end);
+    g := g || jsonb_build_object('cards', own, 'lb', st);
+    -- a collection that is now complete pays its bonus
+    g := public.lr_lb_sets(g);
+    -- XP like a bet of the booster's price
+    g := public.lr_xp(g, c, public.lr_bet_xp(price, best >= 2));
+    return public.lr_put(p.id, g, jsonb_build_object('cards', got, 'tier', p_tier, 'price', price, 'gift', p_gift));
+  end if;
+  -- collections completed before the bonuses existed are paid when the kiosk asks
+  if p_act = 'claim' then
+    return public.lr_put(p.id, public.lr_lb_sets(g), '{}'::jsonb);
+  end if;
+  if p_act = 'sell' then
+    cur := own -> p_card::text;
+    if cur is null or (cur ->> case when p_holo then 1 else 0 end)::integer < 1 then raise exception 'none'; end if;
+    v := ((cs -> (p_card - 1)) ->> 2)::numeric * case when p_holo then 5 else 1 end;
+    own := own || jsonb_build_object(p_card::text, case when p_holo then jsonb_build_array(cur -> 0, (cur ->> 1)::integer - 1) else jsonb_build_array((cur ->> 0)::integer - 1, cur -> 1) end);
+    g := public.lr_add(g, 'credits', v) || jsonb_build_object('cards', own, 'lb', st || jsonb_build_object('earned', public.lr_n(st, 'earned') + v));
+    return public.lr_put(p.id, g, jsonb_build_object('value', v));
+  end if;
+  if p_act = 'dupes' then
+    -- keep one plain and one holo of every card, sell the rest
+    for e in select key, value from jsonb_each(own) loop
+      v := ((cs -> ((e.key)::integer - 1)) ->> 2)::numeric;
+      if v is null then continue; end if;
+      total := total + v * greatest(0, (e.value ->> 0)::integer - 1) + v * 5 * greatest(0, (e.value ->> 1)::integer - 1);
+      n := n + greatest(0, (e.value ->> 0)::integer - 1) + greatest(0, (e.value ->> 1)::integer - 1);
+      own := own || jsonb_build_object(e.key, jsonb_build_array(least(1, (e.value ->> 0)::integer), least(1, (e.value ->> 1)::integer)));
+    end loop;
+    if n = 0 then raise exception 'no duplicates'; end if;
+    g := public.lr_add(g, 'credits', total) || jsonb_build_object('cards', own, 'lb', st || jsonb_build_object('earned', public.lr_n(st, 'earned') + total));
+    return public.lr_put(p.id, g, jsonb_build_object('value', total, 'sold', n));
+  end if;
+  raise exception 'unknown';
+end;
+$$;
